@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Sim
+Bundle-SymbolicName: eu.quanticol.ms;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Export-Package: org.apache.commons.math3.random,
+ org.cmg.ml.sam.sim,
+ org.cmg.ml.sam.sim.ds,
+ org.cmg.ml.sam.sim.sampling,
+ org.cmg.ml.sam.sim.util
