@@ -110,7 +110,12 @@ public class Simple extends CarmaSystem {
 	private CarmaComponent getProducer(int a,int b,int c) {
 		CarmaComponent c4rm4 = new CarmaComponent();
 		c4rm4.set( __synthetic0Definition.PRODUCT_ATTRIBUTE, a);
-		c4rm4.addAgent( new CarmaSequentialProcess(c4rm4, __synthetic0Definition.ProducerProcess ) );
+		c4rm4.addAgent( new CarmaSequentialProcess(c4rm4, 
+		__synthetic0Definition.ProducerProcess,
+		__synthetic0Definition.ProducerProcess.getState("state_Produce" ) );
+		c4rm4.addAgent( new CarmaSequentialProcess(c4rm4, 
+		__synthetic0Definition.ProducerProcess,
+		__synthetic0Definition.ProducerProcess.getState("state_Send" ) );
 		return c4rm4;
 	}
 	
@@ -223,6 +228,7 @@ public class __synthetic0Definition {
 					public void update(RandomGenerator r, CarmaStore store) {
 						int product = store.get("product" , Integer.class );
 						store.set("product",product + 1);
+					
 					}
 				};
 			}
@@ -247,6 +253,7 @@ public class __synthetic0Definition {
 					public void update(RandomGenerator r, CarmaStore store) {
 						int product = store.get("product" , Integer.class );
 						store.set("product",product - 1);
+					
 					}
 				};
 			}
@@ -271,6 +278,7 @@ public class __synthetic0Definition {
 					public void update(RandomGenerator r, CarmaStore store) {
 						int product = store.get("product" , Integer.class );
 						store.set("product",product + 2);
+					
 					}
 				};
 			}
@@ -281,25 +289,25 @@ public class __synthetic0Definition {
 			}
 		};
 		
-		CarmaPredicate Send_Guard = new CarmaPredicate() {
-			@Override
-			public boolean satisfy(CarmaStore store) {
-				int product = store.get("product" , Integer.class );
-				return my.product > 0;
-			}
-		};
 		CarmaPredicate Produce_Guard = new CarmaPredicate() {
 			@Override
 			public boolean satisfy(CarmaStore store) {
 				int product = store.get("product" , Integer.class );
-				return my.product > 0;
+				return product > 0;
+			}
+		};
+		CarmaPredicate Send_Guard = new CarmaPredicate() {
+			@Override
+			public boolean satisfy(CarmaStore store) {
+				int product = store.get("product" , Integer.class );
+				return product > 0;
 			}
 		};
 		
 		//create the transitions between states
-		toReturn.addTransition(state_Send,Send_Guard,send_Action,state_Send);
 		toReturn.addTransition(state_Produce,Produce_Guard,produceDouble_Action,state_Produce);
 		toReturn.addTransition(state_Produce,Produce_Guard,produce_Action,state_Produce);
+		toReturn.addTransition(state_Send,Send_Guard,send_Action,state_Send);
 		
 		return toReturn;
 	}

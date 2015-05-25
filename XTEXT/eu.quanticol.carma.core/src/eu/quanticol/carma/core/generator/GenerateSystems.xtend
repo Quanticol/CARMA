@@ -1,33 +1,109 @@
 package eu.quanticol.carma.core.generator
 
 import com.google.inject.Inject
+import eu.quanticol.carma.core.carma.ActionStub
+import eu.quanticol.carma.core.carma.BlockSystem
+import eu.quanticol.carma.core.carma.Component
+import eu.quanticol.carma.core.carma.ComponentArgument
+import eu.quanticol.carma.core.carma.ComponentBlockDefinition
+import eu.quanticol.carma.core.carma.ComponentBlockForStatement
+import eu.quanticol.carma.core.carma.ComponentBlockNewDeclaration
+import eu.quanticol.carma.core.carma.EnvironmentUpdate
+import eu.quanticol.carma.core.carma.EnvironmentUpdateAssignment
+import eu.quanticol.carma.core.carma.LineSystem
+import eu.quanticol.carma.core.carma.Model
+import eu.quanticol.carma.core.carma.NCA
+import eu.quanticol.carma.core.carma.Probability
+import eu.quanticol.carma.core.carma.Range
+import eu.quanticol.carma.core.carma.Rate
+import eu.quanticol.carma.core.carma.RecordDeclaration
+import eu.quanticol.carma.core.carma.Spawn
+import eu.quanticol.carma.core.carma.System
+import eu.quanticol.carma.core.carma.VariableDeclarationEnum
+import eu.quanticol.carma.core.carma.VariableDeclarationRecord
 import eu.quanticol.carma.core.typing.TypeProvider
 import eu.quanticol.carma.core.utils.LabelUtil
 import eu.quanticol.carma.core.utils.Util
-import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.carma.Model
-import eu.quanticol.carma.core.carma.System
-import eu.quanticol.carma.core.carma.Component
-import eu.quanticol.carma.core.carma.Rate
-import eu.quanticol.carma.core.carma.ActionStub
-import eu.quanticol.carma.core.carma.ComponentBlockNewDeclaration
-import eu.quanticol.carma.core.carma.ComponentBlockForStatement
-import eu.quanticol.carma.core.carma.Range
-import eu.quanticol.carma.core.carma.NCA
 import java.util.ArrayList
-import eu.quanticol.carma.core.carma.BlockSystem
-import eu.quanticol.carma.core.carma.LineSystem
-import eu.quanticol.carma.core.carma.ComponentBlockDefinition
-import eu.quanticol.carma.core.carma.ComponentArgument
-import eu.quanticol.carma.core.carma.VariableDeclarationEnum
-import eu.quanticol.carma.core.carma.VariableDeclarationRecord
-import eu.quanticol.carma.core.carma.RecordDeclaration
+
+import static extension org.eclipse.xtext.EcoreUtil2.*
+import eu.quanticol.carma.core.carma.PrimitiveType
 
 class GenerateSystems {
 	
 	@Inject extension TypeProvider
 	@Inject extension LabelUtil
 	@Inject extension Util
+	
+	def String compileSystem(System system, String packageName){
+		'''
+		«packageName»;
+		
+		import org.apache.commons.math3.random.RandomGenerator;
+		import org.cmg.ml.sam.carma.*;
+		import org.cmg.ml.sam.sim.SimulationEnvironment;
+		public class «system.label» extends CarmaSystem {
+			
+			//constructor
+			public «system.label»(){
+				«system.declareComponents»
+			}
+			
+			«system.defineComponents»
+			
+			«system.defineEnvironmentProb»
+			
+			«system.defineEnvironmentRates»
+			
+			«system.defineEnvironmentUpdates»
+			
+			«system.defineMain»
+			
+		}
+		'''
+	}
+	
+	def String defineComponents(System system){
+		var components = new ArrayList<Component>(system.getContainerOfType(Model).eAllOfType(Component))
+		var cat = system.getContainerOfType(Model).getComponentAttributeType
+		'''
+		«FOR component : components»
+			private CarmaComponent get«component.label.toFirstUpper»(«component.getArgs») {
+				CarmaComponent c4rm4 = new CarmaComponent();
+				«var vds = cat.get(component)»
+				«FOR vd : vds»
+					«switch(vd){
+						VariableDeclarationEnum: '''c4rm4.set( «system.getContainerOfType(Model).label»Definition.«vd.name.label.toUpperCase»_ATTRIBUTE, «system.getContainerOfType(Model).getValue(component.label,vd.name.label)»);'''
+						VariableDeclarationRecord: {
+							var rds = vd.eAllOfType(RecordDeclaration)
+							if(rds.size > 0){
+								'''
+								«FOR rd : rds»
+								c4rm4.set( «system.getContainerOfType(Model).label»Definition.«vd.name.label.toUpperCase»_«rd.name.label.toUpperCase»_ATTRIBUTE, «system.getContainerOfType(Model).getValue(component.label,vd.name.label,rd.name.label)»);
+								«ENDFOR»
+								'''
+							} else {
+								rds = vd.assign.ref.recordDeclarationsFromCBND
+								'''
+								«FOR rd : rds»
+								c4rm4.set( «system.getContainerOfType(Model).label»Definition.«vd.name.label.toUpperCase»_«rd.name.label.toUpperCase»_ATTRIBUTE, «rd.name.label»);
+								«ENDFOR»
+								'''
+							}
+								
+						}
+					}»
+				«ENDFOR»
+				«FOR mer : component.getMacros»
+				c4rm4.addAgent( new CarmaSequentialProcess(c4rm4, 
+				«system.getContainerOfType(Model).label»Definition.«component.label»Process,
+				«system.getContainerOfType(Model).label»Definition.«component.label»Process.getState("state_«mer.name.label»" ) );
+				«ENDFOR»
+				return c4rm4;
+			}
+			«ENDFOR»
+		'''
+	}
 	
 	def String declareComponents(System system){
 		switch(system){
@@ -64,12 +140,13 @@ class GenerateSystems {
 	def String rangeDeclaration(ComponentBlockNewDeclaration dc){
 		var output = ""
 		var arguments = dc.eAllOfType(NCA)
-		var ArrayList<NCA> temp = new ArrayList<NCA>()
+		var ArrayList<PrimitiveType> temp = new ArrayList<PrimitiveType>()
 		
 		//We don't want to pick up the Macro
 		for(argument : arguments){
 			if(argument.type.toString.equals("component"))
-				temp.add(argument)
+				for(pt : argument.eAllOfType(PrimitiveType))
+					temp.add(pt)
 		}
 		
 		var ArrayList<ArrayList<String>> array1 = new ArrayList<ArrayList<String>>()
@@ -132,13 +209,15 @@ class GenerateSystems {
 	
 	
 	
-	def ArrayList<String> strip(NCA nca){
+	def ArrayList<String> strip(PrimitiveType pt){
 		var temp = new ArrayList<String>()
 		
-		if(nca.eAllOfType(Range).size > 0)
-			temp.addAll(nca.eAllOfType(Range).get(0).range)
+		if(pt.eAllOfType(Range).size > 0)
+			for(r : pt.eAllOfType(Range))
+				temp.addAll(r.range)
 		else
-			temp.add(nca.label)
+			temp.add(pt.label)
+
 
 		return temp
 	}
@@ -207,117 +286,154 @@ class GenerateSystems {
 		}
 	}
 	
-	def String defineComponents(System system){
-		var components = new ArrayList<Component>(system.getContainerOfType(Model).eAllOfType(Component))
-		var cat = system.getContainerOfType(Model).getComponentAttributeType
+	def String defineEnvironmentProb(System system){
+		
+		var probs = system.getContainerOfType(Model).eAllOfType(Probability)
+		var unicasts = new ArrayList<Probability>()
+		var broadcasts = new ArrayList<Probability>()
+		
+		for(eu : probs)
+			if(eu.stub.isBroadcast)
+				broadcasts.add(eu)
+			else
+				unicasts.add(eu)
 		'''
-		«FOR component : components»
-			private CarmaComponent get«component.label.toFirstUpper»(«component.getArgs») {
-				CarmaComponent c4rm4 = new CarmaComponent();
-				«var vds = cat.get(component)»
-				«FOR vd : vds»
-					«switch(vd){
-						VariableDeclarationEnum: '''c4rm4.set( «system.getContainerOfType(Model).label»Definition.«vd.name.label.toUpperCase»_ATTRIBUTE, «system.getContainerOfType(Model).getValue(component.label,vd.name.label)»);'''
-						VariableDeclarationRecord: {
-							var rds = vd.eAllOfType(RecordDeclaration)
-							'''
-							«FOR rd : rds»
-							c4rm4.set( «system.getContainerOfType(Model).label»Definition.«vd.name.label.toUpperCase»_«rd.name.label.toUpperCase»_ATTRIBUTE, «system.getContainerOfType(Model).getValue(component.label,vd.name.label,rd.name.label)»);
-							«ENDFOR»
-							'''
-						}
-					}»
-				«ENDFOR»
-				«FOR mer : component.getMacros»
-				c4rm4.addAgent( new CarmaSequentialProcess(c4rm4, 
-				«system.getContainerOfType(Model).label»Definition.«component.label»Process,
-				«system.getContainerOfType(Model).label»Definition.«component.label»Process.getState("state_«mer.name.label»" ) );
-				«ENDFOR»
-				return c4rm4;
-			}
+		/*ENVIRONMENT PROBABILITY*/
+		@Override
+		public double broadcastProbability(CarmaStore sender, CarmaStore receiver,
+		int action) {
+			«FOR broadcast : broadcasts»
+			«defineProbActionStubs(broadcast.stub)»
 			«ENDFOR»
-		'''
-	}
-	
-	def String compileSystem(System system, String packageName, String className, String modelName){
-		'''
-		«packageName»;
+			return 0;
+		}
 		
-		import org.apache.commons.math3.random.RandomGenerator;
-		import org.cmg.ml.sam.carma.*;
-		import org.cmg.ml.sam.sim.SimulationEnvironment;
-		public class «className» extends CarmaSystem {
-			
-			//constructor
-			public «className»(){
-				«system.declareComponents»
-			}
-			
-			«system.defineComponents»
-			
-			/*ENVIRONMENT PROBABILITY*/
-			@Override
-			public double broadcastProbability(CarmaStore sender, CarmaStore receiver,
-					int action) {
-				// TODO Auto-generated method stub
-				return 0;
-			}
-		
-			@Override
-			public double unicastProbability(CarmaStore sender, CarmaStore receiver,
-					int action) {
-				// TODO Auto-generated method stub
-				return 0;
-			}
-			
-			/*ENVIRONMENT RATE*/
-			@Override
-			public double broadcastRate(CarmaStore sender, int action) {
-				/*needs action names, and then environment rate values*/
-				«IF system.eAllOfType(Rate).size > 0»
-					«var actionStubs = system.eAllOfType(Rate).get(0).eAllOfType(ActionStub)»
-					«FOR actionStub : actionStubs»
-					if (action == «system.getContainerOfType(Model).label»Definition.«actionStub.name.name.toUpperCase») {
-						return «actionStub.getContainerOfType(Rate).expression.label»;
-					}
-					«ENDFOR»
-				«ENDIF»
-				
-				return 0;
-			}
-		
-			@Override
-			public double unicastRate(CarmaStore sender, int action) {
-				// TODO Auto-generated method stub
-				return 0;
-			}
-			
-			/*ENVIRONMENT UPDATE*/
-			@Override
-			public void broadcastUpdate(RandomGenerator random, CarmaStore sender,
-					int action) {
-				// TODO Auto-generated method stub
-				
-			}
-		
-			@Override
-			public void unicastUpdate(RandomGenerator random, CarmaStore sender,
-					int action) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			/*MAIN*/
-			public static void main( String[] argv ) {
-				SimulationEnvironment<CarmaSystem> system = new SimulationEnvironment<CarmaSystem>(
-					new «modelName»Factory()
-				);
-		
-				system.simulate(100,50);
-			}
-			
+		@Override
+		public double unicastProbability(CarmaStore sender, CarmaStore receiver,
+		int action) {
+			«FOR unicast : unicasts»
+			«defineProbActionStubs(unicast.stub)»
+			«ENDFOR»
+			return 0;
 		}
 		'''
 	}
+	
+	def String defineProbActionStubs(ActionStub actionStub){
+		'''
+		if (action == «actionStub.getContainerOfType(Model).label»Definition.«actionStub.name.name.toUpperCase») {
+				«actionStub.defineRateActionStub»
+		}
+		'''
+	}
+	
+	def String defineProbActionStub(ActionStub actionStub){
+		'''return «actionStub.getContainerOfType(Probability).expression.label»;'''
+	}
+	
+	def String defineEnvironmentRates(System system){
+		
+		var rates = system.getContainerOfType(Model).eAllOfType(Rate)
+		var unicasts = new ArrayList<Rate>()
+		var broadcasts = new ArrayList<Rate>()
+		
+		for(eu : rates)
+			if(eu.stub.isBroadcast)
+				broadcasts.add(eu)
+			else
+				unicasts.add(eu)
+		
+			'''
+		/*ENVIRONMENT RATE*/
+		@Override
+		public double broadcastRate(CarmaStore sender, int action) {
+			«FOR broadcast : broadcasts»
+			«defineRateActionStubs(broadcast.stub)»
+			«ENDFOR»
+			return 0;
+		}
+		@Override
+		public double unicastRate(CarmaStore sender, int action) {
+			«FOR unicast : unicasts»
+			«defineRateActionStubs(unicast.stub)»
+			«ENDFOR»
+		}
+		'''
+	}
+	
+	def String defineRateActionStubs(ActionStub actionStub){
+		'''
+		if (action == «actionStub.getContainerOfType(Model).label»Definition.«actionStub.name.name.toUpperCase») {
+				«actionStub.defineRateActionStub»
+		}
+		'''
+	}
+	
+	def String defineRateActionStub(ActionStub actionStub){
+		'''return «actionStub.getContainerOfType(Rate).expression.label»;'''
+	}
+	
+		def String defineEnvironmentUpdates(System system){
+		
+		var updates = system.getContainerOfType(Model).eAllOfType(EnvironmentUpdate)
+		var unicasts = new ArrayList<EnvironmentUpdate>()
+		var broadcasts = new ArrayList<EnvironmentUpdate>()
+		
+		for(eu : updates)
+			if(eu.stub.isBroadcast)
+				broadcasts.add(eu)
+			else
+				unicasts.add(eu)
+		'''
+		/*ENVIRONMENT UPDATE*/
+		@Override
+		public void broadcastUpdate(RandomGenerator random, CarmaStore sender,
+		int action) {
+			«FOR broadcast : broadcasts»
+			«defineEUpdateActionStubs(broadcast.stub)»
+			«ENDFOR»
+		}
+		
+		@Override
+		public void unicastUpdate(RandomGenerator random, CarmaStore sender,
+		int action) {
+			«FOR unicast : unicasts»
+			«defineEUpdateActionStubs(unicast.stub)»
+			«ENDFOR»
+		}
+		'''
+		
+	}
+	
+	def String defineEUpdateActionStubs(ActionStub actionStub){
+		'''
+		if (action == «actionStub.getContainerOfType(Model).label»Definition.«actionStub.name.name.toUpperCase») {
+				«actionStub.defineEUpdateActionStub»
+		}
+		'''
+	}
+	
+	def String defineEUpdateActionStub(ActionStub actionStub){
+		if(actionStub.getContainerOfType(EnvironmentUpdate).eAllOfType(Spawn).size > 0){
+			'''//spawns'''
+		} else if (actionStub.getContainerOfType(EnvironmentUpdate).eAllOfType(EnvironmentUpdateAssignment).size > 0){
+			'''//updates'''
+		} else {
+			'''//«actionStub.label» invalid'''
+		}
+	}
+	
+	def String defineMain(System system){
+		'''
+		/*MAIN*/
+			public static void main( String[] argv ) {
+				SimulationEnvironment<CarmaSystem> system = new SimulationEnvironment<CarmaSystem>(
+					new «system.getContainerOfType(Model).label»Factory()
+				);
+		
+				system.simulate(100,50);
+			}'''
+	}
+	
 	
 }

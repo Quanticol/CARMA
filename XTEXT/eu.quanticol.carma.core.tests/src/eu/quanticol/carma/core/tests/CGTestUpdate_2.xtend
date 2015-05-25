@@ -78,7 +78,9 @@ public class Simple extends CarmaSystem {
 	private CarmaComponent getProducer() {
 		CarmaComponent c4rm4 = new CarmaComponent();
 		c4rm4.set( __synthetic0Definition.PRODUCT_ATTRIBUTE, 0);
-		c4rm4.addAgent( new CarmaSequentialProcess(c4rm4, __synthetic0Definition.ProducerProcess ) );
+		c4rm4.addAgent( new CarmaSequentialProcess(c4rm4, 
+		__synthetic0Definition.ProducerProcess,
+		__synthetic0Definition.ProducerProcess.getState("state_Produce" ) );
 		return c4rm4;
 	}
 	
@@ -186,6 +188,7 @@ public class __synthetic0Definition {
 					public void update(RandomGenerator r, CarmaStore store) {
 						int product = store.get("product" , Integer.class );
 						store.set("product",product + 1);
+					
 					}
 				};
 			}

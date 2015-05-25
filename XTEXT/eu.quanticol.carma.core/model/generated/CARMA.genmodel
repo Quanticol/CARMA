@@ -3,7 +3,7 @@
     xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/eu.quanticol.carma.core/src-gen" editDirectory="/eu.quanticol.carma.core.edit/src"
     editorDirectory="/eu.quanticol.carma.core.editor/src" modelPluginID="eu.quanticol.carma.core"
     forceOverwrite="true" modelName="CARMA" updateClasspath="false" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
-    complianceLevel="5.0" copyrightFields="false" editPluginID="eu.quanticol.carma.core.edit"
+    complianceLevel="6.0" copyrightFields="false" editPluginID="eu.quanticol.carma.core.edit"
     editorPluginID="eu.quanticol.carma.core.editor" runtimeVersion="2.10">
   <genPackages prefix="Carma" basePackage="eu.quanticol.carma.core" disposableProviderFactory="true"
       loadInitialization="true" literalsInterface="false" fileExtensions="carma" ecorePackage="CARMA.ecore#/">
@@ -272,13 +272,16 @@
     <genClasses ecoreClass="CARMA.ecore#//UpdateBlock">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//UpdateBlock/updates"/>
     </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//EnvironmentUpdateAssignment">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//EnvironmentUpdateAssignment/storeReference"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//EnvironmentUpdateAssignment/expression"/>
+    </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//EnvironmentGuard">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//EnvironmentGuard/booleanExpression"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//ActionStub">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//ActionStub/name"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//ActionStub/cast"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ActionStub/io"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//IOStub">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//IOStub/in"/>
@@ -700,7 +703,9 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Rate/expression"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//EnvironmentUpdate">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//EnvironmentUpdate/expression"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//EnvironmentUpdate/value"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//EnvironmentUpdate/spawn"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//EnvironmentExpression">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//EnvironmentExpression/expression"/>
@@ -775,9 +780,6 @@
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//EnvironmentUpdateAtomicMeasure">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//EnvironmentUpdateAtomicMeasure/value"/>
-    </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//EnvironmentUpdateAtomicSpawn">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//EnvironmentUpdateAtomicSpawn/value"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

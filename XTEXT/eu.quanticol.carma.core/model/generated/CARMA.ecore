@@ -354,6 +354,12 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="updates" upperBound="-1"
         eType="#//EnvironmentOperation" containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EnvironmentUpdateAssignment">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="storeReference" eType="#//VariableReference"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="expression" eType="#//EnvironmentUpdateExpressions"
+        containment="true"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EnvironmentGuard">
     <eStructuralFeatures xsi:type="ecore:EReference" name="booleanExpression" eType="#//BooleanExpressions"
         containment="true"/>
@@ -361,7 +367,6 @@
   <eClassifiers xsi:type="ecore:EClass" name="ActionStub">
     <eStructuralFeatures xsi:type="ecore:EReference" name="name" eType="#//ActionName"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="cast" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="io" eType="#//IOStub" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="IOStub">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="in" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
@@ -684,7 +689,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentBlockNewDeclaration" eSuperTypes="#//CBND">
     <eStructuralFeatures xsi:type="ecore:EReference" name="componentInputArguments"
-        upperBound="-1" eType="#//ComponentBlockNewDeclarationArguments" containment="true"/>
+        eType="#//ComponentBlockNewDeclarationArguments" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="NewComponentArgumentPrimitive" eSuperTypes="#//NCA">
     <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="#//PrimitiveType"
@@ -923,7 +928,11 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EnvironmentUpdate" eSuperTypes="#//EnvironmentOperation">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="#//EnvironmentUpdateExpressions"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="expression" upperBound="-1"
+        eType="#//EnvironmentUpdateAssignment" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="value" upperBound="-1"
+        eType="#//EnvironmentUpdateAssignment" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="spawn" eType="#//Spawn"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EnvironmentExpression" eSuperTypes="#//EnvironmentExpressions">
@@ -1027,10 +1036,6 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EnvironmentUpdateAtomicMeasure" eSuperTypes="#//EnvironmentUpdateExpressions">
     <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="#//EnvironmentExpressions"
-        containment="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="EnvironmentUpdateAtomicSpawn" eSuperTypes="#//EnvironmentUpdateExpressions">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="#//Spawn"
         containment="true"/>
   </eClassifiers>
 </ecore:EPackage>

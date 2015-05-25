@@ -549,7 +549,7 @@ ComponentBlockNewDeclaration returns CBND hidden(ML_COMMENT,SL_COMMENT,WS):
 	{ComponentBlockNewDeclaration}
 	"new"
 	name=[ComponentName|UPPERST] 
-	componentInputArguments+=ComponentBlockNewDeclarationArguments
+	componentInputArguments=ComponentBlockNewDeclarationArguments
 	("["population=INT"]")?
 	";"
 ;
@@ -1012,7 +1012,11 @@ UpdateBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 
 EnvironmentUpdate returns EnvironmentOperation hidden(ML_COMMENT,SL_COMMENT,WS):
 	{EnvironmentUpdate}
-	guard=EnvironmentGuard stub=ActionStub ":=" value=EnvironmentUpdateExpression
+	guard=EnvironmentGuard stub=ActionStub ":=" (expression+=EnvironmentUpdateAssignment ("," value+=EnvironmentUpdateAssignment+)* | spawn=Spawn)
+;
+
+EnvironmentUpdateAssignment hidden(ML_COMMENT,SL_COMMENT,WS):
+	{EnvironmentUpdateAssignment} storeReference=VariableReference ":=" expression=EnvironmentUpdateExpression
 ;
 
 EnvironmentGuard hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -1020,7 +1024,7 @@ EnvironmentGuard hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 ActionStub hidden(ML_COMMENT,SL_COMMENT,WS):
-	{ActionStub} name=[ActionName|LOWERST](cast=MultiCastStub)?(io=IOStub)?
+	{ActionStub} name=[ActionName|LOWERST](cast=MultiCastStub)?
 ;
 
 MultiCastStub hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -1081,7 +1085,7 @@ EnvironmentPrimary returns EnvironmentExpressions hidden(ML_COMMENT,SL_COMMENT,W
 EnvironmentAtomic returns EnvironmentExpressions hidden(ML_COMMENT,SL_COMMENT,WS):
 	{EnvironmentAtomicPrimitive}			value=PrimitiveType 			|
 	{EnvironmentAtomicRecords}				value=Records					|
-	{EnvironmentAtomicVariable}				value=VariableReference |
+	{EnvironmentAtomicVariable}				value=VariableReference 		|
 	{EnvironmentAtomicMethodReference}		value=MethodReference			|
 	{EnvironmentAtomicNow}					value=Now						|
 	{EnvironmentAtomicMeasure}				value=EnvironmentMeasure
@@ -1121,8 +1125,7 @@ EnvironmentUpdateAtomic returns EnvironmentUpdateExpressions hidden(ML_COMMENT,S
 	{EnvironmentUpdateAtomicVariable}				value=VariableReference |
 	{EnvironmentUpdateAtomicMethodReference}		value=MethodReference			|
 	{EnvironmentUpdateAtomicNow}					value=Now						|
-	{EnvironmentUpdateAtomicMeasure}				value=EnvironmentMeasure		|
-	{EnvironmentUpdateAtomicSpawn}					value=Spawn
+	{EnvironmentUpdateAtomicMeasure}				value=EnvironmentMeasure
 ;
 
 terminal BOOLEANVALUE: 	('True' | 'False' | 'true' | 'false');

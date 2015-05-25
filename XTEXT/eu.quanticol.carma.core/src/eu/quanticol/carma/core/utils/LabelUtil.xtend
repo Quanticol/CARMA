@@ -174,10 +174,22 @@ import eu.quanticol.carma.core.carma.OutputActionArgument
 import eu.quanticol.carma.core.carma.OutputActionArgumentVR
 import eu.quanticol.carma.core.carma.OutputActionArgumentV
 import java.util.HashMap
+import eu.quanticol.carma.core.carma.Rate
+import eu.quanticol.carma.core.carma.EnvironmentGuard
+import eu.quanticol.carma.core.carma.ComponentBlockStyleCollective
+import eu.quanticol.carma.core.carma.ComponentBlockDefinitionArguments
 
 class LabelUtil {
 	
 	@Inject extension Util
+	
+	def String getLabel(Rate rate){
+		return "[" + rate.guard.label + "]" + rate.stub.label
+	}
+	
+	def String getLabel(EnvironmentGuard eg){
+		eg.booleanExpression.getLabel
+	}
 	
 	def String getNameValue(ComponentAfterThought cat){
 		cat.name.label + " = " + cat.expression.label
@@ -338,12 +350,12 @@ class LabelUtil {
 			output = output + "*"
 		}
 		
-		if(actionStub.io != null){
-			if(actionStub.io.in != null)
-				output = output + "()"
-			else
-				output = output + "<>"
-		}
+//		if(actionStub.io != null){
+//			if(actionStub.io.in != null)
+//				output = output + "()"
+//			else
+//				output = output + "<>"
+//		}
 		
 		
 		return output
@@ -394,10 +406,35 @@ class LabelUtil {
 	def String convertToJava(VariableType vt){
 		switch(vt){
 			VariableTypeEnum:			"int " 		+	vt.name.label 
-			VariableTypeRecord:			"int "		+	vt.name.label
+			VariableTypeRecord:			{vt.spread}
 			VariableTypeCarmaDouble:	"double "	+	vt.name.label
 			VariableTypeCarmaIntger:	"int " 		+	vt.name.label
 		}
+	}
+	
+	def String spread(VariableTypeRecord vtr){
+		
+		
+		//get position in the ComponentBlockDefinitionArguments
+		var position = vtr.getPosition
+		//get ComponentBlockDeclaration
+		var cbnds = vtr.getCBNDs
+		var ComponentBlockNewDeclaration cbnd = null
+		for(c : cbnds)
+			if(c.getContainerOfType(ComponentBlockStyleCollective) != null)
+				cbnd = (c as ComponentBlockNewDeclaration)
+		//get Records
+		var rds = cbnd.componentInputArguments.inputArguments.get(position).eAllOfType(RecordDeclaration)
+			
+		
+		var String output = ""
+		
+		output = " int " + rds.get(0).name.label
+		for(var i = 1; i < rds.size; i++){
+			output = output + ", int " + rds.get(i).name.label
+		}
+		
+		return output
 	}
 	
 	def String getLabel(ComponentStyle cs){
@@ -646,13 +683,13 @@ class LabelUtil {
 			output = output + "*"
 		} 
 		
-		if(inputAction){
-			output = output + "()"
-		}
-		
-		if(outputAction){
-			output = output + "<>"
-		}
+//		if(inputAction){
+//			output = output + "()"
+//		}
+//		
+//		if(outputAction){
+//			output = output + "<>"
+//		}
 		
 		return output
 		

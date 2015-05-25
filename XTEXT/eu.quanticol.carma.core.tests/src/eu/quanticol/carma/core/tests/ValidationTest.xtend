@@ -104,7 +104,7 @@ class ValidationTest {
 		    environment{
 		        rate{
 		        //problem here...
-		        [True] produce*() := 1;
+		        [True] ed* := 1;
 		        }
 		    }
 		}
@@ -113,8 +113,59 @@ class ValidationTest {
 			CARMAValidator::ERROR_ActionStub_reference)
 	}
 	
+//	@Test
+//	def void test_ERROR_VariableDeclaration_type(){
+//		'''
+//		component Producer(){
+//		    store{
+//		        enum product := 0;
+//		    }
+//		
+//		    behaviour{
+//		        Produce = produce*.Produce;
+//		    }
+//		
+//		    init{
+//		        Produce;
+//		    }
+//		
+//		}
+//		
+//		component ProducerT(){
+//		    store{
+//		        record product := {a := 0};
+//		    }
+//		
+//		    behaviour{
+//		        Produce = produce*.Produce;
+//		    }
+//		
+//		    init{
+//		        Produce;
+//		    }
+//		
+//		}
+//		
+//		system SimpleMove{
+//		
+//		    collective{
+//		        new Producer();
+//		        new ProducerT();
+//		    }
+//		
+//		    environment{
+//		        rate{
+//		        [True] produce* := 1;
+//		        }
+//		    }
+//		}
+//		'''.parse.assertError(CarmaPackage::eINSTANCE.actionStub,
+//			CARMAValidator::ERROR_VariableDeclaration_type,
+//			CARMAValidator::ERROR_VariableDeclaration_type)
+//	}
+	
 	@Test
-	def void test_ERROR_VariableDeclaration_type(){
+	def void test_ERROR_ActionStub(){
 		'''
 		component Producer(){
 		    store{
@@ -133,7 +184,7 @@ class ValidationTest {
 		
 		component ProducerT(){
 		    store{
-		        record product := {a := 0};
+		        enum product := 0;
 		    }
 		
 		    behaviour{
@@ -150,11 +201,12 @@ class ValidationTest {
 		
 		    collective{
 		        new Producer();
+		        new ProducerT();
 		    }
 		
 		    environment{
 		        rate{
-		        [True] produce*() := 1;
+		        [True] edward* := 1;
 		        }
 		    }
 		}
@@ -523,5 +575,63 @@ class ValidationTest {
 			CARMAValidator::ERROR_ProcessExpressionGuard_following_action,
 			CARMAValidator::ERROR_ProcessExpressionGuard_following_action)
 		
+	}
+	
+	@Test
+	def void test_ERROR_Rate_Unique(){
+			'''
+	component Producer(enum a, Z){
+	    store{
+	        enum product := a;
+	        record position := {x := 0, y := 1};
+	    }
+	
+	    behaviour{
+	        Produce = [my.product > 0] produce*{product := product + 1}.Produce + [my.product == 0] produceDouble*{product := product + 2}.Produce;
+	        Send = [my.product > 0] send<1>{product := product - 1}.Send;
+	    }
+	
+	    init{
+	        Z;
+	    }
+	}
+	
+	component Consumer(enum a, Z){
+	    
+	    store{
+	        enum product := a;
+	    }
+	
+	    behaviour{
+	        Consume = [my.product > 0] consume*{product := product - 1}.Consume + [my.product > 2] consumeDouble*{product := product - 2}.Consume;
+	        Receive = [my.product > 0] send(z){product := product - z}.Receive;
+	    }
+	
+	    init{
+	        Z;
+	    }
+	}
+	
+	
+	system Simple{
+	
+	    collective{
+	        new Producer(1..6,Produce|Send);
+	        new Consumer(1..6,Consume|Receive);
+	    }
+	
+	    environment{
+	    	
+	        rate{
+	        [True] produce* := 1;
+	        [True] send := 1;
+	        [True] send := 1;
+	        [True] produceDouble* := 1;
+	        }
+	    }
+	}
+	'''.parse.assertError(CarmaPackage::eINSTANCE.rate,
+			CARMAValidator::ERROR_Rate_Unique,
+			CARMAValidator::ERROR_Rate_Unique)
 	}
 }

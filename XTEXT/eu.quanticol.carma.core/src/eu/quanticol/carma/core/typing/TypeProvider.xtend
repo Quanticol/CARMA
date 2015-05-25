@@ -43,7 +43,6 @@ import eu.quanticol.carma.core.carma.EnvironmentModulo
 import eu.quanticol.carma.core.carma.EnvironmentMultiplication
 import eu.quanticol.carma.core.carma.EnvironmentSubtraction
 import eu.quanticol.carma.core.carma.EnvironmentUpdateAddition
-import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicSpawn
 import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicMeasure
 import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicMethodReference
 import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicNow
@@ -694,7 +693,6 @@ class TypeProvider {
 			EnvironmentUpdateAtomicMethodReference:	(e.value as MethodExpression).getType			
 			EnvironmentUpdateAtomicNow:				doubleType	
 			EnvironmentUpdateAtomicMeasure:			(e.value as EnvironmentUpdateAtomicMeasure).getType
-			EnvironmentUpdateAtomicSpawn:			(e.value as Spawn).getType
 			EnvironmentUpdateExpression:			e.expression.getType
 		}
 	}

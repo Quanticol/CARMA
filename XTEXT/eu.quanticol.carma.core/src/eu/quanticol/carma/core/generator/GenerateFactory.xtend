@@ -14,14 +14,14 @@ class GenerateFactory {
 		@Inject extension LabelUtil
 		@Inject extension Util
 	
-		def String compileFactory(Model model, String packageName, String className){
+		def String compileFactory(Model model, String packageName){
 		'''
 			«packageName»;
 			import org.cmg.ml.sam.carma.CarmaSystem;
 			import org.cmg.ml.sam.sim.SimulationFactory;
-			public class «className»Factory implements SimulationFactory<CarmaSystem> {
+			public class «model.label»Factory implements SimulationFactory<CarmaSystem> {
 			
-				public «className»Factory() {
+				public «model.label»Factory() {
 					
 				}
 				

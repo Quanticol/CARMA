@@ -86,6 +86,11 @@ import eu.quanticol.carma.core.carma.RecordReferenceReciever
 import eu.quanticol.carma.core.carma.RecordReferenceSender
 import eu.quanticol.carma.core.carma.VariableReference
 import eu.quanticol.carma.core.carma.VariableDeclarationEnum
+import eu.quanticol.carma.core.carma.VariableTypeRecord
+import eu.quanticol.carma.core.carma.MethodDefinitionArguments
+import eu.quanticol.carma.core.carma.MethodDefinitionArgument
+import eu.quanticol.carma.core.carma.ComponentBlockDeclaration
+import eu.quanticol.carma.core.carma.ComponentBlockStyleCollective
 
 class Util {
 	
@@ -1364,6 +1369,20 @@ class Util {
 	}
 	
 	/**
+	 * Given a VariableType return all VariableType with the same name
+	 */
+	def ArrayList<VariableType> getSameDeclarations(VariableType vt){
+		var ArrayList<VariableType> output = new ArrayList<VariableType>()
+		
+		for(vardec : vt.getContainerOfType(Model).eAllOfType(VariableType)){
+			if(vardec.name.sameName(vt.name))
+				output.add(vardec)
+		}
+		
+		return output
+	}
+	
+	/**
 	 * Given a VariableDeclaration return boolean if all VariableDeclarations in the model
 	 * are the same type
 	 */
@@ -1373,6 +1392,21 @@ class Util {
 		
 		for(o : others){
 			output = output && vd.type.toString.equals(o.type.toString)
+		}
+		
+		return output
+	}
+	
+	/**
+	 * Given a VariableDeclaration return boolean if all VariableDeclarations in the model
+	 * are the same type
+	 */
+	def boolean sameType(VariableType vt){
+		var others = vt.sameDeclarations
+		var boolean output = true
+		
+		for(o : others){
+			output = output && vt.type.toString.equals(o.type.toString)
 		}
 		
 		return output
@@ -1470,11 +1504,9 @@ class Util {
 	def HashMap<String,String> getNameValue(ArrayList<VariableName> vns){
 		
 		var HashMap<String,String> output = new HashMap<String,String>()
-		
 		for(vn : vns){
 			output.putAll(vn.nameValueLabel)
 		}
-		
 		return output
 		
 	}
@@ -1523,6 +1555,99 @@ class Util {
 	
 	def ArrayList<MacroExpressionReference> getMacrosLine(ComponentLineDefinition component){
 		new ArrayList<MacroExpressionReference>(component.eAllOfType(MacroExpressionReference))
+	}
+	
+	/**
+	 * Given an ActionStub, return if it is broadcast
+	 */
+	def boolean isBroadcast(ActionStub actionStub){
+		return actionStub.label.contains("*")
+	}
+	
+	/**
+	 * Given a VariableTypeRecord, return its ComponentBlockNewDeclarations
+	 */
+	def ArrayList<CBND> getCBNDs(VariableTypeRecord vtr){
+		return vtr.getContainerOfType(ComponentArgument).getCBNDs
+	}
+	
+	/**
+	 * Given a VariableName, return its ComponentBlockNewDeclarations
+	 */
+	def ArrayList<CBND> getCBNDs(VariableName vtr){
+		return vtr.getContainerOfType(ComponentArgument).getCBNDs
+	}
+	
+	/**
+	 * Given a ComponentArgument, return its ComponentBlockNewDeclarations
+	 */
+	def ArrayList<CBND> getCBNDs(ComponentArgument ca){
+		ca.getContainerOfType(ComponentBlockDefinition).getCBNDs
+	}
+	
+	/**
+	 * Given a VariableTypeRecord, return position inside ComponentBlockDefinitionArguments or MethodDefinitionArguments
+	 */
+	def int getPosition(VariableTypeRecord vtr){
+		var position = -1
+		
+		if(vtr.getContainerOfType(ComponentBlockDefinitionArguments) != null){
+			var arguments = vtr.getContainerOfType(ComponentBlockDefinitionArguments).eAllOfType(ComponentArgument)
+			for(argument : arguments){
+				if(argument.eAllOfType(Name).get(0).sameName(vtr.name)){
+					position++
+					return position
+				} else {
+					position++
+				}
+			}
+		}
+		
+		if(vtr.getContainerOfType(MethodDefinitionArguments) != null){
+			var arguments = vtr.getContainerOfType(MethodDefinitionArguments).eAllOfType(MethodDefinitionArgument)
+			for(argument : arguments){
+				if(argument.eAllOfType(Name).get(0).sameName(vtr.name)){
+					position++
+					return position
+				} else {
+					position++
+				}
+			}
+		}
+		
+		return position
+	}
+	
+	def ArrayList<RecordDeclaration> getRecordDeclarationsFromCBND(VariableName vn){
+		
+		//get position in the ComponentBlockDefinitionArguments
+		var position = vn.getPosition
+		//get ComponentBlockDeclaration
+		var cbnds = vn.getCBNDs
+		var ComponentBlockNewDeclaration cbnd = null
+		for(c : cbnds)
+			if(c.getContainerOfType(ComponentBlockStyleCollective) != null)
+				cbnd = (c as ComponentBlockNewDeclaration)
+		//get Records
+		new ArrayList<RecordDeclaration>(cbnd.componentInputArguments.inputArguments.get(position).eAllOfType(RecordDeclaration))
+			
+	}
+	
+	def int getPosition(VariableName vn){
+		var position = -1
+		if(vn.getContainerOfType(ComponentBlockDefinitionArguments) != null){
+			var arguments = vn.getContainerOfType(ComponentBlockDefinitionArguments).eAllOfType(ComponentArgument)
+			for(argument : arguments){
+				if(argument.eAllOfType(Name).get(0).sameName(vn)){
+					position++
+					return position
+				} else {
+					position++
+				}
+			}
+		}
+		
+		return position
 	}
 	
 //	/**

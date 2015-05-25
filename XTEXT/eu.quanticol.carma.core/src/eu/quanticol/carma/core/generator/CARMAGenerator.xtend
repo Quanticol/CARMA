@@ -47,15 +47,15 @@ class CARMAGenerator implements IGenerator {
 		var packageName = "package carma." + modelName
 		
 		//Definitions
-		fsa.generateFile(URI + "/" + modelName + "Definition.java",model.compileDefinitions(packageName,modelName))
+		fsa.generateFile(URI + "/" + modelName + "Definition.java",model.compileDefinitions(packageName))
 		
 		//Systems
 		for(system : systems){
-			fsa.generateFile(URI + "/" + system.label + ".java", system.compileSystem(packageName,system.label,modelName))
+			fsa.generateFile(URI + "/" + system.label + ".java", system.compileSystem(packageName))
 		}
 		
 		//Factory
-		fsa.generateFile(URI + "/" + modelName + "Factory.java",model.compileFactory(packageName,modelName))
+		fsa.generateFile(URI + "/" + modelName + "Factory.java",model.compileFactory(packageName))
 		
 	}
 	

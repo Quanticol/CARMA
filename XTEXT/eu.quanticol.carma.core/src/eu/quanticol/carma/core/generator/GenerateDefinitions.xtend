@@ -33,8 +33,9 @@ class GenerateDefinitions {
 		@Inject extension TypeProvider
 		@Inject extension LabelUtil
 		@Inject extension Util
+		@Inject extension GeneratorUtils
 	
-		def String compileDefinitions(Model model, String packageName, String className){
+		def String compileDefinitions(Model model, String packageName){
 		'''
 		«packageName»;
 		
@@ -42,7 +43,7 @@ class GenerateDefinitions {
 		import org.cmg.ml.sam.carma.*;
 		import org.cmg.ml.sam.sim.SimulationEnvironment;
 		
-		public class «className»Definition {
+		public class «model.label»Definition {
 			
 			/*METHOD VARIABLES*/
 			/*COMPONENT ATTRIBUTES*/
@@ -79,10 +80,10 @@ class GenerateDefinitions {
 		}
 			
 		'''
-			«FOR vdName : vds.keySet»
-				public static final String «vdName.toUpperCase»_ATTRIBUTE = "«vdName»";
-				public static final Class<«vds.get(vdName).convertType»> «vdName.toUpperCase»_ATTRIBUTE_TYPE = «vds.get(vdName).convertType».class;
-			«ENDFOR»
+		«FOR vdName : vds.keySet»
+		public static final String «vdName.toUpperCase»_ATTRIBUTE = "«vdName»";
+		public static final Class<«vds.get(vdName).convertType»> «vdName.toUpperCase»_ATTRIBUTE_TYPE = «vds.get(vdName).convertType».class;
+		«ENDFOR»
 		'''
 	}
 	
@@ -111,11 +112,11 @@ class GenerateDefinitions {
 		var actionStubs = model.eAllOfType(ActionStub)
 		
 		'''
-			«FOR actionStub : actionStubs»
-				«IF actionStub.getContainerOfType(Rate) != null»
-					public static final double «actionStub.labelName.toUpperCase»_RATE_«actionStub.labelInOut» = «actionStub.getRates»;
-				«ENDIF»
-			«ENDFOR»
+		«FOR actionStub : actionStubs»
+		«IF actionStub.getContainerOfType(Rate) != null»
+		public static final double «actionStub.labelName.toUpperCase»_RATE = «actionStub.getRates»;
+		«ENDIF»
+		«ENDFOR»
 		'''
 		
 	}
@@ -192,18 +193,7 @@ class GenerateDefinitions {
 			@Override
 			public boolean satisfy(CarmaStore store) {
 				«FOR vr : guards.get(key).eAllOfType(VariableReference)»
-				«var vd = vr.getVariableDeclaration»
-				«switch(vd){
-					VariableDeclarationEnum:	'''«vd.convertPrimitiveType» «vd.name.label» = store.get("«vd.name.label»" , «vd.convertType».class );'''
-					VariableDeclarationRecord:	{
-						var rds = vd.eAllOfType(RecordDeclaration)
-						'''
-						«FOR rd : rds»
-							«vd.convertPrimitiveType» «vd.name.label»_«rd.name.label» = store.get("«vd.name.label»_«rd.name.label»" , «vd.convertType».class );
-						«ENDFOR»
-						'''
-					}
-				}»
+				«vr.getStore»
 				«ENDFOR»
 				return «guards.get(key).booleanExpression.labelJava»;
 			}
@@ -212,29 +202,30 @@ class GenerateDefinitions {
 		'''
 	}
 	
-	def String defineOutputUpdates(ArrayList<UpdateAssignment> updates){
-		var output = ""
-		if(updates.size >0){
-			for(update : updates){
-				var vd = update.storeReference.variableDeclaration
-				switch(vd){
-					VariableDeclarationEnum: {
-						output = '''«vd.convertPrimitiveType» «vd.name.label» = store.get("«vd.name.label»" , «vd.convertType».class );'''+"\n"+
-						'''store.set("«vd.name.label»",«update.expression.label»);'''+"\n"
-					}
-					VariableDeclarationRecord: {
-							var rds = vd.eAllOfType(RecordDeclaration)
-							for(rd : rds){
-								output = output + '''«vd.convertPrimitiveType» «vd.name.label»_«rd.name.label» = store.get("«vd.name.label»_«rd.name.label»" , «vd.convertType».class );'''+"\n"+
-								'''store.set("«vd.name.label»_«rd.name.label»",«update.expression.label»);'''+"\n"
-							}
-					}	
-				}
-				
-			}
-		}
-		return output
-	}
+//	def String defineOutputUpdates(ArrayList<UpdateAssignment> updates){
+//		var output = ""
+//		if(updates.size >0){
+//			for(update : updates){
+//				var vd = update.storeReference.variableDeclaration
+//				switch(vd){
+//					VariableDeclarationEnum: {
+//						output = '''«vd.convertPrimitiveType» «vd.name.label» = store.get("«vd.name.label»" , «vd.convertType».class );'''+"\n"+
+//						'''store.set("«vd.name.label»",«update.expression.label»);'''+"\n"
+//					}
+//					VariableDeclarationRecord: {
+//							var rds = vd.eAllOfType(RecordDeclaration)
+//							for(rd : rds){
+//								output = output + '''«vd.convertPrimitiveType» «vd.name.label»_«rd.name.label» = store.get("«vd.name.label»_«rd.name.label»" , «vd.convertType».class );'''+"\n"+
+//								'''store.set("«vd.name.label»_«rd.name.label»",«update.expression.label»);'''+"\n"
+//							}
+//					}	
+//				}
+//				
+//			}
+//		}
+//		return output
+//	}
+
 
 	def String outputAction(Action action, String name){
 		'''
@@ -265,6 +256,22 @@ class GenerateDefinitions {
 		'''
 	}
 	
+	def String defineOutputUpdates(ArrayList<UpdateAssignment> updates){
+		var output = ""
+		if(updates.size >0){
+			for(update : updates){
+				var vd = update.storeReference.variableDeclaration
+				output = output + vd.getStore
+			}
+			
+			for(update : updates){
+				var vd = update.storeReference.variableDeclaration
+				output = output + vd.setStore(update.expression.label)
+			}
+		}
+		return output
+	}
+	
 	def String getValue(Action action){
 		var outputArgs = action.eAllOfType(OutputActionArgument);
 		if(outputArgs.size == 0){
@@ -278,18 +285,19 @@ class GenerateDefinitions {
 		var output = '''int[] output = new int[«outputArgs.size»];'''
 		
 		for(vr : vrs){
-			var vd = vr.ref.getVariableDeclaration
-			switch(vd){
-				VariableDeclarationEnum: {
-					output = output + '''«vd.convertPrimitiveType» «vd.name.label» = store.get("«vd.name.label»" , «vd.convertType».class );''' + "\n"
-				}
-				VariableDeclarationRecord: {
-					var rds = vd.eAllOfType(RecordDeclaration)
-					for(rd : rds){
-						output = output + '''«vd.convertPrimitiveType» «vd.name.label»_«rd.name.label» = store.get("«vd.name.label»_«rd.name.label»" , «vd.convertType».class );''' + "\n"
-					}	
-				}
-			}
+			vr.ref.declareVariable
+//			var vd = vr.ref.getVariableDeclaration
+//			switch(vd){
+//				VariableDeclarationEnum: {
+//					output = output + '''«vd.convertPrimitiveType» «vd.name.label» = store.get("«vd.name.label»" , «vd.convertType».class );''' + "\n"
+//				}
+//				VariableDeclarationRecord: {
+//					var rds = vd.eAllOfType(RecordDeclaration)
+//					for(rd : rds){
+//						output = output + '''«vd.convertPrimitiveType» «vd.name.label»_«rd.name.label» = store.get("«vd.name.label»_«rd.name.label»" , «vd.convertType».class );''' + "\n"
+//					}	
+//				}
+//			}
 		}
 		
 		for(var i = 0; i < outputArgs.size; i++){
@@ -298,38 +306,6 @@ class GenerateDefinitions {
 		
 		output = output + "\n" + "return output;"
 		
-		return output
-	}
-	
-	
-	def String getAndSetInputArguments(ArrayList<VariableName> vns){
-		'''
-		«FOR vn : vns»
-		int «vn.label» = ((int[]) value)[«vns.indexOf(vn)»];
-		«ENDFOR»
-		'''		
-	}
-	
-	def String defineInputUpdates(ArrayList<UpdateAssignment> updates){
-		var output = ""
-		if(updates.size >0){
-			for(update : updates){
-				var vd = update.storeReference.variableDeclaration
-				switch(vd){
-					VariableDeclarationEnum: {
-						output = '''«vd.convertPrimitiveType» «vd.name.label» = store.get("«vd.name.label»" , «vd.convertType».class );'''+"\n"+
-						'''store.set("«vd.name.label»",«update.expression.label»);'''
-					}
-					VariableDeclarationRecord: {
-						var rds = vd.eAllOfType(RecordDeclaration)
-						for(rd : rds){
-							output = output + '''«vd.convertPrimitiveType» «vd.name.label»_«rd.name.label» = store.get("«vd.name.label»_«rd.name.label»" , «vd.convertType».class );'''+"\n"+
-							'''store.set("«vd.name.label»_«rd.name.label»",«update.expression.label»);'''
-						}
-					}
-				}
-			}
-		}
 		return output
 	}
 	
@@ -360,7 +336,30 @@ class GenerateDefinitions {
 			};
 		};
 		'''
-		
+	}
+	
+	def String getAndSetInputArguments(ArrayList<VariableName> vns){
+		'''
+		«FOR vn : vns»
+		int «vn.label» = ((int[]) value)[«vns.indexOf(vn)»];
+		«ENDFOR»
+		'''		
+	}
+	
+	def String defineInputUpdates(ArrayList<UpdateAssignment> updates){
+		var output = ""
+		if(updates.size >0){
+			for(update : updates){
+				var vd = update.storeReference.variableDeclaration
+				output = output + vd.getStore
+			}
+			
+			for(update : updates){
+				var vd = update.storeReference.variableDeclaration
+				output = output + vd.setStore(update.expression.label)
+			}
+		}
+		return output
 	}
 	
 	def String declareTransitions(Tree tree){

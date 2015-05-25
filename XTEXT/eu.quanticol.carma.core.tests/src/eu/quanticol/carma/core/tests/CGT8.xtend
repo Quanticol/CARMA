@@ -114,13 +114,23 @@ public class Simple extends CarmaSystem {
 		c4rm4.set( __synthetic0Definition.PRODUCT_ATTRIBUTE, a);
 		c4rm4.set( __synthetic0Definition.POSITION_X_ATTRIBUTE, 0);
 		c4rm4.set( __synthetic0Definition.POSITION_Y_ATTRIBUTE, 1);
-		c4rm4.addAgent( new CarmaSequentialProcess(c4rm4, __synthetic0Definition.ProducerProcess ) );
+		c4rm4.addAgent( new CarmaSequentialProcess(c4rm4, 
+		__synthetic0Definition.ProducerProcess,
+		__synthetic0Definition.ProducerProcess.getState("state_Produce" ) );
+		c4rm4.addAgent( new CarmaSequentialProcess(c4rm4, 
+		__synthetic0Definition.ProducerProcess,
+		__synthetic0Definition.ProducerProcess.getState("state_Send" ) );
 		return c4rm4;
 	}
 	private CarmaComponent getConsumer(int a) {
 		CarmaComponent c4rm4 = new CarmaComponent();
 		c4rm4.set( __synthetic0Definition.PRODUCT_ATTRIBUTE, a);
-		c4rm4.addAgent( new CarmaSequentialProcess(c4rm4, __synthetic0Definition.ConsumerProcess ) );
+		c4rm4.addAgent( new CarmaSequentialProcess(c4rm4, 
+		__synthetic0Definition.ConsumerProcess,
+		__synthetic0Definition.ConsumerProcess.getState("state_Consume" ) );
+		c4rm4.addAgent( new CarmaSequentialProcess(c4rm4, 
+		__synthetic0Definition.ConsumerProcess,
+		__synthetic0Definition.ConsumerProcess.getState("state_Receive" ) );
 		return c4rm4;
 	}
 	
@@ -210,9 +220,8 @@ public class __synthetic0Definition {
 	public static final int CONSUMEDOUBLE = 4;
 	/*RATES*/
 	public static final double PRODUCE_RATE = 1;
-	public static final double SEND_RATE = 1;
-	public static final double SEND_RATE = 1;
-	public static final double PRODUCEDOUBLE_RATE = 1;
+	public static final double SEND_RATE = ;
+	public static final double SEND_RATE = ;
 	/*PROCESS*/
 	public static final CarmaProcessAutomaton ProducerProcess = createProducerProcess();
 	
@@ -240,6 +249,7 @@ public class __synthetic0Definition {
 					public void update(RandomGenerator r, CarmaStore store) {
 						int product = store.get("product" , Integer.class );
 						store.set("product",product + 1);
+					
 					}
 				};
 			}
@@ -264,6 +274,7 @@ public class __synthetic0Definition {
 					public void update(RandomGenerator r, CarmaStore store) {
 						int product = store.get("product" , Integer.class );
 						store.set("product",product - 1);
+					
 					}
 				};
 			}
@@ -271,6 +282,8 @@ public class __synthetic0Definition {
 			@Override
 			protected Object getValue(CarmaStore store) {
 				int[] output = new int[1];
+				output[0] = 1;
+				return output;
 			}
 		};
 		CarmaOutput produceDouble_Action = new CarmaOutput( PRODUCEDOUBLE, true ) {
@@ -288,6 +301,7 @@ public class __synthetic0Definition {
 					public void update(RandomGenerator r, CarmaStore store) {
 						int product = store.get("product" , Integer.class );
 						store.set("product",product + 2);
+					
 					}
 				};
 			}
@@ -298,25 +312,25 @@ public class __synthetic0Definition {
 			}
 		};
 		
-		CarmaPredicate Send_Guard = new CarmaPredicate() {
-			@Override
-			public boolean satisfy(CarmaStore store) {
-				int product = store.get("product" , Integer.class );
-				return my.product > 0;
-			}
-		};
 		CarmaPredicate Produce_Guard = new CarmaPredicate() {
 			@Override
 			public boolean satisfy(CarmaStore store) {
 				int product = store.get("product" , Integer.class );
-				return my.product > 0;
+				return product > 0;
+			}
+		};
+		CarmaPredicate Send_Guard = new CarmaPredicate() {
+			@Override
+			public boolean satisfy(CarmaStore store) {
+				int product = store.get("product" , Integer.class );
+				return product > 0;
 			}
 		};
 		
 		//create the transitions between states
-		toReturn.addTransition(state_Send,Send_Guard,send_Action,state_Send);
 		toReturn.addTransition(state_Produce,Produce_Guard,produceDouble_Action,state_Produce);
 		toReturn.addTransition(state_Produce,Produce_Guard,produce_Action,state_Produce);
+		toReturn.addTransition(state_Send,Send_Guard,send_Action,state_Send);
 		
 		return toReturn;
 	}
@@ -346,6 +360,7 @@ public class __synthetic0Definition {
 					public void update(RandomGenerator r, CarmaStore store) {
 						int product = store.get("product" , Integer.class );
 						store.set("product",product - 2);
+					
 					}
 				};
 			}
@@ -364,15 +379,20 @@ public class __synthetic0Definition {
 			
 			@Override
 			protected CarmaStoreUpdate getUpdate(final Object value) {
-						
-				@Override
-				public void update(RandomGenerator r, CarmaStore store) {
-					int product = store.get("product" , Integer.class );
-					store.set("product",product - z);
-					};
-				}
 				
-				return null;
+				return new CarmaStoreUpdate() {
+					@Override
+					public void update(RandomGenerator r, CarmaStore store) {
+						if (value instanceof int[]){
+					
+							int z = ((int[]) value)[0];
+							int product = store.get("product" , Integer.class );
+							store.set("product",product - z);
+						
+						};
+					};
+				
+				};
 			};
 		};
 		CarmaOutput consume_Action = new CarmaOutput( CONSUME, true ) {
@@ -390,6 +410,7 @@ public class __synthetic0Definition {
 					public void update(RandomGenerator r, CarmaStore store) {
 						int product = store.get("product" , Integer.class );
 						store.set("product",product - 1);
+					
 					}
 				};
 			}
@@ -404,21 +425,21 @@ public class __synthetic0Definition {
 			@Override
 			public boolean satisfy(CarmaStore store) {
 				int product = store.get("product" , Integer.class );
-				return my.product > 2;
+				return product > 2;
 			}
 		};
 		CarmaPredicate Receive_Guard = new CarmaPredicate() {
 			@Override
 			public boolean satisfy(CarmaStore store) {
 				int product = store.get("product" , Integer.class );
-				return my.product > 0;
+				return product > 0;
 			}
 		};
 		
 		//create the transitions between states
+		toReturn.addTransition(state_Receive,Receive_Guard,send_Action,state_Receive);
 		toReturn.addTransition(state_Consume,Consume_Guard,consume_Action,state_Consume);
 		toReturn.addTransition(state_Consume,Consume_Guard,consumeDouble_Action,state_Consume);
-		toReturn.addTransition(state_Receive,Receive_Guard,send_Action,state_Receive);
 		
 		return toReturn;
 	}

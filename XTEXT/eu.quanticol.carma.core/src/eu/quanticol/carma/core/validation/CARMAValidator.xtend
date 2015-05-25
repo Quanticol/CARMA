@@ -48,6 +48,10 @@ import eu.quanticol.carma.core.carma.MacroType
 import eu.quanticol.carma.core.carma.VariableReference
 import eu.quanticol.carma.core.carma.ProcessExpressionGuard
 import eu.quanticol.carma.core.carma.ProcessExpressionAction
+import eu.quanticol.carma.core.carma.Rate
+import eu.quanticol.carma.core.carma.RateBlock
+import eu.quanticol.carma.core.carma.RecordDeclaration
+import eu.quanticol.carma.core.carma.RecordDeclarations
 
 /**
  * Class
@@ -201,7 +205,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 	}
 	
 	
-	public static val ERROR_RecordReference_reference_in_model = "ERROR: This variable has not been declared anywhere."
+//	public static val ERROR_RecordReference_reference_in_model = "ERROR: This variable has not been declared anywhere."
 //	/**
 //	 * RecordReference
 //	 * <p>
@@ -437,14 +441,80 @@ class CARMAValidator extends AbstractCARMAValidator {
 	@Check
 	def check_ERROR_VariableDeclaration_type(VariableDeclaration vd){
 	 	var String message = ERROR_VariableDeclaration_type
+	 	var boolean test = !vd.sameType
 	 	
-	 	if(!vd.sameType){
+	 	if(test){
 			error( message ,
 					CarmaPackage::eINSTANCE.variableDeclaration_Type,
 					ERROR_VariableDeclaration_type
 			)
 		}
 	}
+	
+	public static val ERROR_VariableType_type = "ERROR: Variables must have the same type across the model."
+	/**
+	 * VariableType
+	 * <p>
+	 * ERROR_VariableType_type
+	 * <p>	
+	 * @author 	CDW <br>
+	 */
+	@Check
+	def check_ERROR_VariableDeclaration_type(VariableType vt){
+	 	var String message = ERROR_VariableDeclaration_type
+	 	var boolean test = !vt.sameType
+	 	
+	 	if(test){
+			error( message ,
+					CarmaPackage::eINSTANCE.variableType_Type,
+					ERROR_VariableType_type
+			)
+		}
+	}
+	
+	public static val ERROR_RecordDeclarations_Ref = "ERROR: Must reference a variable inside this component."
+	/**
+	 * RecordDeclarations
+	 * <p>
+	 * ERROR_RecordDeclarations_Ref
+	 * <p>	
+	 * @author 	CDW <br>
+	 */
+	@Check
+	def check_ERROR_RecordDeclarations_Ref(RecordDeclarations rds){
+	 	var String message = ERROR_RecordDeclarations_Ref
+	 	var boolean test = true
+	 	
+	 	
+	 	if(rds.ref != null){
+	 		var name = rds.ref
+	 		if(rds.getContainerOfType(StoreBlock) != null){
+	 			
+	 			test = false
+	 			
+	 			var ArrayList<VariableType> vts = new ArrayList<VariableType>(rds.getContainerOfType(ComponentBlockDefinition).eAllOfType(VariableType))
+	 			var ArrayList<VariableDeclaration> vds = new ArrayList<VariableDeclaration>(rds.getContainerOfType(ComponentBlockDefinition).eAllOfType(VariableDeclaration))
+	 			
+	 			for(vt : vts){
+	 				test = test || vt.name.sameName(name)
+	 			}
+	 			
+	 			for(vd : vds){
+	 				test = test || vd.name.sameName(name)
+	 			}
+	 			
+	 		}
+	 		
+	 	}
+	 	
+	 	if(!test){
+			error( message ,
+					CarmaPackage::eINSTANCE.recordDeclarations_Ref,
+					ERROR_RecordDeclarations_Ref
+			)
+		}
+	}
+	
 	
 	public static val WARN_ComponentBlockDefinition_unused = "WARN: This component has not been declared in a collective or environment."
 	/**
@@ -628,7 +698,12 @@ class CARMAValidator extends AbstractCARMAValidator {
 		var test = true
 		
 		if(vr.getContainerOfType(VariableDeclaration) != null){
-			test = vr.getContainerOfType(VariableDeclaration).type.toString.equals(vr.type.toString)
+			if(vr.getContainerOfType(RecordDeclaration) != null){
+				test = vr.type.toString.equals("enum")
+			} else {
+				test = vr.getContainerOfType(VariableDeclaration).type.toString.equals(vr.type.toString)
+			}
+			
 		}
 			
 		if(!test){
@@ -661,6 +736,37 @@ class CARMAValidator extends AbstractCARMAValidator {
 			error( message ,
 					CarmaPackage::eINSTANCE.processExpressionGuard_Reference,
 					ERROR_ProcessExpressionGuard_following_action
+			)
+		}
+	}
+	
+	public static val ERROR_Rate_Unique = "Error: Rate assignment must be unique."
+	/**
+	 * Rate
+	 * <p>
+	 * ERROR_Rate_Unique
+	 * <p>	
+	 * @author 	CDW <br>
+	 */
+	@Check
+	def check_ERROR_Rate_Unique(Rate rate){
+		var String message = ERROR_Rate_Unique
+		
+		var ratesRate = new ArrayList<Rate>(rate.getContainerOfType(RateBlock).eAllOfType(Rate))
+		var ratesString = new ArrayList<String>()
+
+		
+
+		for(r : ratesRate){
+			ratesString.add(r.getLabel)
+		}
+		
+		ratesString.remove(rate.getLabel)
+		
+		if(ratesString.remove(rate.getLabel)){
+			error( message ,
+					CarmaPackage::eINSTANCE.rate_Expression,
+					ERROR_Rate_Unique
 			)
 		}
 	}
