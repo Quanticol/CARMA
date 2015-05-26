@@ -73,7 +73,8 @@ system Simple{
     environment{
     	
     	store{
-    		enum transactions := 0;
+    		enum transactions := 1;
+    		record aPosition := { x := 2, y := 3 };
     	}
     	
         rate{

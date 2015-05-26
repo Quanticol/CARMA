@@ -47,6 +47,7 @@ class GenerateSystems {
 			//constructor
 			public «system.label»(){
 				«system.declareComponents»
+				«system.setGlobalStore»
 			}
 			
 			«system.defineComponents»
@@ -103,6 +104,29 @@ class GenerateSystems {
 			}
 			«ENDFOR»
 		'''
+	}
+	
+	def String setGlobalStore(System system){
+		var envs = system.getContainerOfType(Model).environmentAttributes
+		'''
+		«FOR vd : envs»
+		«switch(vd){
+			VariableDeclarationEnum:	'''global_store.set(«system.getContainerOfType(Model).label»Definition.«vd.name.label.toUpperCase»,«system.getContainerOfType(Model).getValueEnv(vd.name.label)»)'''
+			VariableDeclarationRecord:{
+							var rds = vd.eAllOfType(RecordDeclaration)
+							if(rds.size > 0){
+								'''
+								«FOR rd : rds»
+								c4rm4.set( «system.getContainerOfType(Model).label»Definition.«vd.name.label.toUpperCase»_«rd.name.label.toUpperCase»_ATTRIBUTE, «system.getContainerOfType(Model).getValueEnv(vd.name.label,rd.name.label)»);
+								«ENDFOR»
+								'''
+							} 
+								
+						}
+		}»
+		«ENDFOR»
+		'''
+			
 	}
 	
 	def String declareComponents(System system){

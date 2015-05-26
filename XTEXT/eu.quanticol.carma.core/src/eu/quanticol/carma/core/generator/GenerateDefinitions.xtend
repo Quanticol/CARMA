@@ -47,9 +47,10 @@ class GenerateDefinitions {
 			
 			/*METHOD VARIABLES*/
 			/*COMPONENT ATTRIBUTES*/
-			«model.componentAttributes»
+			«model.defineComponentAttributes»
 			/*INPUT ARGUMENTS*/
 			/*ENVIRONMENT ATTRIBUTES*/
+			«model.defineEnvironmentAttributes»
 			/*ACTION*/
 			«model.actionDefinitions»
 			/*RATES*/
@@ -61,7 +62,7 @@ class GenerateDefinitions {
 		'''
 	}
 	
-	def String componentAttributes(Model model){
+	def String defineComponentAttributes(Model model){
 		
 		var cat = model.getComponentAttributeType
 		var HashMap<String,VariableDeclaration> vds = new HashMap<String,VariableDeclaration>()
@@ -85,6 +86,28 @@ class GenerateDefinitions {
 		public static final Class<«vds.get(vdName).convertType»> «vdName.toUpperCase»_ATTRIBUTE_TYPE = «vds.get(vdName).convertType».class;
 		«ENDFOR»
 		'''
+	}
+	
+	def String defineEnvironmentAttributes(Model model){
+		var envAttributes = model.environmentAttributes
+		var HashMap<String,String> names = new HashMap<String,String>()
+		for(vd : envAttributes){
+			switch(vd){
+				VariableDeclarationEnum:	names.put(vd.name.label,vd.convertType)
+				VariableDeclarationRecord:	{
+						var rds = vd.eAllOfType(RecordDeclaration)
+						for(rd : rds)
+							names.put(vd.name.label+"_"+rd.name.label,vd.convertType)
+					}
+			}
+		}
+		'''
+		«FOR key : names.keySet»
+		public static final String «key.toUpperCase»_ATTRIBUTE = "«key»";
+		public static final Class<«names.get(key)»> «key.toUpperCase»_ATTRIBUTE_TYPE = «names.get(key)».class;
+		«ENDFOR»
+		'''
+		
 	}
 	
 	def String actionDefinitions(Model model){

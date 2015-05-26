@@ -1259,6 +1259,44 @@ class Util {
 //	def boolean isMulticast(Action action){
 //		action.eAllOfType(MultiCast).size > 0 
 //	}
+
+	/**
+	 * Given a an attribute name, return the value of the attribute in the environment 
+	 */
+	def String getValueEnv(Model model, String attributeName){
+		var String output = ""
+		var attributes = model.environmentAttributes
+		
+		for(attribute : attributes){
+			if(attribute.name.label.equals(attributeName))
+				output = attribute.label
+		}
+		
+		return output
+	}
+	
+	/**
+	 * Given a component name, and an attribute name, return the value of the attribute
+	 */
+	def String getValueEnv(Model model, String attributeName, String recordName){
+		var String output = ""
+		var attributes = model.environmentAttributes
+		
+		for(attribute : attributes){
+			if(attribute.name.label.equals(attributeName)){
+				var rds = attribute.eAllOfType(RecordDeclaration)
+					for(rd : rds){
+						if(rd.name.label.equals(recordName))
+							output = rd.assign.label
+					}
+				
+			}
+				
+				
+		}
+		
+		return output
+	}
 	
 	/**
 	 * Given a component name, and an attribute name, return the value of the attribute
