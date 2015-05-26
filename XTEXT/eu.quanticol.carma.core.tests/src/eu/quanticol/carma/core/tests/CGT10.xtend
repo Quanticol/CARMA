@@ -77,7 +77,7 @@ system Simple{
     	}
     	
         rate{
-        	[True] produce* := 1;
+        	[True] produce* :=  1/(sender.transactions+1);
         	[True] send := 1;
         	[True] produceDouble* := 1;
         }

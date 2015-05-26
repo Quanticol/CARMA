@@ -91,7 +91,7 @@ public class GroupiesAndCelebrities extends CarmaSystem {
 	}
 
 	@Override
-	public void unicastUpdate(RandomGenerator r , CarmaStore sender, int action) {
+	public void unicastUpdate(RandomGenerator r , CarmaStore sender, CarmaStore receiver, int action) {
 	}
 
 	public static void main(String[] main) {

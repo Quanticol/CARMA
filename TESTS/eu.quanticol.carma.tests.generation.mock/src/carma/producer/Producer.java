@@ -4,6 +4,7 @@ import org.apache.commons.math3.random.RandomGenerator;
 import org.cmg.ml.sam.sim.SimulationEnvironment;
 
 import eu.quanticol.carma.simulator.CarmaComponent;
+import eu.quanticol.carma.simulator.CarmaPredicate;
 import eu.quanticol.carma.simulator.CarmaSequentialProcess;
 import eu.quanticol.carma.simulator.CarmaStore;
 import eu.quanticol.carma.simulator.CarmaSystem;
@@ -73,10 +74,16 @@ public class Producer extends CarmaSystem {
 	}
 
 	@Override
-	public void unicastUpdate(RandomGenerator random, CarmaStore sender,
+	public void unicastUpdate(RandomGenerator random, CarmaStore sender,CarmaStore receiver, 
 			int action) {
+		if ((CarmaPredicate.TRUE.satisfy(sender))&&(action == ProducerDefinition.PRODUCE)) {
+			// CODE FOR GLOBAL STORE UPDATE
+			global_store.set(
+					ProducerDefinition.PRODUCT_ATTRIBUTE, 
+					receiver.get( ProducerDefinition.PRODUCT_ATTRIBUTE , ProducerDefinition.PRODUCT_ATTRIBUTE_TYPE) +1);
+			// CODE FOR INSTALLING NEW COMPONENTS (IF NEEDED)
+		}
 		// TODO Auto-generated method stub
-		
 	}
 	
 	public static void main( String[] argv ) {
