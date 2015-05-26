@@ -1806,7 +1806,7 @@ class Util {
 	//component or global_store - depends on context
 	def String prefixVariableReferencePure(VariableReference vr, String message){
 		if(vr.getContainerOfType(Component) != null){
-			if(vr.componentHasVariable)
+			if(vr.componentHasVariableAnywhere)
 				return ""
 			else
 				return message + " in Component."
@@ -1816,6 +1816,9 @@ class Util {
 				return ""
 			else
 				return message + " in Global Store."
+		}
+		if(vr.getContainerOfType(Measure) != null){
+			return ""
 		}
 		message + "."
 	}
@@ -1864,10 +1867,27 @@ class Util {
 		message + "."
 	}
 	
+	def boolean componentHasVariableAnywhere(VariableReference vr){
+		if(vr.getContainerOfType(Component) != null){
+			var test = false
+			for(vd : vr.getContainerOfType(Component).eAllOfType(VariableDeclaration))
+				test = test || vd.name.sameName(vr.name)
+			for(vd : vr.getContainerOfType(Component).eAllOfType(VariableType))
+				test = test || vd.name.sameName(vr.name)
+			for(vd : vr.getContainerOfType(Component).eAllOfType(InputActionArguments))
+				test = test || (vd as VariableName).sameName(vr.name)
+			return test
+		} else {
+			false
+		}
+	}
+	
 	def boolean componentHasVariable(VariableReference vr){
 		if(vr.getContainerOfType(Component) != null){
 			var test = false
 			for(vd : vr.getContainerOfType(Component).eAllOfType(VariableDeclaration))
+				test = test || vd.name.sameName(vr.name)
+			for(vd : vr.getContainerOfType(Component).eAllOfType(VariableType))
 				test = test || vd.name.sameName(vr.name)
 			return test
 		} else {
