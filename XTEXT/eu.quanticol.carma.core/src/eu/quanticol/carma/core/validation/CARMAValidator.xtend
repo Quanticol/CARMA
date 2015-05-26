@@ -52,6 +52,20 @@ import eu.quanticol.carma.core.carma.Rate
 import eu.quanticol.carma.core.carma.RateBlock
 import eu.quanticol.carma.core.carma.RecordDeclaration
 import eu.quanticol.carma.core.carma.RecordDeclarations
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAllStates
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAState
+import eu.quanticol.carma.core.carma.VariableDeclarationRecord
+import eu.quanticol.carma.core.carma.Records
+import eu.quanticol.carma.core.carma.ComponentBlockNewDeclarationSpawn
+import eu.quanticol.carma.core.carma.ComponentBlockNewDeclaration
+import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnDeclare
+import eu.quanticol.carma.core.carma.NewComponentArgumentDeclare
+import eu.quanticol.carma.core.carma.ComponentBlockNewDeclarationArguments
+import eu.quanticol.carma.core.carma.ComponentBlockNewDeclarationArgumentsSpawn
+import eu.quanticol.carma.core.carma.ComponentBlockDefinitionArgumentVariable
+import eu.quanticol.carma.core.carma.ComponentBlockStatementDefinition
+import eu.quanticol.carma.core.carma.VariableDeclarationEnum
+import eu.quanticol.carma.core.carma.Range
 
 /**
  * Class
@@ -102,32 +116,36 @@ class CARMAValidator extends AbstractCARMAValidator {
 	 */
 	@Check
 	def check_ERROR_VariableReference_type(VariableReference vr){
-		var boolean test = true
-		var String message = "ERROR: variable '" +vr.label
-		if(vr.getContainerOfType(ProcessExpression) != null){
-			if(vr.getContainerOfType(Action).eAllOfType(InputActionArguments).size > 0 )
-				message = message + "' does not have a matching output argument."
-			else
+		var String message = "ERROR: variable '"
+		var boolean test = vr.getContainerOfType(Model).isNameInModel(vr.name)
+		if(test){
+			message = message + vr.label
+			if(vr.getContainerOfType(ProcessExpression) != null){
+				if(vr.getContainerOfType(Action).eAllOfType(InputActionArguments).size > 0 )
+					message = message + "' does not have a matching output argument."
+				else
+					message = message + "' has not been declared."
+			}
+			if(vr.getContainerOfType(Environment) != null){
 				message = message + "' has not been declared."
+			}
+			if(vr.getContainerOfType(ComponentBlockForStatement) != null || vr.getContainerOfType(ComponentLineForStatement) != null ){
+				message = message + "' has not been declared."
+			}
+			if(vr.getContainerOfType(MethodDefinition) != null ){
+				message = message + "' has not been declared."
+			}
+			if(vr.getContainerOfType(Measure) != null){
+				message = message + "' has not been declared."
+			}
+			if(vr.getContainerOfType(StoreBlock) != null){
+				message = message + "' has not been declared."
+			}
+			
+			test = !vr.type.toString.equals("null")
+		} else {
+			message = message + vr.label + "' is not found in this model."
 		}
-		if(vr.getContainerOfType(Environment) != null){
-			message = message + "' has not been declared."
-		}
-		if(vr.getContainerOfType(ComponentBlockForStatement) != null || vr.getContainerOfType(ComponentLineForStatement) != null ){
-			message = message + "' has not been declared."
-		}
-		if(vr.getContainerOfType(MethodDefinition) != null ){
-			message = message + "' has not been declared."
-		}
-		if(vr.getContainerOfType(Measure) != null){
-			message = message + "' has not been declared."
-		}
-		if(vr.getContainerOfType(StoreBlock) != null){
-			message = message + "' has not been declared."
-		}
-		
-		test = !vr.type.toString.equals("null")
-		
 		if(!test){
 			error( message ,
 					CarmaPackage::eINSTANCE.variableReference_Name,
@@ -135,111 +153,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 			)
 		}
 	}
-	
-	public static val ERROR_VariableName_reference = "ERROR: This variable has not been declared anywhere."
-	
-	/**
-	 * VariableName
-	 * <p>
-	 * ERROR_VariableName_reference = "ERROR: This variable has not been declared anywhere."
-	 * <p>	
-	 * @author 	CDW <br>
-	 */
-	@Check
-	def check_ERROR_VariableReference_type(VariableName vn){
-		var boolean test = true
-		var String message = ""
-		if(vn.getContainerOfType(InputActionArguments) == null)
-			message = "ERROR: variable '"+ vn.name +"' has not been declared anywhere."
-		else
-			message = "ERROR: variable '"+ vn.name +"' does not have a matching output argument."
-		
-		test = !vn.type.toString.equals("null")
-		
-		if(!test){
-			error( message ,
-					CarmaPackage::eINSTANCE.variableName_Name,
-					ERROR_VariableName_reference
-			)
-		}
-	}
-	
-	public static val ERROR_VariableReference_reference_in_model = "ERROR: This variable has not been declared anywhere."
-	
-	/**
-	 * VariableReference
-	 * <p>
-	 * ERROR_VariableReference_reference_in_model
-	 * <p>	
-	 * @author 	CDW <br>
-	 */
-	@Check
-	def check_ERROR_VariableReference_reference_in_model(VariableReference vr){
-		var String message = "ERROR: variable '" + vr.name.label + "' "
-		if(vr.getContainerOfType(MethodDefinition) != null){
-			message = message + " has not been declared inside function block."
-		}
-		if(vr.getContainerOfType(ComponentBlockDefinition) != null){
-			message = message + " has not been declared inside the Store."
-		}
-		if((vr.getContainerOfType(ComponentBlockDefinition) == null) && (vr.getContainerOfType(Processes) != null)){
-			message = message + " has not been declared inside the Store."
-		}
-		if(vr.getContainerOfType(ComponentBlockForStatement) != null || vr.getContainerOfType(ComponentLineForStatement) != null ){
-			message = message + "' has not been declared in the for statement."
-		}
-		if(vr.getContainerOfType(Environment) != null){
-			message = message + " has not been declared inside an Environment or Component Store."
-		}
-		if(vr.getContainerOfType(Measure) != null){
-			message = message + " has not been declared inside all Stores."
-		}
-		var boolean test = vr.isDeclaredInThisModel
-		
-		if(!test){
-			error( message ,
-					CarmaPackage::eINSTANCE.variableReference_Name,
-					ERROR_VariableReference_reference_in_model
-			)
-		}
-	}
-	
-	
-//	public static val ERROR_RecordReference_reference_in_model = "ERROR: This variable has not been declared anywhere."
-//	/**
-//	 * RecordReference
-//	 * <p>
-//	 * ERROR_RecordReference_reference_in_model
-//	 * <p>	
-//	 * @author 	CDW <br>
-//	 */
-//	@Check
-//	def check_ERROR_RecordReference_reference_in_model(RecordReference rr){
-//		var String message = "ERROR: record '" + rr.name.label + "' "
-//		if(rr.getContainerOfType(MethodDefinition) != null){
-//			message = message + " has not been declared inside function block."
-//		}
-//		if(rr.getContainerOfType(ComponentBlockDefinition) != null){
-//			message = message + " has not been declared inside component block."
-//		}
-//		if((rr.getContainerOfType(ComponentBlockDefinition) == null) && (rr.getContainerOfType(Processes) != null)){
-//			message = message + " has not been declared inside a Store."
-//		}
-//		if(rr.getContainerOfType(Environment) != null){
-//			message = message + " has not been declared inside an Environment or Component Store."
-//		}
-//		if(rr.getContainerOfType(Measure) != null){
-//			message = message + " has not been declared inside all Stores."
-//		}
-//		var boolean test = rr.isDeclaredInThisModel
-//		
-//		if(!test){
-//			error( message ,
-//					CarmaPackage::eINSTANCE.recordReference_Name,
-//					ERROR_VariableReference_reference_in_model
-//			)
-//		}
-//	}
+
 	
 	public static val ERROR_Process_name_unique = "ERROR: Processes must have unique names."
 	/**
@@ -625,12 +539,9 @@ class CARMAValidator extends AbstractCARMAValidator {
 	 */
 	@Check
 	def check_ERROR_CBND_reference(CBND cbnd){
-		var boolean test = true
 		var String message = ERROR_CBND_reference
 		
-		test = cbnd.isInModel
-		
-		if(!test){
+		if(!cbnd.getContainerOfType(Model).isNameInModel(cbnd.name)){
 			error( message ,
 					CarmaPackage::eINSTANCE.CBND_Name,
 					ERROR_CBND_reference
@@ -651,7 +562,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 		var boolean test = true
 		var String message = ERROR_CBND_matching
 		
-		if(cbnd.isInModel){
+		if(!cbnd.getContainerOfType(Model).isNameInModel(cbnd.name)){
 			test = cbnd.hasMatchingArguments
 		}
 		
@@ -770,4 +681,140 @@ class CARMAValidator extends AbstractCARMAValidator {
 			)
 		}
 	}
+	
+	public static val ERROR_EnvironmentMacroExpressionComponentAllStates_ref = "Error: Must reference a Component in this model."
+	/**
+	 * EnvironmentMacroExpressionComponentAllStates
+	 * <p>
+	 * ERROR_EnvironmentMacroExpressionComponentAllStates_ref
+	 * <p>	
+	 * @author 	CDW <br>
+	 */
+	@Check
+	def check_ERROR_EnvironmentMacroExpressionComponentAllStates_ref(EnvironmentMacroExpressionComponentAllStates emecas){
+		var String message = ERROR_EnvironmentMacroExpressionComponentAllStates_ref
+		
+		var name = emecas.comp
+		var model = emecas.getContainerOfType(Model)
+		
+		if(!model.isNameInModel(name)){
+			error( message ,
+					CarmaPackage::eINSTANCE.environmentMacroExpressionComponentAllStates_Comp,
+					ERROR_Rate_Unique
+			)
+		}
+	}
+	
+	public static val ERROR_EnvironmentMacroExpressionComponentAState_ref = "Error: Must reference a Component in this model."
+	/**
+	 * EnvironmentMacroExpressionComponentAState
+	 * <p>
+	 * ERROR_EnvironmentMacroExpressionComponentAState_ref
+	 * <p>	
+	 * @author 	CDW <br>
+	 */
+	@Check
+	def check_ERROR_EnvironmentMacroExpressionComponentAState_ref(EnvironmentMacroExpressionComponentAState emecas){
+		var String message = ERROR_EnvironmentMacroExpressionComponentAllStates_ref
+		
+		var name = emecas.comp
+		var model = emecas.getContainerOfType(Model)
+		
+		if(!model.isNameInModel(name)){
+			error( message ,
+					CarmaPackage::eINSTANCE.environmentMacroExpressionComponentAllStates_Comp,
+					ERROR_Rate_Unique
+			)
+		}
+	}
+	
+	public static val ERROR_VariableDeclarationRecord = "Error: Must have the same number and same name of enums as the declared record."
+	
+	/**
+	 * VariableDeclarationRecord / Records
+	 * <p>
+	 * ERROR_VariableDeclarationRecord / ERROR_Records
+	 * <p>	
+	 * @author 	CDW <br>
+	 */
+	@Check
+	def check_ERROR_VariableDeclarationRecord(VariableDeclarationRecord vdr){
+		
+		var HashSet<String> flat = new HashSet<String>()
+		var records = vdr.getAllRecords
+		
+		for(r : records)
+			flat.add(r.flatten)
+		
+		if(flat.size > 1){
+			error( 	ERROR_VariableDeclarationRecord,
+					CarmaPackage::eINSTANCE.variableDeclaration_Name,
+					ERROR_VariableDeclarationRecord)
+		}
+	}
+	
+	public static val ERROR_Records = "Error: Must have the same number and same name of enums as the declared record."
+	@Check
+	def check_ERROR_Records(Records r){
+		
+		if(r.getContainerOfType(NCA) != null){
+			var position = r.getPosition
+			var vt = (r.getContainerOfType(CBND).name.getContainerOfType(ComponentBlockDefinition).componentArguments.inputArguments.get(position) as ComponentBlockDefinitionArgumentVariable).value
+			var rds = r.getContainerOfType(CBND).name.getContainerOfType(ComponentBlockDefinition).eAllOfType(RecordDeclarations)
+			var VariableDeclarationRecord vdr = null
+			for(rd : rds){
+				if(vt.name.sameName(rd.ref))
+					vdr = rd.getContainerOfType(VariableDeclarationRecord)
+			}
+			
+			if(vdr != null){
+				var HashSet<String> flat = new HashSet<String>()
+				var records = vdr.getAllRecords
+				
+				for(rec : records)
+					flat.add(rec.flatten)
+					
+				flat.add(r.flatten)
+				
+				if(flat.size > 1){
+					error( 	ERROR_Records,
+					CarmaPackage::eINSTANCE.records_RecordDeclarations,
+					ERROR_Records)
+				}
+			}
+				
+		}
+			
+
+	}
+	
+	public static val ERROR_Range_in_component = "Error: This may only be an integer or a reference to a variable, not a range."
+	@Check
+	def check_ERROR_Range_in_component(Range r){
+		if(r.getContainerOfType(ComponentBlockDefinition) != null){
+				error(ERROR_Range_in_component,
+					CarmaPackage::eINSTANCE.range_Min,
+					ERROR_Range_in_component)
+		}
+		
+	}
+	
+	public static val ERROR_VariableType_already_declared = "Error: This variable has already been declared elsewhere, name must be unique."
+	@Check
+	def check_ERROR_VariableType_already_declared(VariableType vt){
+		var test = false
+		var ArrayList<VariableDeclaration> vds = new ArrayList<VariableDeclaration>(vt.getContainerOfType(Model).eAllOfType(VariableDeclaration))
+		
+		for(vd : vds){
+			test = test || vd.name.sameName(vt.name)
+		}
+		
+		if(test){
+			error( 	ERROR_VariableType_already_declared,
+					CarmaPackage::eINSTANCE.variableType_Name,
+					ERROR_VariableType_already_declared
+			)
+		}
+	}
+	
 }

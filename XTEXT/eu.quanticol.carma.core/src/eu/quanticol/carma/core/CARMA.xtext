@@ -577,7 +577,7 @@ ComponentBlockNewDeclarationSpawn returns CBND hidden(ML_COMMENT,SL_COMMENT,WS):
 	{ComponentBlockNewDeclarationSpawn}
 	"new"
 	name=[ComponentName|UPPERST] 
-	componentInputArguments+=ComponentBlockNewDeclarationArgumentsSpawn
+	componentInputArguments=ComponentBlockNewDeclarationArgumentsSpawn
 	("["population=INT"]")?
 ;
 
@@ -937,7 +937,7 @@ BooleanPrimary returns BooleanExpressions hidden(ML_COMMENT,SL_COMMENT,WS):
 BooleanAtomic returns BooleanExpressions hidden(ML_COMMENT,SL_COMMENT,WS):
 	{BooleanAtomicPrimitive}			value=PrimitiveType 			|
 	{BooleanAtomicRecords}				value=Records					|
-	{BooleanAtomicVariable}				value=VariableReference |
+	{BooleanAtomicVariable}				value=VariableReference 		|
 	{BooleanAtomicMethodReference}		value=MethodReference			|
 	{BooleanAtomicNow}					value=Now		
 ;

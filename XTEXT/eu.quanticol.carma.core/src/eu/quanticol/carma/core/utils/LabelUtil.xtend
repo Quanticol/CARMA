@@ -183,6 +183,28 @@ class LabelUtil {
 	
 	@Inject extension Util
 	
+	def String flatten(Records records){
+		var output = ""
+		for(r : records.eAllOfType(RecordDeclaration))
+			output = output + r.name.label
+		return output
+	}
+	
+	def String flatten(NCA nca){
+		switch(nca){
+			NewComponentArgumentPrimitive 		: (nca.value as PrimitiveType).getLabel
+			NewComponentArgumentMacro 			: (nca.value as MacroExpressions).getLabel
+			NewComponentArgumentMethod			: (nca.value as MethodExpression).getLabel
+			NewComponentArgumentDeclare			: (nca.value as Records).flatten
+			NewComponentArgumentReference		: (nca.value as VariableReference).getLabel
+			NewComponentArgumentSpawnPrimitive 	: (nca.value as PrimitiveType).getLabel
+			NewComponentArgumentSpawnDeclare	: (nca.value as MacroExpressions).getLabel
+			NewComponentArgumentSpawnMacro		: (nca.value as MethodExpression).getLabel
+			NewComponentArgumentSpawnMethod		: (nca.value as Records).flatten
+			NewComponentArgumentSpawnReference	: (nca.value as VariableReference).getLabel
+		}
+	}
+	
 	def String getLabel(Rate rate){
 		return "[" + rate.guard.label + "]" + rate.stub.label
 	}

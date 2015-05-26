@@ -91,11 +91,27 @@ import eu.quanticol.carma.core.carma.MethodDefinitionArguments
 import eu.quanticol.carma.core.carma.MethodDefinitionArgument
 import eu.quanticol.carma.core.carma.ComponentBlockDeclaration
 import eu.quanticol.carma.core.carma.ComponentBlockStyleCollective
+import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnDeclare
+import eu.quanticol.carma.core.carma.NewComponentArgumentDeclare
 
 class Util {
 	
 	@Inject extension TypeProvider
 	@Inject extension LabelUtil
+	
+	/**
+	 * 
+	 */
+	def boolean isNameInModel(Model model, Name name){
+		var test = false
+		var names = model.eAllOfType(Name)
+		
+		for(n:names){
+			test = test || n.sameName(name)
+		}
+		
+		return test
+	}
 	
 	/**
 	 * Check if the names are the same!
@@ -104,121 +120,121 @@ class Util {
 		name1.label.equals(name2.label)
 	}
 	
-	/**
-	 * Make sure all variable references are actually declared in this model. This prevents cross model referencing, if there is another .carma model
-	 * declared inside the project.
-	 */
-	def boolean isDeclaredInThisModel(VariableReference vr){
-		
-		var boolean output = false
-		
-		//methods @ anywhere in the method 
-		if(vr.getContainerOfType(MethodDefinition) != null){
-			var declarations 	= vr.getContainerOfType(MethodDefinition).eAllOfType(VariableDeclaration)
-			var arguments 		= vr.getContainerOfType(MethodDefinition).eAllOfType(VariableType)
-			
-			for(dec : declarations)
-				output = output || dec.name.sameName(vr.name)
-				
-			for(dec : arguments)
-				output = output || dec.name.sameName(vr.name)
-				
-			
-		}
-		
-		//componentblock @ StoreBlock || componentdefinition arguments
-		if(vr.getContainerOfType(ComponentBlockDefinition) != null){
-			var declarations 	= vr.getContainerOfType(ComponentBlockDefinition).eAllOfType(VariableDeclaration)
-			var arguments 		= vr.getContainerOfType(ComponentBlockDefinition).eAllOfType(VariableType)
-			
-			for(dec : declarations)
-				output = output || dec.name.sameName(vr.name)
-				
-			for(dec : arguments)
-				output = output || dec.name.sameName(vr.name)
-				
-			if(vr.getContainerOfType(Process) != null)	
-				if(vr.getContainerOfType(Process).eAllOfType(InputAction).size > 0){
-					if(vr.getContainerOfType(InputAction).eAllOfType(InputActionArguments).size > 0){
-						for(dec : vr.getContainerOfType(InputAction).eAllOfType(InputActionArguments).get(0).inputArguments)
-							output = output || dec.sameName(vr.name)
-					}
-				}
-			
-		}
-		
-		//processes && !componentblock @ StoreLine or StoreBlock
-		if((vr.getContainerOfType(ComponentBlockDefinition) == null) && (vr.getContainerOfType(Processes) != null)){
-			var componentAndDeclarations 	= vr.getContainerOfType(Process).getComponentAndDeclarations
-			for(key : componentAndDeclarations.keySet)
-				for(dec : componentAndDeclarations.get(key))
-					output = output || dec.name.sameName(vr.name)
-					
-			if(vr.getContainerOfType(Process) != null)	
-				if(vr.getContainerOfType(Process).eAllOfType(InputAction).size > 0){
-					if(vr.getContainerOfType(InputAction).eAllOfType(InputActionArguments).size > 0){
-						for(dec : vr.getContainerOfType(InputAction).eAllOfType(InputActionArguments).get(0).inputArguments)
-							output = output || dec.sameName(vr.name)
-					}
-				}
-		}
-		
-		//environment
-		if(vr.getContainerOfType(Environment) != null){
-			var rate   = vr.getContainerOfType(Rate)
-			var update = vr.getContainerOfType(EnvironmentUpdate)
-			var prob   = vr.getContainerOfType(Probability)
-			
-			var ActionStub actionStub = null
-			
-			if(rate != null)
-				actionStub = rate.eAllOfType(ActionStub).get(0)
-			if(update != null)
-				actionStub = update.eAllOfType(ActionStub).get(0)
-			if(prob != null)
-				actionStub = prob.eAllOfType(ActionStub).get(0)
-				
-			for(p : actionStub.processes){
-				var componentAndDeclarations = p.getComponentAndDeclarations
-				for(key : componentAndDeclarations.keySet)
-					for(dec : componentAndDeclarations.get(key))
-						output = output || dec.name.sameName(vr.name)
-			}
-			
-			for(dec : vr.getContainerOfType(Model).environmentAttributes)
-				output = output || dec.name.sameName(vr.name)
-					
-		}
-		
-		if(vr.getContainerOfType(ComponentBlockForStatement) != null || vr.getContainerOfType(ComponentLineForStatement) != null ){
-			if(vr.getContainerOfType(ComponentBlockForStatement) != null){
-				for(dec : vr.getContainerOfType(ComponentBlockForStatement).eAllOfType(VariableDeclaration))
-					output = output || dec.name.sameName(vr.name)
-			}else{
-				for(dec : vr.getContainerOfType(ComponentLineForStatement).eAllOfType(VariableDeclaration))
-					output = output || dec.name.sameName(vr.name)
-			}
-		}
-		
-		//measure
-		if(vr.getContainerOfType(Measure) != null){
-			var ArrayList<String> names = new ArrayList<String>()
-			(vr.getContainerOfType(Measure).measure as EnvironmentMeasure).componentReference.getComponentName(names)
-			var boolean seen = false
-			output = true
-			for(name : names){
-				var component = name.getComponent(vr.getContainerOfType(Model))
-				for(dec : component.eAllOfType(VariableDeclaration)){
-					seen = seen || dec.name.sameName(vr.name)
-				}
-				output = output && seen
-			}
-			
-		}
-		
-		return output
-		
-	}
+//	/**
+//	 * Make sure all variable references are actually declared in this model. This prevents cross model referencing, if there is another .carma model
+//	 * declared inside the project.
+//	 */
+//	def boolean isDeclaredInThisModel(VariableReference vr){
+//		
+//		var boolean output = false
+//		
+//		//methods @ anywhere in the method 
+//		if(vr.getContainerOfType(MethodDefinition) != null){
+//			var declarations 	= vr.getContainerOfType(MethodDefinition).eAllOfType(VariableDeclaration)
+//			var arguments 		= vr.getContainerOfType(MethodDefinition).eAllOfType(VariableType)
+//			
+//			for(dec : declarations)
+//				output = output || dec.name.sameName(vr.name)
+//				
+//			for(dec : arguments)
+//				output = output || dec.name.sameName(vr.name)
+//				
+//			
+//		}
+//		
+//		//componentblock @ StoreBlock || componentdefinition arguments
+//		if(vr.getContainerOfType(ComponentBlockDefinition) != null){
+//			var declarations 	= vr.getContainerOfType(ComponentBlockDefinition).eAllOfType(VariableDeclaration)
+//			var arguments 		= vr.getContainerOfType(ComponentBlockDefinition).eAllOfType(VariableType)
+//			
+//			for(dec : declarations)
+//				output = output || dec.name.sameName(vr.name)
+//				
+//			for(dec : arguments)
+//				output = output || dec.name.sameName(vr.name)
+//				
+//			if(vr.getContainerOfType(Process) != null)	
+//				if(vr.getContainerOfType(Process).eAllOfType(InputAction).size > 0){
+//					if(vr.getContainerOfType(InputAction).eAllOfType(InputActionArguments).size > 0){
+//						for(dec : vr.getContainerOfType(InputAction).eAllOfType(InputActionArguments).get(0).inputArguments)
+//							output = output || dec.sameName(vr.name)
+//					}
+//				}
+//			
+//		}
+//		
+//		//processes && !componentblock @ StoreLine or StoreBlock
+//		if((vr.getContainerOfType(ComponentBlockDefinition) == null) && (vr.getContainerOfType(Processes) != null)){
+//			var componentAndDeclarations 	= vr.getContainerOfType(Process).getComponentAndDeclarations
+//			for(key : componentAndDeclarations.keySet)
+//				for(dec : componentAndDeclarations.get(key))
+//					output = output || dec.name.sameName(vr.name)
+//					
+//			if(vr.getContainerOfType(Process) != null)	
+//				if(vr.getContainerOfType(Process).eAllOfType(InputAction).size > 0){
+//					if(vr.getContainerOfType(InputAction).eAllOfType(InputActionArguments).size > 0){
+//						for(dec : vr.getContainerOfType(InputAction).eAllOfType(InputActionArguments).get(0).inputArguments)
+//							output = output || dec.sameName(vr.name)
+//					}
+//				}
+//		}
+//		
+//		//environment
+//		if(vr.getContainerOfType(Environment) != null){
+//			var rate   = vr.getContainerOfType(Rate)
+//			var update = vr.getContainerOfType(EnvironmentUpdate)
+//			var prob   = vr.getContainerOfType(Probability)
+//			
+//			var ActionStub actionStub = null
+//			
+//			if(rate != null)
+//				actionStub = rate.eAllOfType(ActionStub).get(0)
+//			if(update != null)
+//				actionStub = update.eAllOfType(ActionStub).get(0)
+//			if(prob != null)
+//				actionStub = prob.eAllOfType(ActionStub).get(0)
+//				
+//			for(p : actionStub.processes){
+//				var componentAndDeclarations = p.getComponentAndDeclarations
+//				for(key : componentAndDeclarations.keySet)
+//					for(dec : componentAndDeclarations.get(key))
+//						output = output || dec.name.sameName(vr.name)
+//			}
+//			
+//			for(dec : vr.getContainerOfType(Model).environmentAttributes)
+//				output = output || dec.name.sameName(vr.name)
+//					
+//		}
+//		
+//		if(vr.getContainerOfType(ComponentBlockForStatement) != null || vr.getContainerOfType(ComponentLineForStatement) != null ){
+//			if(vr.getContainerOfType(ComponentBlockForStatement) != null){
+//				for(dec : vr.getContainerOfType(ComponentBlockForStatement).eAllOfType(VariableDeclaration))
+//					output = output || dec.name.sameName(vr.name)
+//			}else{
+//				for(dec : vr.getContainerOfType(ComponentLineForStatement).eAllOfType(VariableDeclaration))
+//					output = output || dec.name.sameName(vr.name)
+//			}
+//		}
+//		
+//		//measure
+//		if(vr.getContainerOfType(Measure) != null){
+//			var ArrayList<String> names = new ArrayList<String>()
+//			(vr.getContainerOfType(Measure).measure as EnvironmentMeasure).componentReference.getComponentName(names)
+//			var boolean seen = false
+//			output = true
+//			for(name : names){
+//				var component = name.getComponent(vr.getContainerOfType(Model))
+//				for(dec : component.eAllOfType(VariableDeclaration)){
+//					seen = seen || dec.name.sameName(vr.name)
+//				}
+//				output = output && seen
+//			}
+//			
+//		}
+//		
+//		return output
+//		
+//	}
 	
 	def ArrayList<Name> getNames(RecordDeclarations rds){
 		var ArrayList<Name> names = new ArrayList<Name>()
@@ -410,10 +426,10 @@ class Util {
 				output.addAll(eme.getContainerOfType(Model).getAllComponentNames())
 			}
 			EnvironmentMacroExpressionComponentAllStates: {
-				output.add((eme as EnvironmentMacroExpressionComponentAllStates).comp.name)
+				output.add((eme as EnvironmentMacroExpressionComponentAllStates).comp.label)
 			}
 			EnvironmentMacroExpressionComponentAState:	{
-				output.add((eme as EnvironmentMacroExpressionComponentAllStates).comp.name)
+				output.add((eme as EnvironmentMacroExpressionComponentAllStates).comp.label)
 			}
 		}
 		
@@ -738,7 +754,9 @@ class Util {
 					new ArrayList<VariableDeclaration>(component.eAllOfType(VariableDeclaration))
 				))
 			}
-			
+			output.addAll((vr.name as VariableName).name.getVariableDeclarationTypes(
+				new ArrayList<VariableDeclaration>(vr.getContainerOfType(Measure).parameters.eAllOfType(VariableDeclaration))
+				))
 		}
 		//Store
 		if(vr.getContainerOfType(StoreBlock) != null){
@@ -1423,19 +1441,6 @@ class Util {
 	}
 	
 	/**
-	 * Given a CBND return if ComponentName is found in same Model
-	 */
-	def boolean isInModel(CBND cbnd){
-		var boolean output = false
-		var name = cbnd.name
-		
-		for(component : cbnd.getContainerOfType(Model).eAllOfType(ComponentBlockDefinition))
-			output = component.name.sameName(name) || output
-		
-		return output
-	}
-	
-	/**
 	 * Given a CBND return ComponentBlockDefinition
 	 */
 	def ComponentBlockDefinition getComponent(CBND cbnd){
@@ -1618,6 +1623,39 @@ class Util {
 		return position
 	}
 	
+	/**
+	 * Given a VariableDeclarationRecord, return position inside ComponentBlockDefinitionArguments or MethodDefinitionArguments
+	 */
+	def int getPosition(VariableDeclarationRecord vdr){
+		var position = -1
+		
+		if(vdr.getContainerOfType(ComponentBlockDefinitionArguments) != null){
+			var arguments = vdr.getContainerOfType(ComponentBlockDefinitionArguments).eAllOfType(ComponentArgument)
+			for(argument : arguments){
+				if(argument.eAllOfType(Name).get(0).sameName(vdr.assign.ref)){
+					position++
+					return position
+				} else {
+					position++
+				}
+			}
+		}
+		
+		if(vdr.getContainerOfType(MethodDefinitionArguments) != null){
+			var arguments = vdr.getContainerOfType(MethodDefinitionArguments).eAllOfType(MethodDefinitionArgument)
+			for(argument : arguments){
+				if(argument.eAllOfType(Name).get(0).sameName(vdr.assign.ref)){
+					position++
+					return position
+				} else {
+					position++
+				}
+			}
+		}
+		
+		return position
+	}
+	
 	def ArrayList<RecordDeclaration> getRecordDeclarationsFromCBND(VariableName vn){
 		
 		//get position in the ComponentBlockDefinitionArguments
@@ -1649,6 +1687,107 @@ class Util {
 		
 		return position
 	}
+	
+	def ArrayList<VariableDeclarationRecord> getAll(VariableDeclarationRecord vdr){
+		var vdrs = vdr.getContainerOfType(Model).eAllOfType(VariableDeclarationRecord)
+		var ArrayList<VariableDeclarationRecord> output = new ArrayList<VariableDeclarationRecord>()
+		
+		for(v : vdrs)
+			if(v.name.sameName(vdr.name))
+				output.add(v)
+		
+		return output
+	}
+	
+	def ArrayList<Records> getAllRecords(VariableDeclarationRecord vdr){
+		var ArrayList<Records> records = new ArrayList<Records>()
+		
+		var vdrs = vdr.getAll
+		
+		for(v : vdrs)
+			records.addAll(v.eAllOfType(Records))
+		
+		return records
+	}
+	
+	def int getPosition(Records r){
+		var output = -1
+		var flat = r.flatten
+		
+		if(r.getContainerOfType(ComponentBlockNewDeclarationSpawn) != null){
+			for (nca : r.getContainerOfType(ComponentBlockNewDeclarationSpawn).eAllOfType(NCA)){
+				if(nca.flatten.equals(flat)){
+					output++
+					return output
+				} else {
+					output++
+				}
+			}
+		}
+		
+		if(r.getContainerOfType(ComponentBlockNewDeclaration) != null){
+			for (nca : r.getContainerOfType(ComponentBlockNewDeclaration).eAllOfType(NCA)){
+				if(nca.flatten.equals(flat)){
+					output++
+					return output
+				} else {
+					output++
+				}
+			}
+		}
+		return output
+	}
+	
+//	/**
+//	 * 
+//	 */
+//	def ArrayList<Records> getRecords(VariableDeclarationRecord vdr){
+//		
+//		var ArrayList<VariableDeclarationRecord> vdrs = new ArrayList<VariableDeclarationRecord>()
+//		var ArrayList<Records> records = new ArrayList<Records>()
+//		
+//		for(o : vdr.getContainerOfType(Model).eAllOfType(VariableDeclarationRecord)){
+//			if(o.name.sameName(vdr.name)){
+//				vdrs.add(o)
+//				records.addAll(vdr.eAllOfType(Records))
+//			}
+//				
+//		}
+//		
+//		for(v : vdrs){
+//			if(v.assign.ref != null){
+//				if(v.getContainerOfType(ComponentBlockDefinition) != null){
+//					var ComponentBlockDefinition cbd = vdr.getContainerOfType(ComponentBlockDefinition)
+//					var cbnds = cbd.CBNDs
+//					var position = vdr.position
+//					for(cbnd:cbnds){
+//						switch(cbnd){
+//							ComponentBlockNewDeclarationSpawn: {
+//								if(cbnd.componentInputArguments.inputArguments.size >= position){
+//									var ncasd = (cbnd.componentInputArguments.inputArguments.get(position) as NewComponentArgumentSpawnDeclare)
+//									var r = ncasd.value as Records
+//									records.add(r)
+//								}
+//							}
+//							ComponentBlockNewDeclaration: {
+//								if(cbnd.componentInputArguments.inputArguments.size >= position){
+//									var ncad = (cbnd.componentInputArguments.inputArguments.get(position) as NewComponentArgumentDeclare)
+//									var r = ncad.value as Records
+//									records.add(r)
+//								}
+//							}
+//						}
+//					
+//					}
+//				}
+//			}	
+//		}
+//		
+//		return records
+//		
+//	}
+	
+	
 	
 //	/**
 //	 * Given a ProcessExpressionReference return the Process

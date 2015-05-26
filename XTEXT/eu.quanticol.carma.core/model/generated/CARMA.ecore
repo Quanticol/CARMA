@@ -713,7 +713,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentBlockNewDeclarationSpawn" eSuperTypes="#//CBND">
     <eStructuralFeatures xsi:type="ecore:EReference" name="componentInputArguments"
-        upperBound="-1" eType="#//ComponentBlockNewDeclarationArgumentsSpawn" containment="true"/>
+        eType="#//ComponentBlockNewDeclarationArgumentsSpawn" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="NewComponentArgumentSpawnPrimitive"
       eSuperTypes="#//NCA">

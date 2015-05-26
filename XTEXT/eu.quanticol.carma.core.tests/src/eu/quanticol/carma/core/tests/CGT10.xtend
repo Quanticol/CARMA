@@ -59,7 +59,7 @@ component Consumer(enum a, record t, Z){
 }
 
 measures{
-	measure Waiting[ enum i := 1..3, enum j := 1..3] = #{User[*]  | location == {x := i, y:= j} };
+	measure Waiting[ enum i := 0..3, enum j := 0..3] = #{Consumer[*]  | position == {x := i, y:= j} };
 }
 
 
@@ -67,7 +67,7 @@ system Simple{
 
     collective{
         new Producer(1..6,0..3,0..3,Produce|Send);
-        new Consumer(1..6,{q := 0..3, r := 0..3},Consume|Receive);
+        new Consumer(1..6,{x := 0..3, y := 0..3},Consume|Receive);
     }
 
     environment{
