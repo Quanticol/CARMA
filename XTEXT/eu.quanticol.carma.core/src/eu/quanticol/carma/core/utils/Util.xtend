@@ -1498,11 +1498,15 @@ class Util {
 	def ArrayList<CBND> getCBNDs(ComponentBlockDefinition cbd){
 		var ArrayList<CBND> output = new ArrayList<CBND>()
 		
-		for(cbnd : cbd.getContainerOfType(Model).eAllOfType(CBND))
-			if(cbd.name.sameName(cbnd.name))
-				if(cbnd.hasMatchingArguments(cbd))
-					output.add(cbnd)
-		
+		if(cbd != null){
+			for(cbnd : cbd.getContainerOfType(Model).eAllOfType(CBND)){
+				if(cbd.name.sameName(cbnd.name)){
+					if(cbnd.hasMatchingArguments(cbd)){
+						output.add(cbnd)
+					}
+				}
+			}
+		}
 		return output
 	}
 	
@@ -1667,7 +1671,10 @@ class Util {
 			if(c.getContainerOfType(ComponentBlockStyleCollective) != null)
 				cbnd = (c as ComponentBlockNewDeclaration)
 		//get Records
-		new ArrayList<RecordDeclaration>(cbnd.componentInputArguments.inputArguments.get(position).eAllOfType(RecordDeclaration))
+		if(cbnd != null)
+			new ArrayList<RecordDeclaration>(cbnd.componentInputArguments.inputArguments.get(position).eAllOfType(RecordDeclaration))
+		else
+			new ArrayList<RecordDeclaration>()
 			
 	}
 	

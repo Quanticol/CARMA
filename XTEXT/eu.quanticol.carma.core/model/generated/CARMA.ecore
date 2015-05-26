@@ -425,6 +425,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="VariableReferenceThis" eSuperTypes="#//VariableReference"/>
   <eClassifiers xsi:type="ecore:EClass" name="VariableReferenceReciever" eSuperTypes="#//VariableReference"/>
   <eClassifiers xsi:type="ecore:EClass" name="VariableReferenceSender" eSuperTypes="#//VariableReference"/>
+  <eClassifiers xsi:type="ecore:EClass" name="VariableReferenceGlobal" eSuperTypes="#//VariableReference"/>
   <eClassifiers xsi:type="ecore:EClass" name="RecordReferencePure" eSuperTypes="#//VariableReference">
     <eStructuralFeatures xsi:type="ecore:EReference" name="record" eType="#//RecordName"/>
   </eClassifiers>
@@ -438,6 +439,9 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="record" eType="#//RecordName"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="RecordReferenceSender" eSuperTypes="#//VariableReference">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="record" eType="#//RecordName"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="RecordReferenceGlobal" eSuperTypes="#//VariableReference">
     <eStructuralFeatures xsi:type="ecore:EReference" name="record" eType="#//RecordName"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="VariableTypeEnum" eSuperTypes="#//VariableType"/>

@@ -93,6 +93,7 @@ VariableReference returns VariableReference hidden(ML_COMMENT,SL_COMMENT,WS):
 		{VariableReferenceThis} 	"this" 		"." name=[VariableName|LOWERST] |
 		{VariableReferenceReciever}	"receiver" 	"." name=[VariableName|LOWERST] |
 		{VariableReferenceSender}	"sender" 	"."	name=[VariableName|LOWERST] |
+		{VariableReferenceGlobal}	"global"	"." name=[VariableName|LOWERST]	|
 		{RecordReferencePure} 						name=[VariableName|LOWERST] 
 		"." record=[RecordName|LOWERST]	|
 		{RecordReferenceMy} 		"my" 		"." name=[VariableName|LOWERST] 
@@ -102,6 +103,8 @@ VariableReference returns VariableReference hidden(ML_COMMENT,SL_COMMENT,WS):
 		{RecordReferenceReciever}	"receiver" 	"." name=[VariableName|LOWERST] 
 		"." record=[RecordName|LOWERST]	|
 		{RecordReferenceSender}		"sender" 	"."	name=[VariableName|LOWERST] 
+		"." record=[RecordName|LOWERST] |
+		{RecordReferenceGlobal}		"global" 	"."	name=[VariableName|LOWERST] 
 		"." record=[RecordName|LOWERST]
 	)
 ;
@@ -157,17 +160,17 @@ RecordDeclaration returns RecordDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
 
 DoubleAssignment returns DoubleAssignment hidden(ML_COMMENT,SL_COMMENT,WS):
 	(
-		{DoubleAssignmentCarmaDouble} 		doubleValue = CarmaDouble		|
-		{DoubleAssignmentMethodReference} 	method = MethodReference 		|
-		{DoubleAssignmentVariableName} 		reference = VariableReference
+		{DoubleAssignmentCarmaDouble} 		doubleValue = 	CarmaDouble		|
+		{DoubleAssignmentMethodReference} 	method 		= 	MethodReference |
+		{DoubleAssignmentVariableName} 		reference 	= 	VariableReference
 	)
 ;
 
 IntegerAssignment returns IntegerAssignment hidden(ML_COMMENT,SL_COMMENT,WS):
 	(
-		{IntegerAssignmentCarmaInteger} 		integerValue = CarmaInteger		|
-		{IntegerAssignmentMethodReference} 		method = MethodReference 		|
-		{IntegerAssignmentVariableName} 		reference = VariableReference
+		{IntegerAssignmentCarmaInteger} 		integerValue 	= CarmaInteger		|
+		{IntegerAssignmentMethodReference} 		method 			= MethodReference 	|
+		{IntegerAssignmentVariableName} 		reference 		= VariableReference
 	)	
 ;
 

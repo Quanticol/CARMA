@@ -322,7 +322,7 @@ class GenerateSystems {
 	def String defineProbActionStubs(ActionStub actionStub){
 		'''
 		if (action == «actionStub.getContainerOfType(Model).label»Definition.«actionStub.name.name.toUpperCase») {
-				«actionStub.defineRateActionStub»
+				«actionStub.defineProbActionStub»
 		}
 		'''
 	}
@@ -426,13 +426,13 @@ class GenerateSystems {
 	def String defineMain(System system){
 		'''
 		/*MAIN*/
-			public static void main( String[] argv ) {
-				SimulationEnvironment<CarmaSystem> system = new SimulationEnvironment<CarmaSystem>(
-					new «system.getContainerOfType(Model).label»Factory()
-				);
+		public static void main( String[] argv ) {
+			SimulationEnvironment<CarmaSystem> system = new SimulationEnvironment<CarmaSystem>(
+				new «system.getContainerOfType(Model).label»Factory()
+			);
 		
-				system.simulate(100,50);
-			}'''
+			system.simulate(100,50);
+		}'''
 	}
 	
 	

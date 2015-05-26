@@ -178,6 +178,10 @@ import eu.quanticol.carma.core.carma.Rate
 import eu.quanticol.carma.core.carma.EnvironmentGuard
 import eu.quanticol.carma.core.carma.ComponentBlockStyleCollective
 import eu.quanticol.carma.core.carma.ComponentBlockDefinitionArguments
+import eu.quanticol.carma.core.carma.EnvironmentUpdate
+import eu.quanticol.carma.core.carma.ComponentBlockNewDeclarationSpawn
+import eu.quanticol.carma.core.carma.CBND
+import java.util.List
 
 class LabelUtil {
 	
@@ -301,7 +305,7 @@ class LabelUtil {
 			EnvironmentAtomicPrimitive:						(e.value as PrimitiveType).label
 			EnvironmentAtomicRecords:						(e.value as Records).label
 			EnvironmentAtomicVariable:						e.value.label
-			EnvironmentAtomicMethodReference:				(e.value as MethodExpression).label 
+			EnvironmentAtomicMethodReference:				(e.value as MethodExpressions).label 
 			EnvironmentAtomicNow:							"now.LabelUtil"
 			EnvironmentAtomicMeasure:						"measure.LabelUtil"
 			EnvironmentExpression:							e.expression.label
@@ -436,25 +440,31 @@ class LabelUtil {
 	
 	def String spread(VariableTypeRecord vtr){
 		
-		
+		var ArrayList<RecordDeclaration> rds = new ArrayList<RecordDeclaration>()
 		//get position in the ComponentBlockDefinitionArguments
 		var position = vtr.getPosition
 		//get ComponentBlockDeclaration
 		var cbnds = vtr.getCBNDs
-		var ComponentBlockNewDeclaration cbnd = null
-		for(c : cbnds)
-			if(c.getContainerOfType(ComponentBlockStyleCollective) != null)
-				cbnd = (c as ComponentBlockNewDeclaration)
-		//get Records
-		var rds = cbnd.componentInputArguments.inputArguments.get(position).eAllOfType(RecordDeclaration)
 			
+		for(c : cbnds){
+			if(c.getContainerOfType(ComponentBlockStyleCollective) != null){
+				rds.addAll((c as ComponentBlockNewDeclaration).componentInputArguments.inputArguments.get(position).eAllOfType(RecordDeclaration))
+			} else if (c.getContainerOfType(EnvironmentUpdate) != null) {
+				rds.addAll((c as ComponentBlockNewDeclarationSpawn).componentInputArguments.inputArguments.get(position).eAllOfType(RecordDeclaration))
+			}
+		}
 		
 		var String output = ""
 		
-		output = " int " + rds.get(0).name.label
-		for(var i = 1; i < rds.size; i++){
-			output = output + ", int " + rds.get(i).name.label
+		if(rds.size > 0){
+			output = " int " + rds.get(0).name.label
+			for(var i = 1; i < rds.size; i++){
+				output = output + ", int " + rds.get(i).name.label
+			}
+		} else {
+			output = "//UNTIL SENDER/RECEIVER/GLOBAL RESOLVED NO ARGUMENTS FOR SPAWN @ LabelUtil.spread()"
 		}
+		
 		
 		return output
 	}

@@ -218,110 +218,110 @@ class ValidationTest {
 	@Test
 	def void test_ERROR_BooleanExpression_expression_boolean_type(){
 		'''
-		fun double MTime(record location, record destination){
-			//TODO 
-			double step := 0.0;
-			return step;
+fun double MTime(record loc, record dest){
+	//TODO 
+	double step := 0.0;
+	return step;
+}
+
+fun double ATime(record loc){
+	//TODO
+	double arrivalRate := 0.0;
+	return arrivalRate * (1/9);
+}
+
+fun record DestLoc(record loc){
+	//TODO
+	if((loc.x == 1) && (loc.y == 1)){
+		return 0;
+	} else {
+		record newLocation := {x := 1, y := 1};
+		return newLocation;
+	};
+}
+		
+component Taxi(record loc){
+	store{
+		record location := loc;
+		enum occupancy := 1;
+		record destination := { x := 1, y := 1};
+	}
+	
+	behaviour{
+		F = take[location == this.location](d){destination := d, occupancy := 1}.G +
+			call*[l != this.location](d,l){destination := d}.G;
+		G = move*{location := destination, occupancy := 0}.F;
+	}
+	
+	init{
+		F;
+	}
+}
+		
+component User(record loc, record dest){
+	store{
+		record location := loc;
+		record destination := dest;
+	}
+	
+	behaviour{
+		W = call*<location>.W +
+			take[location == this.location]<destination>.kill;
+	}
+	
+	init{
+		W;
+	}
+}
+		
+component Arrivals(record loc){
+	store{
+		record location := loc;
+	}
+	
+	behaviour{
+		A = arrival*.A;
+	}
+	
+	init{
+		A;
+	}
+}
+			
+measures{
+	measure Waiting[ enum i := 1..3, enum j := 1..3] = #{User[*]  | location == {x := i, y:= j} };
+}
+	
+system SmartTaxi {	
+	
+	collective{
+		new Taxi({x := 1..3, y:= 1..3});
+		new Arrivals({x := 1..3, y:= 1..3});
+	}
+
+	environment{
+		
+		store{
+			
 		}
 		
-		fun double ATime(record location){
-			//TODO
-			double arrivalRate := 0.0;
-			return arrivalRate * (1/9);
+		prob{
+			[True] take := 1/#{Taxi[F] | location == sender.location};
 		}
 		
-		fun record DestLoc(record location){
-			//TODO
-			if((location.x == 1) && (location.y == 1)){
-				return 0;
-			} else {
-				record newLocation := (x := 1, y := 1);
-				return newLocation;
-			};
+		rate{
+			[True] take			:= 0.01;
+			[True] call* 		:= 0.01;
+			[True] move* 		:= MTime(sender.location,sender.destination);
+			[True] arrival* 	:= ATime(location);
+			default := 0.0;
 		}
 		
-		component Taxi(record loc){
-			store{
-				record location := loc;
-				enum occupancy := 1;
-				record destination := ( x := 1, y := 1);
-			}
-			
-			behaviour{
-				F = take[location == this.location](d){destination := d, occupancy := 1}.G +
-					call*[l != this.location](d,l){destination := d}.G;
-				G = move*{location := destination, occupancy := 0}.F;
-			}
-			
-			init{
-				F;
-			}
+		update{
+			[True] arrival* := new User(sender.location, DestLoc(sender.location));
 		}
-		
-		component User(record loc, record dest){
-			store{
-				record location := loc;
-				record destination := dest;
-			}
-			
-			behaviour{
-				W = call*<location>.W +
-					take[location == this.location]<destination>.kill;
-			}
-			
-			init{
-				W;
-			}
-		}
-		
-		component Arrivals(record loc){
-			store{
-				record location := loc;
-			}
-			
-			behaviour{
-				A = arrival*.A;
-			}
-			
-			init{
-				A;
-			}
-		}
-			
-		measures{
-			measure Waiting = #{User[*]  | location == (x := 1..3, y:= 1..3) };
-		}
-			
-		system SmartTaxi {	
-			
-			collective{
-				new Taxi((x := 1..3, y:= 1..3));
-				new Arrivals((x := 1..3, y:= 1..3));
-			}
-		
-			environment{
-				
-				store{
-					
-				}
-				
-				prob{
-					[True] take<> := 1/#{Taxi[F] | location == sender.location};
-				}
-				
-				rate{
-					[True] take<> 		:= 0.01;
-					[True] call* 		:= 0.01;
-					[True] move* 		:= MTime(sender.location,sender.destination);
-					[True] arrival* 	:= ATime(location);
-					default := 0.0;
-				}
-				
-				update{
-					[True] arrival* := new User(sender.loc, DestLoc(sender.loc));
-				}
-			}
-		}
+	}
+}
 		'''.parse.assertError(CarmaPackage::eINSTANCE.booleanExpression,
 			CARMAValidator::ERROR_BooleanExpression_expression_boolean_type,
 			CARMAValidator::ERROR_BooleanExpression_expression_boolean_type)
@@ -529,6 +529,7 @@ class ValidationTest {
 		
 		    collective{
 		        new Producer(1);
+		        new Producer();
 		    }
 		
 		    environment{

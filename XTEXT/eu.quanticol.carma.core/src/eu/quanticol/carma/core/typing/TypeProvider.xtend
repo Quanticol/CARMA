@@ -507,7 +507,7 @@ class TypeProvider {
 			BooleanAtomicPrimitive:			(e.value as PrimitiveType).getType 			
 			BooleanAtomicRecords:			(e.value as Records).getType			
 			BooleanAtomicVariable:			(e.value as VariableReference).getType 
-			BooleanAtomicMethodReference:	(e.value as MethodExpression).getType			
+			BooleanAtomicMethodReference:	(e.value as MethodExpressions).getType			
 			BooleanAtomicNow:				doubleType
 			BooleanExpression:				e.expression.type
 		}

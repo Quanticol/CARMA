@@ -4,68 +4,72 @@
 package eu.quanticol.carma.core.validation
 
 import com.google.inject.Inject
-import eu.quanticol.carma.core.utils.Util
-import eu.quanticol.carma.core.typing.TypeProvider
-import org.eclipse.xtext.validation.Check
+import eu.quanticol.carma.core.carma.Action
+import eu.quanticol.carma.core.carma.ActionName
+import eu.quanticol.carma.core.carma.ActionStub
 import eu.quanticol.carma.core.carma.BooleanExpression
+import eu.quanticol.carma.core.carma.CBND
 import eu.quanticol.carma.core.carma.CarmaPackage
-import eu.quanticol.carma.core.carma.VariableName
-import eu.quanticol.carma.core.utils.LabelUtil
-
-import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.carma.InputActionArguments
-import eu.quanticol.carma.core.carma.MethodDefinition
 import eu.quanticol.carma.core.carma.ComponentBlockDefinition
-import eu.quanticol.carma.core.carma.Environment
-import eu.quanticol.carma.core.carma.Process
-import eu.quanticol.carma.core.carma.Processes
-import eu.quanticol.carma.core.carma.ProcessExpression
+import eu.quanticol.carma.core.carma.ComponentBlockDefinitionArgumentVariable
 import eu.quanticol.carma.core.carma.ComponentBlockForStatement
 import eu.quanticol.carma.core.carma.ComponentLineForStatement
-import eu.quanticol.carma.core.carma.Action
-import eu.quanticol.carma.core.carma.ProcessesBlock
-import java.util.HashSet
-import eu.quanticol.carma.core.carma.Name
-import java.util.ArrayList
-import eu.quanticol.carma.core.carma.VariableDeclaration
-import eu.quanticol.carma.core.carma.StoreBlock
-import eu.quanticol.carma.core.carma.StoreLine
-import eu.quanticol.carma.core.carma.Methods
+import eu.quanticol.carma.core.carma.Environment
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAState
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAllStates
 import eu.quanticol.carma.core.carma.InputAction
-import eu.quanticol.carma.core.carma.VariableType
-import eu.quanticol.carma.core.carma.Measure
-import eu.quanticol.carma.core.carma.ActionStub
-import eu.quanticol.carma.core.carma.Model
-import eu.quanticol.carma.core.carma.ActionName
+import eu.quanticol.carma.core.carma.InputActionArguments
 import eu.quanticol.carma.core.carma.MacroExpressionReference
-import eu.quanticol.carma.core.services.CARMAGrammarAccess.ComponentBlockDefinitionArgumentsElements
-import eu.quanticol.carma.core.carma.ProcessName
 import eu.quanticol.carma.core.carma.MacroName
-import eu.quanticol.carma.core.carma.CBND
-import eu.quanticol.carma.core.carma.NCA
-import eu.quanticol.carma.core.carma.InitBlock
 import eu.quanticol.carma.core.carma.MacroType
-import eu.quanticol.carma.core.carma.VariableReference
-import eu.quanticol.carma.core.carma.ProcessExpressionGuard
+import eu.quanticol.carma.core.carma.Measure
+import eu.quanticol.carma.core.carma.MethodDefinition
+import eu.quanticol.carma.core.carma.Methods
+import eu.quanticol.carma.core.carma.Model
+import eu.quanticol.carma.core.carma.NCA
+import eu.quanticol.carma.core.carma.Process
+import eu.quanticol.carma.core.carma.ProcessExpression
 import eu.quanticol.carma.core.carma.ProcessExpressionAction
+import eu.quanticol.carma.core.carma.ProcessExpressionGuard
+import eu.quanticol.carma.core.carma.ProcessName
+import eu.quanticol.carma.core.carma.Processes
+import eu.quanticol.carma.core.carma.ProcessesBlock
+import eu.quanticol.carma.core.carma.Range
 import eu.quanticol.carma.core.carma.Rate
 import eu.quanticol.carma.core.carma.RateBlock
 import eu.quanticol.carma.core.carma.RecordDeclaration
 import eu.quanticol.carma.core.carma.RecordDeclarations
-import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAllStates
-import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAState
-import eu.quanticol.carma.core.carma.VariableDeclarationRecord
+import eu.quanticol.carma.core.carma.RecordReferenceGlobal
+import eu.quanticol.carma.core.carma.RecordReferenceMy
+import eu.quanticol.carma.core.carma.RecordReferencePure
+import eu.quanticol.carma.core.carma.RecordReferenceReciever
+import eu.quanticol.carma.core.carma.RecordReferenceSender
+import eu.quanticol.carma.core.carma.RecordReferenceThis
 import eu.quanticol.carma.core.carma.Records
-import eu.quanticol.carma.core.carma.ComponentBlockNewDeclarationSpawn
-import eu.quanticol.carma.core.carma.ComponentBlockNewDeclaration
-import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnDeclare
-import eu.quanticol.carma.core.carma.NewComponentArgumentDeclare
-import eu.quanticol.carma.core.carma.ComponentBlockNewDeclarationArguments
-import eu.quanticol.carma.core.carma.ComponentBlockNewDeclarationArgumentsSpawn
-import eu.quanticol.carma.core.carma.ComponentBlockDefinitionArgumentVariable
-import eu.quanticol.carma.core.carma.ComponentBlockStatementDefinition
-import eu.quanticol.carma.core.carma.VariableDeclarationEnum
-import eu.quanticol.carma.core.carma.Range
+import eu.quanticol.carma.core.carma.StoreBlock
+import eu.quanticol.carma.core.carma.StoreLine
+import eu.quanticol.carma.core.carma.VariableDeclaration
+import eu.quanticol.carma.core.carma.VariableDeclarationRecord
+import eu.quanticol.carma.core.carma.VariableName
+import eu.quanticol.carma.core.carma.VariableReference
+import eu.quanticol.carma.core.carma.VariableReferenceGlobal
+import eu.quanticol.carma.core.carma.VariableReferenceMy
+import eu.quanticol.carma.core.carma.VariableReferencePure
+import eu.quanticol.carma.core.carma.VariableReferenceReciever
+import eu.quanticol.carma.core.carma.VariableReferenceSender
+import eu.quanticol.carma.core.carma.VariableReferenceThis
+import eu.quanticol.carma.core.carma.VariableType
+import eu.quanticol.carma.core.typing.TypeProvider
+import eu.quanticol.carma.core.utils.LabelUtil
+import eu.quanticol.carma.core.utils.Util
+import java.util.ArrayList
+import java.util.HashSet
+import org.eclipse.xtext.validation.Check
+
+import static extension org.eclipse.xtext.EcoreUtil2.*
+import eu.quanticol.carma.core.carma.Component
+import eu.quanticol.carma.core.carma.EnvironmentUpdate
+import eu.quanticol.carma.core.carma.Probability
 
 /**
  * Class
@@ -492,6 +496,32 @@ class CARMAValidator extends AbstractCARMAValidator {
 					test = test && !pn.sameName((mer.name as MacroName).name)
 		}
 		
+		if(mer.getContainerOfType(EnvironmentMacroExpressionComponentAllStates) != null){
+			var component = mer.getContainerOfType(EnvironmentMacroExpressionComponentAllStates).comp.getContainerOfType(ComponentBlockDefinition)
+			for(pn : component.eAllOfType(ProcessName)){
+				if(pn.getContainerOfType(ProcessesBlock) != null)
+					test = test && !pn.sameName((mer.name as MacroName).name)
+			}
+			for(mt : component.eAllOfType(MacroType)){
+				for(pn : mt.eAllOfType(ProcessName)){
+					test = test && !pn.sameName((mer.name as MacroName).name)
+				}
+			}
+		} 
+		
+		if(mer.getContainerOfType(EnvironmentMacroExpressionComponentAState) != null){
+			var component = mer.getContainerOfType(EnvironmentMacroExpressionComponentAllStates).comp.getContainerOfType(ComponentBlockDefinition)
+			for(pn : component.eAllOfType(ProcessName)){
+				if(pn.getContainerOfType(ProcessesBlock) != null)
+					test = test && !pn.sameName((mer.name as MacroName).name)
+			}
+			for(mt : component.eAllOfType(MacroType)){
+				for(pn : mt.eAllOfType(ProcessName)){
+					test = test && !pn.sameName((mer.name as MacroName).name)
+				}
+			}	
+		}
+		
 		if(test){
 			error( message ,
 					CarmaPackage::eINSTANCE.macroExpressionReference_Name,
@@ -562,7 +592,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 		var boolean test = true
 		var String message = ERROR_CBND_matching
 		
-		if(!cbnd.getContainerOfType(Model).isNameInModel(cbnd.name)){
+		if(cbnd.getContainerOfType(Model).isNameInModel(cbnd.name)){
 			test = cbnd.hasMatchingArguments
 		}
 		
@@ -815,6 +845,51 @@ class CARMAValidator extends AbstractCARMAValidator {
 					ERROR_VariableType_already_declared
 			)
 		}
+	}
+	
+	public static val ERROR_VariableReference_prefix = "Error: Cannot use '"
+	@Check
+	def check_ERROR_VariableReference_prefix(VariableReference vr){
+		var message = ERROR_VariableReference_prefix
+		var test = true
+		switch(vr){
+			VariableReferencePure		: 	{test = true}
+			VariableReferenceMy			: 	{test = vr.getContainerOfType(Process) != null message = message + "my.' outside of a Process context"}
+			VariableReferenceThis		: 	{test = vr.getContainerOfType(Process) != null message = message + "this.' outside of a Process context"}
+			VariableReferenceReciever	: 	{test = (vr.inEnvironmentUpdateWithUnicast || vr.getContainerOfType(Probability) != null || vr.getContainerOfType(Rate) != null) 
+				message = message 
+				+ "receiver.' outside of a Unicast-action Update, Rate, or Probability context"
+			}
+			VariableReferenceSender		:	{test = vr.getContainerOfType(Environment) != null message = message + "sender.' outside of an Environment context"}
+			VariableReferenceGlobal		:	{test = vr.getContainerOfType(Environment) != null message = message + "global.' outside of an Environment context"}
+			RecordReferencePure			: 	{test = true}
+			RecordReferenceMy			: 	{test = vr.getContainerOfType(Process) != null message = message + "my.' outside of a Process context"}
+			RecordReferenceThis			: 	{test = vr.getContainerOfType(Process) != null message = message + "this.' outside of a Process context"}
+			RecordReferenceReciever		: 	{test = (vr.inEnvironmentUpdateWithUnicast || vr.getContainerOfType(Probability) != null) 
+				message = message 
+				+ "receiver.' outside of a Unicast-action Update, Rate, or Probability context"
+			}
+			RecordReferenceSender		:	{test = vr.getContainerOfType(Environment) != null message = message + "sender.' outside of an Environment context"}
+			RecordReferenceGlobal		:	{test = vr.getContainerOfType(Environment) != null message = message + "global.' outside of an Environment context"}
+		}
+		
+		if(!test){
+			error( 	message,
+					CarmaPackage::eINSTANCE.variableReference_Name,
+					ERROR_VariableReference_prefix
+			)
+		}
+		
+	}
+	
+	def boolean inEnvironmentUpdateWithUnicast(VariableReference vr){
+		var test = false
+		
+		if(vr.getContainerOfType(EnvironmentUpdate) != null){
+			test = !vr.getContainerOfType(EnvironmentUpdate).eAllOfType(ActionStub).get(0).isBroadcast
+		}
+		
+		return test
 	}
 	
 }
