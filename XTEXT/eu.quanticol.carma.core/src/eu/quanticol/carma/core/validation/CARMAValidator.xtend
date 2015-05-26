@@ -896,8 +896,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 	@Check
 	def check_ERROR_VariableReferencePure_ref(VariableReference vr){
 		var message = ERROR_VariableReference_prefix_reference
-		var test = vr.satisfiesPrefix(message).length == 0
-		if(!test){
+		if(vr.satisfiesPrefix(message).length > 0){
 			error( 	message,
 					CarmaPackage::eINSTANCE.variableReference_Name,
 					ERROR_VariableReference_prefix_reference

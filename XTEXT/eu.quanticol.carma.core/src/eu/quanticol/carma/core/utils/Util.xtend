@@ -95,6 +95,7 @@ import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnDeclare
 import eu.quanticol.carma.core.carma.NewComponentArgumentDeclare
 import eu.quanticol.carma.core.carma.VariableReferenceGlobal
 import eu.quanticol.carma.core.carma.RecordReferenceGlobal
+import eu.quanticol.carma.core.carma.EnvironmentOperation
 
 class Util {
 	
@@ -1248,19 +1249,19 @@ class Util {
 		return output
 	}
 	
-//	/**
-//	 * Given an action return if it is an output
-//	 */
-//	def boolean isOutput(Action action){
-//		action.eAllOfType(OutputAction).size > 0 || action.eAllOfType(SpontaneousAction).size > 0
-//	}
-//	
-//	/**
-//	 * Given an action return if it is a multicast
-//	 */
-//	def boolean isMulticast(Action action){
-//		action.eAllOfType(MultiCast).size > 0 
-//	}
+	/**
+	 * Given an action return if it is an output
+	 */
+	def boolean isOutput(Action action){
+		action.eAllOfType(OutputAction).size > 0 || action.eAllOfType(SpontaneousAction).size > 0
+	}
+	
+	/**
+	 * Given an action return if it is a multicast
+	 */
+	def boolean isMulticast(Action action){
+		action.eAllOfType(MultiCast).size > 0 
+	}
 
 	/**
 	 * Given a an attribute name, return the value of the attribute in the environment 
@@ -1790,7 +1791,7 @@ class Util {
 			VariableReferencePure		: 	vr.prefixVariableReferencePure(message)
 			VariableReferenceMy			: 	vr.prefixComponent(message)
 			VariableReferenceThis		: 	vr.prefixComponent(message)
-			VariableReferenceReciever	: 	vr.prefixInputComponent(message)
+			VariableReferenceReciever	: 	vr.prefixInputComponent(message)  
 			VariableReferenceSender		:	vr.prefixOutputComponent(message)
 			VariableReferenceGlobal		:	vr.prefixGlobal(message)
 			RecordReferencePure			: 	vr.prefixVariableReferencePure(message)
@@ -1805,12 +1806,16 @@ class Util {
 	//component or global_store - depends on context
 	def String prefixVariableReferencePure(VariableReference vr, String message){
 		if(vr.getContainerOfType(Component) != null){
-			
-			return message + " in Component."
+			if(vr.componentHasVariable)
+				return ""
+			else
+				return message + " in Component."
 		} 
 		if(vr.getContainerOfType(Environment) != null){
-			
-			return message + " in Global Store."
+			if(vr.environmentHasVariable)
+				return ""
+			else
+				return message + " in Global Store."
 		}
 		message + "."
 	}
@@ -1818,37 +1823,119 @@ class Util {
 	//component only - can only be in a component
 	def String prefixComponent(VariableReference vr, String message){
 		if(vr.getContainerOfType(Component) != null){
-			
-			return message + " in Component."
+			if(vr.componentHasVariable)
+				return ""
+			else
+				return message + " in Component."
 		} 
 		message + "."
 	}
 	
 	//check component with input action for attribute 
 	def String prefixInputComponent(VariableReference vr, String message){
-		if(vr.getContainerOfType(Component) != null){
-			
-			return message + " in Component."
-		} 
+		if(vr.getContainerOfType(Environment) != null){
+			if(vr.componentWithInputActionHasVariable)
+				return ""
+			else
+				return message + " in all Components performing input action."
+		}
 		message + "."
 	}
 	
 	//check component with output action for attribute 
 	def String prefixOutputComponent(VariableReference vr, String message){
-		if(vr.getContainerOfType(Component) != null){
-			
-			return message + " in Component."
-		} 
+		if(vr.getContainerOfType(Environment) != null){
+			if(vr.componentWithOutputActionHasVariable)
+				return ""
+			else
+				return message + " in all Components performing output action."
+		}
 		message + "."
 	}
 	
 	//global only - can only be in the global store
 	def String prefixGlobal(VariableReference vr, String message){
 		if(vr.getContainerOfType(Environment) != null){
-			
-			return message + " in Global Store."
+			if(vr.environmentHasVariable)
+				return ""
+			else
+				return message + " in Global Store."
 		}
 		message + "."
+	}
+	
+	def boolean componentHasVariable(VariableReference vr){
+		if(vr.getContainerOfType(Component) != null){
+			var test = false
+			for(vd : vr.getContainerOfType(Component).eAllOfType(VariableDeclaration))
+				test = test || vd.name.sameName(vr.name)
+			return test
+		} else {
+			false
+		}
+	}
+	
+	def boolean environmentHasVariable(VariableReference vr){
+		if(vr.getContainerOfType(Environment) != null){
+			var test = false
+			for(vd : vr.getContainerOfType(Model).environmentAttributes)
+				test = test || vd.name.sameName(vr.name)
+			return test
+		} else {
+			false
+		}
+	}
+	
+	def boolean componentWithInputActionHasVariable(VariableReference vr){
+		if(vr.getContainerOfType(Environment) != null){
+			var actionStub = vr.getContainerOfType(EnvironmentOperation).eAllOfType(ActionStub).get(0)
+			var processes = actionStub.processes
+			var actions = new ArrayList<Action>()
+			var cs = new ArrayList<Component>()
+			for(p : processes)
+				for(key : p.componentAndDeclarations.keySet)
+					for(a : key.actionsFromComponent){
+						if(!a.isOutput){
+							if(a.name.sameName(actionStub.name))
+								actions.add(a)
+						}
+					}
+			for(a : actions){
+				cs.addAll(a.getContainerOfType(Process).componentAndDeclarations.keySet)
+			}			
+			var test = false
+			for(c : cs)
+				test = test || vr.componentHasVariable
+			return test
+		} else {
+			false
+		}
+	}
+	
+	def boolean componentWithOutputActionHasVariable(VariableReference vr){
+		if(vr.getContainerOfType(Environment) != null){
+			var actionStub = vr.getContainerOfType(EnvironmentOperation).eAllOfType(ActionStub).get(0)
+			var processes = actionStub.processes
+			var actions = new ArrayList<Action>()
+			var cs = new ArrayList<Component>()
+			for(p : processes)
+				for(key : p.componentAndDeclarations.keySet)
+					for(a : key.actionsFromComponent){
+						if(a.isOutput){
+							if(a.name.sameName(actionStub.name))
+								actions.add(a)
+						}
+					}
+			for(a : actions){
+				cs.addAll(a.getContainerOfType(Process).componentAndDeclarations.keySet)
+			}		
+			var test = false
+			for(c : cs)
+				test = test || vr.componentHasVariable
+			return test
+		} else {
+			false
+		}
 	}
 	
 //	/**
