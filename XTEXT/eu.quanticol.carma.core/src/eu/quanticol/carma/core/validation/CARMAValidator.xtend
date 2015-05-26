@@ -892,4 +892,18 @@ class CARMAValidator extends AbstractCARMAValidator {
 		return test
 	}
 	
+	public static val ERROR_VariableReference_prefix_reference = "Error: Variable not found"
+	@Check
+	def check_ERROR_VariableReferencePure_ref(VariableReference vr){
+		var message = ERROR_VariableReference_prefix_reference
+		var test = vr.satisfiesPrefix(message).length == 0
+		if(!test){
+			error( 	message,
+					CarmaPackage::eINSTANCE.variableReference_Name,
+					ERROR_VariableReference_prefix_reference
+			)
+		}
+	}
+	
+	
 }

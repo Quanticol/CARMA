@@ -93,6 +93,8 @@ import eu.quanticol.carma.core.carma.ComponentBlockDeclaration
 import eu.quanticol.carma.core.carma.ComponentBlockStyleCollective
 import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnDeclare
 import eu.quanticol.carma.core.carma.NewComponentArgumentDeclare
+import eu.quanticol.carma.core.carma.VariableReferenceGlobal
+import eu.quanticol.carma.core.carma.RecordReferenceGlobal
 
 class Util {
 	
@@ -1781,6 +1783,72 @@ class Util {
 			}
 		}
 		return output
+	}
+	
+	def String satisfiesPrefix(VariableReference vr, String message){
+		switch(vr){
+			VariableReferencePure		: 	vr.prefixVariableReferencePure(message)
+			VariableReferenceMy			: 	vr.prefixComponent(message)
+			VariableReferenceThis		: 	vr.prefixComponent(message)
+			VariableReferenceReciever	: 	vr.prefixInputComponent(message)
+			VariableReferenceSender		:	vr.prefixOutputComponent(message)
+			VariableReferenceGlobal		:	vr.prefixGlobal(message)
+			RecordReferencePure			: 	vr.prefixVariableReferencePure(message)
+			RecordReferenceMy			: 	vr.prefixComponent(message)
+			RecordReferenceThis			: 	vr.prefixComponent(message)
+			RecordReferenceReciever		: 	vr.prefixInputComponent(message)
+			RecordReferenceSender		:	vr.prefixOutputComponent(message)
+			RecordReferenceGlobal		:	vr.prefixGlobal(message)
+		}
+	}
+	
+	//component or global_store - depends on context
+	def String prefixVariableReferencePure(VariableReference vr, String message){
+		if(vr.getContainerOfType(Component) != null){
+			
+			return message + " in Component."
+		} 
+		if(vr.getContainerOfType(Environment) != null){
+			
+			return message + " in Global Store."
+		}
+		message + "."
+	}
+	
+	//component only - can only be in a component
+	def String prefixComponent(VariableReference vr, String message){
+		if(vr.getContainerOfType(Component) != null){
+			
+			return message + " in Component."
+		} 
+		message + "."
+	}
+	
+	//check component with input action for attribute 
+	def String prefixInputComponent(VariableReference vr, String message){
+		if(vr.getContainerOfType(Component) != null){
+			
+			return message + " in Component."
+		} 
+		message + "."
+	}
+	
+	//check component with output action for attribute 
+	def String prefixOutputComponent(VariableReference vr, String message){
+		if(vr.getContainerOfType(Component) != null){
+			
+			return message + " in Component."
+		} 
+		message + "."
+	}
+	
+	//global only - can only be in the global store
+	def String prefixGlobal(VariableReference vr, String message){
+		if(vr.getContainerOfType(Environment) != null){
+			
+			return message + " in Global Store."
+		}
+		message + "."
 	}
 	
 //	/**
