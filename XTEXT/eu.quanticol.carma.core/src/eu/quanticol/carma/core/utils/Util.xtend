@@ -1817,6 +1817,12 @@ class Util {
 			else
 				return message + " in Global Store."
 		}
+		if(vr.getContainerOfType(Component) == null && vr.getContainerOfType(Process) != null){
+			if(vr.allComponentHaveVariable)
+				return ""
+			else
+				return message + " in Component."
+		}
 		if(vr.getContainerOfType(Measure) != null){
 			return ""
 		}
@@ -1830,7 +1836,13 @@ class Util {
 				return ""
 			else
 				return message + " in Component."
-		} 
+		}
+		if(vr.getContainerOfType(Component) == null && vr.getContainerOfType(Process) != null){
+			if(vr.allComponentHaveVariable)
+				return ""
+			else
+				return message + " in Component."
+		}
 		message + "."
 	}
 	
@@ -1868,11 +1880,16 @@ class Util {
 	}
 	
 	def boolean componentHasVariableAnywhere(VariableReference vr){
-		if(vr.getContainerOfType(Component) != null){
+		if(vr.getContainerOfType(StoreBlock) != null){
 			var test = false
 			for(vd : vr.getContainerOfType(Component).eAllOfType(VariableDeclaration))
 				test = test || vd.name.sameName(vr.name)
 			for(vd : vr.getContainerOfType(Component).eAllOfType(VariableType))
+				test = test || vd.name.sameName(vr.name)
+			return test
+		} else if(vr.getContainerOfType(Process) != null){
+			var test = false
+			for(vd : vr.getContainerOfType(Component).eAllOfType(VariableDeclaration))
 				test = test || vd.name.sameName(vr.name)
 			for(vd : vr.getContainerOfType(Component).eAllOfType(InputActionArguments))
 				test = test || (vd as VariableName).sameName(vr.name)
@@ -1882,12 +1899,28 @@ class Util {
 		}
 	}
 	
+	def boolean allComponentHaveVariable(VariableReference vr){
+		
+		var cs = vr.getContainerOfType(Process).componentAndDeclarations.keySet
+		var test = true
+		
+		for(c : cs)
+			test = test && c.componentHasVariable(vr)
+		
+		return test
+	}
+	
+	def boolean componentHasVariable(Component c, VariableReference vr){
+		var test = false
+		for(vd : c.eAllOfType(VariableDeclaration))
+			test = test || vd.name.sameName(vr.name)
+		return test
+	}
+	
 	def boolean componentHasVariable(VariableReference vr){
 		if(vr.getContainerOfType(Component) != null){
 			var test = false
 			for(vd : vr.getContainerOfType(Component).eAllOfType(VariableDeclaration))
-				test = test || vd.name.sameName(vr.name)
-			for(vd : vr.getContainerOfType(Component).eAllOfType(VariableType))
 				test = test || vd.name.sameName(vr.name)
 			return test
 		} else {
@@ -1925,7 +1958,7 @@ class Util {
 			}			
 			var test = false
 			for(c : cs)
-				test = test || vr.componentHasVariable
+				test = test || c.componentHasVariable(vr)
 			return test
 		} else {
 			false
@@ -1951,7 +1984,7 @@ class Util {
 			}		
 			var test = false
 			for(c : cs)
-				test = test || vr.componentHasVariable
+				test = test || c.componentHasVariable(vr)
 			return test
 		} else {
 			false
