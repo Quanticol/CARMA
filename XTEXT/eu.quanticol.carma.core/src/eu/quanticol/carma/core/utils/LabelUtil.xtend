@@ -84,7 +84,7 @@ import eu.quanticol.carma.core.carma.RecordDeclarations
 import eu.quanticol.carma.core.carma.RecordName
 import eu.quanticol.carma.core.carma.RecordReferenceMy
 import eu.quanticol.carma.core.carma.RecordReferencePure
-import eu.quanticol.carma.core.carma.RecordReferenceReciever
+import eu.quanticol.carma.core.carma.RecordReferenceReceiver
 import eu.quanticol.carma.core.carma.RecordReferenceSender
 import eu.quanticol.carma.core.carma.RecordReferenceThis
 import eu.quanticol.carma.core.carma.RecordTypeLabel
@@ -101,7 +101,7 @@ import eu.quanticol.carma.core.carma.VariableDeclarationRecord
 import eu.quanticol.carma.core.carma.VariableName
 import eu.quanticol.carma.core.carma.VariableReferenceMy
 import eu.quanticol.carma.core.carma.VariableReferencePure
-import eu.quanticol.carma.core.carma.VariableReferenceReciever
+import eu.quanticol.carma.core.carma.VariableReferenceReceiver
 import eu.quanticol.carma.core.carma.VariableReferenceSender
 import eu.quanticol.carma.core.carma.VariableReferenceThis
 import eu.quanticol.carma.core.carma.VariableType
@@ -616,12 +616,12 @@ class LabelUtil {
 			VariableReferencePure: 			vr.name.label
 			VariableReferenceMy: 			{"my." 			+ vr.name.label}
 			VariableReferenceThis: 			{"this." 		+ vr.name.label}
-			VariableReferenceReciever:		{"receiver." 	+ vr.name.label}
+			VariableReferenceReceiver:		{"receiver." 	+ vr.name.label}
 			VariableReferenceSender:		{"sender."		+ vr.name.label}
 			RecordReferencePure:			{vr.name.label + "." + vr.record.label	}
 			RecordReferenceMy:				{"my" 				+ "." + vr.name.label + "." + vr.record.label	}
 			RecordReferenceThis:			{"this" 			+ "." + vr.name.label + "." + vr.record.label	}
-			RecordReferenceReciever:		{"receiver" 		+ "." + vr.name.label + "." + vr.record.label	}
+			RecordReferenceReceiver:		{"receiver" 		+ "." + vr.name.label + "." + vr.record.label	}
 			RecordReferenceSender:			{"sender" 			+ "." + vr.name.label + "." + vr.record.label	}
 		}
 	}
@@ -631,12 +631,12 @@ class LabelUtil {
 			VariableReferencePure: 			vr.name.label
 			VariableReferenceMy: 			vr.name.label
 			VariableReferenceThis: 			vr.name.label
-			VariableReferenceReciever:		vr.name.label
+			VariableReferenceReceiver:		vr.name.label
 			VariableReferenceSender:		vr.name.label
 			RecordReferencePure:			vr.name.label + "_" + vr.record.label
 			RecordReferenceMy:				vr.name.label + "_" + vr.record.label
 			RecordReferenceThis:			vr.name.label + "_" + vr.record.label
-			RecordReferenceReciever:		vr.name.label + "_" + vr.record.label
+			RecordReferenceReceiver:		vr.name.label + "_" + vr.record.label
 			RecordReferenceSender:			vr.name.label + "_" + vr.record.label
 		}
 	}

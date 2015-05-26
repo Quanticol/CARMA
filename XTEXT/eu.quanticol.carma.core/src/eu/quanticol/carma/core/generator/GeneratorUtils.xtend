@@ -1,26 +1,26 @@
 package eu.quanticol.carma.core.generator
 
+import com.google.inject.Inject
 import eu.quanticol.carma.core.carma.RecordDeclaration
 import eu.quanticol.carma.core.carma.RecordReferenceMy
 import eu.quanticol.carma.core.carma.RecordReferencePure
-import eu.quanticol.carma.core.carma.RecordReferenceReciever
+import eu.quanticol.carma.core.carma.RecordReferenceReceiver
 import eu.quanticol.carma.core.carma.RecordReferenceSender
 import eu.quanticol.carma.core.carma.RecordReferenceThis
+import eu.quanticol.carma.core.carma.VariableDeclaration
 import eu.quanticol.carma.core.carma.VariableDeclarationEnum
 import eu.quanticol.carma.core.carma.VariableDeclarationRecord
 import eu.quanticol.carma.core.carma.VariableReference
 import eu.quanticol.carma.core.carma.VariableReferenceMy
 import eu.quanticol.carma.core.carma.VariableReferencePure
-import eu.quanticol.carma.core.carma.VariableReferenceReciever
+import eu.quanticol.carma.core.carma.VariableReferenceReceiver
 import eu.quanticol.carma.core.carma.VariableReferenceSender
 import eu.quanticol.carma.core.carma.VariableReferenceThis
 import eu.quanticol.carma.core.typing.TypeProvider
-import com.google.inject.Inject
 import eu.quanticol.carma.core.utils.LabelUtil
 import eu.quanticol.carma.core.utils.Util
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.carma.VariableDeclaration
 
 class GeneratorUtils {
 	
@@ -33,12 +33,12 @@ class GeneratorUtils {
 			VariableReferencePure		: {vr.getStore}
 			VariableReferenceMy			: {vr.getStore}
 			VariableReferenceThis		: {vr.getStore}
-			VariableReferenceReciever	: {vr.getReceiver}
+			VariableReferenceReceiver	: {vr.getReceiver}
 			VariableReferenceSender		: {vr.getSender}
 			RecordReferencePure			: {vr.getStore}
 			RecordReferenceMy			: {vr.getStore}
 			RecordReferenceThis			: {vr.getStore}
-			RecordReferenceReciever		: {vr.getReceiver}
+			RecordReferenceReceiver		: {vr.getReceiver}
 			RecordReferenceSender		: {vr.getSender}
 		}
 	}

@@ -77,12 +77,10 @@ import eu.quanticol.carma.core.carma.ComponentBlockDefinitionArguments
 import eu.quanticol.carma.core.carma.VariableReferencePure
 import eu.quanticol.carma.core.carma.VariableReferenceMy
 import eu.quanticol.carma.core.carma.VariableReferenceThis
-import eu.quanticol.carma.core.carma.VariableReferenceReciever
 import eu.quanticol.carma.core.carma.VariableReferenceSender
 import eu.quanticol.carma.core.carma.RecordReferencePure
 import eu.quanticol.carma.core.carma.RecordReferenceMy
 import eu.quanticol.carma.core.carma.RecordReferenceThis
-import eu.quanticol.carma.core.carma.RecordReferenceReciever
 import eu.quanticol.carma.core.carma.RecordReferenceSender
 import eu.quanticol.carma.core.carma.VariableReference
 import eu.quanticol.carma.core.carma.VariableDeclarationEnum
@@ -96,6 +94,8 @@ import eu.quanticol.carma.core.carma.NewComponentArgumentDeclare
 import eu.quanticol.carma.core.carma.VariableReferenceGlobal
 import eu.quanticol.carma.core.carma.RecordReferenceGlobal
 import eu.quanticol.carma.core.carma.EnvironmentOperation
+import eu.quanticol.carma.core.carma.VariableReferenceReceiver
+import eu.quanticol.carma.core.carma.RecordReferenceReceiver
 
 class Util {
 	
@@ -1022,10 +1022,11 @@ class Util {
 		var actions = stub.getContainerOfType(Model).eAllOfType(Action)
 	 	var output = new ArrayList<Process>()
 	 	
-	 	for(action : actions)
-	 		if(action.name.equals(stub.name))
+	 	for(action : actions){
+	 		if(action.name.sameName(stub.name)){
 	 			output.add(action.getContainerOfType(Process))
-	 	
+	 		}
+	 	}
 		return output
 	 	
 	}
@@ -1791,13 +1792,13 @@ class Util {
 			VariableReferencePure		: 	vr.prefixVariableReferencePure(message)
 			VariableReferenceMy			: 	vr.prefixComponent(message)
 			VariableReferenceThis		: 	vr.prefixComponent(message)
-			VariableReferenceReciever	: 	vr.prefixInputComponent(message)  
+			VariableReferenceReceiver	: 	vr.prefixInputComponent(message)  
 			VariableReferenceSender		:	vr.prefixOutputComponent(message)
 			VariableReferenceGlobal		:	vr.prefixGlobal(message)
 			RecordReferencePure			: 	vr.prefixVariableReferencePure(message)
 			RecordReferenceMy			: 	vr.prefixComponent(message)
 			RecordReferenceThis			: 	vr.prefixComponent(message)
-			RecordReferenceReciever		: 	vr.prefixInputComponent(message)
+			RecordReferenceReceiver		: 	vr.prefixInputComponent(message)
 			RecordReferenceSender		:	vr.prefixOutputComponent(message)
 			RecordReferenceGlobal		:	vr.prefixGlobal(message)
 		}
@@ -1891,8 +1892,9 @@ class Util {
 			var test = false
 			for(vd : vr.getContainerOfType(Component).eAllOfType(VariableDeclaration))
 				test = test || vd.name.sameName(vr.name)
-			for(vd : vr.getContainerOfType(Component).eAllOfType(InputActionArguments))
-				test = test || (vd as VariableName).sameName(vr.name)
+			if(vr.getContainerOfType(Component).eAllOfType(InputActionArguments).size > 0)
+				for(vd : vr.getContainerOfType(Component).eAllOfType(InputActionArguments).get(0).inputArguments)
+					test = test || (vd as VariableName).sameName(vr.name)
 			return test
 		} else {
 			false
@@ -1945,7 +1947,7 @@ class Util {
 			var processes = actionStub.processes
 			var actions = new ArrayList<Action>()
 			var cs = new ArrayList<Component>()
-			for(p : processes)
+			for(p : processes){
 				for(key : p.componentAndDeclarations.keySet)
 					for(a : key.actionsFromComponent){
 						if(!a.isOutput){
@@ -1953,6 +1955,7 @@ class Util {
 								actions.add(a)
 						}
 					}
+			}
 			for(a : actions){
 				cs.addAll(a.getContainerOfType(Process).componentAndDeclarations.keySet)
 			}			

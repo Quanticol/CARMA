@@ -337,7 +337,7 @@
     <genClasses ecoreClass="CARMA.ecore#//VariableReferencePure"/>
     <genClasses ecoreClass="CARMA.ecore#//VariableReferenceMy"/>
     <genClasses ecoreClass="CARMA.ecore#//VariableReferenceThis"/>
-    <genClasses ecoreClass="CARMA.ecore#//VariableReferenceReciever"/>
+    <genClasses ecoreClass="CARMA.ecore#//VariableReferenceReceiver"/>
     <genClasses ecoreClass="CARMA.ecore#//VariableReferenceSender"/>
     <genClasses ecoreClass="CARMA.ecore#//VariableReferenceGlobal"/>
     <genClasses ecoreClass="CARMA.ecore#//RecordReferencePure">
@@ -349,8 +349,8 @@
     <genClasses ecoreClass="CARMA.ecore#//RecordReferenceThis">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordReferenceThis/record"/>
     </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//RecordReferenceReciever">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordReferenceReciever/record"/>
+    <genClasses ecoreClass="CARMA.ecore#//RecordReferenceReceiver">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordReferenceReceiver/record"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//RecordReferenceSender">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordReferenceSender/record"/>

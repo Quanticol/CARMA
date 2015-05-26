@@ -91,7 +91,7 @@ VariableReference returns VariableReference hidden(ML_COMMENT,SL_COMMENT,WS):
 		{VariableReferencePure} 					name=[VariableName|LOWERST] |
 		{VariableReferenceMy} 		"my" 		"." name=[VariableName|LOWERST] |
 		{VariableReferenceThis} 	"this" 		"." name=[VariableName|LOWERST] |
-		{VariableReferenceReciever}	"receiver" 	"." name=[VariableName|LOWERST] |
+		{VariableReferenceReceiver}	"receiver" 	"." name=[VariableName|LOWERST] |
 		{VariableReferenceSender}	"sender" 	"."	name=[VariableName|LOWERST] |
 		{VariableReferenceGlobal}	"global"	"." name=[VariableName|LOWERST]	|
 		{RecordReferencePure} 						name=[VariableName|LOWERST] 
@@ -100,7 +100,7 @@ VariableReference returns VariableReference hidden(ML_COMMENT,SL_COMMENT,WS):
 		"." record=[RecordName|LOWERST]	|
 		{RecordReferenceThis} 		"this" 		"." name=[VariableName|LOWERST] 
 		"." record=[RecordName|LOWERST]	|
-		{RecordReferenceReciever}	"receiver" 	"." name=[VariableName|LOWERST] 
+		{RecordReferenceReceiver}	"receiver" 	"." name=[VariableName|LOWERST] 
 		"." record=[RecordName|LOWERST]	|
 		{RecordReferenceSender}		"sender" 	"."	name=[VariableName|LOWERST] 
 		"." record=[RecordName|LOWERST] |

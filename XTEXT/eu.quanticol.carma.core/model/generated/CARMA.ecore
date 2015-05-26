@@ -423,7 +423,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="VariableReferencePure" eSuperTypes="#//VariableReference"/>
   <eClassifiers xsi:type="ecore:EClass" name="VariableReferenceMy" eSuperTypes="#//VariableReference"/>
   <eClassifiers xsi:type="ecore:EClass" name="VariableReferenceThis" eSuperTypes="#//VariableReference"/>
-  <eClassifiers xsi:type="ecore:EClass" name="VariableReferenceReciever" eSuperTypes="#//VariableReference"/>
+  <eClassifiers xsi:type="ecore:EClass" name="VariableReferenceReceiver" eSuperTypes="#//VariableReference"/>
   <eClassifiers xsi:type="ecore:EClass" name="VariableReferenceSender" eSuperTypes="#//VariableReference"/>
   <eClassifiers xsi:type="ecore:EClass" name="VariableReferenceGlobal" eSuperTypes="#//VariableReference"/>
   <eClassifiers xsi:type="ecore:EClass" name="RecordReferencePure" eSuperTypes="#//VariableReference">
@@ -435,7 +435,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="RecordReferenceThis" eSuperTypes="#//VariableReference">
     <eStructuralFeatures xsi:type="ecore:EReference" name="record" eType="#//RecordName"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="RecordReferenceReciever" eSuperTypes="#//VariableReference">
+  <eClassifiers xsi:type="ecore:EClass" name="RecordReferenceReceiver" eSuperTypes="#//VariableReference">
     <eStructuralFeatures xsi:type="ecore:EReference" name="record" eType="#//RecordName"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="RecordReferenceSender" eSuperTypes="#//VariableReference">

@@ -42,7 +42,7 @@ import eu.quanticol.carma.core.carma.RecordDeclarations
 import eu.quanticol.carma.core.carma.RecordReferenceGlobal
 import eu.quanticol.carma.core.carma.RecordReferenceMy
 import eu.quanticol.carma.core.carma.RecordReferencePure
-import eu.quanticol.carma.core.carma.RecordReferenceReciever
+import eu.quanticol.carma.core.carma.RecordReferenceReceiver
 import eu.quanticol.carma.core.carma.RecordReferenceSender
 import eu.quanticol.carma.core.carma.RecordReferenceThis
 import eu.quanticol.carma.core.carma.Records
@@ -55,7 +55,7 @@ import eu.quanticol.carma.core.carma.VariableReference
 import eu.quanticol.carma.core.carma.VariableReferenceGlobal
 import eu.quanticol.carma.core.carma.VariableReferenceMy
 import eu.quanticol.carma.core.carma.VariableReferencePure
-import eu.quanticol.carma.core.carma.VariableReferenceReciever
+import eu.quanticol.carma.core.carma.VariableReferenceReceiver
 import eu.quanticol.carma.core.carma.VariableReferenceSender
 import eu.quanticol.carma.core.carma.VariableReferenceThis
 import eu.quanticol.carma.core.carma.VariableType
@@ -856,7 +856,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 			VariableReferencePure		: 	{test = true}
 			VariableReferenceMy			: 	{test = vr.getContainerOfType(Process) != null message = message + "my.' outside of a Process context"}
 			VariableReferenceThis		: 	{test = vr.getContainerOfType(Process) != null message = message + "this.' outside of a Process context"}
-			VariableReferenceReciever	: 	{test = (vr.inEnvironmentUpdateWithUnicast || vr.getContainerOfType(Probability) != null || vr.getContainerOfType(Rate) != null) 
+			VariableReferenceReceiver	: 	{test = (vr.inEnvironmentUpdateWithUnicast || vr.getContainerOfType(Probability) != null || vr.getContainerOfType(Rate) != null) 
 				message = message 
 				+ "receiver.' outside of a Unicast-action Update, Rate, or Probability context"
 			}
@@ -865,7 +865,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 			RecordReferencePure			: 	{test = true}
 			RecordReferenceMy			: 	{test = vr.getContainerOfType(Process) != null message = message + "my.' outside of a Process context"}
 			RecordReferenceThis			: 	{test = vr.getContainerOfType(Process) != null message = message + "this.' outside of a Process context"}
-			RecordReferenceReciever		: 	{test = (vr.inEnvironmentUpdateWithUnicast || vr.getContainerOfType(Probability) != null) 
+			RecordReferenceReceiver		: 	{test = (vr.inEnvironmentUpdateWithUnicast || vr.getContainerOfType(Probability) != null) 
 				message = message 
 				+ "receiver.' outside of a Unicast-action Update, Rate, or Probability context"
 			}
@@ -896,7 +896,8 @@ class CARMAValidator extends AbstractCARMAValidator {
 	@Check
 	def check_ERROR_VariableReferencePure_ref(VariableReference vr){
 		var message = ERROR_VariableReference_prefix_reference
-		if(vr.satisfiesPrefix(message).length > 0){
+		message = vr.satisfiesPrefix(message)
+		if(message.length > 0){
 			error( 	message,
 					CarmaPackage::eINSTANCE.variableReference_Name,
 					ERROR_VariableReference_prefix_reference
