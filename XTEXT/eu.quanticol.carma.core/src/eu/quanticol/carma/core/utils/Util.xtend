@@ -699,6 +699,36 @@ class Util {
 						output.add("null")
 				}
 			}
+			if(output.size == 0 && (vr.getContainerOfType(Action).eAllOfType(ActionGuard).size > 0)){
+				var ArrayList<Action> actions = new ArrayList<Action>()
+				if(vr.getContainerOfType(Action) != null){
+					var action = vr.getContainerOfType(Action)
+					if(action.spont){
+						var componentVariableMap = vr.getContainerOfType(Process).getComponentAndDeclarations
+				
+						for(component : componentVariableMap.keySet){
+							output.addAll((vr.name as VariableName).name.getVariableDeclarationTypes(componentVariableMap.get(component)))
+						}
+					}
+					if(action.isMulticast){
+						actions.addAll(action.getOpposite)
+					} 
+					if(!action.isMulticast){
+						actions.addAll(action.getOpposite)
+					}
+					for(a : actions){
+						var cad = a.getContainerOfType(Process).componentAndDeclarations
+						for(component : cad.keySet){
+							output.addAll((vr.name as VariableName).name.getVariableDeclarationTypes(cad.get(component)))
+						}
+					}
+				} else {
+					output.add("null")
+				}
+			}
+			if(output.size == 0){
+				output.add("null")
+			}
 		}
 		//Environment
 		if(vr.getContainerOfType(Environment) != null){
@@ -1865,6 +1895,9 @@ class Util {
 				return message + " in Component."
 		}
 		if(vr.getContainerOfType(Measure) != null){
+			return ""
+		}
+		if(vr.getContainerOfType(MethodDefinition) != null){
 			return ""
 		}
 		message + "."

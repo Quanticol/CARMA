@@ -70,6 +70,7 @@ import static extension org.eclipse.xtext.EcoreUtil2.*
 import eu.quanticol.carma.core.carma.Component
 import eu.quanticol.carma.core.carma.EnvironmentUpdate
 import eu.quanticol.carma.core.carma.Probability
+import eu.quanticol.carma.core.carma.ActionGuard
 
 /**
  * Class
@@ -127,6 +128,8 @@ class CARMAValidator extends AbstractCARMAValidator {
 			if(vr.getContainerOfType(ProcessExpression) != null){
 				if(vr.getContainerOfType(Action).eAllOfType(InputActionArguments).size > 0 )
 					message = message + "' does not have a matching output argument."
+				else if(vr.getContainerOfType(Action).eAllOfType(ActionGuard).size > 0 )
+					message = message + "' is not found in component with input argument."
 				else
 					message = message + "' has not been declared."
 			}
