@@ -96,6 +96,7 @@ import eu.quanticol.carma.core.carma.RecordReferenceGlobal
 import eu.quanticol.carma.core.carma.EnvironmentOperation
 import eu.quanticol.carma.core.carma.VariableReferenceReceiver
 import eu.quanticol.carma.core.carma.RecordReferenceReceiver
+import eu.quanticol.carma.core.carma.ActionGuard
 
 class Util {
 	
@@ -1263,6 +1264,13 @@ class Util {
 	def boolean isMulticast(Action action){
 		action.eAllOfType(MultiCast).size > 0 
 	}
+	
+	/**
+	 * Given an action return if it is a spont
+	 */
+	def boolean isSpont(Action action){
+		action.eAllOfType(SpontaneousAction).size > 0
+	}
 
 	/**
 	 * Given a an attribute name, return the value of the attribute in the environment 
@@ -1807,6 +1815,22 @@ class Util {
 	//component or global_store - depends on context
 	def String prefixVariableReferencePure(VariableReference vr, String message){
 		if(vr.getContainerOfType(Component) != null){
+			//if it is in a predicate, then it must reference the "other guy's" Store
+			if(vr.getContainerOfType(ActionGuard) != null){
+				var action = vr.getContainerOfType(Action)
+				if(action.isOutput){
+					if(vr.otherComponentHasVariableOutput)
+						return ""
+					else
+						return message + " in all Components performing opposite action."
+				} else {
+					if(vr.otherComponentHasVariableInput)
+						return ""
+					else
+						return message + " in Input arguments."
+				}
+				
+			}
 			if(vr.componentHasVariableAnywhere)
 				return ""
 			else
@@ -1819,6 +1843,22 @@ class Util {
 				return message + " in Global Store."
 		}
 		if(vr.getContainerOfType(Component) == null && vr.getContainerOfType(Process) != null){
+			//if it is in a predicate, then it must reference the "other guy's" Store
+			if(vr.getContainerOfType(ActionGuard) != null){
+				var action = vr.getContainerOfType(Action)
+				if(action.isOutput){
+					if(vr.otherComponentHasVariableOutput)
+						return ""
+					else
+						return message + " in all Components performing opposite action."
+				} else {
+					if(vr.otherComponentHasVariableInput)
+						return ""
+					else
+						return message + " in Input arguments."
+				}
+				
+			}
 			if(vr.allComponentHaveVariable)
 				return ""
 			else
@@ -1850,7 +1890,7 @@ class Util {
 	//check component with input action for attribute 
 	def String prefixInputComponent(VariableReference vr, String message){
 		if(vr.getContainerOfType(Environment) != null){
-			if(vr.componentWithInputActionHasVariable)
+			if(vr.componentWithInputActionHasVariableEnv)
 				return ""
 			else
 				return message + " in all Components performing input action."
@@ -1861,7 +1901,7 @@ class Util {
 	//check component with output action for attribute 
 	def String prefixOutputComponent(VariableReference vr, String message){
 		if(vr.getContainerOfType(Environment) != null){
-			if(vr.componentWithOutputActionHasVariable)
+			if(vr.componentWithOutputActionHasVariableEnv)
 				return ""
 			else
 				return message + " in all Components performing output action."
@@ -1941,7 +1981,62 @@ class Util {
 		}
 	}
 	
-	def boolean componentWithInputActionHasVariable(VariableReference vr){
+	//assumes the input arguments checks that the sender is sending the correct arguments
+	def boolean otherComponentHasVariableInput(VariableReference vr){
+		var test = false
+		if(vr.getContainerOfType(ActionGuard) != null){
+			var inputArgs = vr.getContainerOfType(Action).eAllOfType(InputActionArguments).get(0).inputArguments
+			
+			for(i : inputArgs){
+				test = test || (i as VariableName).sameName(vr.name)
+			}
+		}
+		return test
+	}
+	
+	
+	def boolean otherComponentHasVariableOutput(VariableReference vr){
+		var test = false
+		var ArrayList<Action> actions = new ArrayList<Action>()
+		var cs = new ArrayList<Component>()
+		if(vr.getContainerOfType(Action) != null){
+			var action = vr.getContainerOfType(Action)
+			if(action.spont){
+				test = true
+			}
+			if(action.isMulticast){
+				actions.addAll(action.getOpposite)
+			} 
+			if(!action.isMulticast){
+				actions.addAll(action.getOpposite)
+			}
+			for(a : actions){
+				cs.addAll(a.getContainerOfType(Process).componentAndDeclarations.keySet)
+			}
+			if(cs.size > 0)
+				test = true
+			for(c : cs)
+				test = test && c.componentHasVariable(vr)
+		}
+		return test
+	}
+	
+	def ArrayList<Action> getOpposite(Action action){
+		var ArrayList<Action> output = new ArrayList<Action>()
+		if(action.eAllOfType(InputAction).size != 0){
+			var op = action.eAllOfType(InputAction).get(0).sender
+			for(o : op)
+				output.add(o.getContainerOfType(Action))
+		} 
+		else{
+			var op = action.eAllOfType(OutputAction).get(0).receiver
+			for(o : op)
+				output.add(o.getContainerOfType(Action))
+		}
+		return output
+	}
+	
+	def boolean componentWithInputActionHasVariableEnv(VariableReference vr){
 		if(vr.getContainerOfType(Environment) != null){
 			var actionStub = vr.getContainerOfType(EnvironmentOperation).eAllOfType(ActionStub).get(0)
 			var processes = actionStub.processes
@@ -1959,16 +2054,16 @@ class Util {
 			for(a : actions){
 				cs.addAll(a.getContainerOfType(Process).componentAndDeclarations.keySet)
 			}			
-			var test = false
+			var test = true
 			for(c : cs)
-				test = test || c.componentHasVariable(vr)
+				test = test && c.componentHasVariable(vr)
 			return test
 		} else {
 			false
 		}
 	}
 	
-	def boolean componentWithOutputActionHasVariable(VariableReference vr){
+	def boolean componentWithOutputActionHasVariableEnv(VariableReference vr){
 		if(vr.getContainerOfType(Environment) != null){
 			var actionStub = vr.getContainerOfType(EnvironmentOperation).eAllOfType(ActionStub).get(0)
 			var processes = actionStub.processes
@@ -1985,9 +2080,9 @@ class Util {
 			for(a : actions){
 				cs.addAll(a.getContainerOfType(Process).componentAndDeclarations.keySet)
 			}		
-			var test = false
+			var test = true
 			for(c : cs)
-				test = test || c.componentHasVariable(vr)
+				test = test && c.componentHasVariable(vr)
 			return test
 		} else {
 			false
