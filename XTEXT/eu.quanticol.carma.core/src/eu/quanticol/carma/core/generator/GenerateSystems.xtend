@@ -28,6 +28,7 @@ import java.util.ArrayList
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import eu.quanticol.carma.core.carma.PrimitiveType
+import eu.quanticol.carma.core.carma.EnvironmentGuard
 
 class GenerateSystems {
 	
@@ -345,11 +346,18 @@ class GenerateSystems {
 	
 	def String defineProbActionStubs(ActionStub actionStub){
 		'''
-		if (action == «actionStub.getContainerOfType(Model).label»Definition.«actionStub.name.name.toUpperCase») {
+		if («actionStub.predicateHandlerProbability» && action == «actionStub.getContainerOfType(Model).label»Definition.«actionStub.name.name.toUpperCase») {
 				«actionStub.defineProbActionStub»
 		}
 		'''
 	}
+	
+	def String predicateHandlerProbability(ActionStub actionStub){
+		var booleanExpression = actionStub.getContainerOfType(Probability).eAllOfType(EnvironmentGuard).get(0)
+		'''
+		«booleanExpression.booleanExpression.label»
+		'''
+	}	
 	
 	def String defineProbActionStub(ActionStub actionStub){
 		'''return «actionStub.getContainerOfType(Probability).expression.label»;'''
@@ -387,9 +395,16 @@ class GenerateSystems {
 	
 	def String defineRateActionStubs(ActionStub actionStub){
 		'''
-		if (action == «actionStub.getContainerOfType(Model).label»Definition.«actionStub.name.name.toUpperCase») {
+		if («actionStub.predicateHandlerRate» && action == «actionStub.getContainerOfType(Model).label»Definition.«actionStub.name.name.toUpperCase») {
 				«actionStub.defineRateActionStub»
 		}
+		'''
+	}
+	
+	def String predicateHandlerRate(ActionStub actionStub){
+		var booleanExpression = actionStub.getContainerOfType(Rate).eAllOfType(EnvironmentGuard).get(0)
+		'''
+		«booleanExpression.booleanExpression.label»
 		'''
 	}
 	
@@ -431,11 +446,19 @@ class GenerateSystems {
 	
 	def String defineEUpdateActionStubs(ActionStub actionStub){
 		'''
-		if (action == «actionStub.getContainerOfType(Model).label»Definition.«actionStub.name.name.toUpperCase») {
+		if («actionStub.predicateHandlerEnvironmentUpdate» && action == «actionStub.getContainerOfType(Model).label»Definition.«actionStub.name.name.toUpperCase») {
 				«actionStub.defineEUpdateActionStub»
 		}
 		'''
 	}
+	
+	def String predicateHandlerEnvironmentUpdate(ActionStub actionStub){
+		var booleanExpression = actionStub.getContainerOfType(EnvironmentUpdate).eAllOfType(EnvironmentGuard).get(0)
+		'''
+		«booleanExpression.booleanExpression.label»
+		'''
+	}
+		
 	
 	def String defineEUpdateActionStub(ActionStub actionStub){
 		if(actionStub.getContainerOfType(EnvironmentUpdate).eAllOfType(Spawn).size > 0){
