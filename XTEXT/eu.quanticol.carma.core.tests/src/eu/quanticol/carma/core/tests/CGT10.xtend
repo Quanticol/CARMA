@@ -109,25 +109,208 @@ public class Simple extends CarmaSystem {
 	
 	//constructor
 	public Simple(){
-		addComponent(getProducer(1));
-		addComponent(getProducer(2));
-		addComponent(getProducer(3));
-		addComponent(getProducer(4));
-		addComponent(getProducer(5));
-		addComponent(getProducer(6));
-		addComponent(getConsumer(1));
-		addComponent(getConsumer(2));
-		addComponent(getConsumer(3));
-		addComponent(getConsumer(4));
-		addComponent(getConsumer(5));
-		addComponent(getConsumer(6));
+		addComponent(getProducer(1,0,0));
+		addComponent(getProducer(2,0,0));
+		addComponent(getProducer(3,0,0));
+		addComponent(getProducer(4,0,0));
+		addComponent(getProducer(5,0,0));
+		addComponent(getProducer(6,0,0));
+		addComponent(getProducer(1,1,0));
+		addComponent(getProducer(2,1,0));
+		addComponent(getProducer(3,1,0));
+		addComponent(getProducer(4,1,0));
+		addComponent(getProducer(5,1,0));
+		addComponent(getProducer(6,1,0));
+		addComponent(getProducer(1,2,0));
+		addComponent(getProducer(2,2,0));
+		addComponent(getProducer(3,2,0));
+		addComponent(getProducer(4,2,0));
+		addComponent(getProducer(5,2,0));
+		addComponent(getProducer(6,2,0));
+		addComponent(getProducer(1,3,0));
+		addComponent(getProducer(2,3,0));
+		addComponent(getProducer(3,3,0));
+		addComponent(getProducer(4,3,0));
+		addComponent(getProducer(5,3,0));
+		addComponent(getProducer(6,3,0));
+		addComponent(getProducer(1,0,1));
+		addComponent(getProducer(2,0,1));
+		addComponent(getProducer(3,0,1));
+		addComponent(getProducer(4,0,1));
+		addComponent(getProducer(5,0,1));
+		addComponent(getProducer(6,0,1));
+		addComponent(getProducer(1,1,1));
+		addComponent(getProducer(2,1,1));
+		addComponent(getProducer(3,1,1));
+		addComponent(getProducer(4,1,1));
+		addComponent(getProducer(5,1,1));
+		addComponent(getProducer(6,1,1));
+		addComponent(getProducer(1,2,1));
+		addComponent(getProducer(2,2,1));
+		addComponent(getProducer(3,2,1));
+		addComponent(getProducer(4,2,1));
+		addComponent(getProducer(5,2,1));
+		addComponent(getProducer(6,2,1));
+		addComponent(getProducer(1,3,1));
+		addComponent(getProducer(2,3,1));
+		addComponent(getProducer(3,3,1));
+		addComponent(getProducer(4,3,1));
+		addComponent(getProducer(5,3,1));
+		addComponent(getProducer(6,3,1));
+		addComponent(getProducer(1,0,2));
+		addComponent(getProducer(2,0,2));
+		addComponent(getProducer(3,0,2));
+		addComponent(getProducer(4,0,2));
+		addComponent(getProducer(5,0,2));
+		addComponent(getProducer(6,0,2));
+		addComponent(getProducer(1,1,2));
+		addComponent(getProducer(2,1,2));
+		addComponent(getProducer(3,1,2));
+		addComponent(getProducer(4,1,2));
+		addComponent(getProducer(5,1,2));
+		addComponent(getProducer(6,1,2));
+		addComponent(getProducer(1,2,2));
+		addComponent(getProducer(2,2,2));
+		addComponent(getProducer(3,2,2));
+		addComponent(getProducer(4,2,2));
+		addComponent(getProducer(5,2,2));
+		addComponent(getProducer(6,2,2));
+		addComponent(getProducer(1,3,2));
+		addComponent(getProducer(2,3,2));
+		addComponent(getProducer(3,3,2));
+		addComponent(getProducer(4,3,2));
+		addComponent(getProducer(5,3,2));
+		addComponent(getProducer(6,3,2));
+		addComponent(getProducer(1,0,3));
+		addComponent(getProducer(2,0,3));
+		addComponent(getProducer(3,0,3));
+		addComponent(getProducer(4,0,3));
+		addComponent(getProducer(5,0,3));
+		addComponent(getProducer(6,0,3));
+		addComponent(getProducer(1,1,3));
+		addComponent(getProducer(2,1,3));
+		addComponent(getProducer(3,1,3));
+		addComponent(getProducer(4,1,3));
+		addComponent(getProducer(5,1,3));
+		addComponent(getProducer(6,1,3));
+		addComponent(getProducer(1,2,3));
+		addComponent(getProducer(2,2,3));
+		addComponent(getProducer(3,2,3));
+		addComponent(getProducer(4,2,3));
+		addComponent(getProducer(5,2,3));
+		addComponent(getProducer(6,2,3));
+		addComponent(getProducer(1,3,3));
+		addComponent(getProducer(2,3,3));
+		addComponent(getProducer(3,3,3));
+		addComponent(getProducer(4,3,3));
+		addComponent(getProducer(5,3,3));
+		addComponent(getProducer(6,3,3));
+		addComponent(getConsumer(1,0,0));
+		addComponent(getConsumer(2,0,0));
+		addComponent(getConsumer(3,0,0));
+		addComponent(getConsumer(4,0,0));
+		addComponent(getConsumer(5,0,0));
+		addComponent(getConsumer(6,0,0));
+		addComponent(getConsumer(1,1,0));
+		addComponent(getConsumer(2,1,0));
+		addComponent(getConsumer(3,1,0));
+		addComponent(getConsumer(4,1,0));
+		addComponent(getConsumer(5,1,0));
+		addComponent(getConsumer(6,1,0));
+		addComponent(getConsumer(1,2,0));
+		addComponent(getConsumer(2,2,0));
+		addComponent(getConsumer(3,2,0));
+		addComponent(getConsumer(4,2,0));
+		addComponent(getConsumer(5,2,0));
+		addComponent(getConsumer(6,2,0));
+		addComponent(getConsumer(1,3,0));
+		addComponent(getConsumer(2,3,0));
+		addComponent(getConsumer(3,3,0));
+		addComponent(getConsumer(4,3,0));
+		addComponent(getConsumer(5,3,0));
+		addComponent(getConsumer(6,3,0));
+		addComponent(getConsumer(1,0,1));
+		addComponent(getConsumer(2,0,1));
+		addComponent(getConsumer(3,0,1));
+		addComponent(getConsumer(4,0,1));
+		addComponent(getConsumer(5,0,1));
+		addComponent(getConsumer(6,0,1));
+		addComponent(getConsumer(1,1,1));
+		addComponent(getConsumer(2,1,1));
+		addComponent(getConsumer(3,1,1));
+		addComponent(getConsumer(4,1,1));
+		addComponent(getConsumer(5,1,1));
+		addComponent(getConsumer(6,1,1));
+		addComponent(getConsumer(1,2,1));
+		addComponent(getConsumer(2,2,1));
+		addComponent(getConsumer(3,2,1));
+		addComponent(getConsumer(4,2,1));
+		addComponent(getConsumer(5,2,1));
+		addComponent(getConsumer(6,2,1));
+		addComponent(getConsumer(1,3,1));
+		addComponent(getConsumer(2,3,1));
+		addComponent(getConsumer(3,3,1));
+		addComponent(getConsumer(4,3,1));
+		addComponent(getConsumer(5,3,1));
+		addComponent(getConsumer(6,3,1));
+		addComponent(getConsumer(1,0,2));
+		addComponent(getConsumer(2,0,2));
+		addComponent(getConsumer(3,0,2));
+		addComponent(getConsumer(4,0,2));
+		addComponent(getConsumer(5,0,2));
+		addComponent(getConsumer(6,0,2));
+		addComponent(getConsumer(1,1,2));
+		addComponent(getConsumer(2,1,2));
+		addComponent(getConsumer(3,1,2));
+		addComponent(getConsumer(4,1,2));
+		addComponent(getConsumer(5,1,2));
+		addComponent(getConsumer(6,1,2));
+		addComponent(getConsumer(1,2,2));
+		addComponent(getConsumer(2,2,2));
+		addComponent(getConsumer(3,2,2));
+		addComponent(getConsumer(4,2,2));
+		addComponent(getConsumer(5,2,2));
+		addComponent(getConsumer(6,2,2));
+		addComponent(getConsumer(1,3,2));
+		addComponent(getConsumer(2,3,2));
+		addComponent(getConsumer(3,3,2));
+		addComponent(getConsumer(4,3,2));
+		addComponent(getConsumer(5,3,2));
+		addComponent(getConsumer(6,3,2));
+		addComponent(getConsumer(1,0,3));
+		addComponent(getConsumer(2,0,3));
+		addComponent(getConsumer(3,0,3));
+		addComponent(getConsumer(4,0,3));
+		addComponent(getConsumer(5,0,3));
+		addComponent(getConsumer(6,0,3));
+		addComponent(getConsumer(1,1,3));
+		addComponent(getConsumer(2,1,3));
+		addComponent(getConsumer(3,1,3));
+		addComponent(getConsumer(4,1,3));
+		addComponent(getConsumer(5,1,3));
+		addComponent(getConsumer(6,1,3));
+		addComponent(getConsumer(1,2,3));
+		addComponent(getConsumer(2,2,3));
+		addComponent(getConsumer(3,2,3));
+		addComponent(getConsumer(4,2,3));
+		addComponent(getConsumer(5,2,3));
+		addComponent(getConsumer(6,2,3));
+		addComponent(getConsumer(1,3,3));
+		addComponent(getConsumer(2,3,3));
+		addComponent(getConsumer(3,3,3));
+		addComponent(getConsumer(4,3,3));
+		addComponent(getConsumer(5,3,3));
+		addComponent(getConsumer(6,3,3));
+		global_store.set(__synthetic0Definition.TRANSACTIONS,1)
+		c4rm4.set( __synthetic0Definition.APOSITION_X_ATTRIBUTE, 2);
+		c4rm4.set( __synthetic0Definition.APOSITION_Y_ATTRIBUTE, 3);
 	}
 	
-	private CarmaComponent getProducer(int a) {
+	private CarmaComponent getProducer(int a,int b,int c) {
 		CarmaComponent c4rm4 = new CarmaComponent();
 		c4rm4.set( __synthetic0Definition.PRODUCT_ATTRIBUTE, a);
-		c4rm4.set( __synthetic0Definition.POSITION_X_ATTRIBUTE, 0);
-		c4rm4.set( __synthetic0Definition.POSITION_Y_ATTRIBUTE, 1);
+		c4rm4.set( __synthetic0Definition.POSITION_X_ATTRIBUTE, b);
+		c4rm4.set( __synthetic0Definition.POSITION_Y_ATTRIBUTE, c);
 		c4rm4.addAgent( new CarmaSequentialProcess(c4rm4, 
 		__synthetic0Definition.ProducerProcess,
 		__synthetic0Definition.ProducerProcess.getState("state_Produce" ) );
@@ -136,9 +319,11 @@ public class Simple extends CarmaSystem {
 		__synthetic0Definition.ProducerProcess.getState("state_Send" ) );
 		return c4rm4;
 	}
-	private CarmaComponent getConsumer(int a) {
+	private CarmaComponent getConsumer(int a, int x, int y) {
 		CarmaComponent c4rm4 = new CarmaComponent();
 		c4rm4.set( __synthetic0Definition.PRODUCT_ATTRIBUTE, a);
+		c4rm4.set( __synthetic0Definition.POSITION_X_ATTRIBUTE, x);
+		c4rm4.set( __synthetic0Definition.POSITION_Y_ATTRIBUTE, y);
 		c4rm4.addAgent( new CarmaSequentialProcess(c4rm4, 
 		__synthetic0Definition.ConsumerProcess,
 		__synthetic0Definition.ConsumerProcess.getState("state_Consume" ) );
@@ -151,48 +336,50 @@ public class Simple extends CarmaSystem {
 	/*ENVIRONMENT PROBABILITY*/
 	@Override
 	public double broadcastProbability(CarmaStore sender, CarmaStore receiver,
-			int action) {
-		// TODO Auto-generated method stub
+	int action) {
 		return 0;
 	}
-
+	
 	@Override
 	public double unicastProbability(CarmaStore sender, CarmaStore receiver,
-			int action) {
-		// TODO Auto-generated method stub
+	int action) {
 		return 0;
 	}
 	
 	/*ENVIRONMENT RATE*/
 	@Override
 	public double broadcastRate(CarmaStore sender, int action) {
-		/*needs action names, and then environment rate values*/
-		if (action == __synthetic0Definition.PRODUCE) {
-			return 1;
+		if (True
+		 && action == __synthetic0Definition.PRODUCE) {
+				return 1 / eu.quanticol.carma.core.carma.impl.EnvironmentExpressionImpl@2c5d601e;
 		}
-		
+		if (True
+		 && action == __synthetic0Definition.PRODUCEDOUBLE) {
+				return 1;
+		}
 		return 0;
 	}
-
 	@Override
 	public double unicastRate(CarmaStore sender, int action) {
-		// TODO Auto-generated method stub
-		return 0;
+		if (True
+		 && action == __synthetic0Definition.SEND) {
+				return 1;
+		}
 	}
 	
 	/*ENVIRONMENT UPDATE*/
 	@Override
 	public void broadcastUpdate(RandomGenerator random, CarmaStore sender,
-			int action) {
-		// TODO Auto-generated method stub
-		
+	int action) {
 	}
-
+	
 	@Override
 	public void unicastUpdate(RandomGenerator random, CarmaStore sender,
-			int action) {
-		// TODO Auto-generated method stub
-		
+	int action) {
+		if (True
+		 && action == __synthetic0Definition.SEND) {
+				//updates
+		}
 	}
 	
 	/*MAIN*/
@@ -200,7 +387,7 @@ public class Simple extends CarmaSystem {
 		SimulationEnvironment<CarmaSystem> system = new SimulationEnvironment<CarmaSystem>(
 			new __synthetic0Factory()
 		);
-
+	
 		system.simulate(100,50);
 	}
 	
@@ -226,6 +413,12 @@ public class __synthetic0Definition {
 	public static final Class<Integer> POSITION_Y_ATTRIBUTE_TYPE = Integer.class;
 	/*INPUT ARGUMENTS*/
 	/*ENVIRONMENT ATTRIBUTES*/
+	public static final String APOSITION_X_ATTRIBUTE = "aPosition_x";
+	public static final Class<Integer> APOSITION_X_ATTRIBUTE_TYPE = Integer.class;
+	public static final String TRANSACTIONS_ATTRIBUTE = "transactions";
+	public static final Class<Integer> TRANSACTIONS_ATTRIBUTE_TYPE = Integer.class;
+	public static final String APOSITION_Y_ATTRIBUTE = "aPosition_y";
+	public static final Class<Integer> APOSITION_Y_ATTRIBUTE_TYPE = Integer.class;
 	/*ACTION*/
 	public static final int PRODUCE = 0;
 	public static final int PRODUCEDOUBLE = 1;
@@ -233,9 +426,9 @@ public class __synthetic0Definition {
 	public static final int CONSUME = 3;
 	public static final int CONSUMEDOUBLE = 4;
 	/*RATES*/
-	public static final double PRODUCE_RATE = 1;
-	public static final double SEND_RATE = ;
-	public static final double SEND_RATE = ;
+	public static final double PRODUCE_RATE = 1 / eu.quanticol.carma.core.carma.impl.EnvironmentExpressionImpl@2c5d601e;
+	public static final double SEND_RATE = 1;
+	public static final double PRODUCEDOUBLE_RATE = 1;
 	/*PROCESS*/
 	public static final CarmaProcessAutomaton ProducerProcess = createProducerProcess();
 	
@@ -326,14 +519,14 @@ public class __synthetic0Definition {
 			}
 		};
 		
-		CarmaPredicate Produce_Guard = new CarmaPredicate() {
+		CarmaPredicate Send_Guard = new CarmaPredicate() {
 			@Override
 			public boolean satisfy(CarmaStore store) {
 				int product = store.get("product" , Integer.class );
 				return product > 0;
 			}
 		};
-		CarmaPredicate Send_Guard = new CarmaPredicate() {
+		CarmaPredicate Produce_Guard = new CarmaPredicate() {
 			@Override
 			public boolean satisfy(CarmaStore store) {
 				int product = store.get("product" , Integer.class );
@@ -342,9 +535,9 @@ public class __synthetic0Definition {
 		};
 		
 		//create the transitions between states
+		toReturn.addTransition(state_Send,Send_Guard,send_Action,state_Send);
 		toReturn.addTransition(state_Produce,Produce_Guard,produceDouble_Action,state_Produce);
 		toReturn.addTransition(state_Produce,Produce_Guard,produce_Action,state_Produce);
-		toReturn.addTransition(state_Send,Send_Guard,send_Action,state_Send);
 		
 		return toReturn;
 	}
