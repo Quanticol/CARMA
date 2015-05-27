@@ -109,55 +109,43 @@ class CARMAValidator extends AbstractCARMAValidator {
 			)
 		}
 	}
-	
-	public static val ERROR_VariableReference_type = "ERROR: This variable has not been declared anywhere."
-	
-	/**
-	 * VariableReference
-	 * <p>
-	 * ERROR_VariableReference_type = "ERROR: This variable has not been declared anywhere."
-	 * <p>	
-	 * @author 	CDW <br>
-	 */
+
+	public static val ERROR_VariableReference_type = "ERROR: '"
 	@Check
 	def check_ERROR_VariableReference_type(VariableReference vr){
-		var String message = "ERROR: variable '"
-		var boolean test = vr.getContainerOfType(Model).isNameInModel(vr.name)
+		var message = ERROR_VariableReference_type + vr.label + "' has no type."
+		var test = true
+		
+		test = vr.type.toString.equals("null")
+		
 		if(test){
-			message = message + vr.label
-			if(vr.getContainerOfType(ProcessExpression) != null){
-				if(vr.getContainerOfType(Action).eAllOfType(InputActionArguments).size > 0 )
-					message = message + "' does not have a matching output argument."
-				else if(vr.getContainerOfType(Action).eAllOfType(ActionGuard).size > 0 )
-					message = message + "' is not found in component with input argument."
-				else
-					message = message + "' has not been declared."
+			error(message,CarmaPackage::eINSTANCE.variableReference_Name,ERROR_VariableReference_type)
+		}
+	}
+
+	public static val ERROR_VariableName_InputArgument_ref = "ERROR: no matching argument at output action."
+	@Check
+	def check_ERROR_VariableName_InputArgument_ref(VariableName vn){
+		if(vn.getContainerOfType(InputActionArguments) != null){
+			if(vn.type.toString.equals("null")){
+				error(ERROR_VariableName_InputArgument_ref,CarmaPackage::eINSTANCE.variableName_Name,ERROR_VariableName_InputArgument_ref)
 			}
-			if(vr.getContainerOfType(Environment) != null){
-				message = message + "' has not been declared."
-			}
-			if(vr.getContainerOfType(ComponentBlockForStatement) != null || vr.getContainerOfType(ComponentLineForStatement) != null ){
-				message = message + "' has not been declared."
-			}
-			if(vr.getContainerOfType(MethodDefinition) != null ){
-				message = message + "' has not been declared."
-			}
-			if(vr.getContainerOfType(Measure) != null){
-				message = message + "' has not been declared."
-			}
-			if(vr.getContainerOfType(StoreBlock) != null){
-				message = message + "' has not been declared."
+		}
+	}
+	
+	public static val WARN_VariableName_InputArgument_unused = "ERROR: argument unused."
+	@Check
+	def check_WARN_VariableName_InputArgument_unused(VariableName vn){
+		if(vn.getContainerOfType(InputActionArguments) != null){
+			var test = false
+			var vrs = vn.getContainerOfType(Action).eAllOfType(VariableReference)
+			for (vr : vrs){
+				test = test || vr.name.sameName(vn)
 			}
 			
-			test = !vr.type.toString.equals("null")
-		} else {
-			message = message + vr.label + "' is not found in this model."
-		}
-		if(!test){
-			error( message ,
-					CarmaPackage::eINSTANCE.variableReference_Name,
-					ERROR_VariableReference_type
-			)
+			if(!test){
+				warning(WARN_VariableName_InputArgument_unused,CarmaPackage::eINSTANCE.variableName_Name,WARN_VariableName_InputArgument_unused)
+			}
 		}
 	}
 
@@ -457,7 +445,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 			)
 		}
 	}
-	
+
 	public static val ERROR_MacroExpressionReference_noAccess = "ERROR: No access to this process."
 	/**
 	 * MacroExpressionReference
@@ -907,6 +895,5 @@ class CARMAValidator extends AbstractCARMAValidator {
 			)
 		}
 	}
-	
 	
 }

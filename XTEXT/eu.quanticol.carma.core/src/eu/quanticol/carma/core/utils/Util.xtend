@@ -234,7 +234,7 @@ class Util {
 	def ArrayList<OutputAction> getSender(InputAction ia){
 		var ArrayList<OutputAction> output = new ArrayList<OutputAction>()
 		for(oa : ia.getContainerOfType(Model).eAllOfType(OutputAction))
-			if((oa.getContainerOfType(Action).name as ActionName).name.equals((ia.getContainerOfType(Action).name as ActionName).name))
+			if(oa.getContainerOfType(Action).name.sameName(ia.getContainerOfType(Action).name))
 				output.add(oa)
 		return output
 	}
@@ -249,7 +249,31 @@ class Util {
 				output.add(ia)
 		return output
 	}
-
+	
+	def HashSet<String> getTypes(VariableName vn, OutputAction oa){
+		var HashSet<String> output = new HashSet<String>()
+		if(vn.getContainerOfType(Action) != null){
+			var ArrayList<Action> actions = new ArrayList<Action>()
+			var action = vn.getContainerOfType(Action)
+			if(action.spont){
+				var componentVariableMap = vn.getContainerOfType(Process).getComponentAndDeclarations
+				for(component : componentVariableMap.keySet){
+					output.addAll(vn.getTypesVD(componentVariableMap.get(component)))
+				}
+			}
+			if(action.isMulticast){
+				actions.addAll(action.getOpposite)
+				for(a : actions){
+					var cad = a.getContainerOfType(Process).componentAndDeclarations
+					for(component : cad.keySet){
+						output.addAll(vn.getTypesVD(cad.get(component)))
+					}
+				}
+			}
+		}
+		return output
+	}
+				
 
 	/**
 	 * @see InputActionArguments
@@ -257,8 +281,9 @@ class Util {
 	 * the output argument should not be the same name
 	 */
 	def HashSet<String> getTypes(VariableName vn, InputAction ia){
+		println(vn.label)
 		var HashSet<String> output = new HashSet<String>()
-		var action = vn.getContainerOfType(Action)
+		var action = ia.getContainerOfType(Action)
 		var args = ia.inputActionArguments.inputArguments
 		var count = 0
 		var index = 0
@@ -272,18 +297,30 @@ class Util {
 			}
 			
 			if(args.size > 0){
-				for(oas : action.eAllOfType(InputAction).get(0).getSender){
-					if(oas.outputActionArguments.outputArguments.size > index)
-						if(oas.outputActionArguments != null)
+				for(oas : ia.getSender){
+					println(oas)
+					if(oas.outputActionArguments.outputArguments.size > index){
+						if(oas.outputActionArguments != null){
 							output.add((oas.outputActionArguments.outputArguments.get(index) as OutputActionArgument).type.toString)
+						}
 						else
 							output.add("null")
-					else
+					} else {
 						output.add("null")
+					}
 				}
 			}
 		}
-		
+		return output
+	}
+	 
+	def HashSet<String> getTypes(VariableReference vr, InputAction ia){
+		var HashSet<String> output = new HashSet<String>()
+		var vns = ia.eAllOfType(VariableName)
+		for(vn : vns){
+			if(vn.sameName(vr.name))
+				output.addAll(vr.name.getTypes(ia))
+		}
 		return output
 	}
 	
@@ -413,23 +450,6 @@ class Util {
 		return output
 	}
 	
-//	/**
-//	 * @see VariableDeclaration
-//	 */
-//	def HashSet<String> getTypesVariableDeclaration(VariableName vn){
-//		var HashSet<String> output = new HashSet<String>()
-//		if(vn.getContainerOfType(ComponentBlockDefinition) != null){
-//			output.addAll(vn.name.getVariableTypeTypes(
-//					new ArrayList<VariableType>(vn.getContainerOfType(ComponentBlockDefinition).eAllOfType(VariableType))
-//			))
-//		} else {
-//			output.addAll(vn.name.getVariableTypeTypes(
-//					new ArrayList<VariableType>(vn.getContainerOfType(ComponentLineDefinition).eAllOfType(VariableType))
-//			))
-//		}
-//		return output
-//	}
-	
 	/**
 	 * Search for all types associated with this reference
 	 */
@@ -447,63 +467,17 @@ class Util {
 				for(component : componentVariableMap.keySet){
 					output.addAll(vn.getTypesVD(componentVariableMap.get(component)))
 				}
-					
-			}
-			if(output.size == 0 && (vr.getContainerOfType(Action).eAllOfType(InputActionArguments).size > 0 )){
-				var action = vr.getContainerOfType(Action)
-				var args = vr.getContainerOfType(InputActionArguments)
-				var count = 0
-				var index = 0
 				
-				if(action != null){
-					for(arg : args.inputArguments){
-						if((arg as VariableName).name.equals((vr.name as VariableName).name))
-							index = count
-						else
-							count++
-					}
-					
-					if(action.eAllOfType(InputAction).size > 0){
-						for(oas : action.eAllOfType(InputAction).get(0).getSender){
-							if(oas.outputActionArguments.outputArguments.size > index)
-								output.add((oas.outputActionArguments.outputArguments.get(index) as VariableReference).type.toString)
-							else
-								output.add("null")
-						}
-					}
-					else
-						output.add("null")
+				//check the input arguments
+				if(vr.getContainerOfType(Action).eAllOfType(InputAction).size > 0){
+					output.addAll(vr.getTypes(vr.getContainerOfType(Action).eAllOfType(InputAction).get(0)))
 				}
-			}
-			if(output.size == 0 && (vr.getContainerOfType(Action).eAllOfType(ActionGuard).size > 0)){
-				var ArrayList<Action> actions = new ArrayList<Action>()
-				if(vr.getContainerOfType(Action) != null){
-					var action = vr.getContainerOfType(Action)
-					if(action.spont){
-						var componentVariableMap = vr.getContainerOfType(Process).getComponentAndDeclarations
 				
-						for(component : componentVariableMap.keySet){
-							output.addAll(vn.getTypesVD(componentVariableMap.get(component)))
-						}
-					}
-					if(action.isMulticast){
-						actions.addAll(action.getOpposite)
-					} 
-					if(!action.isMulticast){
-						actions.addAll(action.getOpposite)
-					}
-					for(a : actions){
-						var cad = a.getContainerOfType(Process).componentAndDeclarations
-						for(component : cad.keySet){
-							output.addAll(vn.getTypesVD(cad.get(component)))
-						}
-					}
-				} else {
-					output.add("null")
+				//check the Component that performs the input action
+				if(vr.getContainerOfType(Action).eAllOfType(OutputAction).size > 0){
+					output.addAll(vr.name.getTypes(vr.getContainerOfType(Action).eAllOfType(OutputAction).get(0)))
 				}
-			}
-			if(output.size == 0){
-				output.add("null")
+					
 			}
 		}
 		//Environment
@@ -868,19 +842,6 @@ class Util {
 		}
 		
 		return tree
-	}
-	
-	/**
-	 * Given a ProcessExpression, return the type
-	 */
-	def String whatProcessExpression(ProcessExpression pe){
-		switch(pe){
-			ProcessExpressionChoice: 	"c"
-			ProcessExpressionLeaf:		"l"
-			ProcessExpressionGuard:		"g"
-			ProcessExpressionAction: 	"a"
-			ProcessExpressionReference: "r"
-		}
 	}
 	
 	/**

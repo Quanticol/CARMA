@@ -113,57 +113,6 @@ class ValidationTest {
 			CARMAValidator::ERROR_ActionStub_reference)
 	}
 	
-//	@Test
-//	def void test_ERROR_VariableDeclaration_type(){
-//		'''
-//		component Producer(){
-//		    store{
-//		        enum product := 0;
-//		    }
-//		
-//		    behaviour{
-//		        Produce = produce*.Produce;
-//		    }
-//		
-//		    init{
-//		        Produce;
-//		    }
-//		
-//		}
-//		
-//		component ProducerT(){
-//		    store{
-//		        record product := {a := 0};
-//		    }
-//		
-//		    behaviour{
-//		        Produce = produce*.Produce;
-//		    }
-//		
-//		    init{
-//		        Produce;
-//		    }
-//		
-//		}
-//		
-//		system SimpleMove{
-//		
-//		    collective{
-//		        new Producer();
-//		        new ProducerT();
-//		    }
-//		
-//		    environment{
-//		        rate{
-//		        [True] produce* := 1;
-//		        }
-//		    }
-//		}
-//		'''.parse.assertError(CarmaPackage::eINSTANCE.actionStub,
-//			CARMAValidator::ERROR_VariableDeclaration_type,
-//			CARMAValidator::ERROR_VariableDeclaration_type)
-//	}
-	
 	@Test
 	def void test_ERROR_ActionStub(){
 		'''
@@ -218,110 +167,57 @@ class ValidationTest {
 	@Test
 	def void test_ERROR_BooleanExpression_expression_boolean_type(){
 		'''
-fun double MTime(record loc, record dest){
-	//TODO 
-	double step := 0.0;
-	return step;
-}
-
-fun double ATime(record loc){
-	//TODO
-	double arrivalRate := 0.0;
-	return arrivalRate * (1/9);
-}
-
-fun record DestLoc(record loc){
-	//TODO
-	if((loc.x == 1) && (loc.y == 1)){
-		return 0;
-	} else {
-		record newLocation := {x := 1, y := 1};
-		return newLocation;
-	};
-}
+		fun integer Test(integer v){
+			return v + 1;
+		}
 		
-component Taxi(record loc){
-	store{
-		record location := loc;
-		enum occupancy := 1;
-		record destination := { x := 1, y := 1};
-	}
-	
-	behaviour{
-		F = take[location == this.location](d){destination := d, occupancy := 1}.G +
-			call*[l != this.location](d,l){destination := d}.G;
-		G = move*{location := destination, occupancy := 0}.F;
-	}
-	
-	init{
-		F;
-	}
-}
-		
-component User(record loc, record dest){
-	store{
-		record location := loc;
-		record destination := dest;
-	}
-	
-	behaviour{
-		W = call*<location>.W +
-			take[location == this.location]<destination>.kill;
-	}
-	
-	init{
-		W;
-	}
-}
-		
-component Arrivals(record loc){
-	store{
-		record location := loc;
-	}
-	
-	behaviour{
-		A = arrival*.A;
-	}
-	
-	init{
-		A;
-	}
-}
+		fun integer Test2(integer v){
+			return v + 1;
+		}
+				
+		component Comp1(){
+			store{
+				enum a := 0;
+				record b := {x := 1, y :=1}; 
+			}
+				
+			behaviour{
+				P = [b + 1] nothing*.P;
+			}
 			
-measures{
-	measure Waiting[ enum i := 1..3, enum j := 1..3] = #{User[*]  | location == {x := i, y:= j} };
-}
-	
-system SmartTaxi {	
-	
-	collective{
-		new Taxi({x := 1..3, y:= 1..3});
-		new Arrivals({x := 1..3, y:= 1..3});
-	}
-
-	environment{
+			init{
+				P;
+			}
+		}
 		
-		store{
+		component Comp2(Z){
+			store{
+				enum a := 0;
+				enum e := 0;
+			}
+				
+			behaviour{
+				P =  nothing*.P;
+			}
 			
+			init{
+				Z;
+			}
 		}
 		
-		prob{
-			[True] take := 1/#{Taxi[F] | location == sender.location};
+		Q = Q;
+				
+		system Bleh{
+			collective{
+				new Comp1();
+				new Comp2(P);
+			}
+			environment{
+				store{
+					record loc := {x := 1, y :=1}; 
+				}
+			}
 		}
-		
-		rate{
-			[True] take			:= 0.01;
-			[True] call* 		:= 0.01;
-			[True] move* 		:= MTime(sender.location,sender.destination);
-			[True] arrival* 	:= ATime(location);
-			default := 0.0;
-		}
-		
-		update{
-			[True] arrival* := new User(sender.location, DestLoc(sender.location));
-		}
-	}
-}
 		'''.parse.assertError(CarmaPackage::eINSTANCE.booleanExpression,
 			CARMAValidator::ERROR_BooleanExpression_expression_boolean_type,
 			CARMAValidator::ERROR_BooleanExpression_expression_boolean_type)

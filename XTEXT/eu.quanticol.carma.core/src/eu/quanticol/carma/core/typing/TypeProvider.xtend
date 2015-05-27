@@ -145,6 +145,7 @@ import eu.quanticol.carma.core.carma.EnvironmentExpressions
 import eu.quanticol.carma.core.carma.EnvironmentUpdateExpressions
 import eu.quanticol.carma.core.carma.VariableReference
 import eu.quanticol.carma.core.carma.InputAction
+import eu.quanticol.carma.core.utils.LabelUtil
 
 class BaseType {
 	
@@ -159,6 +160,7 @@ class BaseType {
 class TypeProvider {
 	
 	@Inject extension Util
+	@Inject extension LabelUtil
 	
 	public static val booleanType 		= new BaseType() => [ type = "boolean" 		; set="logic"			; operations="logic"]
 	public static val recordType		= new BaseType() => [ type = "record" 		; set="component"		; operations="arith"]
@@ -399,7 +401,6 @@ class TypeProvider {
 				outputType = integerType	
 			}
 		}
-		
 		return outputType
 		
 	}
