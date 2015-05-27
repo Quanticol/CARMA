@@ -97,6 +97,8 @@ import eu.quanticol.carma.core.carma.EnvironmentOperation
 import eu.quanticol.carma.core.carma.VariableReferenceReceiver
 import eu.quanticol.carma.core.carma.RecordReferenceReceiver
 import eu.quanticol.carma.core.carma.ActionGuard
+import eu.quanticol.carma.core.carma.MethodAtomicVariable
+import eu.quanticol.carma.core.carma.PredefinedMethodDeclarationArgument
 
 class Util {
 	
@@ -123,122 +125,6 @@ class Util {
 	def boolean sameName(Name name1, Name name2){
 		name1.label.equals(name2.label)
 	}
-	
-//	/**
-//	 * Make sure all variable references are actually declared in this model. This prevents cross model referencing, if there is another .carma model
-//	 * declared inside the project.
-//	 */
-//	def boolean isDeclaredInThisModel(VariableReference vr){
-//		
-//		var boolean output = false
-//		
-//		//methods @ anywhere in the method 
-//		if(vr.getContainerOfType(MethodDefinition) != null){
-//			var declarations 	= vr.getContainerOfType(MethodDefinition).eAllOfType(VariableDeclaration)
-//			var arguments 		= vr.getContainerOfType(MethodDefinition).eAllOfType(VariableType)
-//			
-//			for(dec : declarations)
-//				output = output || dec.name.sameName(vr.name)
-//				
-//			for(dec : arguments)
-//				output = output || dec.name.sameName(vr.name)
-//				
-//			
-//		}
-//		
-//		//componentblock @ StoreBlock || componentdefinition arguments
-//		if(vr.getContainerOfType(ComponentBlockDefinition) != null){
-//			var declarations 	= vr.getContainerOfType(ComponentBlockDefinition).eAllOfType(VariableDeclaration)
-//			var arguments 		= vr.getContainerOfType(ComponentBlockDefinition).eAllOfType(VariableType)
-//			
-//			for(dec : declarations)
-//				output = output || dec.name.sameName(vr.name)
-//				
-//			for(dec : arguments)
-//				output = output || dec.name.sameName(vr.name)
-//				
-//			if(vr.getContainerOfType(Process) != null)	
-//				if(vr.getContainerOfType(Process).eAllOfType(InputAction).size > 0){
-//					if(vr.getContainerOfType(InputAction).eAllOfType(InputActionArguments).size > 0){
-//						for(dec : vr.getContainerOfType(InputAction).eAllOfType(InputActionArguments).get(0).inputArguments)
-//							output = output || dec.sameName(vr.name)
-//					}
-//				}
-//			
-//		}
-//		
-//		//processes && !componentblock @ StoreLine or StoreBlock
-//		if((vr.getContainerOfType(ComponentBlockDefinition) == null) && (vr.getContainerOfType(Processes) != null)){
-//			var componentAndDeclarations 	= vr.getContainerOfType(Process).getComponentAndDeclarations
-//			for(key : componentAndDeclarations.keySet)
-//				for(dec : componentAndDeclarations.get(key))
-//					output = output || dec.name.sameName(vr.name)
-//					
-//			if(vr.getContainerOfType(Process) != null)	
-//				if(vr.getContainerOfType(Process).eAllOfType(InputAction).size > 0){
-//					if(vr.getContainerOfType(InputAction).eAllOfType(InputActionArguments).size > 0){
-//						for(dec : vr.getContainerOfType(InputAction).eAllOfType(InputActionArguments).get(0).inputArguments)
-//							output = output || dec.sameName(vr.name)
-//					}
-//				}
-//		}
-//		
-//		//environment
-//		if(vr.getContainerOfType(Environment) != null){
-//			var rate   = vr.getContainerOfType(Rate)
-//			var update = vr.getContainerOfType(EnvironmentUpdate)
-//			var prob   = vr.getContainerOfType(Probability)
-//			
-//			var ActionStub actionStub = null
-//			
-//			if(rate != null)
-//				actionStub = rate.eAllOfType(ActionStub).get(0)
-//			if(update != null)
-//				actionStub = update.eAllOfType(ActionStub).get(0)
-//			if(prob != null)
-//				actionStub = prob.eAllOfType(ActionStub).get(0)
-//				
-//			for(p : actionStub.processes){
-//				var componentAndDeclarations = p.getComponentAndDeclarations
-//				for(key : componentAndDeclarations.keySet)
-//					for(dec : componentAndDeclarations.get(key))
-//						output = output || dec.name.sameName(vr.name)
-//			}
-//			
-//			for(dec : vr.getContainerOfType(Model).environmentAttributes)
-//				output = output || dec.name.sameName(vr.name)
-//					
-//		}
-//		
-//		if(vr.getContainerOfType(ComponentBlockForStatement) != null || vr.getContainerOfType(ComponentLineForStatement) != null ){
-//			if(vr.getContainerOfType(ComponentBlockForStatement) != null){
-//				for(dec : vr.getContainerOfType(ComponentBlockForStatement).eAllOfType(VariableDeclaration))
-//					output = output || dec.name.sameName(vr.name)
-//			}else{
-//				for(dec : vr.getContainerOfType(ComponentLineForStatement).eAllOfType(VariableDeclaration))
-//					output = output || dec.name.sameName(vr.name)
-//			}
-//		}
-//		
-//		//measure
-//		if(vr.getContainerOfType(Measure) != null){
-//			var ArrayList<String> names = new ArrayList<String>()
-//			(vr.getContainerOfType(Measure).measure as EnvironmentMeasure).componentReference.getComponentName(names)
-//			var boolean seen = false
-//			output = true
-//			for(name : names){
-//				var component = name.getComponent(vr.getContainerOfType(Model))
-//				for(dec : component.eAllOfType(VariableDeclaration)){
-//					seen = seen || dec.name.sameName(vr.name)
-//				}
-//				output = output && seen
-//			}
-//			
-//		}
-//		
-//		return output
-//		
-//	}
 	
 	def ArrayList<Name> getNames(RecordDeclarations rds){
 		var ArrayList<Name> names = new ArrayList<Name>()
@@ -293,115 +179,6 @@ class Util {
 			}
 		return names
 	}
-	
-	
-//	/**
-//	 * Given a RecordReference, state if it is in this model. This is to protect against using references in other .carma models.
-//	 */
-//	def boolean isDeclaredInThisModel(RecordReference rr){
-//		var boolean output = false
-//		
-//		//methods @ anywhere in the method 
-//		if(rr.getContainerOfType(MethodDefinition) != null){
-//			var declarations 	= rr.getContainerOfType(MethodDefinition).eAllOfType(VariableDeclaration)
-//			var arguments 		= rr.getContainerOfType(MethodDefinition).eAllOfType(VariableType)
-//			
-//			for(dec : declarations)
-//				if(dec.name.sameName(rr.name))
-//					if((dec as VariableDeclarationRecord).assign != null)
-//						for(name : (dec as VariableDeclarationRecord).assign.getNames)
-//							output = output || name.sameName(rr.record)
-//						
-//				
-//			for(dec : arguments)
-//				output = output || dec.name.sameName(rr.name)
-//				
-//			
-//		}
-//		
-//		//componentblock @ StoreBlock || componentdefinition arguments
-//		if(rr.getContainerOfType(ComponentBlockDefinition) != null){
-//			var declarations 	= rr.getContainerOfType(ComponentBlockDefinition).eAllOfType(VariableDeclaration)
-//			var arguments 		= rr.getContainerOfType(ComponentBlockDefinition).eAllOfType(VariableType)
-//			
-//			for(dec : declarations)
-//				if(dec.name.sameName(rr.name))
-//					if((dec as VariableDeclarationRecord).assign != null)
-//						for(name : (dec as VariableDeclarationRecord).assign.getNames)
-//							output = output || name.sameName(rr.record)
-//				
-//			for(dec : arguments)
-//				output = output || dec.name.sameName(rr.name)
-//				
-//			
-//		}
-//		
-//		//processes && !componentblock @ StoreLine or StoreBlock
-//		if((rr.getContainerOfType(ComponentBlockDefinition) == null) && (rr.getContainerOfType(Processes) != null)){
-//			var componentAndDeclarations 	= rr.getContainerOfType(Process).getComponentAndDeclarations
-//			for(key : componentAndDeclarations.keySet)
-//				for(dec : componentAndDeclarations.get(key))
-//					if(dec.name.sameName(rr.name))
-//						if((dec as VariableDeclarationRecord).assign != null)
-//							for(name : (dec as VariableDeclarationRecord).assign.getNames)
-//								output = output || name.sameName(rr.record)
-//					
-//			
-//		}
-//		
-//		//environment
-//		if(rr.getContainerOfType(Environment) != null){
-//			var rate   = rr.getContainerOfType(Rate)
-//			var update = rr.getContainerOfType(EnvironmentUpdate)
-//			var prob   = rr.getContainerOfType(Probability)
-//			
-//			var ActionStub actionStub = null
-//			
-//			if(rate != null)
-//				actionStub = rate.eAllOfType(ActionStub).get(0)
-//			if(update != null)
-//				actionStub = update.eAllOfType(ActionStub).get(0)
-//			if(prob != null)
-//				actionStub = prob.eAllOfType(ActionStub).get(0)
-//				
-//			for(p : actionStub.processes){
-//				var componentAndDeclarations = p.getComponentAndDeclarations
-//				for(key : componentAndDeclarations.keySet)
-//					for(dec : componentAndDeclarations.get(key))
-//						if(dec.name.sameName(rr.name))
-//							if((dec as VariableDeclarationRecord).assign != null)
-//								for(name : (dec as VariableDeclarationRecord).assign.getNames)
-//									output = output || name.sameName(rr.record)
-//			}
-//			
-//			for(dec : rr.getContainerOfType(Model).environmentAttributes)
-//				if(dec.name.sameName(rr.name))
-//					if((dec as VariableDeclarationRecord).assign != null)
-//						for(name : (dec as VariableDeclarationRecord).assign.getNames)
-//							output = output || name.sameName(rr.record)
-//					
-//		}
-//		
-//		//measure
-//		if(rr.getContainerOfType(Measure) != null){
-//			var ArrayList<String> names = new ArrayList<String>()
-//			(rr.getContainerOfType(Measure).measure as EnvironmentMeasure).componentReference.getComponentName(names)
-//			var boolean seen = false
-//			output = true
-//			for(name : names){
-//				var component = name.getComponent(rr.getContainerOfType(Model))
-//				for(dec : component.eAllOfType(VariableDeclaration))
-//					if(dec.name.sameName(rr.name))
-//						if((dec as VariableDeclarationRecord).assign != null)
-//							for(n : (dec as VariableDeclarationRecord).assign.getNames)
-//								seen = seen || n.sameName(rr.record)
-//				output = output && seen
-//			}
-//			
-//		}
-//		
-//		return output
-//	}
 	
 	/**
 	 * Given a componentName and model, return the component
@@ -479,23 +256,22 @@ class Util {
 	 * needs to know what position it is in the argument list
 	 * the output argument should not be the same name
 	 */
-	def HashSet<String> getTypesInputActionArguments(VariableName vn){
+	def HashSet<String> getTypes(VariableName vn, InputAction ia){
 		var HashSet<String> output = new HashSet<String>()
 		var action = vn.getContainerOfType(Action)
-		var args = vn.getContainerOfType(InputActionArguments)
+		var args = ia.inputActionArguments.inputArguments
 		var count = 0
 		var index = 0
 		
 		if(action != null){
-			
-			for(arg : args.inputArguments){
-				if((arg as VariableName).name.equals(vn.name))
+			for(arg : args){
+				if((arg as VariableName).sameName(vn))
 					index = count
 				else
 					count++
 			}
 			
-			if(action.eAllOfType(InputAction).size > 0){
+			if(args.size > 0){
 				for(oas : action.eAllOfType(InputAction).get(0).getSender){
 					if(oas.outputActionArguments.outputArguments.size > index)
 						if(oas.outputActionArguments != null)
@@ -515,10 +291,10 @@ class Util {
 	 * @see ComponentBlockForStatement
 	 * 
 	 */
-	def HashSet<String> getTypesComponentBlockForStatement(VariableName vn){
+	def HashSet<String> getTypes(VariableName vn, ComponentBlockForStatement cbfs){
 		var HashSet<String> output = new HashSet<String>()
-		if(vn.getContainerOfType(ComponentBlockForStatement) != null ){
-			output.addAll(vn.name.getVariableDeclarationTypes(
+		if(cbfs != null ){
+			output.addAll(vn.getTypesVD(
 				new ArrayList<VariableDeclaration>(vn.getContainerOfType(ComponentBlockForStatement).eAllOfType(VariableDeclaration))
 			))
 		}
@@ -529,10 +305,10 @@ class Util {
 	 * @see ComponentBlockForStatement
 	 * 
 	 */
-	def HashSet<String> getTypesComponentLineForStatement(VariableName vn){
+	def HashSet<String> getTypes(VariableName vn,ComponentLineForStatement clfs){
 		var HashSet<String> output = new HashSet<String>()
-		if(vn.getContainerOfType(ComponentLineForStatement) != null ){
-			output.addAll(vn.name.getVariableDeclarationTypes(
+		if(clfs != null ){
+			output.addAll(vn.getTypesVD(
 				new ArrayList<VariableDeclaration>(vn.getContainerOfType(ComponentLineForStatement).eAllOfType(VariableDeclaration))
 			))
 		}
@@ -544,14 +320,14 @@ class Util {
 	 * @see MethodAtomic
 	 * 
 	 */
-	def HashSet<String> getTypesMethodAtomicVariable(VariableName vn){
+	def HashSet<String> getTypes(VariableName vn, MethodAtomicVariable md ){
 		var HashSet<String> output = new HashSet<String>()
-		if(vn.getContainerOfType(MethodDefinition) != null ){
-			output.addAll(vn.name.getVariableDeclarationTypes(
+		if(md != null ){
+			output.addAll(vn.getTypesVD(
 				new ArrayList<VariableDeclaration>(vn.getContainerOfType(MethodDefinition).eAllOfType(VariableDeclaration))
 			))
 			
-			output.addAll(vn.name.getVariableTypeTypes(
+			output.addAll(vn.getTypesVT(
 				new ArrayList<VariableType>(vn.getContainerOfType(MethodDefinition).eAllOfType(VariableType))
 			))
 		}
@@ -563,26 +339,25 @@ class Util {
 	 * PFD(arg_0,arg_1,...arg_N)
 	 * @see PredefinedMethodDeclarationArgument
 	 */
-	def HashSet<String> getTypesPredefinedMethodDeclarationArgument(VariableName vn){
+	def HashSet<String> getTypes(VariableName vn, PredefinedMethodDeclarationArgument pmda){
 		var HashSet<String> output = new HashSet<String>()
-		
 		//StoreBlock ->	componentArgs
 		if(vn.getContainerOfType(StoreBlock) != null ){
-			output.addAll(vn.name.getVariableTypeTypes(
+			output.addAll(vn.getTypesVT(
 				new ArrayList<VariableType>(vn.getContainerOfType(ComponentBlockDefinition).eAllOfType(VariableType))
 			))
 		}
 		
 		//StoreLine	-> componentLineForStatement
 		if(vn.getContainerOfType(StoreLine) != null ){
-			output.addAll(vn.name.getVariableDeclarationTypes(
+			output.addAll(vn.getTypesVD(
 					new ArrayList<VariableDeclaration>(vn.getContainerOfType(ComponentLineForStatement).eAllOfType(VariableDeclaration))
 			))
 		}
 		
 		//Update -> Store
 		if(vn.getContainerOfType(Action) != null ){
-			output.addAll(vn.name.getVariableDeclarationTypes(
+			output.addAll(vn.getTypesVD(
 				new ArrayList<VariableDeclaration>(vn.getContainerOfType(ComponentBlockDefinition).eAllOfType(VariableDeclaration))
 			))
 		}
@@ -605,61 +380,62 @@ class Util {
 			for(p : actionStub.processes){
 				var componentVariableMap = p.getComponentAndDeclarations
 				for(component : componentVariableMap.keySet)
-					output.addAll(vn.name.getVariableDeclarationTypes(componentVariableMap.get(component)))
+					output.addAll(vn.getTypesVD(componentVariableMap.get(component)))
 			}
 			
-			output.addAll(vn.name.getVariableDeclarationTypes(vn.getContainerOfType(Model).environmentAttributes))
+			output.addAll(vn.getTypesVD(vn.getContainerOfType(Model).environmentAttributes))
 		}
 		
 		//ComponentLineForStatement -> 	VariableDeclaration
 		if(vn.getContainerOfType(ComponentLineForStatement) != null ){
-			output.addAll(vn.name.getVariableDeclarationTypes(
+			output.addAll(vn.getTypesVD(
 					new ArrayList<VariableDeclaration>(vn.getContainerOfType(ComponentLineForStatement).eAllOfType(VariableDeclaration))
 			))
 		}
 		
 		//ComponentBlockForStatement ->	VariableDeclaration
 		if(vn.getContainerOfType(ComponentBlockForStatement) != null ){
-			output.addAll(vn.name.getVariableDeclarationTypes(
+			output.addAll(vn.getTypesVD(
 					new ArrayList<VariableDeclaration>(vn.getContainerOfType(ComponentBlockForStatement).eAllOfType(VariableDeclaration))
 			))
 		}
 		
 		//MethodDefinition	->	VariableDeclaration
 		if(vn.getContainerOfType(MethodDefinition) != null ){
-			output.addAll(vn.name.getVariableDeclarationTypes(
+			output.addAll(vn.getTypesVD(
 				new ArrayList<VariableDeclaration>(vn.getContainerOfType(MethodDefinition).eAllOfType(VariableDeclaration))
 			))
 			
-			output.addAll(vn.name.getVariableTypeTypes(
+			output.addAll(vn.getTypesVT(
 				new ArrayList<VariableType>(vn.getContainerOfType(MethodDefinition).eAllOfType(VariableType))
 			))
 		}
 		return output
 	}
 	
-	/**
-	 * @see VariableDeclaration
-	 */
-	def HashSet<String> getTypesVariableDeclaration(VariableName vn){
-		var HashSet<String> output = new HashSet<String>()
-		if(vn.getContainerOfType(ComponentBlockDefinition) != null){
-			output.addAll(vn.name.getVariableTypeTypes(
-					new ArrayList<VariableType>(vn.getContainerOfType(ComponentBlockDefinition).eAllOfType(VariableType))
-			))
-		} else {
-			output.addAll(vn.name.getVariableTypeTypes(
-					new ArrayList<VariableType>(vn.getContainerOfType(ComponentLineDefinition).eAllOfType(VariableType))
-			))
-		}
-		return output
-	}
+//	/**
+//	 * @see VariableDeclaration
+//	 */
+//	def HashSet<String> getTypesVariableDeclaration(VariableName vn){
+//		var HashSet<String> output = new HashSet<String>()
+//		if(vn.getContainerOfType(ComponentBlockDefinition) != null){
+//			output.addAll(vn.name.getVariableTypeTypes(
+//					new ArrayList<VariableType>(vn.getContainerOfType(ComponentBlockDefinition).eAllOfType(VariableType))
+//			))
+//		} else {
+//			output.addAll(vn.name.getVariableTypeTypes(
+//					new ArrayList<VariableType>(vn.getContainerOfType(ComponentLineDefinition).eAllOfType(VariableType))
+//			))
+//		}
+//		return output
+//	}
 	
 	/**
 	 * Search for all types associated with this reference
 	 */
 	def HashSet<String> getTypes(VariableReference vr){
 		var HashSet<String> output = new HashSet<String>()
+		var vn = (vr.name as VariableName)
 		
 		//ProcessExpression
 		if(vr.getContainerOfType(ProcessExpression) != null){
@@ -669,7 +445,7 @@ class Util {
 				var componentVariableMap = vr.getContainerOfType(Process).getComponentAndDeclarations
 				
 				for(component : componentVariableMap.keySet){
-					output.addAll((vr.name as VariableName).name.getVariableDeclarationTypes(componentVariableMap.get(component)))
+					output.addAll(vn.getTypesVD(componentVariableMap.get(component)))
 				}
 					
 			}
@@ -707,7 +483,7 @@ class Util {
 						var componentVariableMap = vr.getContainerOfType(Process).getComponentAndDeclarations
 				
 						for(component : componentVariableMap.keySet){
-							output.addAll((vr.name as VariableName).name.getVariableDeclarationTypes(componentVariableMap.get(component)))
+							output.addAll(vn.getTypesVD(componentVariableMap.get(component)))
 						}
 					}
 					if(action.isMulticast){
@@ -719,7 +495,7 @@ class Util {
 					for(a : actions){
 						var cad = a.getContainerOfType(Process).componentAndDeclarations
 						for(component : cad.keySet){
-							output.addAll((vr.name as VariableName).name.getVariableDeclarationTypes(cad.get(component)))
+							output.addAll(vn.getTypesVD(cad.get(component)))
 						}
 					}
 				} else {
@@ -732,6 +508,7 @@ class Util {
 		}
 		//Environment
 		if(vr.getContainerOfType(Environment) != null){
+			
 			var rate   = vr.getContainerOfType(Rate)
 			var update = vr.getContainerOfType(EnvironmentUpdate)
 			var prob   = vr.getContainerOfType(Probability)
@@ -747,35 +524,32 @@ class Util {
 				
 			for(p : actionStub.processes){
 				var componentVariableMap = p.getComponentAndDeclarations
-				for(component : componentVariableMap.keySet)
-					output.addAll((vr.name as VariableName).name.getVariableDeclarationTypes(componentVariableMap.get(component)))
+				for(component : componentVariableMap.keySet){
+					
+					var vds = componentVariableMap.get(component)
+					output.addAll(vn.getTypesVD(vds))
+				}
 			}
-			
-			output.addAll((vr.name as VariableName).name.getVariableDeclarationTypes(vr.getContainerOfType(Model).environmentAttributes))
+			output.addAll(vn.getTypesVD(vr.getContainerOfType(Model).environmentAttributes))
 			
 		}
 		
 		//Component
 		if(vr.getContainerOfType(ComponentBlockForStatement) != null || vr.getContainerOfType(ComponentLineForStatement) != null ){
 			if(vr.getContainerOfType(ComponentBlockForStatement) != null){
-				output.addAll((vr.name as VariableName).name.getVariableDeclarationTypes(
-					new ArrayList<VariableDeclaration>(vr.getContainerOfType(ComponentBlockForStatement).eAllOfType(VariableDeclaration))
-				))
+				var vds = new ArrayList<VariableDeclaration>(vr.getContainerOfType(ComponentBlockForStatement).eAllOfType(VariableDeclaration))
+				output.addAll(vn.getTypesVD(vds))
 			}else{
-				output.addAll((vr.name as VariableName).name.getVariableDeclarationTypes(
-					new ArrayList<VariableDeclaration>(vr.getContainerOfType(ComponentLineForStatement).eAllOfType(VariableDeclaration))
-				))
+				var vds = new ArrayList<VariableDeclaration>(vr.getContainerOfType(ComponentBlockForStatement).eAllOfType(VariableDeclaration))
+				output.addAll(vn.getTypesVD(vds))
 			}
 		}
 		//Method
 		if(vr.getContainerOfType(MethodDefinition) != null ){
-			output.addAll((vr.name as VariableName).name.getVariableDeclarationTypes(
-				new ArrayList<VariableDeclaration>(vr.getContainerOfType(MethodDefinition).eAllOfType(VariableDeclaration))
-			))
-			
-			output.addAll((vr.name as VariableName).name.getVariableTypeTypes(
-				new ArrayList<VariableType>(vr.getContainerOfType(MethodDefinition).eAllOfType(VariableType))
-			))
+			var vds = new ArrayList<VariableDeclaration>(vr.getContainerOfType(MethodDefinition).eAllOfType(VariableDeclaration))
+			var vts = new ArrayList<VariableType>(vr.getContainerOfType(MethodDefinition).eAllOfType(VariableType))
+			output.addAll(vn.getTypesVD(vds))
+			output.addAll(vn.getTypesVT(vts))
 		}
 		
 		//Measure
@@ -784,20 +558,17 @@ class Util {
 			(vr.getContainerOfType(Measure).measure as EnvironmentMeasure).componentReference.getComponentName(names)
 			for(name : names){
 				var component = name.getComponent(vr.getContainerOfType(Model))
-				output.addAll((vr.name as VariableName).name.getVariableDeclarationTypes(
-					new ArrayList<VariableDeclaration>(component.eAllOfType(VariableDeclaration))
-				))
+				var vds = new ArrayList<VariableDeclaration>(component.eAllOfType(VariableDeclaration))
+				output.addAll(vn.getTypesVD(vds))
 			}
-			output.addAll((vr.name as VariableName).name.getVariableDeclarationTypes(
-				new ArrayList<VariableDeclaration>(vr.getContainerOfType(Measure).parameters.eAllOfType(VariableDeclaration))
-				))
+			var vds = new ArrayList<VariableDeclaration>(vr.getContainerOfType(Measure).parameters.eAllOfType(VariableDeclaration))
+			output.addAll(vn.getTypesVD(vds))
 		}
 		//Store
 		if(vr.getContainerOfType(StoreBlock) != null){
-			output.addAll((vr.name as VariableName).name.getVariableTypeTypes(
-				new ArrayList<VariableType>(vr.getContainerOfType(ComponentBlockDefinition).eAllOfType(ComponentBlockDefinitionArguments).get(0).eAllOfType(VariableType)
-				)
-			))
+			var name = (vr.name as VariableName)
+			var vts = new ArrayList<VariableType>(vr.getContainerOfType(ComponentBlockDefinition).eAllOfType(ComponentBlockDefinitionArguments).get(0).eAllOfType(VariableType))
+			output.addAll(name.getTypesVT(vts))
 		}
 		
 		return output
@@ -807,10 +578,10 @@ class Util {
 	 * Return list of types that have this variable name
 	 * @author CDW
 	 */
-	def ArrayList<String> getVariableDeclarationTypes(String variableName, ArrayList<VariableDeclaration> variables){
+	def ArrayList<String> getTypesVD(VariableName variableName, ArrayList<VariableDeclaration> variables){
 		var ArrayList<String> output = new ArrayList<String>()
 		for(variable : variables)
-			if((variable.name as VariableName).name.equals(variableName))
+			if(variable.name.sameName(variableName))
 				output.add(variable.type)
 		
 		return output
@@ -820,11 +591,11 @@ class Util {
 	 * Return list of types that have this variable name
 	 * @author CDW
 	 */
-	def ArrayList<String> getVariableTypeTypes(String variableName, ArrayList<VariableType> variables){
+	def ArrayList<String> getTypesVT(VariableName variableName, ArrayList<VariableType> variables){
 		var ArrayList<String> output = new ArrayList<String>()
 		
 		for(variable : variables)
-			if((variable.name as VariableName).name.equals(variableName))
+			if(variable.name.sameName(variableName))
 				output.add(variable.type)
 		
 		return output
@@ -2037,12 +1808,7 @@ class Util {
 			if(action.spont){
 				test = true
 			}
-			if(action.isMulticast){
-				actions.addAll(action.getOpposite)
-			} 
-			if(!action.isMulticast){
-				actions.addAll(action.getOpposite)
-			}
+			actions.addAll(action.getOpposite)
 			for(a : actions){
 				cs.addAll(a.getContainerOfType(Process).componentAndDeclarations.keySet)
 			}

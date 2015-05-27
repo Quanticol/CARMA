@@ -144,6 +144,7 @@ import eu.quanticol.carma.core.carma.BooleanExpressions
 import eu.quanticol.carma.core.carma.EnvironmentExpressions
 import eu.quanticol.carma.core.carma.EnvironmentUpdateExpressions
 import eu.quanticol.carma.core.carma.VariableReference
+import eu.quanticol.carma.core.carma.InputAction
 
 class BaseType {
 	
@@ -253,7 +254,7 @@ class TypeProvider {
 	def BaseType getType(VariableName vn){
 		var output = nullType
 		if(vn.getContainerOfType(InputActionArguments) != null){
-			var ArrayList<String> options = new ArrayList<String>(vn.getTypesInputActionArguments)
+			var ArrayList<String> options = new ArrayList<String>(vn.getTypes(vn.getContainerOfType(InputAction)))
 			if(options.size == 1){
 				if(options.get(0).equals("enum")){
 					output = enumType
@@ -267,7 +268,7 @@ class TypeProvider {
 			}
 		}
 		if(vn.getContainerOfType(MethodAtomicVariable) != null){
-			var ArrayList<String> options = new ArrayList<String>(vn.getTypesMethodAtomicVariable)
+			var ArrayList<String> options = new ArrayList<String>(vn.getTypes(vn.getContainerOfType(MethodAtomicVariable)))
 			if(options.size == 1){
 				if(options.get(0).equals("enum")){
 					output = enumType
@@ -281,7 +282,7 @@ class TypeProvider {
 			}
 		}
 		if(vn.getContainerOfType(PredefinedMethodDeclarationArgument) != null){
-			var ArrayList<String> options = new ArrayList<String>(vn.getTypesPredefinedMethodDeclarationArgument)
+			var ArrayList<String> options = new ArrayList<String>(vn.getTypes(vn.getContainerOfType(PredefinedMethodDeclarationArgument)))
 			if(options.size == 1){
 				if(options.get(0).equals("enum")){
 					output = enumType
@@ -301,7 +302,7 @@ class TypeProvider {
 			output = vn.getContainerOfType(VariableType).getBaseType
 		}
 		if(vn.getContainerOfType(ComponentBlockForStatement) != null){
-			var ArrayList<String> options = new ArrayList<String>(vn.getTypesComponentBlockForStatement)
+			var ArrayList<String> options = new ArrayList<String>(vn.getTypes(vn.getContainerOfType(ComponentBlockForStatement)))
 			if(options.size == 1){
 				if(options.get(0).equals("enum")){
 					output = enumType
@@ -315,7 +316,7 @@ class TypeProvider {
 			}
 		}
 		if(vn.getContainerOfType(ComponentLineForStatement) != null){
-			var ArrayList<String> options = new ArrayList<String>(vn.getTypesComponentLineForStatement)
+			var ArrayList<String> options = new ArrayList<String>(vn.getTypes(vn.getContainerOfType(ComponentLineForStatement)))
 			if(options.size == 1){
 				if(options.get(0).equals("enum")){
 					output = enumType
