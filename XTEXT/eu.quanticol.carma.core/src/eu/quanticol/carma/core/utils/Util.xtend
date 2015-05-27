@@ -250,24 +250,16 @@ class Util {
 		return output
 	}
 	
-	def HashSet<String> getTypes(VariableName vn, OutputAction oa){
+	def HashSet<String> getTypes(VariableReference vr, OutputAction oa){
 		var HashSet<String> output = new HashSet<String>()
-		if(vn.getContainerOfType(Action) != null){
+		if(vr.getContainerOfType(Action) != null){
 			var ArrayList<Action> actions = new ArrayList<Action>()
-			var action = vn.getContainerOfType(Action)
-			if(action.spont){
-				var componentVariableMap = vn.getContainerOfType(Process).getComponentAndDeclarations
-				for(component : componentVariableMap.keySet){
-					output.addAll(vn.getTypesVD(componentVariableMap.get(component)))
-				}
-			}
-			if(action.isMulticast){
-				actions.addAll(action.getOpposite)
-				for(a : actions){
-					var cad = a.getContainerOfType(Process).componentAndDeclarations
-					for(component : cad.keySet){
-						output.addAll(vn.getTypesVD(cad.get(component)))
-					}
+			var action = vr.getContainerOfType(Action)
+			actions.addAll(action.getOpposite)
+			for(a : actions){
+				var cad = a.getContainerOfType(Process).componentAndDeclarations
+				for(component : cad.keySet){
+					output.addAll(vr.name.getTypesVD(cad.get(component)))
 				}
 			}
 		}
@@ -281,7 +273,6 @@ class Util {
 	 * the output argument should not be the same name
 	 */
 	def HashSet<String> getTypes(VariableName vn, InputAction ia){
-		println(vn.label)
 		var HashSet<String> output = new HashSet<String>()
 		var action = ia.getContainerOfType(Action)
 		var args = ia.inputActionArguments.inputArguments
@@ -298,7 +289,6 @@ class Util {
 			
 			if(args.size > 0){
 				for(oas : ia.getSender){
-					println(oas)
 					if(oas.outputActionArguments.outputArguments.size > index){
 						if(oas.outputActionArguments != null){
 							output.add((oas.outputActionArguments.outputArguments.get(index) as OutputActionArgument).type.toString)
@@ -475,7 +465,7 @@ class Util {
 				
 				//check the Component that performs the input action
 				if(vr.getContainerOfType(Action).eAllOfType(OutputAction).size > 0){
-					output.addAll(vr.name.getTypes(vr.getContainerOfType(Action).eAllOfType(OutputAction).get(0)))
+					output.addAll(vr.getTypes(vr.getContainerOfType(Action).eAllOfType(OutputAction).get(0)))
 				}
 					
 			}
