@@ -242,7 +242,8 @@ class GenerateSystemRate {
 	
 	def String defineRateActionStubs(ActionStub actionStub){
 		'''
-		if («actionStub.predicateHandlerRate» && action == «actionStub.getContainerOfType(Model).label»Definition.«actionStub.name.name.toUpperCase») {
+		if (action == «actionStub.getContainerOfType(Model).label»Definition.«actionStub.name.name.toUpperCase»
+		&& «actionStub.predicateHandlerRate») {
 				«actionStub.defineRateActionStub»
 				
 		}

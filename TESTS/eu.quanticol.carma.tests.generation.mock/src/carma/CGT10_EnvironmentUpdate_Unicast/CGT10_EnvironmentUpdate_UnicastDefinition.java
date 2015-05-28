@@ -11,10 +11,10 @@ public class CGT10_EnvironmentUpdate_UnicastDefinition {
 	/*COMPONENT ATTRIBUTES*/
 	public static final String PRODUCT_ATTRIBUTE = "product";
 	public static final Class<Integer> PRODUCT_ATTRIBUTE_TYPE = Integer.class;
-	public static final String POSITION_X_ATTRIBUTE = "position_x";
-	public static final Class<Integer> POSITION_X_ATTRIBUTE_TYPE = Integer.class;
 	public static final String EU_RECEIVER_ATTRIBUTE = "eu_receiver";
 	public static final Class<Integer> EU_RECEIVER_ATTRIBUTE_TYPE = Integer.class;
+	public static final String POSITION_X_ATTRIBUTE = "position_x";
+	public static final Class<Integer> POSITION_X_ATTRIBUTE_TYPE = Integer.class;
 	public static final String POSITION_Y_ATTRIBUTE = "position_y";
 	public static final Class<Integer> POSITION_Y_ATTRIBUTE_TYPE = Integer.class;
 	public static final String EU_SENDER_ATTRIBUTE = "eu_sender";
@@ -38,10 +38,8 @@ public class CGT10_EnvironmentUpdate_UnicastDefinition {
 	public static final double TRUE_PRODUCE_RATE = 1;
 	public static final double FALSE_PRODUCE_RATE = 1;
 	public static final double SENDER_EU_SENDER_EQUA_1_PRODUCE_RATE = 1;
-	public static final double RECEIVER_EU_RECEIVER_EQUA_1_SEND_RATE = 1;
+	public static final double SENDER_EU_SENDER_EQUA_1_SEND_RATE = 1;
 	public static final double GLOBAL_EU_GLOBAL_EQUA_1_PRODUCE_RATE = 1;
-	public static final double SENDER_EU_SENDER_EQUA_1_AND_RECEIVER_EU_RECEIVER_EQUA_1_SEND_RATE = 1;
-	public static final double SENDER_EU_SENDER_EQUA_1_AND_RECEIVER_EU_RECEIVER_EQUA_1_AND_GLOBAL_EU_GLOBAL_EQUA_1_SEND_RATE = 1;
 	/*PROCESS*/
 	public static final CarmaProcessAutomaton ProducerProcess = createProducerProcess();
 	
@@ -107,14 +105,14 @@ public class CGT10_EnvironmentUpdate_UnicastDefinition {
 			}
 		};
 		
-		CarmaPredicate Send_Guard = new CarmaPredicate() {
+		CarmaPredicate Produce_Guard = new CarmaPredicate() {
 			@Override
 			public boolean satisfy(CarmaStore store) {
 				int product = store.get("product" , Integer.class );
 				return product > 0;
 			}
 		};
-		CarmaPredicate Produce_Guard = new CarmaPredicate() {
+		CarmaPredicate Send_Guard = new CarmaPredicate() {
 			@Override
 			public boolean satisfy(CarmaStore store) {
 				int product = store.get("product" , Integer.class );
@@ -123,8 +121,8 @@ public class CGT10_EnvironmentUpdate_UnicastDefinition {
 		};
 		
 		//create the transitions between states
-		toReturn.addTransition(state_Send,Send_Guard,send_Action,state_Send);
 		toReturn.addTransition(state_Produce,Produce_Guard,produce_Action,state_Produce);
+		toReturn.addTransition(state_Send,Send_Guard,send_Action,state_Send);
 		
 		return toReturn;
 	}

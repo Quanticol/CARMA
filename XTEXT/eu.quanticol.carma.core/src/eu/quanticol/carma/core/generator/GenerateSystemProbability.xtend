@@ -244,7 +244,8 @@ class GenerateSystemProbability {
 	
 	def String defineProbActionStubs(ActionStub actionStub){
 		'''
-		if («actionStub.predicateHandlerProbability» && action == «actionStub.getContainerOfType(Model).label»Definition.«actionStub.name.name.toUpperCase») {
+		if (action == «actionStub.getContainerOfType(Model).label»Definition.«actionStub.name.name.toUpperCase»
+		&& «actionStub.predicateHandlerProbability») {
 				«actionStub.defineProbActionStub»
 		}
 		'''

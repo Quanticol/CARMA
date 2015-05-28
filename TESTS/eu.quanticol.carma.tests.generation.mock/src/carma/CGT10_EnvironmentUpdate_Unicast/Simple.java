@@ -159,6 +159,7 @@ public class Simple extends CarmaSystem {
 	
 			@Override
 			public boolean satisfy(CarmaStore sender) {
+				System.out.println(sender);
 				int eu_sender_s = sender.get("eu_sender" , Integer.class );
 				return eu_sender_s == 1;
 			}
@@ -178,38 +179,13 @@ public class Simple extends CarmaSystem {
 	}
 	
 	//UNICAST ENVIRONMENT RATE PREDICATES
-	public static CarmaPredicate get_receiver_eu_receiver_EQUA_1_send_UnicastPredicateRate(){
+	public static CarmaPredicate get_sender_eu_sender_EQUA_1_send_UnicastPredicateRate(){
 		return new CarmaPredicate() {
 	
 			@Override
-			public boolean satisfy(CarmaStore receiver) {
-				int eu_receiver_r = receiver.get("eu_receiver" , Integer.class );
-				return eu_receiver_r == 1;
-			}
-			
-		};
-	}
-	public static CarmaPredicate get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_send_UnicastPredicateRate(CarmaStore sender){
-		return new CarmaPredicate() {
-	
-			@Override
-			public boolean satisfy(CarmaStore receiver) {
-				int eu_receiver_r = receiver.get("eu_receiver" , Integer.class );
+			public boolean satisfy(CarmaStore sender) {
 				int eu_sender_s = sender.get("eu_sender" , Integer.class );
-				return eu_sender_s == 1 && eu_receiver_r == 1;
-			}
-			
-		};
-	}
-	public static CarmaPredicate get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_AND_global_eu_global_EQUA_1_send_UnicastPredicateRate(CarmaStore sender){
-		return new CarmaPredicate() {
-	
-			@Override
-			public boolean satisfy(CarmaStore receiver) {
-				int eu_global = global_store.get("eu_global" , Integer.class );
-				int eu_receiver_r = receiver.get("eu_receiver" , Integer.class );
-				int eu_sender_s = sender.get("eu_sender" , Integer.class );
-				return eu_sender_s == 1 && eu_receiver_r == 1 && eu_global == 1;
+				return eu_sender_s == 1;
 			}
 			
 		};
@@ -228,8 +204,9 @@ public class Simple extends CarmaSystem {
 				return 1;
 				
 		}
-		if (get_sender_eu_sender_EQUA_1_produce_BROADCAST__BroadcastPredicateRate().satisfy(sender)
-		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.PRODUCE) {
+		if (action == CGT10_EnvironmentUpdate_UnicastDefinition.PRODUCE
+			&& get_sender_eu_sender_EQUA_1_produce_BROADCAST__BroadcastPredicateRate().satisfy(sender)
+			) {
 				return 1;
 				
 		}
@@ -247,17 +224,7 @@ public class Simple extends CarmaSystem {
 				return 1;
 				
 		}
-		if (get_receiver_eu_receiver_EQUA_1_send_UnicastPredicateRate().satisfy(receiver)
-		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.SEND) {
-				return 1;
-				
-		}
-		if (get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_send_UnicastPredicateRate(sender).satisfy(receiver)
-		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.SEND) {
-				return 1;
-				
-		}
-		if (get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_AND_global_eu_global_EQUA_1_send_UnicastPredicateRate(sender).satisfy(receiver)
+		if (get_sender_eu_sender_EQUA_1_send_UnicastPredicateRate().satisfy(sender)
 		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.SEND) {
 				return 1;
 				

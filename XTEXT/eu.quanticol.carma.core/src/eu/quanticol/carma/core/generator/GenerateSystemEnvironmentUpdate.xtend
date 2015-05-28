@@ -243,8 +243,8 @@ class GenerateSystemEnvironmentUpdate {
 	
 	def String defineEUpdateActionStubs(ActionStub actionStub){
 		'''
-		if («actionStub.predicateHandlerEnvironmentUpdate» && action == «actionStub.getContainerOfType(Model).label»Definition.«actionStub.name.name.toUpperCase») {
-				«actionStub.defineEUpdateActionStub»
+		if (action == «actionStub.getContainerOfType(Model).label»Definition.«actionStub.name.name.toUpperCase» 
+		&& «actionStub.predicateHandlerEnvironmentUpdate») {
 		}
 		'''
 	}
