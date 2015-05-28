@@ -65,18 +65,18 @@ public abstract class CarmaOutput implements CarmaAction {
 			@Override
 			public boolean execute(RandomGenerator r) {
 				if (broadcast) {
-					caspaSystem.broadcastOutput(r, caspaComponent, action, getPredicate(caspaComponent.store), getValue( caspaComponent.store));
+					Object value = getValue( caspaComponent.store );
+					caspaSystem.broadcastOutput(r, caspaComponent, action, getPredicate(caspaComponent.store), value );
 					CarmaStoreUpdate update = getUpdate();
 					if (update != null) {
 						update.update( r , caspaComponent.store );
 					}
-					caspaSystem.broadcastUpdate(r,caspaComponent.store, action);
+					caspaSystem.broadcastUpdate(r,caspaComponent.store, action, value );
 					return true;
 				} else {
 					if (caspaSystem.unicastOutput(r, caspaComponent, action, getPredicate(caspaComponent.store), getValue( caspaComponent.store))) {
 						getUpdate().update( r , caspaComponent.store );
-						//FIXME!!!!!
-						caspaSystem.unicastUpdate(r,caspaComponent.store, null , action);
+						//N.B. The update of a unicast is triggered inside input action!!!!
 						return true;
 					}
 					return false;

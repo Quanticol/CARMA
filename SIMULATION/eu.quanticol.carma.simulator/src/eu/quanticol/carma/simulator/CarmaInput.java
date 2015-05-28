@@ -84,6 +84,9 @@ public abstract class CarmaInput implements CarmaAction {
 					if (update != null) {
 						update.update( r , caspaComponent.store );
 					}
+					if (!CarmaInput.this.broadcast) {
+						caspaSystem.unicastUpdate(r,sender, caspaComponent.store , action , value );
+					}
 					return true;
 				}
 				

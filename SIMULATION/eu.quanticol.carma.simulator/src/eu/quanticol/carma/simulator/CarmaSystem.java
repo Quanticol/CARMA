@@ -67,9 +67,9 @@ public abstract class CarmaSystem implements ModelI {
 
 	public abstract double unicastRate( CarmaStore sender , int action );
 	
-	public abstract void broadcastUpdate( RandomGenerator random , CarmaStore sender , int action );
+	public abstract void broadcastUpdate( RandomGenerator random , CarmaStore sender , int action , Object value );
 
-	public abstract void unicastUpdate( RandomGenerator random , CarmaStore sender , CarmaStore receiver, int action );
+	public abstract void unicastUpdate( RandomGenerator random , CarmaStore sender , CarmaStore receiver, int action , Object value );
 	
 	public int count( CarmaPredicate p ) {
 		int counter = 0;
