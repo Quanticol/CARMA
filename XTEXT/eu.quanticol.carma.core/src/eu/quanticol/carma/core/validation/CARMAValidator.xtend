@@ -1074,4 +1074,21 @@ class CARMAValidator extends AbstractCARMAValidator {
 		}
 	}
 	
+	public static val ERROR_VariableReference_Receiver_not_in_Rate = "Error: cannot use receivers in rate calculations."
+	@Check
+	def check_ERROR_VariableReference_Receiver_not_in_Rate(VariableReference vr){
+		var test = false
+		switch(vr){
+			VariableReferenceReceiver:	test = true
+			RecordReferenceReceiver:	test = true
+		}
+		if(test){
+			if(vr.getContainerOfType(RateBlock) != null)
+				error( 	ERROR_VariableReference_Receiver_not_in_Rate,
+					CarmaPackage::eINSTANCE.variableReference_Name,
+					ERROR_VariableReference_Receiver_not_in_Rate
+			)
+		}
+	}
+	
 }
