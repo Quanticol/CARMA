@@ -240,8 +240,8 @@
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//UpdateExpressions"/>
     <genClasses ecoreClass="CARMA.ecore#//BooleanExpressions"/>
-    <genClasses ecoreClass="CARMA.ecore#//Measures">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Measures/measures"/>
+    <genClasses ecoreClass="CARMA.ecore#//MeasureBlock">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//MeasureBlock/measures"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//Measure">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Measure/name"/>

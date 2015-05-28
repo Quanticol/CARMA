@@ -453,11 +453,11 @@ ComponentStyle returns ComponentStyle hidden(ML_COMMENT,SL_COMMENT,WS):
 	{ComponentBlockStyle}
 	definitions+=ComponentBlockDefinition+
 	(processes=Processes)?
-	(measures=Measures)?
+	(measures=MeasureBlock)?
 	system=BlockSystem
 	|
 	{ComponentLineStyle}
-	(measures=Measures)?
+	(measures=MeasureBlock)?
 	system=LineSystem
 	)
 ;
@@ -946,14 +946,14 @@ BooleanAtomic returns BooleanExpressions hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 ////////////////////////////////////////////////////MEASURES
 
-Measures returns Measures hidden(ML_COMMENT,SL_COMMENT,WS):
+MeasureBlock returns MeasureBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 	"measures" "{"
 	measures+=Measure ";"
 	(measures+=Measure+ ";")*
 	"}"
 ;
 
-Measure hidden(ML_COMMENT,SL_COMMENT,WS):
+Measure returns Measure hidden(ML_COMMENT,SL_COMMENT,WS):
 	"measure" name=MeasureName parameters=MeasureVariableDeclarations "="  measure=EnvironmentMeasure 
 ;
 

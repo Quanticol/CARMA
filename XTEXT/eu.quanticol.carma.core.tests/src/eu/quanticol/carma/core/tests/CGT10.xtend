@@ -369,12 +369,12 @@ public class Simple extends CarmaSystem {
 	
 	/*ENVIRONMENT UPDATE*/
 	@Override
-	public void broadcastUpdate(RandomGenerator random, CarmaStore sender,
+	public void broadcastUpdate(RandomGenerator random, CarmaStore sender, 
 	int action) {
 	}
 	
 	@Override
-	public void unicastUpdate(RandomGenerator random, CarmaStore sender,
+	public void unicastUpdate(RandomGenerator random, CarmaStore sender, CarmaStore receiver,
 	int action) {
 		if (True
 		 && action == __synthetic0Definition.SEND) {
@@ -651,6 +651,46 @@ public class __synthetic0Definition {
 		return toReturn;
 	}
 	/*MEASURES*/
+	//predicate states get_MeasureName_State(ProcessName_ProcessName... || All)Predicate()
+	public state ComponentPredicate getMeasureWaiting_Consumer_All_State_Predicate(){
+		return new ComponentPredicate() {
+			
+			@Override
+			public boolean eval(CarmaComponent c){
+				return true;
+			}
+		}
+	}
+	//predicate for boolean expression get_MeasureName_BooleanExpression_Predicate()
+	public state ComponentPredicate getMeasureWaiting_Consumer_All_BooleanExpression_Predicate(){
+		return new ComponentPredicate() {
+			
+			@Override
+			public boolean eval(CarmaComponent c){
+				return true && (c.isRunning(getMeasureWaiting_Consumer_All_State_Predicate()));
+			}
+		}
+	}
+	//getMethod
+	public static Measure<CarmaSystem> getMeasureWaiting_Consumer_All(){
+		
+		return new Measure<CarmaSystem>(){
+		
+		ComponentPredicate predicate = getMeasureWaiting_Consumer_All_BooleanExpression_Predicate();
+		
+		@Override
+		public double measure(CarmaSystem t){
+			//TODO
+			
+			return t.measure(predicate)
+		
+		}
+		
+		@Override
+		public String getName() {
+			return "Waiting_Consumer_All";
+		}
+	};
 }
 '''.toString, fsa.files.get(IFileSystemAccess::DEFAULT_OUTPUT+"carma/__synthetic0/__synthetic0Definition.java").toString)
 	assertTrue(fsa.files.containsKey(IFileSystemAccess::DEFAULT_OUTPUT+"carma/__synthetic0/__synthetic0Factory.java"))

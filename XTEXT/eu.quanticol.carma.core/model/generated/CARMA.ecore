@@ -158,7 +158,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="PredefinedMethodAttributeDistributionRule"/>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentStyle">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="measures" eType="#//Measures"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="measures" eType="#//MeasureBlock"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="system" eType="#//System"
         containment="true"/>
@@ -307,7 +307,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="UpdateExpressions"/>
   <eClassifiers xsi:type="ecore:EClass" name="BooleanExpressions"/>
-  <eClassifiers xsi:type="ecore:EClass" name="Measures">
+  <eClassifiers xsi:type="ecore:EClass" name="MeasureBlock">
     <eStructuralFeatures xsi:type="ecore:EReference" name="measures" upperBound="-1"
         eType="#//Measure" containment="true"/>
   </eClassifiers>

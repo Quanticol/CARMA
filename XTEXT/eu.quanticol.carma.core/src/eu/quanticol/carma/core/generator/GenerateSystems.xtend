@@ -426,7 +426,7 @@ class GenerateSystems {
 		'''
 		/*ENVIRONMENT UPDATE*/
 		@Override
-		public void broadcastUpdate(RandomGenerator random, CarmaStore sender,
+		public void broadcastUpdate(RandomGenerator random, CarmaStore sender, 
 		int action) {
 			«FOR broadcast : broadcasts»
 			«defineEUpdateActionStubs(broadcast.stub)»
@@ -434,7 +434,7 @@ class GenerateSystems {
 		}
 		
 		@Override
-		public void unicastUpdate(RandomGenerator random, CarmaStore sender,
+		public void unicastUpdate(RandomGenerator random, CarmaStore sender, CarmaStore receiver,
 		int action) {
 			«FOR unicast : unicasts»
 			«defineEUpdateActionStubs(unicast.stub)»

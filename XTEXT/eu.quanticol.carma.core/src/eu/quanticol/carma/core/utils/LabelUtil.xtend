@@ -50,7 +50,7 @@ import eu.quanticol.carma.core.carma.LineSystem
 import eu.quanticol.carma.core.carma.MacroName
 import eu.quanticol.carma.core.carma.MaxFunction
 import eu.quanticol.carma.core.carma.MeasureName
-import eu.quanticol.carma.core.carma.Measures
+import eu.quanticol.carma.core.carma.MeasureBlock
 import eu.quanticol.carma.core.carma.MethodAddition
 import eu.quanticol.carma.core.carma.MethodAtomicMethodReference
 import eu.quanticol.carma.core.carma.MethodAtomicPrimitive
@@ -182,6 +182,11 @@ import eu.quanticol.carma.core.carma.EnvironmentUpdate
 import eu.quanticol.carma.core.carma.ComponentBlockNewDeclarationSpawn
 import eu.quanticol.carma.core.carma.CBND
 import java.util.List
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressions
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionParallel
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionAll
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAllStates
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAState
 
 class LabelUtil {
 	
@@ -206,6 +211,15 @@ class LabelUtil {
 			NewComponentArgumentSpawnMacro		: (nca.value as MethodExpression).getLabel
 			NewComponentArgumentSpawnMethod		: (nca.value as Records).flatten
 			NewComponentArgumentSpawnReference	: (nca.value as VariableReference).getLabel
+		}
+	}
+	
+	def String getLabel(EnvironmentMacroExpressions eme){
+		switch(eme){
+			EnvironmentMacroExpressionParallel:				eme.left +"_"+ eme.right
+			EnvironmentMacroExpressionAll:					eme+"_All"
+			EnvironmentMacroExpressionComponentAllStates:	eme.comp.getLabel+"_All"
+			EnvironmentMacroExpressionComponentAState:		eme.comp.getLabel+"_"+eme.state.getLabel
 		}
 	}
 	
@@ -272,7 +286,7 @@ class LabelUtil {
 	
 	def String getLabel(MacroExpressions e){
 		switch(e){
-			MacroExpressionParallel		: {e.left.getLabel + "|" + e.right.getLabel}
+			MacroExpressionParallel		: {e.left.getLabel + "_" + e.right.getLabel}
 			MacroExpressionReference 	: e.name.getLabel
 		}
 	}
@@ -477,7 +491,7 @@ class LabelUtil {
 		"Component" + " " + cbd.name.label
 	}
 	
-	def String getLabel(Measures m){
+	def String getLabel(MeasureBlock m){
 		"Measures"
 	}
 	

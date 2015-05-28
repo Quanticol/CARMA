@@ -27,6 +27,10 @@ import eu.quanticol.carma.core.carma.RecordDeclaration
 import eu.quanticol.carma.core.carma.VariableReference
 import eu.quanticol.carma.core.carma.InputActionArguments
 import eu.quanticol.carma.core.carma.VariableName
+import eu.quanticol.carma.core.carma.MeasureBlock
+import eu.quanticol.carma.core.carma.Measure
+import eu.quanticol.carma.core.carma.EnvironmentMeasure
+import eu.quanticol.carma.core.carma.MeasureBlock
 
 class GenerateDefinitions {
 	
@@ -52,12 +56,13 @@ class GenerateDefinitions {
 			/*ENVIRONMENT ATTRIBUTES*/
 			«model.defineEnvironmentAttributes»
 			/*ACTION*/
-			«model.actionDefinitions»
+			«model.defineActionDefinitions»
 			/*RATES*/
-			«model.rateDefinitions»
+			«model.defineRateDefinitions»
 			/*PROCESS*/
-			«model.processDefinitions»
+			«model.defineProcessDefinitions»
 			/*MEASURES*/
+			«model.defineMeasures»
 		}
 		'''
 	}
@@ -110,7 +115,7 @@ class GenerateDefinitions {
 		
 	}
 	
-	def String actionDefinitions(Model model){
+	def String defineActionDefinitions(Model model){
 		
 		//public static final int PRODUCE = 0;
 		
@@ -128,7 +133,7 @@ class GenerateDefinitions {
 		
 	}
 	
-	def String rateDefinitions(Model model){
+	def String defineRateDefinitions(Model model){
 		
 		//public static final double PRODUCE_RATE = 1;
 		
@@ -148,7 +153,7 @@ class GenerateDefinitions {
 		actionStub.getContainerOfType(Rate).expression.label
 	}
 	
-	def String processDefinitions(Model model){
+	def String defineProcessDefinitions(Model model){
 		
 		/*ProcessAutomaton*/
 		//create#COMPONENTNAME#Process
@@ -393,6 +398,78 @@ class GenerateDefinitions {
 		«FOR transition : transitions»
 			«transition»
 		«ENDFOR»
+		'''
+	}
+	
+	def String defineMeasures(Model model){
+		var measuresBlock = model.eAllOfType(MeasureBlock)
+		var measures = new ArrayList<Measure>()
+		for(m : measuresBlock){
+			measures.addAll(m.eAllOfType(Measure))
+		}
+		'''
+		«FOR m : measures»
+		«var measureName = m.name.getLabel.toFirstUpper»
+		«var stateName = (m.measure as EnvironmentMeasure).componentReference.getLabel.toFirstUpper»
+		//predicate states get_MeasureName_State(ProcessName_ProcessName... || All)Predicate()
+		«m.defineGetBooleanExpressionStateMeasure(measureName,stateName)»
+		//predicate for boolean expression get_MeasureName_BooleanExpression_Predicate()
+		«m.defineGetBooleanExpressionPredicateMeasure(measureName,stateName)»
+		//getMethod
+		«m.defineGetMeasureMethod(measureName,stateName)»
+		«ENDFOR»
+		'''
+	}
+	
+	def String defineGetBooleanExpressionStateMeasure(Measure measure, String measureName, String stateName){
+		'''
+		public state ComponentPredicate getMeasure«measureName»_«stateName»_State_Predicate(){
+			return new ComponentPredicate() {
+				
+				@Override
+				public boolean eval(CarmaComponent c){
+					return true;
+				}
+			}
+		}
+		'''
+	}
+	
+	def String defineGetBooleanExpressionPredicateMeasure(Measure measure, String measureName, String stateName){
+		'''
+		public state ComponentPredicate getMeasure«measureName»_«stateName»_BooleanExpression_Predicate(){
+			return new ComponentPredicate() {
+				
+				@Override
+				public boolean eval(CarmaComponent c){
+					return true && (c.isRunning(getMeasure«measureName»_«stateName»_State_Predicate()));
+				}
+			}
+		}
+		'''
+	}
+	
+	def String defineGetMeasureMethod(Measure measure, String measureName, String stateName){
+		'''
+		public static Measure<CarmaSystem> getMeasure«measureName»_«stateName»(){
+			
+			return new Measure<CarmaSystem>(){
+			
+			ComponentPredicate predicate = getMeasure«measureName»_«stateName»_BooleanExpression_Predicate();
+			
+			@Override
+			public double measure(CarmaSystem t){
+				//TODO
+				
+				return t.measure(predicate)
+			
+			}
+			
+			@Override
+			public String getName() {
+				return "«measureName»_«stateName»";
+			}
+		};
 		'''
 	}
 	
