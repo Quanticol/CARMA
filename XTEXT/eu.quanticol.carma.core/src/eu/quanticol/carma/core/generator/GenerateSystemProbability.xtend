@@ -253,9 +253,32 @@ class GenerateSystemProbability {
 	def String predicateHandlerProbability(ActionStub actionStub){
 		var booleanExpression = actionStub.getContainerOfType(Probability).eAllOfType(EnvironmentGuard).get(0)
 		'''
-		«booleanExpression.booleanExpression.label»
+		«booleanToPredicate(booleanExpression.booleanExpression)»
 		'''
-	}	
+	}
+	
+	def String booleanToPredicate(BooleanExpressions be){
+		if(be.label.equals("True") || be.label.equals("true")){
+			return '''(CarmaPredicate.TRUE.satisfy(sender)'''
+		}
+		else if(be.label.equals("False") || be.label.equals("false")){
+			return '''(CarmaPredicate.FALSE.satisfy(sender)'''
+		}
+		else {
+			var cast = be.getContainerOfType(Probability) 
+			var senders 	= (cast.eAllOfType(RecordReferenceSender).size + cast.eAllOfType(VariableReferenceSender).size) > 0
+			var receivers	= (cast.eAllOfType(RecordReferenceReceiver).size + cast.eAllOfType(VariableReferenceReceiver).size) > 0
+			if(senders && !receivers){
+				'''«cast.convertToPredicateName»().satisfy(CarmaStore sender)'''
+			} else if (!senders && receivers) {
+				'''«cast.convertToPredicateName»().satisfy(CarmaStore receiver)'''
+			} else if (senders && receivers) {
+				'''«cast.convertToPredicateName»().satisfy(CarmaStore receiver)'''
+			} else {
+				'''«cast.convertToPredicateName»().satisfy(CarmaStore sender)'''
+			}
+		}
+	}
 	
 	def String defineProbActionStub(ActionStub actionStub){
 		'''return «actionStub.getContainerOfType(Probability).expression.label»;'''
