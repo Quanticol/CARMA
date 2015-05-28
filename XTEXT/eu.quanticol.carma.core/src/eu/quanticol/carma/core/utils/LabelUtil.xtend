@@ -201,6 +201,7 @@ import eu.quanticol.carma.core.carma.EnvironmentUpdateExpression
 import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicNow
 import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicMeasure
 import eu.quanticol.carma.core.carma.Probability
+import eu.quanticol.carma.core.carma.EnvironmentOperation
 
 class LabelUtil {
 	
@@ -251,23 +252,23 @@ class LabelUtil {
 	
 	def String convertToPredicateName(Probability cast){
 		if(cast.stub.isBroadcast)
-		'''get'''+cast.convertToJavaName+'''_BroadcastPredicate'''
+		'''get'''+cast.convertToJavaName+'''_BroadcastPredicateProb'''
 		else
-		'''get'''+cast.convertToJavaName+'''_UnicastPredicate'''
+		'''get'''+cast.convertToJavaName+'''_UnicastPredicateProb'''
 	}
 	
 	def String convertToPredicateName(Rate cast){
 		if(cast.stub.isBroadcast)
-		'''get'''+cast.convertToJavaName+'''_BroadcastPredicate'''
+		'''get'''+cast.convertToJavaName+'''_BroadcastPredicateRate'''
 		else
-		'''get'''+cast.convertToJavaName+'''_UnicastPredicate'''
+		'''get'''+cast.convertToJavaName+'''_UnicastPredicateRate'''
 	}
 	
 	def String convertToPredicateName(EnvironmentUpdate cast){
 		if(cast.stub.isBroadcast)
-		'''get'''+cast.convertToJavaName+'''_BroadcastPredicate'''
+		'''get'''+cast.convertToJavaName+'''_BroadcastPredicateUpdate'''
 		else
-		'''get'''+cast.convertToJavaName+'''_UnicastPredicate'''
+		'''get'''+cast.convertToJavaName+'''_UnicastPredicateUpdate'''
 	}
 	
 	def String convertToJavaName(Probability eu){
@@ -514,6 +515,14 @@ class LabelUtil {
 		
 		return output
 		
+	}
+	
+	def String convertToJavaName(EnvironmentOperation eo){
+		eo.guard.convertToJavaName + "_" + eo.stub.getLabelName
+	}
+	
+	def String convertToJavaNameDefinitions(ActionStub actionStub){
+		actionStub.getContainerOfType(EnvironmentOperation).convertToJavaName
 	}
 	
 	def String getLabelName(ActionStub actionStub){

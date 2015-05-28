@@ -122,7 +122,7 @@ class GenerateSystems {
 				«FOR mer : component.getMacros»
 				c4rm4.addAgent( new CarmaSequentialProcess(c4rm4, 
 				«system.getContainerOfType(Model).label»Definition.«component.label»Process,
-				«system.getContainerOfType(Model).label»Definition.«component.label»Process.getState("state_«mer.name.label»" ) );
+				«system.getContainerOfType(Model).label»Definition.«component.label»Process.getState("state_«mer.name.label»" )));
 				«ENDFOR»
 				return c4rm4;
 			}
@@ -135,7 +135,7 @@ class GenerateSystems {
 		'''
 		«FOR vd : envs»
 		«switch(vd){
-			VariableDeclarationEnum:	'''global_store.set(«system.getContainerOfType(Model).label»Definition.«vd.name.label.toUpperCase»_ATTRIBUTE,«system.getContainerOfType(Model).getValueEnv(vd.name.label)»)'''
+			VariableDeclarationEnum:	'''global_store.set(«system.getContainerOfType(Model).label»Definition.«vd.name.label.toUpperCase»_ATTRIBUTE,«system.getContainerOfType(Model).getValueEnv(vd.name.label)»);'''
 			VariableDeclarationRecord:{
 							var rds = vd.eAllOfType(RecordDeclaration)
 							if(rds.size > 0){

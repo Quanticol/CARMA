@@ -86,26 +86,26 @@ class GenerateSystemProbability {
 		//either single with no args
 		if(senders && !receivers){ 
 			'''
-			«cast.convertToPredicateName»(){
+			public static CarmaPredicate «cast.convertToPredicateName»(){
 				return new CarmaPredicate() {
 
 					@Override
 					public boolean satisfy(CarmaStore sender) {
 						«cast.guard.booleanExpression.getAllVariables»
-						return «cast.guard.convertToJava»
+						return «cast.guard.convertToJava»;
 					}
 					
 				};
 			}'''
 		} else if (!senders && receivers){
 			'''
-			«cast.convertToPredicateName»(){
+			public static CarmaPredicate «cast.convertToPredicateName»(){
 				return new CarmaPredicate() {
 
 					@Override
 					public boolean satisfy(CarmaStore receiver) {
 						«cast.guard.booleanExpression.getAllVariables»
-						return «cast.guard.convertToJava»
+						return «cast.guard.convertToJava»;
 					}
 					
 				};
@@ -113,13 +113,13 @@ class GenerateSystemProbability {
 		//or double with sender always given first, and receiver sent for evaluation?
 		} else if (senders && receivers) {
 			'''
-			«cast.convertToPredicateName»(CarmaStore sender){
+			public static CarmaPredicate «cast.convertToPredicateName»(CarmaStore sender){
 				return new CarmaPredicate() {
 
 					@Override
 					public boolean satisfy(CarmaStore receiver) {
 						«cast.guard.booleanExpression.getAllVariables»
-						return «cast.guard.convertToJava»
+						return «cast.guard.convertToJava»;
 					}
 					
 				};
@@ -127,13 +127,13 @@ class GenerateSystemProbability {
 		//or just global, no one cares about the store
 		} else if (cast.guard.eAllOfType(VariableReference).size > 0){
 			'''
-			«cast.convertToPredicateName»(){
+			public static CarmaPredicate «cast.convertToPredicateName»(){
 				return new CarmaPredicate() {
 
 					@Override
 					public boolean satisfy(CarmaStore store) {
 						«cast.guard.booleanExpression.getAllVariables»
-						return «cast.guard.convertToJava»
+						return «cast.guard.convertToJava»;
 					}
 					
 				};
@@ -152,26 +152,26 @@ class GenerateSystemProbability {
 		//either single with no args
 		if(senders && !receivers){ 
 			'''
-			«cast.convertToPredicateName»(){
+			public static CarmaPredicate «cast.convertToPredicateName»(){
 				return new CarmaPredicate() {
 
 					@Override
 					public boolean satisfy(CarmaStore sender) {
 						«cast.guard.booleanExpression.getAllVariables»
-						return «cast.guard.convertToJava»
+						return «cast.guard.convertToJava»;
 					}
 					
 				};
 			}'''
 		} else if (!senders && receivers){
 			'''
-			«cast.convertToPredicateName»(){
+			public static CarmaPredicate «cast.convertToPredicateName»(){
 				return new CarmaPredicate() {
 
 					@Override
 					public boolean satisfy(CarmaStore receiver) {
 						«cast.guard.booleanExpression.getAllVariables»
-						return «cast.guard.convertToJava»
+						return «cast.guard.convertToJava»;
 					}
 					
 				};
@@ -179,13 +179,13 @@ class GenerateSystemProbability {
 		//or double with sender always given first, and receiver sent for evaluation?
 		} else if (senders && receivers) {
 			'''
-			«cast.convertToPredicateName»(CarmaStore sender){
+			public static CarmaPredicate «cast.convertToPredicateName»(CarmaStore sender){
 				return new CarmaPredicate() {
 
 					@Override
 					public boolean satisfy(CarmaStore receiver) {
 						«cast.guard.booleanExpression.getAllVariables»
-						return «cast.guard.convertToJava»
+						return «cast.guard.convertToJava»;
 					}
 					
 				};
@@ -193,13 +193,13 @@ class GenerateSystemProbability {
 		//or just global, no one cares about the store
 		} else if (cast.guard.eAllOfType(VariableReference).size > 0){
 			'''
-			«cast.convertToPredicateName»(){
+			public static CarmaPredicate «cast.convertToPredicateName»(){
 				return new CarmaPredicate() {
 
 					@Override
 					public boolean satisfy(CarmaStore store) {
 						«cast.guard.booleanExpression.getAllVariables»
-						return «cast.guard.convertToJava»
+						return «cast.guard.convertToJava»;
 					}
 					
 				};
@@ -259,23 +259,23 @@ class GenerateSystemProbability {
 	
 	def String booleanToPredicate(BooleanExpressions be){
 		if(be.label.equals("True") || be.label.equals("true")){
-			return '''(CarmaPredicate.TRUE.satisfy(sender)'''
+			return '''CarmaPredicate.TRUE.satisfy(sender)'''
 		}
 		else if(be.label.equals("False") || be.label.equals("false")){
-			return '''(CarmaPredicate.FALSE.satisfy(sender)'''
+			return '''CarmaPredicate.FALSE.satisfy(sender)'''
 		}
 		else {
 			var cast = be.getContainerOfType(Probability) 
 			var senders 	= (cast.eAllOfType(RecordReferenceSender).size + cast.eAllOfType(VariableReferenceSender).size) > 0
 			var receivers	= (cast.eAllOfType(RecordReferenceReceiver).size + cast.eAllOfType(VariableReferenceReceiver).size) > 0
 			if(senders && !receivers){
-				'''«cast.convertToPredicateName»().satisfy(CarmaStore sender)'''
+				'''«cast.convertToPredicateName»().satisfy(sender)'''
 			} else if (!senders && receivers) {
-				'''«cast.convertToPredicateName»().satisfy(CarmaStore receiver)'''
+				'''«cast.convertToPredicateName»().satisfy(receiver)'''
 			} else if (senders && receivers) {
-				'''«cast.convertToPredicateName»().satisfy(CarmaStore receiver)'''
+				'''«cast.convertToPredicateName»(sender).satisfy(receiver)'''
 			} else {
-				'''«cast.convertToPredicateName»().satisfy(CarmaStore sender)'''
+				'''«cast.convertToPredicateName»().satisfy(sender)'''
 			}
 		}
 	}

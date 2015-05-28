@@ -19,7 +19,7 @@ public abstract class CarmaSystem implements ModelI {
 
 	protected LinkedList<CarmaComponent> collective;
 	
-	protected CarmaStore global_store;
+	protected static CarmaStore global_store;
 	
 	protected double now;
 

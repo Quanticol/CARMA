@@ -143,7 +143,7 @@ class GenerateDefinitions {
 		'''
 		«FOR actionStub : actionStubs»
 		«IF actionStub.getContainerOfType(Rate) != null»
-		public static final double «actionStub.labelName.toUpperCase»_RATE = «actionStub.getRates»;
+		public static final double «actionStub.convertToJavaNameDefinitions.toUpperCase»_RATE = «actionStub.getRates»;
 		«ENDIF»
 		«ENDFOR»
 		'''
@@ -424,12 +424,13 @@ class GenerateDefinitions {
 	
 	def String defineGetBooleanExpressionStateMeasure(Measure measure, String measureName, String stateName){
 		'''
-		public static ComponentPredicate getMeasure«measureName»_«stateName»_State_Predicate(){
-			return new ComponentPredicate() {
+		public static CarmaProcessPredicate getMeasure«measureName»_«stateName»_State_Predicate(){
+			return new CarmaProcessPredicate() {
 				
 				@Override
-				public boolean eval(CarmaComponent c){
-					return true;
+				public boolean eval(CarmaProcess p) {
+					// TODO Auto-generated method stub
+				return false;
 				}
 			};
 		}

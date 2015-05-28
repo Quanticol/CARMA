@@ -9,8 +9,10 @@ public class Simple extends CarmaSystem {
 	public Simple(){
 		addComponent(getProducer(1,1,1,1));
 		addComponent(getConsumer(1,1,1,1));
-		global_store.set(CGT10_EnvironmentUpdate_UnicastDefinition.TRANSACTIONS,0)
-		global_store.set(CGT10_EnvironmentUpdate_UnicastDefinition.EU_GLOBAL,1)
+		global_store.set(CGT10_EnvironmentUpdate_UnicastDefinition.TRANSACTIONS_ATTRIBUTE,0);
+		global_store.set( CGT10_EnvironmentUpdate_UnicastDefinition.TEST_X_ATTRIBUTE, 1);
+		global_store.set( CGT10_EnvironmentUpdate_UnicastDefinition.TEST_Y_ATTRIBUTE, 1);
+		global_store.set(CGT10_EnvironmentUpdate_UnicastDefinition.EU_GLOBAL_ATTRIBUTE,1);
 	}
 	
 	private CarmaComponent getProducer(int a,int b,int c,int d) {
@@ -21,10 +23,10 @@ public class Simple extends CarmaSystem {
 		c4rm4.set( CGT10_EnvironmentUpdate_UnicastDefinition.EU_SENDER_ATTRIBUTE, 1);
 		c4rm4.addAgent( new CarmaSequentialProcess(c4rm4, 
 		CGT10_EnvironmentUpdate_UnicastDefinition.ProducerProcess,
-		CGT10_EnvironmentUpdate_UnicastDefinition.ProducerProcess.getState("state_Produce" ) );
+		CGT10_EnvironmentUpdate_UnicastDefinition.ProducerProcess.getState("state_Produce" )));
 		c4rm4.addAgent( new CarmaSequentialProcess(c4rm4, 
 		CGT10_EnvironmentUpdate_UnicastDefinition.ProducerProcess,
-		CGT10_EnvironmentUpdate_UnicastDefinition.ProducerProcess.getState("state_Send" ) );
+		CGT10_EnvironmentUpdate_UnicastDefinition.ProducerProcess.getState("state_Send" )));
 		return c4rm4;
 	}
 	private CarmaComponent getConsumer(int a,int b, int x, int y) {
@@ -35,120 +37,292 @@ public class Simple extends CarmaSystem {
 		c4rm4.set( CGT10_EnvironmentUpdate_UnicastDefinition.EU_RECEIVER_ATTRIBUTE, 1);
 		c4rm4.addAgent( new CarmaSequentialProcess(c4rm4, 
 		CGT10_EnvironmentUpdate_UnicastDefinition.ConsumerProcess,
-		CGT10_EnvironmentUpdate_UnicastDefinition.ConsumerProcess.getState("state_Consume" ) );
+		CGT10_EnvironmentUpdate_UnicastDefinition.ConsumerProcess.getState("state_Consume" )));
 		c4rm4.addAgent( new CarmaSequentialProcess(c4rm4, 
 		CGT10_EnvironmentUpdate_UnicastDefinition.ConsumerProcess,
-		CGT10_EnvironmentUpdate_UnicastDefinition.ConsumerProcess.getState("state_Receive" ) );
+		CGT10_EnvironmentUpdate_UnicastDefinition.ConsumerProcess.getState("state_Receive" )));
 		return c4rm4;
+	}
+	
+	/*ENVIRONMENT PROBABILITY PREDICATES*/
+	//BROADCAST ENVIRONMENT PROBABILITY PREDICATES
+	public static CarmaPredicate get_sender_eu_sender_EQUA_1_produce_BROADCAST__BroadcastPredicateProb(){
+		return new CarmaPredicate() {
+	
+			@Override
+			public boolean satisfy(CarmaStore sender) {
+				int eu_sender_s = sender.get("eu_sender" , Integer.class );
+				return eu_sender_s == 1;
+			}
+			
+		};
+	}
+	public static CarmaPredicate get_global_eu_global_EQUA_1_produce_BROADCAST__BroadcastPredicateProb(){
+		return new CarmaPredicate() {
+	
+			@Override
+			public boolean satisfy(CarmaStore store) {
+				int eu_global = global_store.get("eu_global" , Integer.class );
+				return eu_global == 1;
+			}
+			
+		};
+	}
+	
+	//UNICAST ENVIRONMENT PROBABILITY PREDICATES
+	public static CarmaPredicate get_receiver_eu_receiver_EQUA_1_send_UnicastPredicateProb(){
+		return new CarmaPredicate() {
+	
+			@Override
+			public boolean satisfy(CarmaStore receiver) {
+				int eu_receiver_r = receiver.get("eu_receiver" , Integer.class );
+				return eu_receiver_r == 1;
+			}
+			
+		};
+	}
+	public static CarmaPredicate get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_send_UnicastPredicateProb(CarmaStore sender){
+		return new CarmaPredicate() {
+	
+			@Override
+			public boolean satisfy(CarmaStore receiver) {
+				int eu_receiver_r = receiver.get("eu_receiver" , Integer.class );
+				int eu_sender_s = sender.get("eu_sender" , Integer.class );
+				return eu_sender_s == 1 && eu_receiver_r == 1;
+			}
+			
+		};
+	}
+	public static CarmaPredicate get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_AND_global_eu_global_EQUA_1_send_UnicastPredicateProb(CarmaStore sender){
+		return new CarmaPredicate() {
+	
+			@Override
+			public boolean satisfy(CarmaStore receiver) {
+				int eu_global = global_store.get("eu_global" , Integer.class );
+				int eu_receiver_r = receiver.get("eu_receiver" , Integer.class );
+				int eu_sender_s = sender.get("eu_sender" , Integer.class );
+				return eu_sender_s == 1 && eu_receiver_r == 1 && eu_global == 1;
+			}
+			
+		};
 	}
 	
 	/*ENVIRONMENT PROBABILITY*/
 	@Override
 	public double broadcastProbability(CarmaStore sender, CarmaStore receiver,
 	int action) {
+		if (CarmaPredicate.TRUE.satisfy(sender)
+		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.PRODUCE) {
+				return 1;
+		}
+		if (CarmaPredicate.FALSE.satisfy(sender)
+		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.PRODUCE) {
+				return 1;
+		}
+		if (get_sender_eu_sender_EQUA_1_produce_BROADCAST__BroadcastPredicateProb().satisfy(sender)
+		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.PRODUCE) {
+				return 1;
+		}
+		if (get_global_eu_global_EQUA_1_produce_BROADCAST__BroadcastPredicateProb().satisfy(sender)
+		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.PRODUCE) {
+				return 1;
+		}
 		return 0;
 	}
 	
 	@Override
 	public double unicastProbability(CarmaStore sender, CarmaStore receiver,
 	int action) {
+		if (CarmaPredicate.TRUE.satisfy(sender)
+		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.SEND) {
+				return 1;
+		}
+		if (get_receiver_eu_receiver_EQUA_1_send_UnicastPredicateProb().satisfy(receiver)
+		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.SEND) {
+				return 1;
+		}
+		if (get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_send_UnicastPredicateProb(sender).satisfy(receiver)
+		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.SEND) {
+				return 1;
+		}
+		if (get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_AND_global_eu_global_EQUA_1_send_UnicastPredicateProb(sender).satisfy(receiver)
+		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.SEND) {
+				return 1;
+		}
 		return 0;
+	}
+	
+	/*ENVIRONMENT RATE PREDICATES*/
+	//BROADCAST ENVIRONMENT RATE PREDICATES
+	public static CarmaPredicate get_sender_eu_sender_EQUA_1_produce_BROADCAST__BroadcastPredicateRate(){
+		return new CarmaPredicate() {
+	
+			@Override
+			public boolean satisfy(CarmaStore sender) {
+				int eu_sender_s = sender.get("eu_sender" , Integer.class );
+				return eu_sender_s == 1;
+			}
+			
+		};
+	}
+	public static CarmaPredicate get_global_eu_global_EQUA_1_produce_BROADCAST__BroadcastPredicateRate(){
+		return new CarmaPredicate() {
+	
+			@Override
+			public boolean satisfy(CarmaStore store) {
+				int eu_global = global_store.get("eu_global" , Integer.class );
+				return eu_global == 1;
+			}
+			
+		};
+	}
+	
+	//UNICAST ENVIRONMENT RATE PREDICATES
+	public static CarmaPredicate get_receiver_eu_receiver_EQUA_1_send_UnicastPredicateRate(){
+		return new CarmaPredicate() {
+	
+			@Override
+			public boolean satisfy(CarmaStore receiver) {
+				int eu_receiver_r = receiver.get("eu_receiver" , Integer.class );
+				return eu_receiver_r == 1;
+			}
+			
+		};
+	}
+	public static CarmaPredicate get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_send_UnicastPredicateRate(CarmaStore sender){
+		return new CarmaPredicate() {
+	
+			@Override
+			public boolean satisfy(CarmaStore receiver) {
+				int eu_receiver_r = receiver.get("eu_receiver" , Integer.class );
+				int eu_sender_s = sender.get("eu_sender" , Integer.class );
+				return eu_sender_s == 1 && eu_receiver_r == 1;
+			}
+			
+		};
+	}
+	public static CarmaPredicate get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_AND_global_eu_global_EQUA_1_send_UnicastPredicateRate(CarmaStore sender){
+		return new CarmaPredicate() {
+	
+			@Override
+			public boolean satisfy(CarmaStore receiver) {
+				int eu_global = global_store.get("eu_global" , Integer.class );
+				int eu_receiver_r = receiver.get("eu_receiver" , Integer.class );
+				int eu_sender_s = sender.get("eu_sender" , Integer.class );
+				return eu_sender_s == 1 && eu_receiver_r == 1 && eu_global == 1;
+			}
+			
+		};
 	}
 	
 	/*ENVIRONMENT RATE*/
 	@Override
 	public double broadcastRate(CarmaStore sender, int action) {
-		if (True
+		if (CarmaPredicate.TRUE.satisfy(sender)
 		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.PRODUCE) {
 				return 1;
+				
 		}
-		return 0;
+		if (CarmaPredicate.FALSE.satisfy(sender)
+		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.PRODUCE) {
+				return 1;
+				
+		}
+		if (get_sender_eu_sender_EQUA_1_produce_BROADCAST__BroadcastPredicateRate().satisfy(sender)
+		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.PRODUCE) {
+				return 1;
+				
+		}
+		if (get_global_eu_global_EQUA_1_produce_BROADCAST__BroadcastPredicateRate().satisfy(sender)
+		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.PRODUCE) {
+				return 1;
+				
+		}
+		return 1;
 	}
 	@Override
 	public double unicastRate(CarmaStore sender, int action) {
-		if (True
+		if (CarmaPredicate.TRUE.satisfy(sender)
 		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.SEND) {
 				return 1;
+				
 		}
+		if (get_receiver_eu_receiver_EQUA_1_send_UnicastPredicateRate().satisfy(receiver)
+		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.SEND) {
+				return 1;
+				
+		}
+		if (get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_send_UnicastPredicateRate(sender).satisfy(receiver)
+		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.SEND) {
+				return 1;
+				
+		}
+		if (get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_AND_global_eu_global_EQUA_1_send_UnicastPredicateRate(sender).satisfy(receiver)
+		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.SEND) {
+				return 1;
+				
+		}
+		return 1;
 	}
 	
 	/*ENVIRONMENT UPDATE PREDICATES*/
 	//BROADCAST ENVIRONMENT UPDATE PREDICATES
 	
 	//UNICAST ENVIRONMENT UPDATE PREDICATES
-	public static CarmaPredicate get_True_send_Predicate(){
+	public static CarmaPredicate get_sender_eu_sender_EQUA_1_send_UnicastPredicateUpdate(){
 		return new CarmaPredicate() {
 	
 			@Override
-			public boolean satisfy(CarmaStore store) {
-				//any global if required
-				return //getting stores and create expressions
+			public boolean satisfy(CarmaStore sender) {
+				int eu_sender_s = sender.get("eu_sender" , Integer.class );
+				return eu_sender_s == 1;
 			}
 			
 		};
 	}
-	public static CarmaPredicate get_False_send_Predicate(){
+	public static CarmaPredicate get_receiver_eu_receiver_EQUA_1_send_UnicastPredicateUpdate(){
 		return new CarmaPredicate() {
 	
 			@Override
-			public boolean satisfy(CarmaStore store) {
-				//any global if required
-				return //getting stores and create expressions
+			public boolean satisfy(CarmaStore receiver) {
+				int eu_receiver_r = receiver.get("eu_receiver" , Integer.class );
+				return eu_receiver_r == 1;
 			}
 			
 		};
 	}
-	public static CarmaPredicate get_sender_eu_sender_EQUA_1_send_Predicate(){
+	public static CarmaPredicate get_global_eu_global_EQUA_1_send_UnicastPredicateUpdate(){
 		return new CarmaPredicate() {
 	
 			@Override
 			public boolean satisfy(CarmaStore store) {
-				//any global if required
-				return //getting stores and create expressions
+				int eu_global = global_store.get("eu_global" , Integer.class );
+				return eu_global == 1;
 			}
 			
 		};
 	}
-	public static CarmaPredicate get_receiver_eu_receiver_EQUA_1_send_Predicate(){
+	public static CarmaPredicate get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_send_UnicastPredicateUpdate(CarmaStore sender){
 		return new CarmaPredicate() {
 	
 			@Override
-			public boolean satisfy(CarmaStore store) {
-				//any global if required
-				return //getting stores and create expressions
+			public boolean satisfy(CarmaStore receiver) {
+				int eu_receiver_r = receiver.get("eu_receiver" , Integer.class );
+				int eu_sender_s = sender.get("eu_sender" , Integer.class );
+				return eu_sender_s == 1 && eu_receiver_r == 1;
 			}
 			
 		};
 	}
-	public static CarmaPredicate get_global_eu_global_EQUA_1_send_Predicate(){
+	public static CarmaPredicate get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_AND_global_eu_global_EQUA_1_send_UnicastPredicateUpdate(CarmaStore sender){
 		return new CarmaPredicate() {
 	
 			@Override
-			public boolean satisfy(CarmaStore store) {
-				//any global if required
-				return //getting stores and create expressions
-			}
-			
-		};
-	}
-	public static CarmaPredicate get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_send_Predicate(CarmaStore sender){
-		return new CarmaPredicate() {
-	
-			@Override
-			public boolean satisfy(CarmaStore store) {
-				//any global if required
-				return //getting stores and create expressions
-			}
-			
-		};
-	}
-	public static CarmaPredicate get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_AND_global_eu_global_EQUA_1_send_Predicate(CarmaStore sender){
-		return new CarmaPredicate() {
-	
-			@Override
-			public boolean satisfy(CarmaStore store) {
-				//any global if required
-				return //getting stores and create expressions
+			public boolean satisfy(CarmaStore receiver) {
+				int eu_global = global_store.get("eu_global" , Integer.class );
+				int eu_receiver_r = receiver.get("eu_receiver" , Integer.class );
+				int eu_sender_s = sender.get("eu_sender" , Integer.class );
+				return eu_sender_s == 1 && eu_receiver_r == 1 && eu_global == 1;
 			}
 			
 		};
@@ -163,33 +337,40 @@ public class Simple extends CarmaSystem {
 	@Override
 	public void unicastUpdate(RandomGenerator random, CarmaStore sender, CarmaStore receiver,
 	int action, Object value) {
-		if ((CarmaPredicate.TRUE.satisfy(sender)
+		if (CarmaPredicate.TRUE.satisfy(sender)
 		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.SEND) {
-				//updates
+				int transactions = global_store.get("transactions" , Integer.class );
+				global_store.set("transactions",transactions + 1);
 		}
-		if ((CarmaPredicate.FALSE.satisfy(sender)
+		if (CarmaPredicate.FALSE.satisfy(sender)
 		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.SEND) {
-				//updates
+				int transactions = global_store.get("transactions" , Integer.class );
+				global_store.set("transactions",transactions + 1);
 		}
-		if (get_sender_eu_sender_EQUA_1_send_Predicate().satisfy(CarmaStore sender)
+		if (get_sender_eu_sender_EQUA_1_send_UnicastPredicateUpdate().satisfy(sender)
 		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.SEND) {
-				//updates
+				int transactions = global_store.get("transactions" , Integer.class );
+				global_store.set("transactions",transactions + 1);
 		}
-		if (get_receiver_eu_receiver_EQUA_1_send_Predicate().satisfy(CarmaStore receiver)
+		if (get_receiver_eu_receiver_EQUA_1_send_UnicastPredicateUpdate().satisfy(receiver)
 		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.SEND) {
-				//updates
+				int transactions = global_store.get("transactions" , Integer.class );
+				global_store.set("transactions",transactions + 1);
 		}
-		if (get_global_eu_global_EQUA_1_send_Predicate().satisfy(CarmaStore sender)
+		if (get_global_eu_global_EQUA_1_send_UnicastPredicateUpdate().satisfy(sender)
 		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.SEND) {
-				//updates
+				int transactions = global_store.get("transactions" , Integer.class );
+				global_store.set("transactions",transactions + 1);
 		}
-		if (get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_send_Predicate().satisfy(CarmaStore receiver)
+		if (get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_send_UnicastPredicateUpdate(sender).satisfy(receiver)
 		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.SEND) {
-				//updates
+				int transactions = global_store.get("transactions" , Integer.class );
+				global_store.set("transactions",transactions + 1);
 		}
-		if (get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_AND_global_eu_global_EQUA_1_send_Predicate().satisfy(CarmaStore receiver)
+		if (get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_AND_global_eu_global_EQUA_1_send_UnicastPredicateUpdate(sender).satisfy(receiver)
 		 && action == CGT10_EnvironmentUpdate_UnicastDefinition.SEND) {
-				//updates
+				int transactions = global_store.get("transactions" , Integer.class );
+				global_store.set("transactions",transactions + 1);
 		}
 	}
 	
