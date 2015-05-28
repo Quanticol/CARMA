@@ -1886,11 +1886,18 @@ class Util {
 		return vrs
 	}
 	
-	def HashSet<VariableReference> getStores(BooleanExpressions br){
+	def HashSet<VariableReference> getOutputTheirStores(BooleanExpressions br){
 		var HashSet<VariableReference> vrs 	= new HashSet<VariableReference>()
 		
 		vrs.addAll(br.eAllOfType(VariableReferencePure)) 
 		vrs.addAll(br.eAllOfType(RecordReferencePure))
+		
+		return vrs
+	}
+	
+	def HashSet<VariableReference> getOutputMyStores(BooleanExpressions br){
+		var HashSet<VariableReference> vrs 	= new HashSet<VariableReference>()
+		
 		vrs.addAll(br.eAllOfType(VariableReferenceMy))
 		vrs.addAll(br.eAllOfType(VariableReferenceThis))		
 		vrs.addAll(br.eAllOfType(RecordReferenceMy))			
@@ -1898,6 +1905,7 @@ class Util {
 		
 		return vrs
 	}
+
 
 	def HashSet<VariableReference> getGlobals(EnvironmentUpdateExpressions br){
 		var HashSet<VariableReference> vrs 	= new HashSet<VariableReference>()
@@ -1971,6 +1979,19 @@ class Util {
 		
 		vrs.addAll(br.eAllOfType(VariableReferenceReceiver)) 
 		vrs.addAll(br.eAllOfType(RecordReferenceReceiver))
+		
+		return vrs
+	}
+	
+	def HashSet<VariableReference> getStores(BooleanExpressions br){
+		var HashSet<VariableReference> vrs 	= new HashSet<VariableReference>()
+		
+		vrs.addAll(br.eAllOfType(VariableReferencePure)) 
+		vrs.addAll(br.eAllOfType(RecordReferencePure))
+		vrs.addAll(br.eAllOfType(VariableReferenceMy))
+		vrs.addAll(br.eAllOfType(VariableReferenceThis))		
+		vrs.addAll(br.eAllOfType(RecordReferenceMy))			
+		vrs.addAll(br.eAllOfType(RecordReferenceThis))				
 		
 		return vrs
 	}

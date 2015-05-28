@@ -663,6 +663,46 @@ class LabelUtil {
 		}
 	}
 	
+	def String convertToJavaInputAction(BooleanExpressions e){
+		switch(e){
+			BooleanOr:						{e.left.convertToJavaInputAction + " || " + e.right.convertToJavaInputAction }
+			BooleanAnd:						{e.left.convertToJavaInputAction + " && " + e.right.convertToJavaInputAction }
+			BooleanEquality:				{e.left.convertToJavaInputAction + " " + e.op + " " + e.right.convertToJavaInputAction }
+			BooleanComparison:				{e.left.convertToJavaInputAction + " " + e.op + " " + e.right.convertToJavaInputAction }
+			BooleanSubtraction:				{e.left.convertToJavaInputAction + " - " + e.right.convertToJavaInputAction }
+			BooleanAddition:				{e.left.convertToJavaInputAction + " + " + e.right.convertToJavaInputAction }
+			BooleanMultiplication:			{e.left.convertToJavaInputAction + " * " + e.right.convertToJavaInputAction }
+			BooleanModulo:					{e.left.convertToJavaInputAction + " % " + e.right.convertToJavaInputAction }
+			BooleanDivision:				{e.left.convertToJavaInputAction + " / " + e.right.convertToJavaInputAction }
+			BooleanNot:						{"!"+e.expression.convertToJavaInputAction}
+			BooleanAtomicPrimitive:			(e.value as PrimitiveType).label			
+			BooleanAtomicVariable:			(e.value as VariableReference).convertToJavaInputAction 
+			BooleanAtomicMethodReference:	(e.value as MethodExpression).label			
+			BooleanAtomicNow:				"now"	
+			BooleanExpression:				e.expression.convertToJavaInputAction
+		}
+	}
+	
+	def String convertToJavaOutputAction(BooleanExpressions e){
+		switch(e){
+			BooleanOr:						{e.left.convertToJavaOutputAction + " || " + e.right.convertToJavaOutputAction }
+			BooleanAnd:						{e.left.convertToJavaOutputAction + " && " + e.right.convertToJavaOutputAction }
+			BooleanEquality:				{e.left.convertToJavaOutputAction + " " + e.op + " " + e.right.convertToJavaOutputAction }
+			BooleanComparison:				{e.left.convertToJavaOutputAction + " " + e.op + " " + e.right.convertToJavaOutputAction }
+			BooleanSubtraction:				{e.left.convertToJavaOutputAction + " - " + e.right.convertToJavaOutputAction }
+			BooleanAddition:				{e.left.convertToJavaOutputAction + " + " + e.right.convertToJavaOutputAction }
+			BooleanMultiplication:			{e.left.convertToJavaOutputAction + " * " + e.right.convertToJavaOutputAction }
+			BooleanModulo:					{e.left.convertToJavaOutputAction + " % " + e.right.convertToJavaOutputAction }
+			BooleanDivision:				{e.left.convertToJavaOutputAction + " / " + e.right.convertToJavaOutputAction }
+			BooleanNot:						{"!"+e.expression.convertToJavaOutputAction}
+			BooleanAtomicPrimitive:			(e.value as PrimitiveType).label			
+			BooleanAtomicVariable:			(e.value as VariableReference).convertToJavaOutputAction 
+			BooleanAtomicMethodReference:	(e.value as MethodExpression).label			
+			BooleanAtomicNow:				"now"	
+			BooleanExpression:				e.expression.convertToJavaOutputAction
+		}
+	}
+	
 	def String convertToJavaName(BooleanExpressions e){
 		switch(e){
 			BooleanOr:						{e.left.convertToJavaName + "_OR_" + e.right.convertToJavaName }
@@ -884,6 +924,40 @@ class LabelUtil {
 			RecordReferenceThis:			{vr.name.label+"_"+vr.record.label}
 			RecordReferenceReceiver:		{vr.name.label+"_"+vr.record.label+"_r"}
 			RecordReferenceSender:			{vr.name.label+"_"+vr.record.label+"_s"}
+			VariableReferenceGlobal:		{vr.name.label}
+			RecordReferenceGlobal:			{vr.name.label+"_"+vr.record.label}
+		}
+	}
+	
+	def String convertToJavaInputAction(VariableReference vr){
+		switch(vr){
+			VariableReferencePure: 			{vr.name.label+"_i"}
+			VariableReferenceMy: 			{vr.name.label+"_i"}
+			VariableReferenceThis: 			{vr.name.label+"_i"}
+			VariableReferenceReceiver:		{vr.name.label}
+			VariableReferenceSender:		{vr.name.label}
+			RecordReferencePure:			{vr.name.label+"_"+vr.record.label+"_i"}
+			RecordReferenceMy:				{vr.name.label+"_"+vr.record.label+"_i"}
+			RecordReferenceThis:			{vr.name.label+"_"+vr.record.label+"_i"}
+			RecordReferenceReceiver:		{vr.name.label+"_"+vr.record.label}
+			RecordReferenceSender:			{vr.name.label+"_"+vr.record.label}
+			VariableReferenceGlobal:		{vr.name.label}
+			RecordReferenceGlobal:			{vr.name.label+"_"+vr.record.label}
+		}
+	}
+	
+	def String convertToJavaOutputAction(VariableReference vr){
+		switch(vr){
+			VariableReferencePure: 			{vr.name.label+"_i"}
+			VariableReferenceMy: 			{vr.name.label+"_o"}
+			VariableReferenceThis: 			{vr.name.label+"_o"}
+			VariableReferenceReceiver:		{vr.name.label}
+			VariableReferenceSender:		{vr.name.label}
+			RecordReferencePure:			{vr.name.label+"_"+vr.record.label+"_i"}
+			RecordReferenceMy:				{vr.name.label+"_"+vr.record.label+"_o"}
+			RecordReferenceThis:			{vr.name.label+"_"+vr.record.label+"_o"}
+			RecordReferenceReceiver:		{vr.name.label+"_"+vr.record.label}
+			RecordReferenceSender:			{vr.name.label+"_"+vr.record.label}
 			VariableReferenceGlobal:		{vr.name.label}
 			RecordReferenceGlobal:			{vr.name.label+"_"+vr.record.label}
 		}

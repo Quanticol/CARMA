@@ -91,7 +91,7 @@ class GenerateSystemRate {
 
 					@Override
 					public boolean satisfy(CarmaStore sender) {
-						«cast.guard.booleanExpression.getAllVariables»
+						«cast.guard.booleanExpression.getAllVariablesEnv»
 						return «cast.guard.convertToJava»;
 					}
 					
@@ -104,7 +104,7 @@ class GenerateSystemRate {
 
 					@Override
 					public boolean satisfy(CarmaStore receiver) {
-						«cast.guard.booleanExpression.getAllVariables»
+						«cast.guard.booleanExpression.getAllVariablesEnv»
 						return «cast.guard.convertToJava»;
 					}
 					
@@ -118,7 +118,7 @@ class GenerateSystemRate {
 
 					@Override
 					public boolean satisfy(CarmaStore receiver) {
-						«cast.guard.booleanExpression.getAllVariables»
+						«cast.guard.booleanExpression.getAllVariablesEnv»
 						return «cast.guard.convertToJava»;
 					}
 					
@@ -132,7 +132,7 @@ class GenerateSystemRate {
 
 					@Override
 					public boolean satisfy(CarmaStore store) {
-						«cast.guard.booleanExpression.getAllVariables»
+						«cast.guard.booleanExpression.getAllVariablesEnv»
 						return «cast.guard.convertToJava»;
 					}
 					
@@ -157,7 +157,7 @@ class GenerateSystemRate {
 
 					@Override
 					public boolean satisfy(CarmaStore sender) {
-						«cast.guard.booleanExpression.getAllVariables»
+						«cast.guard.booleanExpression.getAllVariablesEnv»
 						return «cast.guard.convertToJava»;
 					}
 					
@@ -170,7 +170,7 @@ class GenerateSystemRate {
 
 					@Override
 					public boolean satisfy(CarmaStore receiver) {
-						«cast.guard.booleanExpression.getAllVariables»
+						«cast.guard.booleanExpression.getAllVariablesEnv»
 						return «cast.guard.convertToJava»;
 					}
 					
@@ -184,7 +184,7 @@ class GenerateSystemRate {
 
 					@Override
 					public boolean satisfy(CarmaStore receiver) {
-						«cast.guard.booleanExpression.getAllVariables»
+						«cast.guard.booleanExpression.getAllVariablesEnv»
 						return «cast.guard.convertToJava»;
 					}
 					
@@ -198,7 +198,7 @@ class GenerateSystemRate {
 
 					@Override
 					public boolean satisfy(CarmaStore store) {
-						«cast.guard.booleanExpression.getAllVariables»
+						«cast.guard.booleanExpression.getAllVariablesEnv»
 						return «cast.guard.convertToJava»;
 					}
 					

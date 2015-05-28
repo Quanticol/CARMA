@@ -71,6 +71,57 @@ class GeneratorUtils {
 		'''
 	}
 	
+	def String getInputStore(VariableReference vr){
+		'''
+		«var vd = vr.getVariableDeclaration»
+		«switch(vd){
+		VariableDeclarationEnum:	'''«vd.convertPrimitiveType» «vd.name.label»_i = inputStore.get("«vd.name.label»" , «vd.convertType».class );'''
+		VariableDeclarationRecord:	{
+						var rds = vd.eAllOfType(RecordDeclaration)
+						'''
+						«FOR rd : rds»
+						«vd.convertPrimitiveType» «vd.name.label»_«rd.name.label»_i = inputStore.get("«vd.name.label»_«rd.name.label»" , «vd.convertType».class );
+						«ENDFOR»
+						'''
+					}
+				}»
+		'''
+	}
+	
+	def String getOutputTheirStore(VariableReference vr){
+		'''
+		«var vd = vr.getVariableDeclaration»
+		«switch(vd){
+		VariableDeclarationEnum:	'''«vd.convertPrimitiveType» «vd.name.label»_i = inputStore.get("«vd.name.label»" , «vd.convertType».class );'''
+		VariableDeclarationRecord:	{
+						var rds = vd.eAllOfType(RecordDeclaration)
+						'''
+						«FOR rd : rds»
+						«vd.convertPrimitiveType» «vd.name.label»_«rd.name.label»_i = inputStore.get("«vd.name.label»_«rd.name.label»" , «vd.convertType».class );
+						«ENDFOR»
+						'''
+					}
+				}»
+		'''
+	}
+	
+	def String getOutputMyStore(VariableReference vr){
+		'''
+		«var vd = vr.getVariableDeclaration»
+		«switch(vd){
+		VariableDeclarationEnum:	'''«vd.convertPrimitiveType» «vd.name.label»_o = outputStore.get("«vd.name.label»" , «vd.convertType».class );'''
+		VariableDeclarationRecord:	{
+						var rds = vd.eAllOfType(RecordDeclaration)
+						'''
+						«FOR rd : rds»
+						«vd.convertPrimitiveType» «vd.name.label»_«rd.name.label»_o = outputStore.get("«vd.name.label»_«rd.name.label»" , «vd.convertType».class );
+						«ENDFOR»
+						'''
+					}
+				}»
+		'''
+	}
+	
 	def String getSender(VariableReference vr){
 		'''
 		«var vd = vr.getVariableDeclaration»
@@ -192,7 +243,7 @@ class GeneratorUtils {
 		'''global_store.set("«variable»",«expression»);'''
 	}
 	
-	def String getAllVariables(BooleanExpressions bes){
+	def String getAllVariablesEnv(BooleanExpressions bes){
 		'''
 		«FOR vr : bes.getGlobals»
 		«vr.getGlobal»
@@ -202,6 +253,25 @@ class GeneratorUtils {
 		«ENDFOR»
 		«FOR vr : bes.getSenders»
 		«vr.getSender»
+		«ENDFOR»
+		'''
+	}
+	
+	def String getAllVariablesInputAction(BooleanExpressions bes){
+		'''
+		«FOR vr : bes.getStores»
+		«vr.getInputStore»
+		«ENDFOR»
+		'''
+	}
+	
+	def String getAllVariablesOutputAction(BooleanExpressions bes){
+		'''
+		«FOR vr : bes.getOutputTheirStores»
+		«vr.getOutputTheirStore»
+		«ENDFOR»
+		«FOR vr : bes.getOutputMyStores»
+		«vr.getOutputMyStore»
 		«ENDFOR»
 		'''
 	}

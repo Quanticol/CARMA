@@ -31,6 +31,8 @@ import eu.quanticol.carma.core.carma.MeasureBlock
 import eu.quanticol.carma.core.carma.Measure
 import eu.quanticol.carma.core.carma.EnvironmentMeasure
 import eu.quanticol.carma.core.carma.MeasureBlock
+import eu.quanticol.carma.core.carma.ActionGuard
+import eu.quanticol.carma.core.carma.BooleanExpression
 
 class GenerateDefinitions {
 	
@@ -231,56 +233,65 @@ class GenerateDefinitions {
 		'''
 	}
 	
-//	def String defineOutputUpdates(ArrayList<UpdateAssignment> updates){
-//		var output = ""
-//		if(updates.size >0){
-//			for(update : updates){
-//				var vd = update.storeReference.variableDeclaration
-//				switch(vd){
-//					VariableDeclarationEnum: {
-//						output = '''«vd.convertPrimitiveType» «vd.name.label» = store.get("«vd.name.label»" , «vd.convertType».class );'''+"\n"+
-//						'''store.set("«vd.name.label»",«update.expression.label»);'''+"\n"
-//					}
-//					VariableDeclarationRecord: {
-//							var rds = vd.eAllOfType(RecordDeclaration)
-//							for(rd : rds){
-//								output = output + '''«vd.convertPrimitiveType» «vd.name.label»_«rd.name.label» = store.get("«vd.name.label»_«rd.name.label»" , «vd.convertType».class );'''+"\n"+
-//								'''store.set("«vd.name.label»_«rd.name.label»",«update.expression.label»);'''+"\n"
-//							}
-//					}	
-//				}
-//				
-//			}
-//		}
-//		return output
-//	}
+	//inputStore - the store of the Component doing the input Action
+	//outputStore - the store of the Component doing the output Action
+	//value is the values from that Component
+	def String outputActionPredicate(Action action){
+		var hasPredicate = action.eAllOfType(BooleanExpression).size > 0
+		if(hasPredicate){
+			var be = action.eAllOfType(BooleanExpression).get(0)
+			if(be.label.equals("True") || be.label.equals("true")){
+				return 
+				'''
+				@Override
+				protected CarmaPredicate getPredicate(CarmaStore outputStore) {
+					return CarmaPredicate.TRUE;
+				}
+				'''
+			} else if(be.label.equals("False") || be.label.equals("false")){
+				return 
+				'''
+				@Override
+				protected CarmaPredicate getPredicate(CarmaStore outputStore) {
+					return CarmaPredicate.FALSE;
+				}
+				'''
+			} else {
+				return
+				'''
+				@Override
+				protected CarmaPredicate getPredicate(CarmaStore outputStore) {
+					return new CarmaPredicate() {
+						@Override
+						public boolean satisfy(CarmaStore inputStore) {
+							«be.getAllVariablesOutputAction»
+							return «be.convertToJavaOutputAction»;
+						}
+					};
+				}
+				'''
+			}
+		} else {
+			return
+			'''
+			@Override
+			protected CarmaPredicate getPredicate(CarmaStore outputStore) {
+				return CarmaPredicate.FALSE;
+			}
+			'''
+		}
+	}
 
 
 	def String outputAction(Action action, String name){
 		'''
 		CarmaOutput «name» = new CarmaOutput( «action.name.label.toUpperCase», «(action.type.toString.equals("broad") || action.type.toString.equals("spont"))» ) {
 			
-			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store) {
-				return CarmaPredicate.FALSE;
-			}
+			«action.outputActionPredicate»
 
-			@Override
-			protected CarmaStoreUpdate getUpdate() {
-				return new CarmaStoreUpdate() {
-					
-					@Override
-					public void update(RandomGenerator r, CarmaStore store) {
-						«defineOutputUpdates(new ArrayList<UpdateAssignment>(action.eAllOfType(UpdateAssignment)))»
-					
-					}
-				};
-			}
+			«defineOutputUpdates(new ArrayList<UpdateAssignment>(action.eAllOfType(UpdateAssignment)))»
 
-			@Override
-			protected Object getValue(CarmaStore store) {
-				«action.getValue»
-			}
+			«action.defineValues»
 		};
 		'''
 	}
@@ -298,13 +309,31 @@ class GenerateDefinitions {
 				output = output + vd.setStore(update.expression.label)
 			}
 		}
-		return output
+		'''
+		@Override
+		protected CarmaStoreUpdate getUpdate() {
+			return new CarmaStoreUpdate() {
+				
+				@Override
+				public void update(RandomGenerator r, CarmaStore store) {
+					«output»
+				
+				}
+			};
+		}
+		'''
 	}
 	
-	def String getValue(Action action){
+	def String defineValues(Action action){
 		var outputArgs = action.eAllOfType(OutputActionArgument);
 		if(outputArgs.size == 0){
-			return '''return new Object();'''
+			return 
+			'''
+			@Override
+			protected Object getValue(CarmaStore store) {
+			return new Object();
+			}
+			'''
 		}
 		var ArrayList<OutputActionArgumentVR> vrs = new ArrayList<OutputActionArgumentVR>()
 		
@@ -315,18 +344,6 @@ class GenerateDefinitions {
 		
 		for(vr : vrs){
 			vr.ref.declareVariable
-//			var vd = vr.ref.getVariableDeclaration
-//			switch(vd){
-//				VariableDeclarationEnum: {
-//					output = output + '''«vd.convertPrimitiveType» «vd.name.label» = store.get("«vd.name.label»" , «vd.convertType».class );''' + "\n"
-//				}
-//				VariableDeclarationRecord: {
-//					var rds = vd.eAllOfType(RecordDeclaration)
-//					for(rd : rds){
-//						output = output + '''«vd.convertPrimitiveType» «vd.name.label»_«rd.name.label» = store.get("«vd.name.label»_«rd.name.label»" , «vd.convertType».class );''' + "\n"
-//					}	
-//				}
-//			}
 		}
 		
 		for(var i = 0; i < outputArgs.size; i++){
@@ -335,33 +352,89 @@ class GenerateDefinitions {
 		
 		output = output + "\n" + "return output;"
 		
-		return output
+		'''
+		@Override
+		protected Object getValue(CarmaStore store) {
+			«output»
+		}
+		'''
 	}
 	
-	def String inputAction(Action action, String name){
-		'''
-		CarmaInput «name» = new CarmaInput( «action.name.label.toUpperCase», «(action.type.toString.equals("broad") || action.type.toString.equals("spont"))» ) {
-			
+	//inputStore - the store of the Component doing the input Action
+	//outputStore - the store of the Component doing the output Action
+	//value is the values from that Component
+	def String inputActionPredicate(Action action){
+		var hasPredicate = action.eAllOfType(BooleanExpression).size > 0
+		if(hasPredicate){
+			var be = action.eAllOfType(BooleanExpression).get(0)
+			if(be.label.equals("True") || be.label.equals("true")){
+				return 
+				'''
+				@Override
+				protected CarmaPredicate getPredicate(CarmaStore outputStore, Object value) {
+					return CarmaPredicate.TRUE;
+				}
+				'''
+			} else if(be.label.equals("False") || be.label.equals("false")){
+				return 
+				'''
+				@Override
+				protected CarmaPredicate getPredicate(CarmaStore outputStore, Object value) {
+					return CarmaPredicate.FALSE;
+				}
+				'''
+			} else {
+				return
+				'''
+				@Override
+				protected CarmaPredicate getPredicate(CarmaStore outputStore, Object value) {
+					if (value instanceof int[]){
+						return new CarmaPredicate() {
+							@Override
+							public boolean satisfy(CarmaStore inputStore) {
+								«getAndSetInputArgumentsBool(new ArrayList<VariableName>(action.eAllOfType(InputActionArguments).get(0).eAllOfType(VariableName)))»
+								«be.getAllVariablesInputAction»
+								return «be.convertToJavaInputAction»;
+							}
+						};
+					}
+					return null;
+				}
+				'''
+			}
+		} else {
+			return
+			'''
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, Object value) {
+			protected CarmaPredicate getPredicate(CarmaStore outputStore, Object value) {
 				return CarmaPredicate.TRUE;
 			}
+			'''
+		}
+	}
+	
+	def String getAndSetInputArgumentsBool(ArrayList<VariableName> vns){
+		'''
+		«FOR vn : vns»
+		int «vn.label»_i = ((int[]) value)[«vns.indexOf(vn)»];
+		«ENDFOR»
+		'''		
+	}
+	
+	def String inputUpdate(Action action){
+		'''
+		@Override
+		protected CarmaStoreUpdate getUpdate(final Object value) {
 			
-			@Override
-			protected CarmaStoreUpdate getUpdate(final Object value) {
-				
-				return new CarmaStoreUpdate() {
-					@Override
-					public void update(RandomGenerator r, CarmaStore store) {
-						if (value instanceof int[]){
-					
-							«getAndSetInputArguments(new ArrayList<VariableName>(action.eAllOfType(InputActionArguments).get(0).eAllOfType(VariableName)))»
-							«defineInputUpdates(new ArrayList<UpdateAssignment>(action.eAllOfType(UpdateAssignment)))»
-						
-						};
+			return new CarmaStoreUpdate() {
+				@Override
+				public void update(RandomGenerator r, CarmaStore store) {
+					if (value instanceof int[]){
+						«getAndSetInputArguments(new ArrayList<VariableName>(action.eAllOfType(InputActionArguments).get(0).eAllOfType(VariableName)))»
+						«defineInputUpdates(new ArrayList<UpdateAssignment>(action.eAllOfType(UpdateAssignment)))»
 					};
-				
 				};
+			
 			};
 		};
 		'''
@@ -389,6 +462,17 @@ class GenerateDefinitions {
 			}
 		}
 		return output
+	}
+	
+	def String inputAction(Action action, String name){
+		'''
+		CarmaInput «name» = new CarmaInput( «action.name.label.toUpperCase», «(action.type.toString.equals("broad") || action.type.toString.equals("spont"))» ) {
+			
+			«action.inputActionPredicate»
+			
+			«action.inputUpdate»
+		};
+		'''
 	}
 	
 	def String declareTransitions(Tree tree){
