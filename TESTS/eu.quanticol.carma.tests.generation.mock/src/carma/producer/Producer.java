@@ -74,8 +74,7 @@ public class Producer extends CarmaSystem {
 	}
 
 	@Override
-	public void unicastUpdate(RandomGenerator random, CarmaStore sender,CarmaStore receiver, 
-			int action , Object value ) {
+	public void unicastUpdate(RandomGenerator random, CarmaStore sender,CarmaStore receiver, int action , Object value ) {
 		if ((CarmaPredicate.TRUE.satisfy(sender))&&(action == ProducerDefinition.PRODUCE)) {
 			// CODE FOR GLOBAL STORE UPDATE
 			global_store.set(
