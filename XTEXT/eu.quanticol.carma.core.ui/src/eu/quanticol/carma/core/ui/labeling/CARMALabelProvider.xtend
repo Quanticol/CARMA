@@ -12,10 +12,11 @@ import eu.quanticol.carma.core.carma.MethodDefinition
 import eu.quanticol.carma.core.carma.Methods
 import eu.quanticol.carma.core.carma.ComponentStyle
 import eu.quanticol.carma.core.carma.ComponentBlockDefinition
-import eu.quanticol.carma.core.carma.Measures
+import eu.quanticol.carma.core.carma.MeasureBlock
 import eu.quanticol.carma.core.carma.BlockSystem
 import eu.quanticol.carma.core.carma.Name
 import eu.quanticol.carma.core.carma.BooleanExpression
+import eu.quanticol.carma.core.carma.Measure
 
 /**
  * Provides labels for a EObjects.
@@ -53,7 +54,7 @@ class CARMALabelProvider extends DefaultEObjectLabelProvider {
 		x.label
 	}
 	
-	def text(Measures x){
+	def text(MeasureBlock x){
 		x.label
 	}
 	

@@ -110,16 +110,106 @@ class CARMAValidator extends AbstractCARMAValidator {
 		}
 	}
 
-	public static val ERROR_VariableReference_type = "ERROR: '"
+//	public static val ERROR_VariableReference_type = "ERROR: '"
+//	@Check
+//	def check_ERROR_VariableReference_type(VariableReference vr){
+//		var message = ERROR_VariableReference_type + vr.label + "' has no type."
+//		var test = true
+//		
+//		test = vr.type.toString.equals("null")
+//		
+//		if(test){
+//			error(message,CarmaPackage::eINSTANCE.variableReference_Name,ERROR_VariableReference_type)
+//		}
+//	}
+	
+	public static val ERROR_VariableReference_ProcessExpression_type = "ERROR: '"
 	@Check
-	def check_ERROR_VariableReference_type(VariableReference vr){
-		var message = ERROR_VariableReference_type + vr.label + "' has no type."
-		var test = true
+	def check_ERROR_VariableReference_ProcessExpression_type(VariableReference vr){
+		if(vr.getContainerOfType(ProcessExpression) != null){
+			var message = ERROR_VariableReference_ProcessExpression_type + vr.label + "' has no type found in owning Component, or sending/receiving Component."
+			var test = true
 		
-		test = vr.type.toString.equals("null")
+			test = vr.type.toString.equals("null")
 		
-		if(test){
-			error(message,CarmaPackage::eINSTANCE.variableReference_Name,ERROR_VariableReference_type)
+			if(test){
+				error(message,CarmaPackage::eINSTANCE.variableReference_Name,ERROR_VariableReference_ProcessExpression_type)
+			}
+		}
+	}
+	
+	public static val ERROR_VariableReference_VariableReference_type = "ERROR: '"
+	@Check
+	def check_ERROR_VariableReference_VariableReference_type(VariableReference vr){
+		if(vr.getContainerOfType(Environment) != null){
+			var message = ERROR_VariableReference_VariableReference_type + vr.label + "' has no type. Cannot find variable in Environment."
+			var test = true
+		
+			test = vr.type.toString.equals("null")
+		
+			if(test){
+				error(message,CarmaPackage::eINSTANCE.variableReference_Name,ERROR_VariableReference_VariableReference_type)
+			}
+		}
+	}
+
+	public static val ERROR_VariableReference_ComponentBlockForStatement_ComponentLineForStatement_type = "ERROR: '"
+	@Check
+	def check_ERROR_VariableReference_ComponentBlockForStatement_ComponentLineForStatement_type(VariableReference vr){
+		if(vr.getContainerOfType(ComponentBlockForStatement) != null || vr.getContainerOfType(ComponentLineForStatement) != null ){
+			var message = ERROR_VariableReference_ComponentBlockForStatement_ComponentLineForStatement_type + vr.label + "' has no type. Cannot find variable in For Statement."
+			var test = true
+		
+			test = vr.type.toString.equals("null")
+		
+			if(test){
+				error(message,CarmaPackage::eINSTANCE.variableReference_Name,ERROR_VariableReference_ComponentBlockForStatement_ComponentLineForStatement_type)
+			}
+		}
+	}
+	
+	public static val ERROR_VariableReference_MethodDefinition_type = "ERROR: '"
+	@Check
+	def check_ERROR_VariableReference_MethodDefinition_type(VariableReference vr){
+		if(vr.getContainerOfType(MethodDefinition) != null ){
+			var message = ERROR_VariableReference_MethodDefinition_type + vr.label + "' has no type. Cannot find variable in Method definition."
+			var test = true
+		
+			test = vr.type.toString.equals("null")
+		
+			if(test){
+				error(message,CarmaPackage::eINSTANCE.variableReference_Name,ERROR_VariableReference_MethodDefinition_type)
+			}
+		}
+	}
+	
+	public static val ERROR_VariableReference_Measure_type = "ERROR: '"
+	@Check
+	def check_ERROR_VariableReference_Measure_type(VariableReference vr){
+		if(vr.getContainerOfType(Measure) != null){
+			var message = ERROR_VariableReference_Measure_type + vr.label + "' has no type. Cannot find variable in Measure definition."
+			var test = true
+		
+			test = vr.type.toString.equals("null")
+		
+			if(test){
+				error(message,CarmaPackage::eINSTANCE.variableReference_Name,ERROR_VariableReference_Measure_type)
+			}
+		}
+	}
+	
+	public static val ERROR_VariableReference_StoreBlock_type = "ERROR: '"
+	@Check
+	def check_ERROR_VariableReference_StoreBlock_type(VariableReference vr){
+		if(vr.getContainerOfType(StoreBlock) != null){
+			var message = ERROR_VariableReference_StoreBlock_type + vr.label + "' has no type. Cannot find variable in Component block arguments."
+			var test = true
+		
+			test = vr.type.toString.equals("null")
+		
+			if(test){
+				error(message,CarmaPackage::eINSTANCE.variableReference_Name,ERROR_VariableReference_StoreBlock_type)
+			}
 		}
 	}
 
@@ -838,6 +928,18 @@ class CARMAValidator extends AbstractCARMAValidator {
 		}
 	}
 	
+	/**
+	 * CarmaSystem
+	 * 
+	 * public abstract double broadcastProbability( CarmaStore sender , CarmaStore receiver , int action );
+	 * public abstract double unicastProbability( CarmaStore sender , CarmaStore receiver , int action );
+	 * public abstract double broadcastRate( CarmaStore sender , int action );
+	 * public abstract double unicastRate( CarmaStore sender , int action );
+	 * public abstract void broadcastUpdate( RandomGenerator random , CarmaStore sender , int action );
+	 * public abstract void unicastUpdate( RandomGenerator random , CarmaStore sender , CarmaStore receiver, int action );
+	 * 
+	 */
+	
 	public static val ERROR_VariableReference_prefix = "Error: Cannot use '"
 	@Check
 	def check_ERROR_VariableReference_prefix(VariableReference vr){
@@ -882,6 +984,18 @@ class CARMAValidator extends AbstractCARMAValidator {
 		
 		return test
 	}
+	
+	/**
+	 * CarmaSystem
+	 * 
+	 * public abstract double broadcastProbability( CarmaStore sender , CarmaStore receiver , int action );
+	 * public abstract double unicastProbability( CarmaStore sender , CarmaStore receiver , int action );
+	 * public abstract double broadcastRate( CarmaStore sender , int action );
+	 * public abstract double unicastRate( CarmaStore sender , int action );
+	 * public abstract void broadcastUpdate( RandomGenerator random , CarmaStore sender , int action );
+	 * public abstract void unicastUpdate( RandomGenerator random , CarmaStore sender , CarmaStore receiver, int action );
+	 * 
+	 */
 	
 	public static val ERROR_VariableReference_prefix_reference = "Error: Variable not found"
 	@Check
