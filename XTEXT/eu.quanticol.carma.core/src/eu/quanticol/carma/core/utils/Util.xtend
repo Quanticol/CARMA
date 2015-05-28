@@ -99,6 +99,14 @@ import eu.quanticol.carma.core.carma.RecordReferenceReceiver
 import eu.quanticol.carma.core.carma.ActionGuard
 import eu.quanticol.carma.core.carma.MethodAtomicVariable
 import eu.quanticol.carma.core.carma.PredefinedMethodDeclarationArgument
+import eu.quanticol.carma.core.carma.BooleanExpression
+import eu.quanticol.carma.core.carma.UpdateExpression
+import eu.quanticol.carma.core.carma.EnvironmentUpdateExpression
+import eu.quanticol.carma.core.carma.EnvironmentExpression
+import eu.quanticol.carma.core.carma.BooleanExpressions
+import eu.quanticol.carma.core.carma.EnvironmentUpdateExpressions
+import eu.quanticol.carma.core.carma.EnvironmentExpressions
+import eu.quanticol.carma.core.carma.UpdateExpressions
 
 class Util {
 	
@@ -1141,6 +1149,16 @@ class Util {
 	}
 	
 	/**
+	 * Given a variable reference, find variabledeclaration from Environment!
+	 */
+	def VariableDeclaration getVariableDeclarationEnv(VariableReference vrr){
+		var vds = vrr.getContainerOfType(Model).environmentAttributes
+		for(vd : vds)
+			if(vd.name.sameName(vrr.name))
+				return vd
+	}
+	
+	/**
 	 * Given a variable reference, find variabledeclaration from COMPONENT!
 	 */
 	def VariableDeclaration getVariableDeclaration(Name name){
@@ -1839,83 +1857,134 @@ class Util {
 		}
 	}
 	
-//	/**
-//	 * 
-//	 */
-//	def ArrayList<Records> getRecords(VariableDeclarationRecord vdr){
-//		
-//		var ArrayList<VariableDeclarationRecord> vdrs = new ArrayList<VariableDeclarationRecord>()
-//		var ArrayList<Records> records = new ArrayList<Records>()
-//		
-//		for(o : vdr.getContainerOfType(Model).eAllOfType(VariableDeclarationRecord)){
-//			if(o.name.sameName(vdr.name)){
-//				vdrs.add(o)
-//				records.addAll(vdr.eAllOfType(Records))
-//			}
-//				
-//		}
-//		
-//		for(v : vdrs){
-//			if(v.assign.ref != null){
-//				if(v.getContainerOfType(ComponentBlockDefinition) != null){
-//					var ComponentBlockDefinition cbd = vdr.getContainerOfType(ComponentBlockDefinition)
-//					var cbnds = cbd.CBNDs
-//					var position = vdr.position
-//					for(cbnd:cbnds){
-//						switch(cbnd){
-//							ComponentBlockNewDeclarationSpawn: {
-//								if(cbnd.componentInputArguments.inputArguments.size >= position){
-//									var ncasd = (cbnd.componentInputArguments.inputArguments.get(position) as NewComponentArgumentSpawnDeclare)
-//									var r = ncasd.value as Records
-//									records.add(r)
-//								}
-//							}
-//							ComponentBlockNewDeclaration: {
-//								if(cbnd.componentInputArguments.inputArguments.size >= position){
-//									var ncad = (cbnd.componentInputArguments.inputArguments.get(position) as NewComponentArgumentDeclare)
-//									var r = ncad.value as Records
-//									records.add(r)
-//								}
-//							}
-//						}
-//					
-//					}
-//				}
-//			}	
-//		}
-//		
-//		return records
-//		
-//	}
+	def HashSet<VariableReference> getGlobals(BooleanExpressions br){
+		var HashSet<VariableReference> vrs 	= new HashSet<VariableReference>()
+		
+		vrs.addAll(br.eAllOfType(VariableReferencePure)) 
+		vrs.addAll(br.eAllOfType(RecordReferencePure))
+		vrs.addAll(br.eAllOfType(VariableReferenceGlobal)) 
+		vrs.addAll(br.eAllOfType(RecordReferenceGlobal))
+		
+		return vrs
+	}
 	
+	def HashSet<VariableReference> getSenders(BooleanExpressions br){
+		var HashSet<VariableReference> vrs 	= new HashSet<VariableReference>()
+		
+		vrs.addAll(br.eAllOfType(VariableReferenceSender)) 
+		vrs.addAll(br.eAllOfType(RecordReferenceSender))
+		
+		return vrs
+	}
 	
+	def HashSet<VariableReference> getReceivers(BooleanExpressions br){
+		var HashSet<VariableReference> vrs 	= new HashSet<VariableReference>()
+		
+		vrs.addAll(br.eAllOfType(VariableReferenceReceiver)) 
+		vrs.addAll(br.eAllOfType(RecordReferenceReceiver))
+		
+		return vrs
+	}
 	
-//	/**
-//	 * Given a ProcessExpressionReference return the Process
-//	 */
-//	def Process getReferredProcess(ProcessExpressionReference per){
-//		var Process output = null
-//		
-//		var processBlock = per.getContainerOfType(Process)
-//		if(processBlock != null){
-//			for(process : processBlock.eAllOfType(Process)){
-//				if(process.name.sameName(per.expression)){
-//					output = process
-//				}
-//			}
-//		}
-//		
-//		if(output != null){
-//			var processes = per.getContainerOfType(Processes)
-//			if(processes != null){
-//				for(process : processes.eAllOfType(Process)){
-//					if(process.name.sameName(per.expression)){
-//						output = process
-//					}
-//				}
-//			}
-//		}
-//		return output
-//	}
-	 
+	def HashSet<VariableReference> getStores(BooleanExpressions br){
+		var HashSet<VariableReference> vrs 	= new HashSet<VariableReference>()
+		
+		vrs.addAll(br.eAllOfType(VariableReferencePure)) 
+		vrs.addAll(br.eAllOfType(RecordReferencePure))
+		vrs.addAll(br.eAllOfType(VariableReferenceMy))
+		vrs.addAll(br.eAllOfType(VariableReferenceThis))		
+		vrs.addAll(br.eAllOfType(RecordReferenceMy))			
+		vrs.addAll(br.eAllOfType(RecordReferenceThis))				
+		
+		return vrs
+	}
+
+	def HashSet<VariableReference> getGlobals(EnvironmentUpdateExpressions br){
+		var HashSet<VariableReference> vrs 	= new HashSet<VariableReference>()
+		
+		vrs.addAll(br.eAllOfType(VariableReferencePure)) 
+		vrs.addAll(br.eAllOfType(RecordReferencePure ))
+		vrs.addAll(br.eAllOfType(VariableReferenceGlobal)) 
+		vrs.addAll(br.eAllOfType(RecordReferenceGlobal))
+		
+		return vrs
+	}
+	
+	def HashSet<VariableReference> getSenders(EnvironmentUpdateExpressions br){
+		var HashSet<VariableReference> vrs 	= new HashSet<VariableReference>()
+		
+		vrs.addAll(br.eAllOfType(VariableReferenceSender)) 
+		vrs.addAll(br.eAllOfType(RecordReferenceSender))
+		
+		return vrs
+	}
+	
+	def HashSet<VariableReference> getReceivers(EnvironmentUpdateExpressions br){
+		var HashSet<VariableReference> vrs 	= new HashSet<VariableReference>()
+		
+		vrs.addAll(br.eAllOfType(VariableReferenceReceiver)) 
+		vrs.addAll(br.eAllOfType(RecordReferenceReceiver))
+		
+		return vrs
+	}
+	
+	def HashSet<VariableReference> getGlobals(EnvironmentExpressions br){
+		var HashSet<VariableReference> vrs 	= new HashSet<VariableReference>()
+		
+		vrs.addAll(br.eAllOfType(VariableReferencePure)) 
+		vrs.addAll(br.eAllOfType(RecordReferencePure ))
+		vrs.addAll(br.eAllOfType(VariableReferenceGlobal)) 
+		vrs.addAll(br.eAllOfType(RecordReferenceGlobal))
+		
+		return vrs
+	}
+	
+	def HashSet<VariableReference> getSenders(EnvironmentExpressions br){
+		var HashSet<VariableReference> vrs 	= new HashSet<VariableReference>()
+		
+		vrs.addAll(br.eAllOfType(VariableReferenceSender)) 
+		vrs.addAll(br.eAllOfType(RecordReferenceSender))
+		
+		return vrs
+	}
+	
+	def HashSet<VariableReference> getReceivers(EnvironmentExpressions br){
+		var HashSet<VariableReference> vrs 	= new HashSet<VariableReference>()
+		
+		vrs.addAll(br.eAllOfType(VariableReferenceReceiver)) 
+		vrs.addAll(br.eAllOfType(RecordReferenceReceiver))
+		
+		return vrs
+	}
+	
+	def HashSet<VariableReference> getSenders(UpdateExpressions br){
+		var HashSet<VariableReference> vrs 	= new HashSet<VariableReference>()
+		
+		vrs.addAll(br.eAllOfType(VariableReferenceSender)) 
+		vrs.addAll(br.eAllOfType(RecordReferenceSender))
+		
+		return vrs
+	}
+	
+	def HashSet<VariableReference> getReceivers(UpdateExpressions br){
+		var HashSet<VariableReference> vrs 	= new HashSet<VariableReference>()
+		
+		vrs.addAll(br.eAllOfType(VariableReferenceReceiver)) 
+		vrs.addAll(br.eAllOfType(RecordReferenceReceiver))
+		
+		return vrs
+	}
+	
+	def HashSet<VariableReference> getStores(UpdateExpressions br){
+		var HashSet<VariableReference> vrs 	= new HashSet<VariableReference>()
+		
+		vrs.addAll(br.eAllOfType(VariableReferencePure)) 
+		vrs.addAll(br.eAllOfType(RecordReferencePure))
+		vrs.addAll(br.eAllOfType(VariableReferenceMy))
+		vrs.addAll(br.eAllOfType(VariableReferenceThis))		
+		vrs.addAll(br.eAllOfType(RecordReferenceMy))			
+		vrs.addAll(br.eAllOfType(RecordReferenceThis))				
+		
+		return vrs
+	}
 }

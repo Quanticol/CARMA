@@ -934,8 +934,6 @@
   <eClassifiers xsi:type="ecore:EClass" name="EnvironmentUpdate" eSuperTypes="#//EnvironmentOperation">
     <eStructuralFeatures xsi:type="ecore:EReference" name="expression" upperBound="-1"
         eType="#//EnvironmentUpdateAssignment" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="value" upperBound="-1"
-        eType="#//EnvironmentUpdateAssignment" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="spawn" eType="#//Spawn"
         containment="true"/>
   </eClassifiers>

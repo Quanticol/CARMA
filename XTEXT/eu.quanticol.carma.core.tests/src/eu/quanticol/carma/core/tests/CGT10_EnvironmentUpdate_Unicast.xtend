@@ -76,6 +76,7 @@ system Simple{
     	
     	store{
     		enum transactions 	:= 0;
+    		record test := {x:= 1, y:=1};
     		enum eu_global 		:= 1;
     	}
     	
@@ -92,6 +93,7 @@ system Simple{
         	[global.eu_global == 1] 														send := transactions := transactions + 1;
         	[sender.eu_sender == 1 && receiver.eu_receiver == 1] 							send := transactions := transactions + 1;
         	[sender.eu_sender == 1 && receiver.eu_receiver == 1 && global.eu_global == 1] 	send := transactions := transactions + 1;
+        	[True] test.x := test.x  + 1;
         }
     }
 }'''

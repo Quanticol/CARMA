@@ -708,7 +708,6 @@
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//EnvironmentUpdate">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//EnvironmentUpdate/expression"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//EnvironmentUpdate/value"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//EnvironmentUpdate/spawn"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//EnvironmentExpression">

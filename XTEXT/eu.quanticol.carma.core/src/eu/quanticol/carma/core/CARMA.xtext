@@ -1015,7 +1015,7 @@ UpdateBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 
 EnvironmentUpdate returns EnvironmentOperation hidden(ML_COMMENT,SL_COMMENT,WS):
 	{EnvironmentUpdate}
-	guard=EnvironmentGuard stub=ActionStub ":=" (expression+=EnvironmentUpdateAssignment ("," value+=EnvironmentUpdateAssignment+)* | spawn=Spawn)
+	guard=EnvironmentGuard stub=ActionStub ":=" (expression+=EnvironmentUpdateAssignment ("," expression+=EnvironmentUpdateAssignment+)* | spawn=Spawn)
 ;
 
 EnvironmentUpdateAssignment hidden(ML_COMMENT,SL_COMMENT,WS):

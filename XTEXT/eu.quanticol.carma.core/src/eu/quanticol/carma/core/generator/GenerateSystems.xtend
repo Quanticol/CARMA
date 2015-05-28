@@ -34,12 +34,21 @@ import eu.quanticol.carma.core.utils.Util
 import java.util.ArrayList
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
+import java.util.HashSet
+import eu.quanticol.carma.core.carma.VariableReference
+import eu.quanticol.carma.core.carma.VariableReferencePure
+import eu.quanticol.carma.core.carma.RecordReferencePure
+import eu.quanticol.carma.core.carma.VariableReferenceGlobal
+import eu.quanticol.carma.core.carma.RecordReferenceGlobal
+import eu.quanticol.carma.core.carma.EnvironmentUpdateExpression
+import eu.quanticol.carma.core.carma.EnvironmentUpdateExpressions
 
 class GenerateSystems {
 	
 	@Inject extension TypeProvider
 	@Inject extension LabelUtil
 	@Inject extension Util
+	@Inject extension GeneratorUtils
 	
 	def String compileSystem(System system, String packageName){
 		'''
@@ -125,7 +134,7 @@ class GenerateSystems {
 							if(rds.size > 0){
 								'''
 								«FOR rd : rds»
-								c4rm4.set( «system.getContainerOfType(Model).label»Definition.«vd.name.label.toUpperCase»_«rd.name.label.toUpperCase»_ATTRIBUTE, «system.getContainerOfType(Model).getValueEnv(vd.name.label,rd.name.label)»);
+								global_store.set( «system.getContainerOfType(Model).label»Definition.«vd.name.label.toUpperCase»_«rd.name.label.toUpperCase»_ATTRIBUTE, «system.getContainerOfType(Model).getValueEnv(vd.name.label,rd.name.label)»);
 								«ENDFOR»
 								'''
 							} 
@@ -445,21 +454,50 @@ class GenerateSystems {
 		
 	}
 	
-	def String defineBroadcastEnvironmentUpdatePredicates(EnvironmentUpdate broadcast){
-		var senders 	= (broadcast.eAllOfType(RecordReferenceSender).size + broadcast.eAllOfType(VariableReferenceSender).size) > 0
-		var receivers	= (broadcast.eAllOfType(RecordReferenceReceiver).size + broadcast.eAllOfType(VariableReferenceReceiver).size) > 0
+	def String getAllVariables(BooleanExpressions bes){
+		'''
+		«FOR vr : bes.getGlobals»
+		«vr.getGlobal»
+		«ENDFOR»
+		«FOR vr : bes.getReceivers»
+		«vr.getReceiver»
+		«ENDFOR»
+		«FOR vr : bes.getSenders»
+		«vr.getSender»
+		«ENDFOR»
+		'''
+	}
+	
+	def String defineBroadcastEnvironmentUpdatePredicates(EnvironmentUpdate cast){
+		//anything NOT receiver or sender is a global store access
+		var senders 	= (cast.guard.eAllOfType(RecordReferenceSender).size + cast.guard.eAllOfType(VariableReferenceSender).size) > 0
+		var receivers	= (cast.guard.eAllOfType(RecordReferenceReceiver).size + cast.guard.eAllOfType(VariableReferenceReceiver).size) > 0
+		
 		//no! global_store always accessible!
 		
 		//either single with no args
-		if((senders && !receivers) || (!senders && receivers)){
+		if(senders && !receivers){ 
 			'''
-			public static CarmaPredicate get«broadcast.convertToJavaName»_Predicate(){
+			public static CarmaPredicate get«cast.convertToJavaName»_BroadcastPredicate(){
 				return new CarmaPredicate() {
 
 					@Override
-					public boolean satisfy(CarmaStore store) {
-						//any global if required
-						return //getting stores and create expressions
+					public boolean satisfy(CarmaStore sender) {
+						«cast.guard.booleanExpression.getAllVariables»
+						return «cast.guard.convertToJava»
+					}
+					
+				};
+			}'''
+		} else if (!senders && receivers){
+			'''
+			public static CarmaPredicate get«cast.convertToJavaName»_BroadcastPredicate(){
+				return new CarmaPredicate() {
+
+					@Override
+					public boolean satisfy(CarmaStore receiver) {
+						«cast.guard.booleanExpression.getAllVariables»
+						return «cast.guard.convertToJava»
 					}
 					
 				};
@@ -467,27 +505,27 @@ class GenerateSystems {
 		//or double with sender always given first, and receiver sent for evaluation?
 		} else if (senders && receivers) {
 			'''
-			public static CarmaPredicate get«broadcast.convertToJavaName»_Predicate(CarmaStore sender){
+			public static CarmaPredicate get«cast.convertToJavaName»_BroadcastPredicate(CarmaStore sender){
 				return new CarmaPredicate() {
 
 					@Override
-					public boolean satisfy(CarmaStore store) {
-						//any global if required
-						return //getting stores and create expressions
+					public boolean satisfy(CarmaStore receiver) {
+						«cast.guard.booleanExpression.getAllVariables»
+						return «cast.guard.convertToJava»
 					}
 					
 				};
 			}'''
-		//or just global
-		} else {
+		//or just global, no one cares about the store
+		} else if (cast.guard.eAllOfType(VariableReference).size > 0){
 			'''
-			public static CarmaPredicate get«broadcast.convertToJavaName»_Predicate(){
+			public static CarmaPredicate get«cast.convertToJavaName»_BroadcastPredicate(){
 				return new CarmaPredicate() {
 
 					@Override
 					public boolean satisfy(CarmaStore store) {
-						//any global if required
-						return //getting stores and create expressions
+						«cast.guard.booleanExpression.getAllVariables»
+						return «cast.guard.convertToJava»
 					}
 					
 				};
@@ -497,21 +535,35 @@ class GenerateSystems {
 		
 	}
 	
-	def String defineUnicastEnvironmentUpdatePredicates(EnvironmentUpdate unicast){
-		var senders 	= (unicast.eAllOfType(RecordReferenceSender).size + unicast.eAllOfType(VariableReferenceSender).size) > 0
-		var receivers	= (unicast.eAllOfType(RecordReferenceReceiver).size + unicast.eAllOfType(VariableReferenceReceiver).size) > 0
+	def String defineUnicastEnvironmentUpdatePredicates(EnvironmentUpdate cast){
+		//anything NOT receiver or sender is a global store access
+		var senders 	= (cast.guard.eAllOfType(RecordReferenceSender).size + cast.guard.eAllOfType(VariableReferenceSender).size) > 0
+		var receivers	= (cast.guard.eAllOfType(RecordReferenceReceiver).size + cast.guard.eAllOfType(VariableReferenceReceiver).size) > 0
 		//no! global_store always accessible!
 		
 		//either single with no args
-		if((senders && !receivers) || (!senders && receivers)){
+		if(senders && !receivers){ 
 			'''
-			public static CarmaPredicate get«unicast.convertToJavaName»_Predicate(){
+			«cast.convertToPredicateName»(){
 				return new CarmaPredicate() {
 
 					@Override
-					public boolean satisfy(CarmaStore store) {
-						//any global if required
-						return //getting stores and create expressions
+					public boolean satisfy(CarmaStore sender) {
+						«cast.guard.booleanExpression.getAllVariables»
+						return «cast.guard.convertToJava»
+					}
+					
+				};
+			}'''
+		} else if (!senders && receivers){
+			'''
+			«cast.convertToPredicateName»(){
+				return new CarmaPredicate() {
+
+					@Override
+					public boolean satisfy(CarmaStore receiver) {
+						«cast.guard.booleanExpression.getAllVariables»
+						return «cast.guard.convertToJava»
 					}
 					
 				};
@@ -519,32 +571,34 @@ class GenerateSystems {
 		//or double with sender always given first, and receiver sent for evaluation?
 		} else if (senders && receivers) {
 			'''
-			public static CarmaPredicate get«unicast.convertToJavaName»_Predicate(CarmaStore sender){
+			«cast.convertToPredicateName»(CarmaStore sender){
 				return new CarmaPredicate() {
 
 					@Override
-					public boolean satisfy(CarmaStore store) {
-						//any global if required
-						return //getting stores and create expressions
+					public boolean satisfy(CarmaStore receiver) {
+						«cast.guard.booleanExpression.getAllVariables»
+						return «cast.guard.convertToJava»
 					}
 					
 				};
 			}'''
-		//or just global
-		} else {
+		//or just global, no one cares about the store
+		} else if (cast.guard.eAllOfType(VariableReference).size > 0){
 			'''
-			public static CarmaPredicate get«unicast.convertToJavaName»_Predicate(){
+			«cast.convertToPredicateName»(){
 				return new CarmaPredicate() {
 
 					@Override
 					public boolean satisfy(CarmaStore store) {
-						//any global if required
-						return //getting stores and create expressions
+						«cast.guard.booleanExpression.getAllVariables»
+						return «cast.guard.convertToJava»
 					}
 					
 				};
 			}'''
 		}
+		
+		
 	}
 	
 	def String defineEnvironmentUpdates(System system){
@@ -606,23 +660,47 @@ class GenerateSystems {
 			var senders 	= (cast.eAllOfType(RecordReferenceSender).size + cast.eAllOfType(VariableReferenceSender).size) > 0
 			var receivers	= (cast.eAllOfType(RecordReferenceReceiver).size + cast.eAllOfType(VariableReferenceReceiver).size) > 0
 			if(senders && !receivers){
-				'''get«cast.convertToJavaName»_Predicate().satisfy(CarmaStore sender)'''
+				'''«cast.convertToPredicateName»().satisfy(CarmaStore sender)'''
 			} else if (!senders && receivers) {
-				'''get«cast.convertToJavaName»_Predicate().satisfy(CarmaStore receiver)'''
+				'''«cast.convertToPredicateName»().satisfy(CarmaStore receiver)'''
 			} else if (senders && receivers) {
-				'''get«cast.convertToJavaName»_Predicate().satisfy(CarmaStore receiver)'''
+				'''«cast.convertToPredicateName»().satisfy(CarmaStore receiver)'''
 			} else {
-				'''get«cast.convertToJavaName»_Predicate().satisfy(CarmaStore sender)'''
+				'''«cast.convertToPredicateName»().satisfy(CarmaStore sender)'''
 			}
 		}
 	}
-		
+	
+	def String anAssignment(EnvironmentUpdateAssignment eua){
+		'''
+		«eua.expression.getAllVariables»
+		«eua.storeReference.setVariable(eua.storeReference.convertToJava,eua.expression.label)»
+		'''
+	}
+	
+	def String getAllVariables(EnvironmentUpdateExpressions eues){
+		'''
+		«FOR vr : eues.getGlobals»
+		«vr.getGlobal»
+		«ENDFOR»
+		«FOR vr : eues.getReceivers»
+		«vr.getReceiver»
+		«ENDFOR»
+		«FOR vr : eues.getSenders»
+		«vr.getSender»
+		«ENDFOR»
+		'''
+	}
 	
 	def String defineEUpdateActionStub(ActionStub actionStub){
 		if(actionStub.getContainerOfType(EnvironmentUpdate).eAllOfType(Spawn).size > 0){
 			'''//spawns'''
 		} else if (actionStub.getContainerOfType(EnvironmentUpdate).eAllOfType(EnvironmentUpdateAssignment).size > 0){
-			'''//updates'''
+			'''
+			«FOR e :actionStub.getContainerOfType(EnvironmentUpdate).expression»
+			«e.anAssignment»
+			«ENDFOR»
+			'''
 		} else {
 			'''//«actionStub.label» invalid'''
 		}

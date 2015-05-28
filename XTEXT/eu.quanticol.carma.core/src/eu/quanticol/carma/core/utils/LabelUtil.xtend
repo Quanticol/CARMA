@@ -189,6 +189,17 @@ import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAllState
 import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAState
 import eu.quanticol.carma.core.carma.VariableReferenceGlobal
 import eu.quanticol.carma.core.carma.RecordReferenceGlobal
+import eu.quanticol.carma.core.carma.EnvironmentUpdateExpressions
+import eu.quanticol.carma.core.carma.EnvironmentUpdateSubtraction
+import eu.quanticol.carma.core.carma.EnvironmentUpdateAddition
+import eu.quanticol.carma.core.carma.EnvironmentUpdateMultiplication
+import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicPrimitive
+import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicRecords
+import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicVariable
+import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicMethodReference
+import eu.quanticol.carma.core.carma.EnvironmentUpdateExpression
+import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicNow
+import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicMeasure
 
 class LabelUtil {
 	
@@ -233,6 +244,13 @@ class LabelUtil {
 		return "[" + eu.guard.label + "]" + eu.stub.label
 	}
 	
+	def String convertToPredicateName(EnvironmentUpdate cast){
+		if(cast.stub.isBroadcast)
+		'''get'''+cast.convertToJavaName+'''_BroadcastPredicate'''
+		else
+		'''get'''+cast.convertToJavaName+'''_UnicastPredicate'''
+	}
+	
 	def String convertToJavaName(EnvironmentUpdate eu){
 		return "_" + eu.guard.convertToJavaName + "_" + eu.stub.convertToJavaName
 	}
@@ -247,6 +265,10 @@ class LabelUtil {
 	
 	def String getNameValue(ComponentAfterThought cat){
 		cat.name.label + " = " + cat.expression.label
+	}
+	
+	def String convertToJava(EnvironmentGuard eg){
+		eg.booleanExpression.convertToJava
 	}
 	
 	def String convertToJava(VariableDeclaration vd){
@@ -349,9 +371,24 @@ class LabelUtil {
 			EnvironmentAtomicRecords:						(e.value as Records).label
 			EnvironmentAtomicVariable:						e.value.label
 			EnvironmentAtomicMethodReference:				(e.value as MethodExpressions).label 
-			EnvironmentAtomicNow:							"now.LabelUtil"
-			EnvironmentAtomicMeasure:						"measure.LabelUtil"
+			EnvironmentAtomicNow:							"now.LabelUtil.getLabel"
+			EnvironmentAtomicMeasure:						"measure.LabelUtil.getLabel"
 			EnvironmentExpression:							e.expression.label
+		}
+	}
+	
+	def String getLabel(EnvironmentUpdateExpressions e){
+		switch(e){
+			EnvironmentUpdateSubtraction:							{e.left.label + " - " + e.right.label }
+			EnvironmentUpdateAddition:								{e.left.label + " + " + e.right.label }
+			EnvironmentUpdateMultiplication:						{e.left.label + " * " + e.right.label }
+			EnvironmentUpdateAtomicPrimitive:						(e.value as PrimitiveType).label
+			EnvironmentUpdateAtomicRecords:							(e.value as Records).label
+			EnvironmentUpdateAtomicVariable:						e.value.convertToJava
+			EnvironmentUpdateAtomicMethodReference:					(e.value as MethodExpression).label 
+			EnvironmentUpdateExpression:							e.expression.label
+			EnvironmentUpdateAtomicNow:								"now.LabelUtil.getLabel"
+			EnvironmentUpdateAtomicMeasure:							"measure.LabelUtil.getLabel"
 		}
 	}
 	
@@ -569,6 +606,26 @@ class LabelUtil {
 		}
 	}
 	
+	def String convertToJava(BooleanExpressions e){
+		switch(e){
+			BooleanOr:						{e.left.convertToJava + " || " + e.right.convertToJava }
+			BooleanAnd:						{e.left.convertToJava + " && " + e.right.convertToJava }
+			BooleanEquality:				{e.left.convertToJava + " " + e.op + " " + e.right.convertToJava }
+			BooleanComparison:				{e.left.convertToJava + " " + e.op + " " + e.right.convertToJava }
+			BooleanSubtraction:				{e.left.convertToJava + " - " + e.right.convertToJava }
+			BooleanAddition:				{e.left.convertToJava + " + " + e.right.convertToJava }
+			BooleanMultiplication:			{e.left.convertToJava + " * " + e.right.convertToJava }
+			BooleanModulo:					{e.left.convertToJava + " % " + e.right.convertToJava }
+			BooleanDivision:				{e.left.convertToJava + " / " + e.right.convertToJava }
+			BooleanNot:						{"!"+e.expression.convertToJava}
+			BooleanAtomicPrimitive:			(e.value as PrimitiveType).label			
+			BooleanAtomicVariable:			(e.value as VariableReference).convertToJava 
+			BooleanAtomicMethodReference:	(e.value as MethodExpression).label			
+			BooleanAtomicNow:				"now"	
+			BooleanExpression:				e.expression.convertToJava
+		}
+	}
+	
 	def String convertToJavaName(BooleanExpressions e){
 		switch(e){
 			BooleanOr:						{e.left.convertToJavaName + "_OR_" + e.right.convertToJavaName }
@@ -775,6 +832,23 @@ class LabelUtil {
 			RecordReferenceSender:			{"sender" 			+ "." + vr.name.label + "." + vr.record.label	}
 			VariableReferenceGlobal:		{"global."			+ vr.name.label}
 			RecordReferenceGlobal:			{"global" 			+ "." + vr.name.label + "." + vr.record.label	}
+		}
+	}
+	
+	def String convertToJava(VariableReference vr){
+		switch(vr){
+			VariableReferencePure: 			{vr.name.label}
+			VariableReferenceMy: 			{vr.name.label}
+			VariableReferenceThis: 			{vr.name.label}
+			VariableReferenceReceiver:		{vr.name.label+"_r"}
+			VariableReferenceSender:		{vr.name.label+"_s"}
+			RecordReferencePure:			{vr.name.label+"_"+vr.record.label}
+			RecordReferenceMy:				{vr.name.label+"_"+vr.record.label}
+			RecordReferenceThis:			{vr.name.label+"_"+vr.record.label}
+			RecordReferenceReceiver:		{vr.name.label+"_"+vr.record.label+"_r"}
+			RecordReferenceSender:			{vr.name.label+"_"+vr.record.label+"_s"}
+			VariableReferenceGlobal:		{vr.name.label}
+			RecordReferenceGlobal:			{vr.name.label+"_"+vr.record.label}
 		}
 	}
 	
