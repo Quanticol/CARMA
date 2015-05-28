@@ -119,7 +119,7 @@ class GenerateSystems {
 		'''
 		«FOR vd : envs»
 		«switch(vd){
-			VariableDeclarationEnum:	'''global_store.set(«system.getContainerOfType(Model).label»Definition.«vd.name.label.toUpperCase»,«system.getContainerOfType(Model).getValueEnv(vd.name.label)»)'''
+			VariableDeclarationEnum:	'''global_store.set(«system.getContainerOfType(Model).label»Definition.«vd.name.label.toUpperCase»_ATTRIBUTE,«system.getContainerOfType(Model).getValueEnv(vd.name.label)»)'''
 			VariableDeclarationRecord:{
 							var rds = vd.eAllOfType(RecordDeclaration)
 							if(rds.size > 0){
