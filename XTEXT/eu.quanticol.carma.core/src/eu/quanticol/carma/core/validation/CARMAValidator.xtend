@@ -71,6 +71,7 @@ import eu.quanticol.carma.core.carma.Component
 import eu.quanticol.carma.core.carma.EnvironmentUpdate
 import eu.quanticol.carma.core.carma.Probability
 import eu.quanticol.carma.core.carma.ActionGuard
+import eu.quanticol.carma.core.carma.UpdateBlock
 
 /**
  * Class
@@ -774,12 +775,12 @@ class CARMAValidator extends AbstractCARMAValidator {
 	def check_ERROR_Rate_Unique(Rate rate){
 		var String message = ERROR_Rate_Unique
 		
-		var ratesRate = new ArrayList<Rate>(rate.getContainerOfType(RateBlock).eAllOfType(Rate))
+		var rates = new ArrayList<Rate>(rate.getContainerOfType(RateBlock).eAllOfType(Rate))
 		var ratesString = new ArrayList<String>()
 
 		
 
-		for(r : ratesRate){
+		for(r : rates){
 			ratesString.add(r.getLabel)
 		}
 		
@@ -789,6 +790,37 @@ class CARMAValidator extends AbstractCARMAValidator {
 			error( message ,
 					CarmaPackage::eINSTANCE.rate_Expression,
 					ERROR_Rate_Unique
+			)
+		}
+	}
+	
+	public static val ERROR_EnvironmentUpdate_Unique = "Error: Environment update assignment must be unique."
+	/**
+	 * Rate
+	 * <p>
+	 * ERROR_Rate_Unique
+	 * <p>	
+	 * @author 	CDW <br>
+	 */
+	@Check
+	def check_ERROR_EnvironmentUpdate_Unique(EnvironmentUpdate eu){
+		var String message = ERROR_EnvironmentUpdate_Unique
+		
+		var environmentUpdates = new ArrayList<EnvironmentUpdate>(eu.getContainerOfType(UpdateBlock).eAllOfType(EnvironmentUpdate))
+		var environmentUpdateString = new ArrayList<String>()
+
+		
+
+		for(e : environmentUpdates){
+			environmentUpdateString.add(e.getLabel)
+		}
+		
+		environmentUpdateString.remove(eu.getLabel)
+		
+		if(environmentUpdateString.remove(eu.getLabel)){
+			error( message ,
+					CarmaPackage::eINSTANCE.environmentUpdate_Expression,
+					ERROR_EnvironmentUpdate_Unique
 			)
 		}
 	}

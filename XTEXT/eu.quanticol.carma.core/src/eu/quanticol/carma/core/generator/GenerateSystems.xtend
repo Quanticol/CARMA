@@ -3,32 +3,37 @@ package eu.quanticol.carma.core.generator
 import com.google.inject.Inject
 import eu.quanticol.carma.core.carma.ActionStub
 import eu.quanticol.carma.core.carma.BlockSystem
+import eu.quanticol.carma.core.carma.BooleanExpressions
 import eu.quanticol.carma.core.carma.Component
 import eu.quanticol.carma.core.carma.ComponentArgument
 import eu.quanticol.carma.core.carma.ComponentBlockDefinition
 import eu.quanticol.carma.core.carma.ComponentBlockForStatement
 import eu.quanticol.carma.core.carma.ComponentBlockNewDeclaration
+import eu.quanticol.carma.core.carma.EnvironmentGuard
 import eu.quanticol.carma.core.carma.EnvironmentUpdate
 import eu.quanticol.carma.core.carma.EnvironmentUpdateAssignment
 import eu.quanticol.carma.core.carma.LineSystem
 import eu.quanticol.carma.core.carma.Model
 import eu.quanticol.carma.core.carma.NCA
+import eu.quanticol.carma.core.carma.PrimitiveType
 import eu.quanticol.carma.core.carma.Probability
 import eu.quanticol.carma.core.carma.Range
 import eu.quanticol.carma.core.carma.Rate
 import eu.quanticol.carma.core.carma.RecordDeclaration
+import eu.quanticol.carma.core.carma.RecordReferenceReceiver
+import eu.quanticol.carma.core.carma.RecordReferenceSender
 import eu.quanticol.carma.core.carma.Spawn
 import eu.quanticol.carma.core.carma.System
 import eu.quanticol.carma.core.carma.VariableDeclarationEnum
 import eu.quanticol.carma.core.carma.VariableDeclarationRecord
+import eu.quanticol.carma.core.carma.VariableReferenceReceiver
+import eu.quanticol.carma.core.carma.VariableReferenceSender
 import eu.quanticol.carma.core.typing.TypeProvider
 import eu.quanticol.carma.core.utils.LabelUtil
 import eu.quanticol.carma.core.utils.Util
 import java.util.ArrayList
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.carma.PrimitiveType
-import eu.quanticol.carma.core.carma.EnvironmentGuard
 
 class GenerateSystems {
 	
@@ -41,8 +46,8 @@ class GenerateSystems {
 		«packageName»;
 		
 		import org.apache.commons.math3.random.RandomGenerator;
-		import org.cmg.ml.sam.carma.*;
 		import org.cmg.ml.sam.sim.SimulationEnvironment;
+		import eu.quanticol.carma.simulator.*;
 		public class «system.label» extends CarmaSystem {
 			
 			//constructor
@@ -56,6 +61,8 @@ class GenerateSystems {
 			«system.defineEnvironmentProb»
 			
 			«system.defineEnvironmentRates»
+			
+			«system.defineEnvironmentUpdatesPredicates»
 			
 			«system.defineEnvironmentUpdates»
 			
@@ -275,9 +282,9 @@ class GenerateSystems {
 		
 		//now create the string
 		if(temp.size > 0){
-			output = arguments.get(0).getLabel
+			output = arguments.get(0).getLabelForArgs
 			for(var i = 1; i < temp.size; i++)
-				output = output + "," + temp.get(i).getLabel
+				output = output + "," + temp.get(i).getLabelForArgs
 		}
 		
 		return output
@@ -412,7 +419,135 @@ class GenerateSystems {
 		'''return «actionStub.getContainerOfType(Rate).expression.label»;'''
 	}
 	
-		def String defineEnvironmentUpdates(System system){
+	def String defineEnvironmentUpdatesPredicates(System system){
+		
+		var updates = system.getContainerOfType(Model).eAllOfType(EnvironmentUpdate)
+		var unicasts = new ArrayList<EnvironmentUpdate>()
+		var broadcasts = new ArrayList<EnvironmentUpdate>()
+		
+		for(eu : updates)
+			if(eu.stub.isBroadcast)
+				broadcasts.add(eu)
+			else
+				unicasts.add(eu)
+		'''
+		/*ENVIRONMENT UPDATE PREDICATES*/
+		//BROADCAST ENVIRONMENT UPDATE PREDICATES
+		«FOR broadcast : broadcasts»
+		«defineBroadcastEnvironmentUpdatePredicates(broadcast)»
+		«ENDFOR»
+		
+		//UNICAST ENVIRONMENT UPDATE PREDICATES
+		«FOR unicast : unicasts»
+		«defineUnicastEnvironmentUpdatePredicates(unicast)»
+		«ENDFOR»
+		'''
+		
+	}
+	
+	def String defineBroadcastEnvironmentUpdatePredicates(EnvironmentUpdate broadcast){
+		var senders 	= (broadcast.eAllOfType(RecordReferenceSender).size + broadcast.eAllOfType(VariableReferenceSender).size) > 0
+		var receivers	= (broadcast.eAllOfType(RecordReferenceReceiver).size + broadcast.eAllOfType(VariableReferenceReceiver).size) > 0
+		//no! global_store always accessible!
+		
+		//either single with no args
+		if((senders && !receivers) || (!senders && receivers)){
+			'''
+			public static CarmaPredicate get«broadcast.convertToJavaName»_Predicate(){
+				return new CarmaPredicate() {
+
+					@Override
+					public boolean satisfy(CarmaStore store) {
+						//any global if required
+						return //getting stores and create expressions
+					}
+					
+				};
+			}'''
+		//or double with sender always given first, and receiver sent for evaluation?
+		} else if (senders && receivers) {
+			'''
+			public static CarmaPredicate get«broadcast.convertToJavaName»_Predicate(CarmaStore sender){
+				return new CarmaPredicate() {
+
+					@Override
+					public boolean satisfy(CarmaStore store) {
+						//any global if required
+						return //getting stores and create expressions
+					}
+					
+				};
+			}'''
+		//or just global
+		} else {
+			'''
+			public static CarmaPredicate get«broadcast.convertToJavaName»_Predicate(){
+				return new CarmaPredicate() {
+
+					@Override
+					public boolean satisfy(CarmaStore store) {
+						//any global if required
+						return //getting stores and create expressions
+					}
+					
+				};
+			}'''
+		}
+		
+		
+	}
+	
+	def String defineUnicastEnvironmentUpdatePredicates(EnvironmentUpdate unicast){
+		var senders 	= (unicast.eAllOfType(RecordReferenceSender).size + unicast.eAllOfType(VariableReferenceSender).size) > 0
+		var receivers	= (unicast.eAllOfType(RecordReferenceReceiver).size + unicast.eAllOfType(VariableReferenceReceiver).size) > 0
+		//no! global_store always accessible!
+		
+		//either single with no args
+		if((senders && !receivers) || (!senders && receivers)){
+			'''
+			public static CarmaPredicate get«unicast.convertToJavaName»_Predicate(){
+				return new CarmaPredicate() {
+
+					@Override
+					public boolean satisfy(CarmaStore store) {
+						//any global if required
+						return //getting stores and create expressions
+					}
+					
+				};
+			}'''
+		//or double with sender always given first, and receiver sent for evaluation?
+		} else if (senders && receivers) {
+			'''
+			public static CarmaPredicate get«unicast.convertToJavaName»_Predicate(CarmaStore sender){
+				return new CarmaPredicate() {
+
+					@Override
+					public boolean satisfy(CarmaStore store) {
+						//any global if required
+						return //getting stores and create expressions
+					}
+					
+				};
+			}'''
+		//or just global
+		} else {
+			'''
+			public static CarmaPredicate get«unicast.convertToJavaName»_Predicate(){
+				return new CarmaPredicate() {
+
+					@Override
+					public boolean satisfy(CarmaStore store) {
+						//any global if required
+						return //getting stores and create expressions
+					}
+					
+				};
+			}'''
+		}
+	}
+	
+	def String defineEnvironmentUpdates(System system){
 		
 		var updates = system.getContainerOfType(Model).eAllOfType(EnvironmentUpdate)
 		var unicasts = new ArrayList<EnvironmentUpdate>()
@@ -427,7 +562,7 @@ class GenerateSystems {
 		/*ENVIRONMENT UPDATE*/
 		@Override
 		public void broadcastUpdate(RandomGenerator random, CarmaStore sender, 
-		int action) {
+		int action, Object value) {
 			«FOR broadcast : broadcasts»
 			«defineEUpdateActionStubs(broadcast.stub)»
 			«ENDFOR»
@@ -435,7 +570,7 @@ class GenerateSystems {
 		
 		@Override
 		public void unicastUpdate(RandomGenerator random, CarmaStore sender, CarmaStore receiver,
-		int action) {
+		int action, Object value) {
 			«FOR unicast : unicasts»
 			«defineEUpdateActionStubs(unicast.stub)»
 			«ENDFOR»
@@ -455,8 +590,31 @@ class GenerateSystems {
 	def String predicateHandlerEnvironmentUpdate(ActionStub actionStub){
 		var booleanExpression = actionStub.getContainerOfType(EnvironmentUpdate).eAllOfType(EnvironmentGuard).get(0)
 		'''
-		«booleanExpression.booleanExpression.label»
+		«booleanToPredicate(booleanExpression.booleanExpression)»
 		'''
+	}
+	
+	def String booleanToPredicate(BooleanExpressions be){
+		if(be.label.equals("True") || be.label.equals("true")){
+			return '''(CarmaPredicate.TRUE.satisfy(sender)'''
+		}
+		else if(be.label.equals("False") || be.label.equals("false")){
+			return '''(CarmaPredicate.FALSE.satisfy(sender)'''
+		}
+		else {
+			var cast = be.getContainerOfType(EnvironmentUpdate) 
+			var senders 	= (cast.eAllOfType(RecordReferenceSender).size + cast.eAllOfType(VariableReferenceSender).size) > 0
+			var receivers	= (cast.eAllOfType(RecordReferenceReceiver).size + cast.eAllOfType(VariableReferenceReceiver).size) > 0
+			if(senders && !receivers){
+				'''get«cast.convertToJavaName»_Predicate().satisfy(CarmaStore sender)'''
+			} else if (!senders && receivers) {
+				'''get«cast.convertToJavaName»_Predicate().satisfy(CarmaStore receiver)'''
+			} else if (senders && receivers) {
+				'''get«cast.convertToJavaName»_Predicate().satisfy(CarmaStore receiver)'''
+			} else {
+				'''get«cast.convertToJavaName»_Predicate().satisfy(CarmaStore sender)'''
+			}
+		}
 	}
 		
 	

@@ -179,7 +179,7 @@ public class SmartTaxisDefinitions {
 	public static final double LIMIT = 400;
 	public static final int TAXIS = 5;
 	
-	public static ComponentPredicate getWaitingUserPredicate( int loc ) {
+	public static ComponentPredicate getWaitingUserPredicate( final int loc ) {
 		return new ComponentPredicate() {
 		
 			@Override
@@ -190,7 +190,7 @@ public class SmartTaxisDefinitions {
 		};
 	}
 
-	public static ComponentPredicate getAvailableTaxiPredicate( int loc ) {
+	public static ComponentPredicate getAvailableTaxiPredicate( final int loc ) {
 		return new ComponentPredicate() {
 		
 			@Override
@@ -218,7 +218,7 @@ public class SmartTaxisDefinitions {
 	}
 	
 
-	public static ComponentPredicate getMovingTaxiPredicate( int loc ) {
+	public static ComponentPredicate getMovingTaxiPredicate( final int loc ) {
 		return new ComponentPredicate() {
 		
 			@Override
@@ -306,6 +306,7 @@ public class SmartTaxisDefinitions {
 			
 			@Override
 			protected CarmaPredicate getPredicate(final CarmaStore userStore) {
+				
 				return new CarmaPredicate() {
 
 					@Override
@@ -534,7 +535,7 @@ public class SmartTaxisDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore taxiStore, Object value) {
+			protected CarmaPredicate getPredicate(final CarmaStore taxiStore, Object value) {
 				return new CarmaPredicate() {
 
 					@Override
@@ -669,7 +670,7 @@ public class SmartTaxisDefinitions {
 		return x*GRID_WIDTH+y;
 	}
 	
-	public static Measure<CarmaSystem> getMeasureOfWaitingUsers( int loc ) {
+	public static Measure<CarmaSystem> getMeasureOfWaitingUsers( final int loc ) {
 		
 		return new Measure<CarmaSystem>() {
 			
@@ -689,7 +690,7 @@ public class SmartTaxisDefinitions {
 		
 	}
 	
-	public static Measure<CarmaSystem> getMeasureOfAvailabelTaxis( int loc ) {
+	public static Measure<CarmaSystem> getMeasureOfAvailabelTaxis( final int loc ) {
 		
 		return new Measure<CarmaSystem>() {
 			
@@ -731,7 +732,7 @@ public class SmartTaxisDefinitions {
 		
 	}
 
-	public static Measure<CarmaSystem> getMeasureOfMovingTaxis( int loc ) {
+	public static Measure<CarmaSystem> getMeasureOfMovingTaxis( final int loc ) {
 		
 		return new Measure<CarmaSystem>() {
 			

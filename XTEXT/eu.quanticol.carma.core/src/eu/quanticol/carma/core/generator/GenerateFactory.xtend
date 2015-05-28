@@ -17,8 +17,8 @@ class GenerateFactory {
 		def String compileFactory(Model model, String packageName){
 		'''
 			«packageName»;
-			import org.cmg.ml.sam.carma.CarmaSystem;
-			import org.cmg.ml.sam.sim.SimulationFactory;
+			import org.cmg.ml.sam.sim.*;
+			import eu.quanticol.carma.simulator.*;
 			public class «model.label»Factory implements SimulationFactory<CarmaSystem> {
 			
 				public «model.label»Factory() {

@@ -44,8 +44,9 @@ class GenerateDefinitions {
 		«packageName»;
 		
 		import org.apache.commons.math3.random.RandomGenerator;
-		import org.cmg.ml.sam.carma.*;
 		import org.cmg.ml.sam.sim.SimulationEnvironment;
+		import org.cmg.ml.sam.sim.sampling.*;
+		import eu.quanticol.carma.simulator.*;
 		
 		public class «model.label»Definition {
 			
@@ -423,28 +424,28 @@ class GenerateDefinitions {
 	
 	def String defineGetBooleanExpressionStateMeasure(Measure measure, String measureName, String stateName){
 		'''
-		public state ComponentPredicate getMeasure«measureName»_«stateName»_State_Predicate(){
+		public static ComponentPredicate getMeasure«measureName»_«stateName»_State_Predicate(){
 			return new ComponentPredicate() {
 				
 				@Override
 				public boolean eval(CarmaComponent c){
 					return true;
 				}
-			}
+			};
 		}
 		'''
 	}
 	
 	def String defineGetBooleanExpressionPredicateMeasure(Measure measure, String measureName, String stateName){
 		'''
-		public state ComponentPredicate getMeasure«measureName»_«stateName»_BooleanExpression_Predicate(){
+		public static ComponentPredicate getMeasure«measureName»_«stateName»_BooleanExpression_Predicate(){
 			return new ComponentPredicate() {
 				
 				@Override
 				public boolean eval(CarmaComponent c){
 					return true && (c.isRunning(getMeasure«measureName»_«stateName»_State_Predicate()));
 				}
-			}
+			};
 		}
 		'''
 	}
@@ -455,21 +456,22 @@ class GenerateDefinitions {
 			
 			return new Measure<CarmaSystem>(){
 			
-			ComponentPredicate predicate = getMeasure«measureName»_«stateName»_BooleanExpression_Predicate();
+				ComponentPredicate predicate = getMeasure«measureName»_«stateName»_BooleanExpression_Predicate();
 			
-			@Override
-			public double measure(CarmaSystem t){
-				//TODO
+				@Override
+				public double measure(CarmaSystem t){
+					//TODO
 				
-				return t.measure(predicate)
+					return t.measure(predicate);
 			
-			}
+				};
 			
-			@Override
-			public String getName() {
-				return "«measureName»_«stateName»";
-			}
-		};
+				@Override
+				public String getName() {
+					return "«measureName»_«stateName»";
+				}
+			};
+		}
 		'''
 	}
 	
