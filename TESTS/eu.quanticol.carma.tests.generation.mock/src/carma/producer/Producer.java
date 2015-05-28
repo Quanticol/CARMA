@@ -68,14 +68,14 @@ public class Producer extends CarmaSystem {
 	/*ENVIRONMENT UPDATE*/
 	@Override
 	public void broadcastUpdate(RandomGenerator random, CarmaStore sender,
-			int action) {
+			int action, Object value ) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void unicastUpdate(RandomGenerator random, CarmaStore sender,CarmaStore receiver, 
-			int action) {
+			int action , Object value ) {
 		if ((CarmaPredicate.TRUE.satisfy(sender))&&(action == ProducerDefinition.PRODUCE)) {
 			// CODE FOR GLOBAL STORE UPDATE
 			global_store.set(

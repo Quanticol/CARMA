@@ -239,14 +239,14 @@ public class SIRS extends CarmaSystem {
 
 	@Override
 	public void broadcastUpdate(RandomGenerator random, CarmaStore sender,
-			int action) {
+			int action, Object value) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void unicastUpdate(RandomGenerator random, CarmaStore sender,CarmaStore receiver, 
-			int action) {
+			int action, Object value) {
 		// TODO Auto-generated method stub
 		
 	}

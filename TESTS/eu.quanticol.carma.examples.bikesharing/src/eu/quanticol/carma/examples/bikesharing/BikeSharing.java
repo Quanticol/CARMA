@@ -117,11 +117,11 @@ public class BikeSharing extends CarmaSystem {
 	}
 
 	@Override
-	public void broadcastUpdate(RandomGenerator r , CarmaStore sender, int action) {
+	public void broadcastUpdate(RandomGenerator r , CarmaStore sender, int action, Object value) {
 	}
 
 	@Override
-	public void unicastUpdate(RandomGenerator r , CarmaStore sender, CarmaStore receiver , int action) {
+	public void unicastUpdate(RandomGenerator r , CarmaStore sender, CarmaStore receiver , int action, Object value ) {
 	}
 	
 	public double averageAvailableBikes(int zone) {

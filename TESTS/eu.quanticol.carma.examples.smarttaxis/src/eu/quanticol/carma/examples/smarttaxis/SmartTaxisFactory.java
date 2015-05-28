@@ -11,19 +11,19 @@ import eu.quanticol.carma.simulator.CarmaSystem;
  * @author loreti
  *
  */
-public class SmartTaxiesFactory implements SimulationFactory<CarmaSystem> {
+public class SmartTaxisFactory implements SimulationFactory<CarmaSystem> {
 
 	private int users;
 	private int taxis;
 
-	public SmartTaxiesFactory( int taxis , int users ) {
+	public SmartTaxisFactory( int taxis , int users ) {
 		this.taxis = taxis;
 		this.users = users;
 	}
 	
 	@Override
 	public CarmaSystem getModel() {
-		return new SmartTaxies(taxis, users);
+		return new SmartTaxis(taxis, users);
 	}
 
 }

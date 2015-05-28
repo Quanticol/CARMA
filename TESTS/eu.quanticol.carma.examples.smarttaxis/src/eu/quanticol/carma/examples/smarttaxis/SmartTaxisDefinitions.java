@@ -25,7 +25,7 @@ import eu.quanticol.carma.simulator.ComponentPredicate;
  * @author loreti
  *
  */
-public class SmartTaxiesDefinitions {
+public class SmartTaxisDefinitions {
 	
 	/*
 	 * 0 -> 1 , 3
@@ -177,7 +177,7 @@ public class SmartTaxiesDefinitions {
 	};
 	
 	public static final double LIMIT = 400;
-	public static final int TAXIES = 5;
+	public static final int TAXIS = 5;
 	
 	public static ComponentPredicate getWaitingUserPredicate( int loc ) {
 		return new ComponentPredicate() {
@@ -562,7 +562,7 @@ public class SmartTaxiesDefinitions {
 //					
 //					@Override
 //					public void update(RandomGenerator r, CaspaStore store) {
-//						int[] nearLoc = SmartTaxiesDefinitions.near( store.get(LOC_ATTRIBUTE, LOC_ATTRIBUTE_TYPE));
+//						int[] nearLoc = SmartTaxisDefinitions.near( store.get(LOC_ATTRIBUTE, LOC_ATTRIBUTE_TYPE));
 //						int newLoc = nearLoc[r.nextInt(nearLoc.length)];
 //						store.set(DEST_ATTRIBUTE, newLoc);
 //					}
@@ -673,7 +673,7 @@ public class SmartTaxiesDefinitions {
 		
 		return new Measure<CarmaSystem>() {
 			
-				ComponentPredicate predicate = SmartTaxiesDefinitions.getWaitingUserPredicate(loc);
+				ComponentPredicate predicate = SmartTaxisDefinitions.getWaitingUserPredicate(loc);
 
 				@Override
 				public double measure(CarmaSystem t) {
@@ -689,17 +689,17 @@ public class SmartTaxiesDefinitions {
 		
 	}
 	
-	public static Measure<CarmaSystem> getMeasureOfAvailabelTaxies( int loc ) {
+	public static Measure<CarmaSystem> getMeasureOfAvailabelTaxis( int loc ) {
 		
 		return new Measure<CarmaSystem>() {
 			
-				ComponentPredicate predicate = SmartTaxiesDefinitions.getAvailableTaxiPredicate(loc);
+				ComponentPredicate predicate = SmartTaxisDefinitions.getAvailableTaxiPredicate(loc);
 
 				@Override
 				public double measure(CarmaSystem t) {
 					double mes = t.measure(predicate);
-//					System.out.println(mes+" "+(TAXIES*NUMBER_OF_LOCATIONS)+" "+(mes/(TAXIES*NUMBER_OF_LOCATIONS)));
-					return mes/(TAXIES*NUMBER_OF_LOCATIONS);
+//					System.out.println(mes+" "+(TAXIS*NUMBER_OF_LOCATIONS)+" "+(mes/(TAXIS*NUMBER_OF_LOCATIONS)));
+					return mes/(TAXIS*NUMBER_OF_LOCATIONS);
 				}
 
 				@Override
@@ -711,15 +711,15 @@ public class SmartTaxiesDefinitions {
 		
 	}
 
-	public static Measure<CarmaSystem> getMeasureOfAvailabelTaxies( ) {
+	public static Measure<CarmaSystem> getMeasureOfAvailabelTaxis( ) {
 		
 		return new Measure<CarmaSystem>() {
 			
-				ComponentPredicate predicate = SmartTaxiesDefinitions.getAvailableTaxiPredicate();
+				ComponentPredicate predicate = SmartTaxisDefinitions.getAvailableTaxiPredicate();
 
 				@Override
 				public double measure(CarmaSystem t) {
-					return t.measure(predicate)/(TAXIES*NUMBER_OF_LOCATIONS);
+					return t.measure(predicate)/(TAXIS*NUMBER_OF_LOCATIONS);
 				}
 
 				@Override
@@ -731,11 +731,11 @@ public class SmartTaxiesDefinitions {
 		
 	}
 
-	public static Measure<CarmaSystem> getMeasureOfMovingTaxies( int loc ) {
+	public static Measure<CarmaSystem> getMeasureOfMovingTaxis( int loc ) {
 		
 		return new Measure<CarmaSystem>() {
 			
-				ComponentPredicate predicate = SmartTaxiesDefinitions.getMovingTaxiPredicate(loc);
+				ComponentPredicate predicate = SmartTaxisDefinitions.getMovingTaxiPredicate(loc);
 
 				@Override
 				public double measure(CarmaSystem t) {
@@ -751,17 +751,17 @@ public class SmartTaxiesDefinitions {
 		
 	}
 
-	public static Measure<CarmaSystem> getMeasureOfMovingTaxies( ) {
+	public static Measure<CarmaSystem> getMeasureOfMovingTaxis( ) {
 		
 		return new Measure<CarmaSystem>() {
 			
-				ComponentPredicate predicate = SmartTaxiesDefinitions.getMovingTaxiPredicate();
+				ComponentPredicate predicate = SmartTaxisDefinitions.getMovingTaxiPredicate();
 
 				@Override
 				public double measure(CarmaSystem t) {
 					double mes = t.measure(predicate);
-//					System.out.println(mes+" "+(TAXIES*NUMBER_OF_LOCATIONS)+" "+(mes/(TAXIES*NUMBER_OF_LOCATIONS)));
-					return mes/(TAXIES*NUMBER_OF_LOCATIONS);
+//					System.out.println(mes+" "+(TAXIS*NUMBER_OF_LOCATIONS)+" "+(mes/(TAXIS*NUMBER_OF_LOCATIONS)));
+					return mes/(TAXIS*NUMBER_OF_LOCATIONS);
 				}
 
 				@Override
