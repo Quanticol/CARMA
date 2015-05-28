@@ -80,9 +80,26 @@ system Simple{
     		enum eu_global 		:= 1;
     	}
     	
+    	prob{
+    		[True] 						send := 1;
+        	[True] 						produce* := 1;
+        	[False] 					produce* := 1;
+        	[sender.eu_sender == 1] 														produce* := 1;
+        	[receiver.eu_receiver == 1] 													send := 1;
+        	[global.eu_global == 1] 														produce* := 1;
+        	[sender.eu_sender == 1 && receiver.eu_receiver == 1] 							send := 1;
+        	[sender.eu_sender == 1 && receiver.eu_receiver == 1 && global.eu_global == 1] 	send := 1;
+    	}
+    	
         rate{
-        	[True] produce* := 1;
-        	[True] send 	:= 1;
+        	[True] 						send := 1;
+        	[True] 						produce* := 1;
+        	[False] 					produce* := 1;
+        	[sender.eu_sender == 1] 														produce* := 1;
+        	[receiver.eu_receiver == 1] 													send := 1;
+        	[global.eu_global == 1] 														produce* := 1;
+        	[sender.eu_sender == 1 && receiver.eu_receiver == 1] 							send := 1;
+        	[sender.eu_sender == 1 && receiver.eu_receiver == 1 && global.eu_global == 1] 	send := 1;
         }
         
         update{
@@ -93,7 +110,6 @@ system Simple{
         	[global.eu_global == 1] 														send := transactions := transactions + 1;
         	[sender.eu_sender == 1 && receiver.eu_receiver == 1] 							send := transactions := transactions + 1;
         	[sender.eu_sender == 1 && receiver.eu_receiver == 1 && global.eu_global == 1] 	send := transactions := transactions + 1;
-        	[True] test.x := test.x  + 1;
         }
     }
 }'''

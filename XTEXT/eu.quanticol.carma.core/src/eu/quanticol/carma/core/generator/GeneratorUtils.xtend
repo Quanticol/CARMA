@@ -24,6 +24,11 @@ import static extension org.eclipse.xtext.EcoreUtil2.*
 import eu.quanticol.carma.core.carma.VariableReferenceGlobal
 import eu.quanticol.carma.core.carma.RecordReferenceGlobal
 import eu.quanticol.carma.core.carma.Environment
+import eu.quanticol.carma.core.carma.BooleanExpressions
+import eu.quanticol.carma.core.carma.EnvironmentUpdateAssignment
+import eu.quanticol.carma.core.carma.EnvironmentUpdateExpressions
+import eu.quanticol.carma.core.carma.EnvironmentExpression
+import eu.quanticol.carma.core.carma.EnvironmentExpressions
 
 class GeneratorUtils {
 	
@@ -185,6 +190,62 @@ class GeneratorUtils {
 	
 	def String setGlobal(VariableReference vr, String variable, String expression){
 		'''global_store.set("«variable»",«expression»);'''
+	}
+	
+	def String getAllVariables(BooleanExpressions bes){
+		'''
+		«FOR vr : bes.getGlobals»
+		«vr.getGlobal»
+		«ENDFOR»
+		«FOR vr : bes.getReceivers»
+		«vr.getReceiver»
+		«ENDFOR»
+		«FOR vr : bes.getSenders»
+		«vr.getSender»
+		«ENDFOR»
+		'''
+	}
+	
+	def String anAssignment(EnvironmentUpdateAssignment eua){
+		'''
+		«eua.expression.getAllVariables»
+		«eua.storeReference.setVariable(eua.storeReference.convertToJava,eua.expression.label)»
+		'''
+	}
+	
+	def String anAssignment(EnvironmentExpressions ee){
+		'''
+		«ee.getAllVariables»
+		return «ee.label»;
+		'''
+	}
+	
+	def String getAllVariables(EnvironmentUpdateExpressions eues){
+		'''
+		«FOR vr : eues.getGlobals»
+		«vr.getGlobal»
+		«ENDFOR»
+		«FOR vr : eues.getReceivers»
+		«vr.getReceiver»
+		«ENDFOR»
+		«FOR vr : eues.getSenders»
+		«vr.getSender»
+		«ENDFOR»
+		'''
+	}
+	
+	def String getAllVariables(EnvironmentExpressions ees){
+		'''
+		«FOR vr : ees.getGlobals»
+		«vr.getGlobal»
+		«ENDFOR»
+		«FOR vr : ees.getReceivers»
+		«vr.getReceiver»
+		«ENDFOR»
+		«FOR vr : ees.getSenders»
+		«vr.getSender»
+		«ENDFOR»
+		'''
 	}
 	
 }

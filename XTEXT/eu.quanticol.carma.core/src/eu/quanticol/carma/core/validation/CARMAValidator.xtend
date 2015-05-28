@@ -72,6 +72,7 @@ import eu.quanticol.carma.core.carma.EnvironmentUpdate
 import eu.quanticol.carma.core.carma.Probability
 import eu.quanticol.carma.core.carma.ActionGuard
 import eu.quanticol.carma.core.carma.UpdateBlock
+import eu.quanticol.carma.core.carma.ProbabilityBlock
 
 /**
  * Class
@@ -143,7 +144,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 	@Check
 	def check_ERROR_VariableReference_VariableReference_type(VariableReference vr){
 		if(vr.getContainerOfType(Environment) != null){
-			var message = ERROR_VariableReference_VariableReference_type + vr.label + "' has no type. Cannot find variable in Environment."
+			var message = ERROR_VariableReference_VariableReference_type + vr.label + "' has no type. Cannot find variable in Environment, or related Components."
 			var test = true
 		
 			test = vr.type.toString.equals("null")
@@ -807,6 +808,37 @@ class CARMAValidator extends AbstractCARMAValidator {
 		var String message = ERROR_EnvironmentUpdate_Unique
 		
 		var environmentUpdates = new ArrayList<EnvironmentUpdate>(eu.getContainerOfType(UpdateBlock).eAllOfType(EnvironmentUpdate))
+		var environmentUpdateString = new ArrayList<String>()
+
+		
+
+		for(e : environmentUpdates){
+			environmentUpdateString.add(e.getLabel)
+		}
+		
+		environmentUpdateString.remove(eu.getLabel)
+		
+		if(environmentUpdateString.remove(eu.getLabel)){
+			error( message ,
+					CarmaPackage::eINSTANCE.environmentUpdate_Expression,
+					ERROR_EnvironmentUpdate_Unique
+			)
+		}
+	}
+	
+	public static val ERROR_Probability_Unique = "Error: Environment probability assignment must be unique."
+	/**
+	 * Rate
+	 * <p>
+	 * ERROR_Rate_Unique
+	 * <p>	
+	 * @author 	CDW <br>
+	 */
+	@Check
+	def check_ERROR_Probability_Unique(Probability eu){
+		var String message = ERROR_EnvironmentUpdate_Unique
+		
+		var environmentUpdates = new ArrayList<Probability>(eu.getContainerOfType(ProbabilityBlock).eAllOfType(Probability))
 		var environmentUpdateString = new ArrayList<String>()
 
 		
