@@ -8,7 +8,7 @@ public class Simple extends CarmaSystem {
 	//constructor
 	public Simple(){
 		addComponent(getProducer(1,1,1,1));
-		addComponent(getConsumer(1,1,{ x := 1  y := 1 }));
+		addComponent(getConsumer(1,1,1,1));
 		global_store.set(CGT10_EnvironmentUpdate_UnicastDefinition.TRANSACTIONS,0)
 		global_store.set(CGT10_EnvironmentUpdate_UnicastDefinition.EU_GLOBAL,1)
 	}

@@ -31,7 +31,7 @@ public class CarmaSequentialProcess extends CarmaProcess {
 		this(component,automaton,automaton.getState(initialState));
 	}
 
-	private CarmaSequentialProcess(CarmaComponent component,
+	public CarmaSequentialProcess(CarmaComponent component,
 			CarmaProcessAutomaton automaton, State initialState) {
 		super( component , automaton.getName() );
 		this.automaton = automaton;
