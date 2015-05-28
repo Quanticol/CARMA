@@ -204,8 +204,8 @@ public class CGT10_EnvironmentUpdate_UnicastDefinition {
 		};
 		
 		//create the transitions between states
-		toReturn.addTransition(state_Receive,Receive_Guard,send_Action,state_Receive);
 		toReturn.addTransition(state_Consume,Consume_Guard,consume_Action,state_Consume);
+		toReturn.addTransition(state_Receive,Receive_Guard,send_Action,state_Receive);
 		
 		return toReturn;
 	}
