@@ -33,6 +33,12 @@ import eu.quanticol.carma.core.carma.EnvironmentMeasure
 import eu.quanticol.carma.core.carma.MeasureBlock
 import eu.quanticol.carma.core.carma.ActionGuard
 import eu.quanticol.carma.core.carma.BooleanExpression
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressions
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionParallel
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionAll
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAllStates
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAState
+import eu.quanticol.carma.core.carma.MacroExpressionReference
 
 class GenerateDefinitions {
 	
@@ -507,41 +513,163 @@ class GenerateDefinitions {
 	}
 	
 	def String defineGetBooleanExpressionStateMeasure(Measure measure, String measureName, String stateName){
+		
+		var ems = ((measure.measure as EnvironmentMeasure).componentReference as EnvironmentMacroExpressions)
+		
+		
 		'''
 		public static CarmaProcessPredicate getMeasure«measureName»_«stateName»_State_Predicate(){
 			return new CarmaProcessPredicate() {
 				
 				@Override
 				public boolean eval(CarmaProcess p) {
-					// TODO Auto-generated method stub
-				return false;
+					return «ems.booleanExpressionFromEMS»
 				}
 			};
 		}
 		'''
 	}
 	
+	def String getBooleanExpressionFromEMS(EnvironmentMacroExpressions ems){
+		var componentState = new HashMap<String,ArrayList<String>>()
+		ems.emsExpression(componentState)
+		var output = ""
+		for(component : componentState.keySet){
+			output = output + '''
+			( 
+			(((CarmaSequentialProcess) p).automaton() ==  «component») && (
+			'''
+			for(state : componentState.get(component)){
+				output = output + '''
+				(((CarmaSequentialProcess) p).automaton().getState("«state»") != null ) ||
+				'''
+			}
+			
+			output = output + '''
+			(((CarmaSequentialProcess) p).getState() !=  null))
+			) && 
+			'''
+		}
+		return output + "true;"
+	}
+	
+	def void emsExpression(EnvironmentMacroExpressions ems, HashMap<String,ArrayList<String>> componentState){
+		
+		switch(ems){
+			EnvironmentMacroExpressionParallel: 			{ems.left.emsExpression(componentState)  ems.right.emsExpression(componentState)}  
+			EnvironmentMacroExpressionAll:					ems.allComponents(componentState)
+			EnvironmentMacroExpressionComponentAllStates:	ems.comp.getContainerOfType(Component).aComponentAllStates(componentState)
+			EnvironmentMacroExpressionComponentAState:		ems.comp.getContainerOfType(Component).aComponentAState(componentState,new ArrayList<MacroExpressionReference>(ems.state.eAllOfType(MacroExpressionReference)))
+		}
+	}
+	
+	def void allComponents(EnvironmentMacroExpressions ems, HashMap<String,ArrayList<String>> componentState){
+		var components = ems.getContainerOfType(Model).eAllOfType(Component)
+		for(component : components){
+			componentState.put('''«component.label»Process''',component.allStates)
+		}
+	}
+	
+	def void aComponentAllStates(Component component, HashMap<String,ArrayList<String>> componentState){
+		componentState.put('''«component.label»Process''',component.allStates)
+	}
+	
+	def void aComponentAState(Component component, HashMap<String,ArrayList<String>> componentState, ArrayList<MacroExpressionReference> states){
+		var allStates = allStates(component)
+		var ArrayList<String> output = new ArrayList<String>()
+		for(state : states){
+			for(s : allStates){
+				if(s.equals("state_"+state.label)){
+					output.add(s)
+				}			
+			}
+		}
+		componentState.put('''«component.label»Process''',output)
+	}
+	
+	def ArrayList<String> allStates(Component component){
+		var output = new ArrayList<String>()
+		var HashSet<String> states = new HashSet<String>()
+		var tree = component.getTree
+		tree.getStates(states)
+		for(state : states)
+			output.add(state)
+		return output
+	}
+	
+	
 	def String defineGetBooleanExpressionPredicateMeasure(Measure measure, String measureName, String stateName){
+		var exp = (measure.measure as EnvironmentMeasure).booleanExpression
+		var argsi = new ArrayList<String>()
+		var args = new ArrayList<String>()
+		for(vr : exp.eAllOfType(VariableReference)){
+			if(vr.variableDeclaration == null){
+				args.add('''final int «vr.convertToJava»''')
+				argsi.add('''«vr.convertToJava»''')
+			}
+		}
+		
 		'''
-		public static ComponentPredicate getMeasure«measureName»_«stateName»_BooleanExpression_Predicate(){
+		protected static CarmaPredicate getPredicate«measureName»_«stateName»(«args.generateArgs») {
+			return new CarmaPredicate() {
+				@Override
+				public boolean satisfy(CarmaStore store) {
+					«exp.getAllVariablesMeasure»
+					return «exp.convertToJava»;
+				}
+			};
+		}
+		
+		
+		public static ComponentPredicate getMeasure«measureName»_«stateName»_BooleanExpression_Predicate(«args.generateArgs»){
 			return new ComponentPredicate() {
 				
 				@Override
 				public boolean eval(CarmaComponent c){
-					return true && (c.isRunning(getMeasure«measureName»_«stateName»_State_Predicate()));
+					return getPredicate«measureName»_«stateName»(«argsi.generateArgs»).satisfy(c.getStore()) && (c.isRunning(getMeasure«measureName»_«stateName»_State_Predicate()));
 				}
 			};
 		}
 		'''
 	}
 	
-	def String defineGetMeasureMethod(Measure measure, String measureName, String stateName){
+	def String generateArgs(ArrayList<String> args){
+		var output = ""
+		if(args.size > 0){
+			output = args.get(0)
+			for(var i = 1; i < args.size; i++){
+				output = output +", "+ args.get(i)
+			}
+		}
+		
+		output
+	}
+	
+	def String getBooleanExpressionFromEnvironmentMeasure(Measure measure){
+		var exp = (measure.measure as EnvironmentMeasure).booleanExpression
+		
 		'''
-		public static Measure<CarmaSystem> getMeasure«measureName»_«stateName»(){
+		'''
+	}
+	
+	def String defineGetMeasureMethod(Measure measure, String measureName, String stateName){
+		
+		var exp = (measure.measure as EnvironmentMeasure).booleanExpression
+		var argsi = new ArrayList<String>()
+		var args = new ArrayList<String>()
+		for(vr : exp.eAllOfType(VariableReference)){
+			if(vr.variableDeclaration == null){
+				args.add('''final int «vr.convertToJava»''')
+				argsi.add('''«vr.convertToJava»''')
+			}
+		}
+		
+		'''
+		public static Measure<CarmaSystem> getMeasure«measureName»_«stateName»(«args.generateArgs»){
 			
 			return new Measure<CarmaSystem>(){
 			
-				ComponentPredicate predicate = getMeasure«measureName»_«stateName»_BooleanExpression_Predicate();
+				ComponentPredicate predicate = getMeasure«measureName»_«stateName»_BooleanExpression_Predicate(«argsi.generateArgs»);
 			
 				@Override
 				public double measure(CarmaSystem t){

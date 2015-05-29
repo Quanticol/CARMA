@@ -164,6 +164,7 @@ class TypeProvider {
 	
 	public static val booleanType 		= new BaseType() => [ type = "boolean" 		; set="logic"			; operations="logic"]
 	public static val recordType		= new BaseType() => [ type = "record" 		; set="component"		; operations="arith"]
+	public static val recordsType		= new BaseType() => [ type = "records" 		; set="component"		; operations="null"]
 	public static val enumType			= new BaseType() => [ type = "enum" 		; set="component"		; operations="arith"]
 	public static val compType			= new BaseType() => [ type = "component" 	; set="component"		; operations="arith"]
 	public static val macroType			= new BaseType() => [ type = "macro" 		; set="component"		; operations="null"]
@@ -376,7 +377,7 @@ class TypeProvider {
 	}
 	
 	def getType(Records rs){
-		recordType
+		recordsType
 	}
 	
 //	def getType(VariableOrRecordReference vorr){

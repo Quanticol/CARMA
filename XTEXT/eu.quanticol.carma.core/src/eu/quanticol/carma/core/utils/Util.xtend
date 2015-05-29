@@ -218,7 +218,7 @@ class Util {
 				output.add((eme as EnvironmentMacroExpressionComponentAllStates).comp.label)
 			}
 			EnvironmentMacroExpressionComponentAState:	{
-				output.add((eme as EnvironmentMacroExpressionComponentAllStates).comp.label)
+				output.add((eme as EnvironmentMacroExpressionComponentAState).comp.label)
 			}
 		}
 		
@@ -1125,7 +1125,37 @@ class Util {
 		}
 	}
 	
+	def String convertType(VariableReference vd){
+		if(vd.type.toString.equals("enum")){
+			return "Integer"
+		}
+		if(vd.type.toString.equals("record")){
+			return "Integer"
+		}
+		if(vd.type.toString.equals("double")){
+			return "Double"
+		}
+		if(vd.type.toString.equals("integer")){
+			return "Integer"
+		}
+	}
+	
 	def String convertPrimitiveType(VariableDeclaration vd){
+		if(vd.type.toString.equals("enum")){
+			return "int"
+		}
+		if(vd.type.toString.equals("record")){
+			return "int"
+		}
+		if(vd.type.toString.equals("double")){
+			return "double"
+		}
+		if(vd.type.toString.equals("integer")){
+			return "int"
+		}
+	}
+	
+	def String convertPrimitiveType(VariableReference vd){
 		if(vd.type.toString.equals("enum")){
 			return "int"
 		}
@@ -2007,6 +2037,16 @@ class Util {
 		vrs.addAll(br.eAllOfType(RecordReferenceThis))				
 		
 		return vrs
+	}
+	
+	def ArrayList<RecordDeclaration> getRecordDeclarations(VariableDeclarationRecord vdr){
+		var ArrayList<RecordDeclaration> rds = new ArrayList<RecordDeclaration>()
+		if(vdr.assign.ref != null){
+			rds.addAll(vdr.assign.ref.getRecordDeclarationsFromCBND)
+		} else {
+			rds.addAll(vdr.eAllOfType(RecordDeclaration))
+		}
+		return rds
 	}
 	
 }

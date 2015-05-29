@@ -11,10 +11,10 @@ public class CGT11Definition {
 	/*COMPONENT ATTRIBUTES*/
 	public static final String PRODUCT_ATTRIBUTE = "product";
 	public static final Class<Integer> PRODUCT_ATTRIBUTE_TYPE = Integer.class;
-	public static final String POSITION_X_ATTRIBUTE = "position_x";
-	public static final Class<Integer> POSITION_X_ATTRIBUTE_TYPE = Integer.class;
 	public static final String EU_RECEIVER_ATTRIBUTE = "eu_receiver";
 	public static final Class<Integer> EU_RECEIVER_ATTRIBUTE_TYPE = Integer.class;
+	public static final String POSITION_X_ATTRIBUTE = "position_x";
+	public static final Class<Integer> POSITION_X_ATTRIBUTE_TYPE = Integer.class;
 	public static final String POSITION_Y_ATTRIBUTE = "position_y";
 	public static final Class<Integer> POSITION_Y_ATTRIBUTE_TYPE = Integer.class;
 	public static final String EU_SENDER_ATTRIBUTE = "eu_sender";
@@ -169,6 +169,8 @@ public class CGT11Definition {
 						if (value instanceof int[]){
 							int z = ((int[]) value)[0];
 							int product = store.get("product" , Integer.class );
+							int position_x = store.get("position_x" , Integer.class );
+							int position_y = store.get("position_y" , Integer.class );
 							store.set("product",product - z);
 						};
 					};
@@ -225,32 +227,49 @@ public class CGT11Definition {
 	}
 	/*MEASURES*/
 	//predicate states get_MeasureName_State(ProcessName_ProcessName... || All)Predicate()
-	public static CarmaProcessPredicate getMeasureWaiting_Consumer_All_State_Predicate(){
+	public static CarmaProcessPredicate getMeasureWaiting_Producer_All_State_Predicate(){
 		return new CarmaProcessPredicate() {
 			
 			@Override
 			public boolean eval(CarmaProcess p) {
-				// TODO Auto-generated method stub
-			return false;
+				return ( 
+				(((CarmaSequentialProcess) p).automaton() ==  ProducerProcess) && (
+				(((CarmaSequentialProcess) p).automaton().getState("state_Send") != null ) ||
+				(((CarmaSequentialProcess) p).automaton().getState("state_Produce") != null ) ||
+				(((CarmaSequentialProcess) p).getState() !=  null))
+				) && 
+				true;
 			}
 		};
 	}
 	//predicate for boolean expression get_MeasureName_BooleanExpression_Predicate()
-	public static ComponentPredicate getMeasureWaiting_Consumer_All_BooleanExpression_Predicate(){
+	protected static CarmaPredicate getPredicateWaiting_Producer_All(final int i, final int j) {
+		return new CarmaPredicate() {
+			@Override
+			public boolean satisfy(CarmaStore store) {
+				int position_x = store.get("position_x" , Integer.class );
+				int position_y = store.get("position_y" , Integer.class );
+				return position_x == i && position_y == j;
+			}
+		};
+	}
+	
+	
+	public static ComponentPredicate getMeasureWaiting_Producer_All_BooleanExpression_Predicate(final int i, final int j){
 		return new ComponentPredicate() {
 			
 			@Override
 			public boolean eval(CarmaComponent c){
-				return true && (c.isRunning(getMeasureWaiting_Consumer_All_State_Predicate()));
+				return getPredicateWaiting_Producer_All(i, j).satisfy(c.getStore()) && (c.isRunning(getMeasureWaiting_Producer_All_State_Predicate()));
 			}
 		};
 	}
 	//getMethod
-	public static Measure<CarmaSystem> getMeasureWaiting_Consumer_All(){
+	public static Measure<CarmaSystem> getMeasureWaiting_Producer_All(final int i, final int j){
 		
 		return new Measure<CarmaSystem>(){
 		
-			ComponentPredicate predicate = getMeasureWaiting_Consumer_All_BooleanExpression_Predicate();
+			ComponentPredicate predicate = getMeasureWaiting_Producer_All_BooleanExpression_Predicate(i, j);
 		
 			@Override
 			public double measure(CarmaSystem t){
@@ -262,7 +281,7 @@ public class CGT11Definition {
 		
 			@Override
 			public String getName() {
-				return "Waiting_Consumer_All";
+				return "Waiting_Producer_All";
 			}
 		};
 	}

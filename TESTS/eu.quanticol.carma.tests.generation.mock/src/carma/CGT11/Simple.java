@@ -2,9 +2,8 @@ package carma.CGT11;
 
 import org.apache.commons.math3.random.RandomGenerator;
 import org.cmg.ml.sam.sim.SimulationEnvironment;
-import org.cmg.ml.sam.sim.sampling.StatisticSampling;
-
 import eu.quanticol.carma.simulator.*;
+import org.cmg.ml.sam.sim.sampling.StatisticSampling;
 public class Simple extends CarmaSystem {
 	
 	//constructor
@@ -88,8 +87,8 @@ public class Simple extends CarmaSystem {
 	
 			@Override
 			public boolean satisfy(CarmaStore receiver) {
-				int eu_receiver_r = receiver.get("eu_receiver" , Integer.class );
 				int eu_sender_s = sender.get("eu_sender" , Integer.class );
+				int eu_receiver_r = receiver.get("eu_receiver" , Integer.class );
 				return eu_sender_s == 1 && eu_receiver_r == 1;
 			}
 			
@@ -100,9 +99,9 @@ public class Simple extends CarmaSystem {
 	
 			@Override
 			public boolean satisfy(CarmaStore receiver) {
-				int eu_global = global_store.get("eu_global" , Integer.class );
-				int eu_receiver_r = receiver.get("eu_receiver" , Integer.class );
 				int eu_sender_s = sender.get("eu_sender" , Integer.class );
+				int eu_receiver_r = receiver.get("eu_receiver" , Integer.class );
+				int eu_global = global_store.get("eu_global" , Integer.class );
 				return eu_sender_s == 1 && eu_receiver_r == 1 && eu_global == 1;
 			}
 			
@@ -193,8 +192,8 @@ public class Simple extends CarmaSystem {
 	
 			@Override
 			public boolean satisfy(CarmaStore sender) {
-				int eu_global = global_store.get("eu_global" , Integer.class );
 				int eu_sender_s = sender.get("eu_sender" , Integer.class );
+				int eu_global = global_store.get("eu_global" , Integer.class );
 				return eu_sender_s == 1 && eu_global == 1;
 			}
 			
@@ -289,8 +288,8 @@ public class Simple extends CarmaSystem {
 	
 			@Override
 			public boolean satisfy(CarmaStore receiver) {
-				int eu_receiver_r = receiver.get("eu_receiver" , Integer.class );
 				int eu_sender_s = sender.get("eu_sender" , Integer.class );
+				int eu_receiver_r = receiver.get("eu_receiver" , Integer.class );
 				return eu_sender_s == 1 && eu_receiver_r == 1;
 			}
 			
@@ -301,9 +300,9 @@ public class Simple extends CarmaSystem {
 	
 			@Override
 			public boolean satisfy(CarmaStore receiver) {
-				int eu_global = global_store.get("eu_global" , Integer.class );
-				int eu_receiver_r = receiver.get("eu_receiver" , Integer.class );
 				int eu_sender_s = sender.get("eu_sender" , Integer.class );
+				int eu_receiver_r = receiver.get("eu_receiver" , Integer.class );
+				int eu_global = global_store.get("eu_global" , Integer.class );
 				return eu_sender_s == 1 && eu_receiver_r == 1 && eu_global == 1;
 			}
 			
@@ -322,30 +321,58 @@ public class Simple extends CarmaSystem {
 		if (action == CGT11Definition.SEND 
 		&& CarmaPredicate.TRUE.satisfy(sender)
 		) {
+			
+			int transactions = global_store.get("transactions" , Integer.class );
+			global_store.set("transactions",transactions + 1);
+			
 		}
 		if (action == CGT11Definition.SEND 
 		&& CarmaPredicate.FALSE.satisfy(sender)
 		) {
+			
+			int transactions = global_store.get("transactions" , Integer.class );
+			global_store.set("transactions",transactions + 1);
+			
 		}
 		if (action == CGT11Definition.SEND 
 		&& get_sender_eu_sender_EQUA_1_send_UnicastPredicateUpdate().satisfy(sender)
 		) {
+			
+			int transactions = global_store.get("transactions" , Integer.class );
+			global_store.set("transactions",transactions + 1);
+			
 		}
 		if (action == CGT11Definition.SEND 
 		&& get_receiver_eu_receiver_EQUA_1_send_UnicastPredicateUpdate().satisfy(receiver)
 		) {
+			
+			int transactions = global_store.get("transactions" , Integer.class );
+			global_store.set("transactions",transactions + 1);
+			
 		}
 		if (action == CGT11Definition.SEND 
 		&& get_global_eu_global_EQUA_1_send_UnicastPredicateUpdate().satisfy(sender)
 		) {
+			
+			int transactions = global_store.get("transactions" , Integer.class );
+			global_store.set("transactions",transactions + 1);
+			
 		}
 		if (action == CGT11Definition.SEND 
 		&& get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_send_UnicastPredicateUpdate(sender).satisfy(receiver)
 		) {
+			
+			int transactions = global_store.get("transactions" , Integer.class );
+			global_store.set("transactions",transactions + 1);
+			
 		}
 		if (action == CGT11Definition.SEND 
 		&& get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_AND_global_eu_global_EQUA_1_send_UnicastPredicateUpdate(sender).satisfy(receiver)
 		) {
+			
+			int transactions = global_store.get("transactions" , Integer.class );
+			global_store.set("transactions",transactions + 1);
+			
 		}
 	}
 	
@@ -354,13 +381,13 @@ public class Simple extends CarmaSystem {
 		SimulationEnvironment<CarmaSystem> system = new SimulationEnvironment<CarmaSystem>(
 			new CGT11Factory()
 		);
-		int deadline = 400;
-		StatisticSampling<CarmaSystem> waitingUsers0 = 
-				new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT11Definition.getMeasureWaiting_Consumer_All());
-		
-		waitingUsers0.printTimeSeries(System.out);
 	
+		int deadline = 50;
+		StatisticSampling<CarmaSystem> test = 
+			new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT11Definition.getMeasureWaiting_Producer_All(1, 1));
+		system.setSampling(test);
 		system.simulate(100,50);
+		test.printTimeSeries(System.out);
 	}
 	
 }

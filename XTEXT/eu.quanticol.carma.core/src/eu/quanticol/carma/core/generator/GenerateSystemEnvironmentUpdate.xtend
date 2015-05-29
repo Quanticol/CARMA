@@ -245,6 +245,9 @@ class GenerateSystemEnvironmentUpdate {
 		'''
 		if (action == «actionStub.getContainerOfType(Model).label»Definition.«actionStub.name.name.toUpperCase» 
 		&& «actionStub.predicateHandlerEnvironmentUpdate») {
+			
+			«actionStub.defineEUpdateActionStub»
+			
 		}
 		'''
 	}

@@ -42,6 +42,7 @@ import eu.quanticol.carma.core.carma.VariableReferenceGlobal
 import eu.quanticol.carma.core.carma.RecordReferenceGlobal
 import eu.quanticol.carma.core.carma.EnvironmentUpdateExpression
 import eu.quanticol.carma.core.carma.EnvironmentUpdateExpressions
+import eu.quanticol.carma.core.carma.MeasureBlock
 
 class GenerateSystems {
 	
@@ -60,6 +61,7 @@ class GenerateSystems {
 		import org.apache.commons.math3.random.RandomGenerator;
 		import org.cmg.ml.sam.sim.SimulationEnvironment;
 		import eu.quanticol.carma.simulator.*;
+		import org.cmg.ml.sam.sim.sampling.StatisticSampling;
 		public class «system.label» extends CarmaSystem {
 			
 			//constructor
@@ -334,6 +336,12 @@ class GenerateSystems {
 		}
 	}
 	
+	def String setupMeasures(System system){
+		var measures = system.getContainerOfType(Model).eAllOfType(MeasureBlock).get(0)	
+		
+		'''
+		'''
+	}
 
 	
 	def String defineMain(System system){
@@ -344,7 +352,15 @@ class GenerateSystems {
 				new «system.getContainerOfType(Model).label»Factory()
 			);
 		
+			int deadline = 50;
+			
+			«system.setupMeasures»
+			
+			StatisticSampling<CarmaSystem> test = 
+			new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT11Definition.getMeasureWaiting_Producer_All(1, 1));
+			system.setSampling(test);
 			system.simulate(100,50);
+			test.printTimeSeries(System.out);
 		}'''
 	}
 	

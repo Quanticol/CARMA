@@ -1,5 +1,6 @@
 package eu.quanticol.carma.core.utils
 
+import com.google.inject.Inject
 import eu.quanticol.carma.core.carma.Action
 import eu.quanticol.carma.core.carma.ActionName
 import eu.quanticol.carma.core.carma.ActionStub
@@ -15,6 +16,7 @@ import eu.quanticol.carma.core.carma.BooleanComparison
 import eu.quanticol.carma.core.carma.BooleanDivision
 import eu.quanticol.carma.core.carma.BooleanEquality
 import eu.quanticol.carma.core.carma.BooleanExpression
+import eu.quanticol.carma.core.carma.BooleanExpressions
 import eu.quanticol.carma.core.carma.BooleanModulo
 import eu.quanticol.carma.core.carma.BooleanMultiplication
 import eu.quanticol.carma.core.carma.BooleanNot
@@ -25,7 +27,17 @@ import eu.quanticol.carma.core.carma.CarmaDouble
 import eu.quanticol.carma.core.carma.CarmaExponent
 import eu.quanticol.carma.core.carma.CarmaInteger
 import eu.quanticol.carma.core.carma.CeilingFunction
+import eu.quanticol.carma.core.carma.Component
+import eu.quanticol.carma.core.carma.ComponentAfterThought
+import eu.quanticol.carma.core.carma.ComponentArgument
 import eu.quanticol.carma.core.carma.ComponentBlockDefinition
+import eu.quanticol.carma.core.carma.ComponentBlockDefinitionArgumentMacro
+import eu.quanticol.carma.core.carma.ComponentBlockDefinitionArgumentVariable
+import eu.quanticol.carma.core.carma.ComponentBlockNewDeclaration
+import eu.quanticol.carma.core.carma.ComponentBlockNewDeclarationSpawn
+import eu.quanticol.carma.core.carma.ComponentBlockStyle
+import eu.quanticol.carma.core.carma.ComponentBlockStyleCollective
+import eu.quanticol.carma.core.carma.ComponentLineDefinition
 import eu.quanticol.carma.core.carma.ComponentName
 import eu.quanticol.carma.core.carma.ComponentStyle
 import eu.quanticol.carma.core.carma.DoubleAssignment
@@ -39,7 +51,40 @@ import eu.quanticol.carma.core.carma.EnumAssignmentMethodReference
 import eu.quanticol.carma.core.carma.EnumAssignmentRange
 import eu.quanticol.carma.core.carma.EnumAssignmentVariableName
 import eu.quanticol.carma.core.carma.EnumTypeLabel
+import eu.quanticol.carma.core.carma.EnvironmentAddition
+import eu.quanticol.carma.core.carma.EnvironmentAtomicMeasure
+import eu.quanticol.carma.core.carma.EnvironmentAtomicMethodReference
+import eu.quanticol.carma.core.carma.EnvironmentAtomicNow
+import eu.quanticol.carma.core.carma.EnvironmentAtomicPrimitive
+import eu.quanticol.carma.core.carma.EnvironmentAtomicRecords
+import eu.quanticol.carma.core.carma.EnvironmentAtomicVariable
+import eu.quanticol.carma.core.carma.EnvironmentDivision
+import eu.quanticol.carma.core.carma.EnvironmentExpression
+import eu.quanticol.carma.core.carma.EnvironmentExpressions
+import eu.quanticol.carma.core.carma.EnvironmentGuard
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionAll
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAState
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAllStates
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionParallel
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressions
+import eu.quanticol.carma.core.carma.EnvironmentModulo
+import eu.quanticol.carma.core.carma.EnvironmentMultiplication
+import eu.quanticol.carma.core.carma.EnvironmentOperation
+import eu.quanticol.carma.core.carma.EnvironmentSubtraction
+import eu.quanticol.carma.core.carma.EnvironmentUpdate
+import eu.quanticol.carma.core.carma.EnvironmentUpdateAddition
+import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicMeasure
+import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicMethodReference
+import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicNow
+import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicPrimitive
+import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicRecords
+import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicVariable
+import eu.quanticol.carma.core.carma.EnvironmentUpdateExpression
+import eu.quanticol.carma.core.carma.EnvironmentUpdateExpressions
+import eu.quanticol.carma.core.carma.EnvironmentUpdateMultiplication
+import eu.quanticol.carma.core.carma.EnvironmentUpdateSubtraction
 import eu.quanticol.carma.core.carma.FloorFunction
+import eu.quanticol.carma.core.carma.Guard
 import eu.quanticol.carma.core.carma.InputAction
 import eu.quanticol.carma.core.carma.IntegerAssignment
 import eu.quanticol.carma.core.carma.IntegerAssignmentCarmaInteger
@@ -47,10 +92,14 @@ import eu.quanticol.carma.core.carma.IntegerAssignmentMethodReference
 import eu.quanticol.carma.core.carma.IntegerAssignmentVariableName
 import eu.quanticol.carma.core.carma.IntegerTypeLabel
 import eu.quanticol.carma.core.carma.LineSystem
+import eu.quanticol.carma.core.carma.MacroExpressionParallel
+import eu.quanticol.carma.core.carma.MacroExpressionReference
+import eu.quanticol.carma.core.carma.MacroExpressions
 import eu.quanticol.carma.core.carma.MacroName
+import eu.quanticol.carma.core.carma.MacroType
 import eu.quanticol.carma.core.carma.MaxFunction
-import eu.quanticol.carma.core.carma.MeasureName
 import eu.quanticol.carma.core.carma.MeasureBlock
+import eu.quanticol.carma.core.carma.MeasureName
 import eu.quanticol.carma.core.carma.MethodAddition
 import eu.quanticol.carma.core.carma.MethodAtomicMethodReference
 import eu.quanticol.carma.core.carma.MethodAtomicPrimitive
@@ -61,7 +110,7 @@ import eu.quanticol.carma.core.carma.MethodDefinition
 import eu.quanticol.carma.core.carma.MethodDefinitionArgument
 import eu.quanticol.carma.core.carma.MethodDefinitionArguments
 import eu.quanticol.carma.core.carma.MethodDivision
-import eu.quanticol.carma.core.carma.MethodExpression
+import eu.quanticol.carma.core.carma.MethodExpressions
 import eu.quanticol.carma.core.carma.MethodModulo
 import eu.quanticol.carma.core.carma.MethodMultiplication
 import eu.quanticol.carma.core.carma.MethodName
@@ -72,16 +121,40 @@ import eu.quanticol.carma.core.carma.Methods
 import eu.quanticol.carma.core.carma.MinFunction
 import eu.quanticol.carma.core.carma.Model
 import eu.quanticol.carma.core.carma.MultiCast
+import eu.quanticol.carma.core.carma.NCA
 import eu.quanticol.carma.core.carma.Name
+import eu.quanticol.carma.core.carma.NewComponentArgumentDeclare
+import eu.quanticol.carma.core.carma.NewComponentArgumentMacro
+import eu.quanticol.carma.core.carma.NewComponentArgumentMethod
+import eu.quanticol.carma.core.carma.NewComponentArgumentPrimitive
+import eu.quanticol.carma.core.carma.NewComponentArgumentReference
+import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnDeclare
+import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnMacro
+import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnMethod
+import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnPrimitive
+import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnReference
 import eu.quanticol.carma.core.carma.OutputAction
+import eu.quanticol.carma.core.carma.OutputActionArgument
+import eu.quanticol.carma.core.carma.OutputActionArgumentV
+import eu.quanticol.carma.core.carma.OutputActionArgumentVR
 import eu.quanticol.carma.core.carma.PDFunction
 import eu.quanticol.carma.core.carma.PredefinedMethodDeclaration
 import eu.quanticol.carma.core.carma.PrimitiveType
+import eu.quanticol.carma.core.carma.Probability
+import eu.quanticol.carma.core.carma.Process
+import eu.quanticol.carma.core.carma.ProcessExpression
+import eu.quanticol.carma.core.carma.ProcessExpressionAction
+import eu.quanticol.carma.core.carma.ProcessExpressionChoice
+import eu.quanticol.carma.core.carma.ProcessExpressionGuard
+import eu.quanticol.carma.core.carma.ProcessExpressionLeaf
+import eu.quanticol.carma.core.carma.ProcessExpressionReference
 import eu.quanticol.carma.core.carma.ProcessName
 import eu.quanticol.carma.core.carma.Range
+import eu.quanticol.carma.core.carma.Rate
 import eu.quanticol.carma.core.carma.RecordDeclaration
 import eu.quanticol.carma.core.carma.RecordDeclarations
 import eu.quanticol.carma.core.carma.RecordName
+import eu.quanticol.carma.core.carma.RecordReferenceGlobal
 import eu.quanticol.carma.core.carma.RecordReferenceMy
 import eu.quanticol.carma.core.carma.RecordReferencePure
 import eu.quanticol.carma.core.carma.RecordReferenceReceiver
@@ -93,12 +166,23 @@ import eu.quanticol.carma.core.carma.System
 import eu.quanticol.carma.core.carma.SystemName
 import eu.quanticol.carma.core.carma.TypeLabel
 import eu.quanticol.carma.core.carma.UniformFunction
+import eu.quanticol.carma.core.carma.UpdateAddition
+import eu.quanticol.carma.core.carma.UpdateAtomicMethodReference
+import eu.quanticol.carma.core.carma.UpdateAtomicPrimitive
+import eu.quanticol.carma.core.carma.UpdateAtomicRecords
+import eu.quanticol.carma.core.carma.UpdateAtomicVariable
+import eu.quanticol.carma.core.carma.UpdateExpression
+import eu.quanticol.carma.core.carma.UpdateExpressions
+import eu.quanticol.carma.core.carma.UpdateMultiplication
+import eu.quanticol.carma.core.carma.UpdateSubtraction
 import eu.quanticol.carma.core.carma.VariableDeclaration
 import eu.quanticol.carma.core.carma.VariableDeclarationCarmaDouble
 import eu.quanticol.carma.core.carma.VariableDeclarationCarmaIntger
 import eu.quanticol.carma.core.carma.VariableDeclarationEnum
 import eu.quanticol.carma.core.carma.VariableDeclarationRecord
 import eu.quanticol.carma.core.carma.VariableName
+import eu.quanticol.carma.core.carma.VariableReference
+import eu.quanticol.carma.core.carma.VariableReferenceGlobal
 import eu.quanticol.carma.core.carma.VariableReferenceMy
 import eu.quanticol.carma.core.carma.VariableReferencePure
 import eu.quanticol.carma.core.carma.VariableReferenceReceiver
@@ -109,99 +193,11 @@ import eu.quanticol.carma.core.carma.VariableTypeCarmaDouble
 import eu.quanticol.carma.core.carma.VariableTypeCarmaIntger
 import eu.quanticol.carma.core.carma.VariableTypeEnum
 import eu.quanticol.carma.core.carma.VariableTypeRecord
+import java.util.ArrayList
+import java.util.HashMap
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.carma.ProcessExpressionLeaf
-import eu.quanticol.carma.core.carma.ProcessExpressionGuard
-import eu.quanticol.carma.core.carma.Guard
-import eu.quanticol.carma.core.carma.Process
-import eu.quanticol.carma.core.carma.ProcessExpression
-import eu.quanticol.carma.core.carma.ProcessExpressionChoice
-import eu.quanticol.carma.core.carma.ProcessExpressionAction
-import eu.quanticol.carma.core.carma.ProcessExpressionReference
-import java.util.ArrayList
-import eu.quanticol.carma.core.carma.Component
-import eu.quanticol.carma.core.carma.ComponentBlockStyle
-import eu.quanticol.carma.core.carma.ComponentLineDefinition
-import eu.quanticol.carma.core.carma.EnvironmentExpression
-import eu.quanticol.carma.core.carma.EnvironmentSubtraction
-import eu.quanticol.carma.core.carma.EnvironmentAddition
-import eu.quanticol.carma.core.carma.EnvironmentMultiplication
-import eu.quanticol.carma.core.carma.EnvironmentModulo
-import eu.quanticol.carma.core.carma.EnvironmentDivision
-import eu.quanticol.carma.core.carma.EnvironmentAtomicPrimitive
-import eu.quanticol.carma.core.carma.EnvironmentAtomicRecords
-import eu.quanticol.carma.core.carma.EnvironmentAtomicVariable
-import eu.quanticol.carma.core.carma.EnvironmentAtomicMethodReference
-import eu.quanticol.carma.core.carma.EnvironmentAtomicNow
-import eu.quanticol.carma.core.carma.EnvironmentAtomicMeasure
-import com.google.inject.Inject
-import eu.quanticol.carma.core.carma.UpdateExpression
-import eu.quanticol.carma.core.carma.UpdateSubtraction
-import eu.quanticol.carma.core.carma.UpdateAddition
-import eu.quanticol.carma.core.carma.UpdateMultiplication
-import eu.quanticol.carma.core.carma.UpdateAtomicPrimitive
-import eu.quanticol.carma.core.carma.UpdateAtomicRecords
-import eu.quanticol.carma.core.carma.UpdateAtomicVariable
-import eu.quanticol.carma.core.carma.UpdateAtomicMethodReference
-import eu.quanticol.carma.core.carma.ComponentBlockNewDeclaration
-import eu.quanticol.carma.core.carma.NCA
-import eu.quanticol.carma.core.carma.NewComponentArgumentPrimitive
-import eu.quanticol.carma.core.carma.NewComponentArgumentMacro
-import eu.quanticol.carma.core.carma.NewComponentArgumentMethod
-import eu.quanticol.carma.core.carma.NewComponentArgumentDeclare
-import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnPrimitive
-import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnDeclare
-import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnMacro
-import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnMethod
-import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnReference
-import eu.quanticol.carma.core.carma.MacroExpressions
-import eu.quanticol.carma.core.carma.NewComponentArgumentReference
-import eu.quanticol.carma.core.carma.MacroExpressionParallel
-import eu.quanticol.carma.core.carma.MacroExpressionReference
-import eu.quanticol.carma.core.carma.ComponentBlockForStatement
-import eu.quanticol.carma.core.carma.ComponentAfterThought
-import eu.quanticol.carma.core.carma.BooleanExpressions
-import eu.quanticol.carma.core.carma.MethodExpressions
-import eu.quanticol.carma.core.carma.UpdateExpressions
-import eu.quanticol.carma.core.carma.EnvironmentExpressions
-import eu.quanticol.carma.core.carma.ComponentBlockDefinitionArgumentVariable
-import eu.quanticol.carma.core.carma.ComponentArgument
-import eu.quanticol.carma.core.carma.ComponentBlockDefinitionArgumentMacro
-import eu.quanticol.carma.core.carma.MacroType
-import eu.quanticol.carma.core.carma.VariableReference
-import eu.quanticol.carma.core.carma.OutputActionArgument
-import eu.quanticol.carma.core.carma.OutputActionArgumentVR
-import eu.quanticol.carma.core.carma.OutputActionArgumentV
-import java.util.HashMap
-import eu.quanticol.carma.core.carma.Rate
-import eu.quanticol.carma.core.carma.EnvironmentGuard
-import eu.quanticol.carma.core.carma.ComponentBlockStyleCollective
-import eu.quanticol.carma.core.carma.ComponentBlockDefinitionArguments
-import eu.quanticol.carma.core.carma.EnvironmentUpdate
-import eu.quanticol.carma.core.carma.ComponentBlockNewDeclarationSpawn
-import eu.quanticol.carma.core.carma.CBND
-import java.util.List
-import eu.quanticol.carma.core.carma.EnvironmentMacroExpressions
-import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionParallel
-import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionAll
-import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAllStates
-import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAState
-import eu.quanticol.carma.core.carma.VariableReferenceGlobal
-import eu.quanticol.carma.core.carma.RecordReferenceGlobal
-import eu.quanticol.carma.core.carma.EnvironmentUpdateExpressions
-import eu.quanticol.carma.core.carma.EnvironmentUpdateSubtraction
-import eu.quanticol.carma.core.carma.EnvironmentUpdateAddition
-import eu.quanticol.carma.core.carma.EnvironmentUpdateMultiplication
-import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicPrimitive
-import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicRecords
-import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicVariable
-import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicMethodReference
-import eu.quanticol.carma.core.carma.EnvironmentUpdateExpression
-import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicNow
-import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicMeasure
-import eu.quanticol.carma.core.carma.Probability
-import eu.quanticol.carma.core.carma.EnvironmentOperation
+import eu.quanticol.carma.core.carma.MethodExpression
 
 class LabelUtil {
 	
@@ -218,12 +214,12 @@ class LabelUtil {
 		switch(nca){
 			NewComponentArgumentPrimitive 		: (nca.value as PrimitiveType).getLabel
 			NewComponentArgumentMacro 			: (nca.value as MacroExpressions).getLabel
-			NewComponentArgumentMethod			: (nca.value as MethodExpression).getLabel
+			NewComponentArgumentMethod			: (nca.value as MethodExpressions).getLabel
 			NewComponentArgumentDeclare			: (nca.value as Records).flatten
 			NewComponentArgumentReference		: (nca.value as VariableReference).getLabel
 			NewComponentArgumentSpawnPrimitive 	: (nca.value as PrimitiveType).getLabel
 			NewComponentArgumentSpawnDeclare	: (nca.value as MacroExpressions).getLabel
-			NewComponentArgumentSpawnMacro		: (nca.value as MethodExpression).getLabel
+			NewComponentArgumentSpawnMacro		: (nca.value as MethodExpressions).getLabel
 			NewComponentArgumentSpawnMethod		: (nca.value as Records).flatten
 			NewComponentArgumentSpawnReference	: (nca.value as VariableReference).getLabel
 		}
@@ -232,7 +228,7 @@ class LabelUtil {
 	def String getLabel(EnvironmentMacroExpressions eme){
 		switch(eme){
 			EnvironmentMacroExpressionParallel:				eme.left +"_"+ eme.right
-			EnvironmentMacroExpressionAll:					eme+"_All"
+			EnvironmentMacroExpressionAll:					"_All"
 			EnvironmentMacroExpressionComponentAllStates:	eme.comp.getLabel+"_All"
 			EnvironmentMacroExpressionComponentAState:		eme.comp.getLabel+"_"+eme.state.getLabel
 		}
@@ -337,12 +333,12 @@ class LabelUtil {
 		switch(ca){
 			NewComponentArgumentPrimitive 		: (ca.value as PrimitiveType).getLabel
 			NewComponentArgumentMacro 			: (ca.value as MacroExpressions).getLabel
-			NewComponentArgumentMethod			: (ca.value as MethodExpression).getLabel
+			NewComponentArgumentMethod			: (ca.value as MethodExpressions).getLabel
 			NewComponentArgumentDeclare			: (ca.value as Records).getLabel
 			NewComponentArgumentReference		: (ca.value as VariableReference).getLabel
 			NewComponentArgumentSpawnPrimitive 	: (ca.value as PrimitiveType).getLabel
 			NewComponentArgumentSpawnDeclare	: (ca.value as MacroExpressions).getLabel
-			NewComponentArgumentSpawnMacro		: (ca.value as MethodExpression).getLabel
+			NewComponentArgumentSpawnMacro		: (ca.value as MethodExpressions).getLabel
 			NewComponentArgumentSpawnMethod		: (ca.value as Records).getLabel
 			NewComponentArgumentSpawnReference	: (ca.value as VariableReference).getLabel
 		}
@@ -352,12 +348,12 @@ class LabelUtil {
 		switch(ca){
 			NewComponentArgumentPrimitive 		: (ca.value as PrimitiveType).getLabel
 			NewComponentArgumentMacro 			: (ca.value as MacroExpressions).getLabel
-			NewComponentArgumentMethod			: (ca.value as MethodExpression).getLabel
+			NewComponentArgumentMethod			: (ca.value as MethodExpressions).getLabel
 			NewComponentArgumentDeclare			: (ca.value as Records).getLabelForArgs
 			NewComponentArgumentReference		: (ca.value as VariableReference).getLabel
 			NewComponentArgumentSpawnPrimitive 	: (ca.value as PrimitiveType).getLabel
 			NewComponentArgumentSpawnDeclare	: (ca.value as MacroExpressions).getLabel
-			NewComponentArgumentSpawnMacro		: (ca.value as MethodExpression).getLabel
+			NewComponentArgumentSpawnMacro		: (ca.value as MethodExpressions).getLabel
 			NewComponentArgumentSpawnMethod		: (ca.value as Records).getLabelForArgs
 			NewComponentArgumentSpawnReference	: (ca.value as VariableReference).getLabel
 		}
@@ -383,7 +379,7 @@ class LabelUtil {
 			UpdateAtomicPrimitive:						(e.value as PrimitiveType).label
 			UpdateAtomicRecords:						(e.value as Records).label
 			UpdateAtomicVariable:						e.value.label
-			UpdateAtomicMethodReference:				(e.value as MethodExpression).label 
+			UpdateAtomicMethodReference:				(e.value as MethodExpressions).label 
 			UpdateExpression:							e.expression.label
 		}
 	}
@@ -413,7 +409,7 @@ class LabelUtil {
 			EnvironmentUpdateAtomicPrimitive:						(e.value as PrimitiveType).label
 			EnvironmentUpdateAtomicRecords:							(e.value as Records).label
 			EnvironmentUpdateAtomicVariable:						e.value.convertToJava
-			EnvironmentUpdateAtomicMethodReference:					(e.value as MethodExpression).label 
+			EnvironmentUpdateAtomicMethodReference:					(e.value as MethodExpressions).label 
 			EnvironmentUpdateExpression:							e.expression.label
 			EnvironmentUpdateAtomicNow:								"now.LabelUtil.getLabel"
 			EnvironmentUpdateAtomicMeasure:							"measure.LabelUtil.getLabel"
@@ -637,7 +633,7 @@ class LabelUtil {
 			BooleanAtomicPrimitive:			(e.value as PrimitiveType).label			
 			BooleanAtomicRecords:			(e.value as Records).label			
 			BooleanAtomicVariable:			(e.value as VariableReference).label 
-			BooleanAtomicMethodReference:	(e.value as MethodExpression).label			
+			BooleanAtomicMethodReference:	(e.value as MethodExpressions).label			
 			BooleanAtomicNow:				"now"	
 			BooleanExpression:				e.expression.label
 		}
@@ -657,7 +653,7 @@ class LabelUtil {
 			BooleanNot:						{"!"+e.expression.convertToJava}
 			BooleanAtomicPrimitive:			(e.value as PrimitiveType).label			
 			BooleanAtomicVariable:			(e.value as VariableReference).convertToJava 
-			BooleanAtomicMethodReference:	(e.value as MethodExpression).label			
+			BooleanAtomicMethodReference:	(e.value as MethodExpressions).label			
 			BooleanAtomicNow:				"now"	
 			BooleanExpression:				e.expression.convertToJava
 		}
@@ -677,7 +673,7 @@ class LabelUtil {
 			BooleanNot:						{"!"+e.expression.convertToJavaInputAction}
 			BooleanAtomicPrimitive:			(e.value as PrimitiveType).label			
 			BooleanAtomicVariable:			(e.value as VariableReference).convertToJavaInputAction 
-			BooleanAtomicMethodReference:	(e.value as MethodExpression).label			
+			BooleanAtomicMethodReference:	(e.value as MethodExpressions).label			
 			BooleanAtomicNow:				"now"	
 			BooleanExpression:				e.expression.convertToJavaInputAction
 		}
@@ -697,7 +693,7 @@ class LabelUtil {
 			BooleanNot:						{"!"+e.expression.convertToJavaOutputAction}
 			BooleanAtomicPrimitive:			(e.value as PrimitiveType).label			
 			BooleanAtomicVariable:			(e.value as VariableReference).convertToJavaOutputAction 
-			BooleanAtomicMethodReference:	(e.value as MethodExpression).label			
+			BooleanAtomicMethodReference:	(e.value as MethodExpressions).label			
 			BooleanAtomicNow:				"now"	
 			BooleanExpression:				e.expression.convertToJavaOutputAction
 		}
@@ -718,7 +714,7 @@ class LabelUtil {
 			BooleanAtomicPrimitive:			(e.value as PrimitiveType).convertToJavaName			
 			BooleanAtomicRecords:			(e.value as Records).convertToJavaName		
 			BooleanAtomicVariable:			(e.value as VariableReference).convertToJavaName 
-			BooleanAtomicMethodReference:	(e.value as MethodExpression).convertToJavaName	
+			BooleanAtomicMethodReference:	(e.value as MethodExpressions).convertToJavaName	
 			BooleanAtomicNow:				"_NOW"	
 			BooleanExpression:				e.expression.convertToJavaName
 		}
@@ -739,7 +735,7 @@ class LabelUtil {
 			BooleanAtomicPrimitive:			(e.value as PrimitiveType).label			
 			BooleanAtomicRecords:			(e.value as Records).label			
 			BooleanAtomicVariable:			(e.value as VariableReference).labelJava
-			BooleanAtomicMethodReference:	(e.value as MethodExpression).label			
+			BooleanAtomicMethodReference:	(e.value as MethodExpressions).label			
 			BooleanAtomicNow:				"now"	
 			BooleanExpression:				e.expression.labelJava
 		}
@@ -757,7 +753,7 @@ class LabelUtil {
 	def getLabel(EnumAssignment ea){
 		switch(ea){
 			EnumAssignmentCarmaInteger: 	(ea.naturalValue as CarmaInteger).label
-			EnumAssignmentMethodReference: 	(ea.method as MethodExpression).label
+			EnumAssignmentMethodReference: 	(ea.method as MethodExpressions).label
 			EnumAssignmentRange:			(ea.range as Range).label
 			EnumAssignmentVariableName: 	(ea.ref as VariableReference).label
 		}
@@ -766,7 +762,7 @@ class LabelUtil {
 	def convertToJavaName(EnumAssignment ea){
 		switch(ea){
 			EnumAssignmentCarmaInteger: 	(ea.naturalValue as CarmaInteger).convertToJavaName
-			EnumAssignmentMethodReference: 	(ea.method as MethodExpression).convertToJavaName
+			EnumAssignmentMethodReference: 	(ea.method as MethodExpressions).convertToJavaName
 			EnumAssignmentRange:			(ea.range as Range).convertToJavaName
 			EnumAssignmentVariableName: 	(ea.ref as VariableReference).convertToJavaName
 		}
@@ -1005,7 +1001,7 @@ class LabelUtil {
 			MethodAtomicPrimitive:						(e.value as PrimitiveType).label
 			MethodAtomicRecords:						(e.value as Records).label
 			MethodAtomicVariable:						e.value.label
-			MethodAtomicMethodReference:				(e.value as MethodExpression).label 
+			MethodAtomicMethodReference:				(e.value as MethodExpressions).label 
 			MethodReferenceMethodDeclaration: 			(e.ref as MethodDeclaration).label
 			MethodReferencePredefinedMethodDeclaration: (e.ref as PredefinedMethodDeclaration).label
 			MethodExpression:							e.expression.label
@@ -1022,7 +1018,7 @@ class LabelUtil {
 			MethodAtomicPrimitive:						(e.value as PrimitiveType).convertToJavaName
 			MethodAtomicRecords:						(e.value as Records).convertToJavaName
 			MethodAtomicVariable:						e.value.label
-			MethodAtomicMethodReference:				(e.value as MethodExpression).convertToJavaName 
+			MethodAtomicMethodReference:				(e.value as MethodExpressions).convertToJavaName 
 			MethodReferenceMethodDeclaration: 			(e.ref as MethodDeclaration).label
 			MethodReferencePredefinedMethodDeclaration: (e.ref as PredefinedMethodDeclaration).label
 			MethodExpression:							e.expression.label

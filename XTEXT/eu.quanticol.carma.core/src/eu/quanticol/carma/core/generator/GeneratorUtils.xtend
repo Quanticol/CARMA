@@ -29,6 +29,8 @@ import eu.quanticol.carma.core.carma.EnvironmentUpdateAssignment
 import eu.quanticol.carma.core.carma.EnvironmentUpdateExpressions
 import eu.quanticol.carma.core.carma.EnvironmentExpression
 import eu.quanticol.carma.core.carma.EnvironmentExpressions
+import java.util.ArrayList
+import java.util.HashSet
 
 class GeneratorUtils {
 	
@@ -58,16 +60,16 @@ class GeneratorUtils {
 		'''
 		«var vd = vr.getVariableDeclaration»
 		«switch(vd){
-		VariableDeclarationEnum:	'''«vd.convertPrimitiveType» «vd.name.label» = store.get("«vd.name.label»" , «vd.convertType».class );'''
-		VariableDeclarationRecord:	{
-						var rds = vd.eAllOfType(RecordDeclaration)
+			VariableDeclarationEnum:	'''«vd.convertPrimitiveType» «vd.name.label» = store.get("«vd.name.label»" , «vd.convertType».class );'''
+			VariableDeclarationRecord:	{
+						var rds = vd.recordDeclarations
 						'''
 						«FOR rd : rds»
 						«vd.convertPrimitiveType» «vd.name.label»_«rd.name.label» = store.get("«vd.name.label»_«rd.name.label»" , «vd.convertType».class );
 						«ENDFOR»
 						'''
-					}
-				}»
+			}
+		}»
 		'''
 	}
 	
@@ -77,7 +79,7 @@ class GeneratorUtils {
 		«switch(vd){
 		VariableDeclarationEnum:	'''«vd.convertPrimitiveType» «vd.name.label»_i = inputStore.get("«vd.name.label»" , «vd.convertType».class );'''
 		VariableDeclarationRecord:	{
-						var rds = vd.eAllOfType(RecordDeclaration)
+						var rds = vd.recordDeclarations
 						'''
 						«FOR rd : rds»
 						«vd.convertPrimitiveType» «vd.name.label»_«rd.name.label»_i = inputStore.get("«vd.name.label»_«rd.name.label»" , «vd.convertType».class );
@@ -94,7 +96,7 @@ class GeneratorUtils {
 		«switch(vd){
 		VariableDeclarationEnum:	'''«vd.convertPrimitiveType» «vd.name.label»_i = inputStore.get("«vd.name.label»" , «vd.convertType».class );'''
 		VariableDeclarationRecord:	{
-						var rds = vd.eAllOfType(RecordDeclaration)
+						var rds = vd.recordDeclarations
 						'''
 						«FOR rd : rds»
 						«vd.convertPrimitiveType» «vd.name.label»_«rd.name.label»_i = inputStore.get("«vd.name.label»_«rd.name.label»" , «vd.convertType».class );
@@ -111,7 +113,7 @@ class GeneratorUtils {
 		«switch(vd){
 		VariableDeclarationEnum:	'''«vd.convertPrimitiveType» «vd.name.label»_o = outputStore.get("«vd.name.label»" , «vd.convertType».class );'''
 		VariableDeclarationRecord:	{
-						var rds = vd.eAllOfType(RecordDeclaration)
+						var rds = vd.recordDeclarations
 						'''
 						«FOR rd : rds»
 						«vd.convertPrimitiveType» «vd.name.label»_«rd.name.label»_o = outputStore.get("«vd.name.label»_«rd.name.label»" , «vd.convertType».class );
@@ -128,7 +130,7 @@ class GeneratorUtils {
 		«switch(vd){
 		VariableDeclarationEnum:	'''«vd.convertPrimitiveType» «vd.name.label»_s = sender.get("«vd.name.label»" , «vd.convertType».class );'''
 		VariableDeclarationRecord:	{
-						var rds = vd.eAllOfType(RecordDeclaration)
+						var rds = vd.recordDeclarations
 						'''
 						«FOR rd : rds»
 						«vd.convertPrimitiveType» «vd.name.label»_«rd.name.label»_s = sender.get("«vd.name.label»_«rd.name.label»" , «vd.convertType».class );
@@ -145,7 +147,7 @@ class GeneratorUtils {
 		«switch(vd){
 		VariableDeclarationEnum:	'''«vd.convertPrimitiveType» «vd.name.label»_r = receiver.get("«vd.name.label»" , «vd.convertType».class );'''
 		VariableDeclarationRecord:	{
-						var rds = vd.eAllOfType(RecordDeclaration)
+						var rds = vd.recordDeclarations
 						'''
 						«FOR rd : rds»
 						«vd.convertPrimitiveType» «vd.name.label»_«rd.name.label»_r = receiver.get("«vd.name.label»_«rd.name.label»" , «vd.convertType».class );
@@ -163,7 +165,7 @@ class GeneratorUtils {
 				output = '''«vd.convertPrimitiveType» «vd.name.label» = store.get("«vd.name.label»" , «vd.convertType».class );'''+"\n"
 					}
 			VariableDeclarationRecord: {
-				var rds = vd.eAllOfType(RecordDeclaration)
+				var rds = vd.recordDeclarations
 				for(rd : rds){
 						output = output + '''«vd.convertPrimitiveType» «vd.name.label»_«rd.name.label» = store.get("«vd.name.label»_«rd.name.label»" , «vd.convertType».class );'''+"\n"
 				}
@@ -178,7 +180,7 @@ class GeneratorUtils {
 		«switch(vd){
 		VariableDeclarationEnum:	'''«vd.convertPrimitiveType» «vd.name.label» = global_store.get("«vd.name.label»" , «vd.convertType».class );'''
 		VariableDeclarationRecord:	{
-						var rds = vd.eAllOfType(RecordDeclaration)
+						var rds = vd.recordDeclarations
 						'''
 						«FOR rd : rds»
 						«vd.convertPrimitiveType» «vd.name.label»_«rd.name.label» = global_store.get("«vd.name.label»_«rd.name.label»" , «vd.convertType».class );
@@ -244,34 +246,41 @@ class GeneratorUtils {
 	}
 	
 	def String getAllVariablesEnv(BooleanExpressions bes){
+		var HashSet<String> output = new HashSet<String>()
+		for(vr : bes.getGlobals)
+			output.add(vr.getGlobal)
+		for(vr : bes.getReceivers)
+			output.add(vr.getReceiver)
+		for(vr : bes.getSenders)
+			output.add(vr.getSender)
 		'''
-		«FOR vr : bes.getGlobals»
-		«vr.getGlobal»
-		«ENDFOR»
-		«FOR vr : bes.getReceivers»
-		«vr.getReceiver»
-		«ENDFOR»
-		«FOR vr : bes.getSenders»
-		«vr.getSender»
+		«FOR vr : output»
+		«vr»
 		«ENDFOR»
 		'''
 	}
 	
 	def String getAllVariablesInputAction(BooleanExpressions bes){
+		var HashSet<String> output = new HashSet<String>()
+		for(vr : bes.getStores)
+			output.add(vr.getInputStore)
 		'''
-		«FOR vr : bes.getStores»
-		«vr.getInputStore»
+		«FOR vr : output»
+		«vr»
 		«ENDFOR»
 		'''
 	}
 	
 	def String getAllVariablesOutputAction(BooleanExpressions bes){
+		var HashSet<String> output = new HashSet<String>()
+		for(vr : bes.getOutputTheirStores)
+			output.add(vr.getOutputTheirStore)
+		for(vr : bes.getOutputMyStores)
+			output.add(vr.getOutputMyStore)
+		
 		'''
-		«FOR vr : bes.getOutputTheirStores»
-		«vr.getOutputTheirStore»
-		«ENDFOR»
-		«FOR vr : bes.getOutputMyStores»
-		«vr.getOutputMyStore»
+		«FOR vr : output»
+		«vr»
 		«ENDFOR»
 		'''
 	}
@@ -291,31 +300,57 @@ class GeneratorUtils {
 	}
 	
 	def String getAllVariables(EnvironmentUpdateExpressions eues){
+		var HashSet<String> output = new HashSet<String>()
+		for(vr : eues.getGlobals)
+			output.add(vr.getGlobal)
+		for(vr : eues.getReceivers)
+			output.add(vr.getReceiver)
+		for(vr : eues.getSenders)
+			output.add(vr.getSender)
 		'''
-		«FOR vr : eues.getGlobals»
-		«vr.getGlobal»
-		«ENDFOR»
-		«FOR vr : eues.getReceivers»
-		«vr.getReceiver»
-		«ENDFOR»
-		«FOR vr : eues.getSenders»
-		«vr.getSender»
+		«FOR vr : output»
+		«vr»
 		«ENDFOR»
 		'''
 	}
 	
 	def String getAllVariables(EnvironmentExpressions ees){
+		var HashSet<String> output = new HashSet<String>()
+		for(vr : ees.getGlobals){
+			output.add(vr.getStore)
+		}
+		for(vr : ees.getReceivers){
+			output.add(vr.getStore)
+		}
+		for(vr : ees.getSenders){
+			output.add(vr.getStore)
+		}
 		'''
-		«FOR vr : ees.getGlobals»
-		«vr.getGlobal»
-		«ENDFOR»
-		«FOR vr : ees.getReceivers»
-		«vr.getReceiver»
-		«ENDFOR»
-		«FOR vr : ees.getSenders»
-		«vr.getSender»
+		«FOR vr : output»
+		«vr»
 		«ENDFOR»
 		'''
 	}
+	
+	def String getAllVariablesMeasure(BooleanExpressions bes){
+		
+		var attributes = new ArrayList<VariableReference>()
+		for(vr : bes.eAllOfType(VariableReference)){
+			if(vr.variableDeclaration != null)
+				attributes.add(vr)
+		}
+		var HashSet<String> output = new HashSet<String>()
+		for(vr : attributes){
+			output.add(vr.getStore)
+		}
+		
+		'''
+		«FOR vr : output»
+		«vr»
+		«ENDFOR»
+		'''
+	}
+	
+
 	
 }
