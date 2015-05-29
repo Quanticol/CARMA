@@ -70,20 +70,24 @@ class GenerateSystems {
 				«system.setGlobalStore»
 			}
 			
+			//define components
 			«system.defineComponents»
 			
+			//predicates
 			«system.defineEnvironmentProbPredicates»
 			
 			«system.defineEnvironmentProb»
 			
 			«system.defineEnvironmentRatesPredicates»
 			
+			//evol rules
 			«system.defineEnvironmentRates»
 			
 			«system.defineEnvironmentUpdatesPredicates»
 			
 			«system.defineEnvironmentUpdates»
 			
+			//main
 			«system.defineMain»
 			
 		}

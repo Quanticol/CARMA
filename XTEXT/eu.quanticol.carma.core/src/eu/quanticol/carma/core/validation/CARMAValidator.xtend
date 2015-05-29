@@ -699,7 +699,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 	def check_WARN_ComponentBlockDefinition_matching(ComponentBlockDefinition cbd){
 		var String message = WARN_ComponentBlockDefinition_matching
 		
-		if(cbd.CBNDs.size == 0){
+		if(cbd.getComponentToCBNDs.size == 0){
 			warning( message ,
 					CarmaPackage::eINSTANCE.componentBlockDefinition_Name,
 					WARN_ComponentBlockDefinition_matching
@@ -851,7 +851,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 		
 		if(environmentUpdateString.remove(eu.getLabel)){
 			error( message ,
-					CarmaPackage::eINSTANCE.environmentUpdate_Expression,
+					CarmaPackage::eINSTANCE.probability_Expression,
 					ERROR_EnvironmentUpdate_Unique
 			)
 		}

@@ -383,8 +383,10 @@ public class Simple extends CarmaSystem {
 		);
 	
 		int deadline = 50;
+		
+		
 		StatisticSampling<CarmaSystem> test = 
-			new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT11Definition.getMeasureWaiting_Producer_All(1, 1));
+		new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT11Definition.getMeasureWaiting_Producer_All(1, 1));
 		system.setSampling(test);
 		system.simulate(100,50);
 		test.printTimeSeries(System.out);

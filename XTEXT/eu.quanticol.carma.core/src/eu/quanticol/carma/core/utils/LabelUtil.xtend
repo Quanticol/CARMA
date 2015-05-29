@@ -577,16 +577,17 @@ class LabelUtil {
 		//get position in the ComponentBlockDefinitionArguments
 		var position = vtr.getPosition
 		//get ComponentBlockDeclaration
-		var cbnds = vtr.getCBNDs
+		var cbnds = vtr.getComponentToCBNDs
 			
-		for(c : cbnds){
-			if(c.getContainerOfType(ComponentBlockStyleCollective) != null){
-				rds.addAll((c as ComponentBlockNewDeclaration).componentInputArguments.inputArguments.get(position).eAllOfType(RecordDeclaration))
-			} else if (c.getContainerOfType(EnvironmentUpdate) != null) {
-				rds.addAll((c as ComponentBlockNewDeclarationSpawn).componentInputArguments.inputArguments.get(position).eAllOfType(RecordDeclaration))
+		for(cd : cbnds.keySet){
+			for(c : cbnds.get(cd)){
+				if(c.getContainerOfType(ComponentBlockStyleCollective) != null){
+					rds.addAll((c as ComponentBlockNewDeclaration).componentInputArguments.inputArguments.get(position).eAllOfType(RecordDeclaration))
+				} else if (c.getContainerOfType(EnvironmentUpdate) != null) {
+					rds.addAll((c as ComponentBlockNewDeclarationSpawn).componentInputArguments.inputArguments.get(position).eAllOfType(RecordDeclaration))
+				}
 			}
 		}
-		
 		var String output = ""
 		
 		if(rds.size > 0){

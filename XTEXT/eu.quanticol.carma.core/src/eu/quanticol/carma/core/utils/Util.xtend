@@ -107,6 +107,8 @@ import eu.quanticol.carma.core.carma.BooleanExpressions
 import eu.quanticol.carma.core.carma.EnvironmentUpdateExpressions
 import eu.quanticol.carma.core.carma.EnvironmentExpressions
 import eu.quanticol.carma.core.carma.UpdateExpressions
+import eu.quanticol.carma.core.carma.ComponentBlockDefinitionArgumentMacro
+import eu.quanticol.carma.core.carma.MacroType
 
 class Util {
 	
@@ -1329,9 +1331,9 @@ class Util {
 	def boolean hasMatchingArguments(CBND cbnd, ComponentBlockDefinition cbd){
 		var cbndArguments = cbnd.eAllOfType(NCA)
 		var componentArguments = cbd.eAllOfType(ComponentArgument)
-		if(cbndArguments.size != componentArguments.size)
+		if(cbndArguments.size != componentArguments.size){
 			return false
-		else{
+		}else{
 			var output = true
 			var count = 0
 			for(;count < cbndArguments.size;count++){
@@ -1345,17 +1347,21 @@ class Util {
 	/**
 	 * Given a component return all declarations
 	 */
-	def ArrayList<CBND> getCBNDs(ComponentBlockDefinition cbd){
-		var ArrayList<CBND> output = new ArrayList<CBND>()
+	def HashMap<Component,ArrayList<CBND>> getComponentToCBNDs(ComponentBlockDefinition cbd){
+		var HashMap<Component,ArrayList<CBND>> output = new HashMap<Component,ArrayList<CBND>>()
+		
 		
 		if(cbd != null){
+			var cbnds = new ArrayList<CBND>()
 			for(cbnd : cbd.getContainerOfType(Model).eAllOfType(CBND)){
 				if(cbd.name.sameName(cbnd.name)){
 					if(cbnd.hasMatchingArguments(cbd)){
-						output.add(cbnd)
+						cbnds.add(cbnd)
 					}
 				}
 			}
+			output.put(cbd,cbnds)
+			
 		}
 		return output
 	}
@@ -1368,16 +1374,6 @@ class Util {
 		}
 		return output
 		
-	}
-	
-	/**
-	 * Given a Component get startingStates
-	 */
-	def ArrayList<String> getStartingStates(Component component){
-		var ArrayList<String> startStates = new ArrayList<String>()
-		
-		
-		return startStates
 	}
 	
 	/**
@@ -1396,17 +1392,28 @@ class Util {
 	def ArrayList<MacroExpressionReference> getMacrosBlock(ComponentBlockDefinition component){
 		var ArrayList<MacroExpressionReference> macros = new ArrayList<MacroExpressionReference>()
 		
-		var ms = component.getComponentBlockDeclarations.stripMacroExpressionReference
 		var inits = component.eAllOfType(MacroExpressionReference)
 		var processes = component.getContainerOfType(Model).eAllOfType(Process)
 		
 		for(p : processes){
-			for(m : ms)
-				if(p.name.sameName(m.name))
-					macros.add(m)
 			for(i : inits)
 				if(p.name.sameName(i.name))
 					macros.add(i)
+		}
+		
+		var cas = component.componentArguments.eAllOfType(ComponentArgument)
+		for(ca : cas){
+			if(ca.eAllOfType(ProcessName).size > 0)
+				for(i : inits){
+					if(i.name.sameName(ca.eAllOfType(ProcessName).get(0))){
+						var cToCBND = ca.componentToCBNDs
+						for(key : cToCBND.keySet){
+							for(cbnd : cToCBND.get(key)){
+								macros.addAll(cbnd.eAllOfType(NCA).get(ca.position).eAllOfType(MacroExpressionReference))
+							}
+						}
+					}
+				}
 		}
 		
 		return macros
@@ -1426,22 +1433,30 @@ class Util {
 	/**
 	 * Given a VariableTypeRecord, return its ComponentBlockNewDeclarations
 	 */
-	def ArrayList<CBND> getCBNDs(VariableTypeRecord vtr){
-		return vtr.getContainerOfType(ComponentArgument).getCBNDs
+	def HashMap<Component,ArrayList<CBND>> getComponentToCBNDs(VariableTypeRecord vtr){
+		return vtr.getContainerOfType(ComponentArgument).getComponentToCBNDs
 	}
 	
 	/**
 	 * Given a VariableName, return its ComponentBlockNewDeclarations
 	 */
-	def ArrayList<CBND> getCBNDs(VariableName vtr){
-		return vtr.getContainerOfType(ComponentArgument).getCBNDs
+	def HashMap<Component,ArrayList<CBND>> getCBNDs(VariableName vtr){
+		return vtr.getContainerOfType(ComponentArgument).getComponentToCBNDs
 	}
 	
 	/**
 	 * Given a ComponentArgument, return its ComponentBlockNewDeclarations
 	 */
-	def ArrayList<CBND> getCBNDs(ComponentArgument ca){
-		ca.getContainerOfType(ComponentBlockDefinition).getCBNDs
+	def HashMap<Component,ArrayList<CBND>> getComponentToCBNDs(ComponentArgument ca){
+		ca.getContainerOfType(ComponentBlockDefinition).getComponentToCBNDs
+	}
+	
+	def int getPosition(ComponentArgument ca){
+		return ca.getContainerOfType(ComponentBlockDefinition).componentArguments.eAllOfType(ComponentArgument).indexOf(ca)
+	}
+	
+	def int getPosition(CBND cbnd, NCA nca){
+		return cbnd.eAllOfType(NCA).indexOf(nca)
 	}
 	
 	/**
@@ -1517,9 +1532,10 @@ class Util {
 		//get ComponentBlockDeclaration
 		var cbnds = vn.getCBNDs
 		var ComponentBlockNewDeclaration cbnd = null
-		for(c : cbnds)
-			if(c.getContainerOfType(ComponentBlockStyleCollective) != null)
-				cbnd = (c as ComponentBlockNewDeclaration)
+		for(cd : cbnds.keySet)
+			for(c : cbnds.get(cd))
+				if(c.getContainerOfType(ComponentBlockStyleCollective) != null)
+					cbnd = (cbnds.get(c) as ComponentBlockNewDeclaration)
 		//get Records
 		if(cbnd != null)
 			new ArrayList<RecordDeclaration>(cbnd.componentInputArguments.inputArguments.get(position).eAllOfType(RecordDeclaration))
