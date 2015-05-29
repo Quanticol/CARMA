@@ -1091,4 +1091,15 @@ class CARMAValidator extends AbstractCARMAValidator {
 		}
 	}
 	
+	public static val ERROR_EnvironmentMacroExpressionComponentAState = "Error: does not have access to this Process/State."
+	@Check
+	def check_ERROR_EnvironmentMacroExpressionComponentAState(EnvironmentMacroExpressionComponentAState eme){
+		if(!eme.comp.getContainerOfType(Component).hasAccess(eme.state)){
+			error(ERROR_EnvironmentMacroExpressionComponentAState,
+				CarmaPackage::eINSTANCE.environmentMacroExpressionComponentAState_State,
+				ERROR_EnvironmentMacroExpressionComponentAState
+			)
+		}
+	}
+	
 }

@@ -109,6 +109,7 @@ import eu.quanticol.carma.core.carma.EnvironmentExpressions
 import eu.quanticol.carma.core.carma.UpdateExpressions
 import eu.quanticol.carma.core.carma.ComponentBlockDefinitionArgumentMacro
 import eu.quanticol.carma.core.carma.MacroType
+import eu.quanticol.carma.core.carma.MacroExpressions
 
 class Util {
 	
@@ -2063,6 +2064,21 @@ class Util {
 			rds.addAll(vdr.eAllOfType(RecordDeclaration))
 		}
 		return rds
+	}
+	
+	def boolean hasAccess(Component component, MacroExpressions macro){
+		var test = true
+		
+		var mers = macro.eAllOfType(MacroExpressionReference)
+		var HashSet<String> references = new HashSet<String>()
+		
+		for(mer : mers)
+			references.add("state_"+mer.name.label)
+		
+		var HashSet<String> states = new HashSet<String>()
+		component.tree.getStates(states)
+		
+		return states.containsAll(references)
 	}
 	
 }
