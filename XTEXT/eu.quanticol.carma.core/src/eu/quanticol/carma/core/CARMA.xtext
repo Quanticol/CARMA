@@ -982,13 +982,13 @@ ProbabilityBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 	"prob" 
 	"{"
 		(probabilities+=Probability+ ";")*
-		("default" ":=" value=CarmaDouble ";")?
+		("default" ":" value=CarmaDouble ";")?
 	"}"
 ;
 	
 Probability returns EnvironmentOperation hidden(ML_COMMENT,SL_COMMENT,WS):
 	{Probability}
-	guard=EnvironmentGuard stub=ActionStub ":=" expression=EnvironmentExpression
+	guard=EnvironmentGuard stub=ActionStub ":" expression=EnvironmentExpression
 ;
 
 RateBlock hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -996,13 +996,13 @@ RateBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 	"rate"
 	"{"
 		(rates+=Rate+ ";")*
-		("default" ":=" value=CarmaDouble ";")?
+		("default" ":" value=CarmaDouble ";")?
 	"}"
 ;
 
 Rate returns EnvironmentOperation hidden(ML_COMMENT,SL_COMMENT,WS):
 	{Rate}
-	guard=EnvironmentGuard stub=ActionStub ":=" expression=EnvironmentExpression
+	guard=EnvironmentGuard stub=ActionStub ":" expression=EnvironmentExpression
 ;
 	
 UpdateBlock hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -1015,7 +1015,9 @@ UpdateBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 
 EnvironmentUpdate returns EnvironmentOperation hidden(ML_COMMENT,SL_COMMENT,WS):
 	{EnvironmentUpdate}
-	guard=EnvironmentGuard stub=ActionStub ":=" (expression+=EnvironmentUpdateAssignment ("," expression+=EnvironmentUpdateAssignment+)* | spawn=Spawn)
+	guard=EnvironmentGuard stub=ActionStub ":" 
+	(expression+=EnvironmentUpdateAssignment ("," expression+=EnvironmentUpdateAssignment+)*)? 
+	("," spawn=Spawn)?
 ;
 
 EnvironmentUpdateAssignment hidden(ML_COMMENT,SL_COMMENT,WS):

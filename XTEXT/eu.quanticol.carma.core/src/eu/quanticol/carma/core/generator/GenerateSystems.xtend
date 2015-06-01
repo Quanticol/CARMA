@@ -43,6 +43,10 @@ import eu.quanticol.carma.core.carma.RecordReferenceGlobal
 import eu.quanticol.carma.core.carma.EnvironmentUpdateExpression
 import eu.quanticol.carma.core.carma.EnvironmentUpdateExpressions
 import eu.quanticol.carma.core.carma.MeasureBlock
+import eu.quanticol.carma.core.carma.Measure
+import eu.quanticol.carma.core.carma.EnvironmentMeasure
+import eu.quanticol.carma.core.carma.VariableDeclaration
+import eu.quanticol.carma.core.carma.MeasureVariableDeclarations
 
 class GenerateSystems {
 	
@@ -61,6 +65,7 @@ class GenerateSystems {
 		import org.apache.commons.math3.random.RandomGenerator;
 		import org.cmg.ml.sam.sim.SimulationEnvironment;
 		import eu.quanticol.carma.simulator.*;
+		import org.cmg.ml.sam.sim.sampling.SamplingCollection;
 		import org.cmg.ml.sam.sim.sampling.StatisticSampling;
 		public class «system.label» extends CarmaSystem {
 			
@@ -76,14 +81,14 @@ class GenerateSystems {
 			//predicates
 			«system.defineEnvironmentProbPredicates»
 			
-			«system.defineEnvironmentProb»
-			
 			«system.defineEnvironmentRatesPredicates»
 			
-			//evol rules
-			«system.defineEnvironmentRates»
-			
 			«system.defineEnvironmentUpdatesPredicates»
+			
+			//evol rules
+			«system.defineRates»
+			
+			«system.defineProbabilities»
 			
 			«system.defineEnvironmentUpdates»
 			
@@ -341,12 +346,57 @@ class GenerateSystems {
 	}
 	
 	def String setupMeasures(System system){
-		var measures = system.getContainerOfType(Model).eAllOfType(MeasureBlock).get(0)	
+		if(system.getContainerOfType(Model).eAllOfType(MeasureBlock).size > 0){
+			var measureBlock = system.getContainerOfType(Model).eAllOfType(MeasureBlock).get(0)
+			var measures = measureBlock.eAllOfType(Measure)
+			'''
+			«FOR m : measures»
+			«system.measureArgs(m)»
+			«ENDFOR»
+			'''
+		} else {
+			''''''
+		}
+	}
+	
+	def String measureArgs(System s, Measure m){
+		var output = ""
+		var arguments = m.parameters.eAllOfType(VariableDeclaration)
 		
+		var ArrayList<ArrayList<String>> array1 = new ArrayList<ArrayList<String>>()
+		
+		for(argument : arguments){
+			array1.add(argument.strip)
+		}
+		
+		var array2 = new ArrayList<ArrayList<String>>()
+		forBlock(array1,array2)
+		for(list : array2){
+			output = output + singleMeasureDeclaration(s, m, list)
+		}
+		return output
+	}
+	
+	def ArrayList<String> strip(VariableDeclaration pt){
+		var temp = new ArrayList<String>()
+		
+		if(pt.eAllOfType(Range).size > 0)
+			for(r : pt.eAllOfType(Range))
+				temp.addAll(r.range)
+		else
+			temp.add(pt.label)
+
+
+		return temp
+	}
+	
+	def String singleMeasureDeclaration(System s, Measure m, ArrayList<String> args){
+		var measureName = m.name.getLabel.toFirstUpper
+		var stateName = (m.measure as EnvironmentMeasure).componentReference.getLabel.toFirstUpper
 		'''
+		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, «s.getContainerOfType(Model).label»Definition.getMeasure«measureName»_«stateName»(«args.stripArguments»)));
 		'''
 	}
-
 	
 	def String defineMain(System system){
 		'''
@@ -358,13 +408,15 @@ class GenerateSystems {
 		
 			int deadline = 50;
 			
+			SamplingCollection<CarmaSystem> sc = new SamplingCollection<CarmaSystem>();
+			
 			«system.setupMeasures»
 			
-			StatisticSampling<CarmaSystem> test = 
-			new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT11Definition.getMeasureWaiting_Producer_All(1, 1));
-			system.setSampling(test);
+			system.setSampling(sc);
 			system.simulate(100,50);
-			test.printTimeSeries(System.out);
+			for(int i = 0; i < sc.size(); i++){
+				((StatisticSampling<CarmaSystem>) sc.get(i)).printTimeSeries(System.out);
+			}
 		}'''
 	}
 	

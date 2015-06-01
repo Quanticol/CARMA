@@ -1,11 +1,11 @@
-package carma.CGT11;
+package carma.CGT12;
 
 import org.apache.commons.math3.random.RandomGenerator;
 import org.cmg.ml.sam.sim.SimulationEnvironment;
 import org.cmg.ml.sam.sim.sampling.*;
 import eu.quanticol.carma.simulator.*;
 
-public class CGT11Definition {
+public class CGT12Definition {
 	
 	/*METHOD VARIABLES*/
 	/*COMPONENT ATTRIBUTES*/
@@ -13,33 +13,19 @@ public class CGT11Definition {
 	public static final Class<Integer> PRODUCT_ATTRIBUTE_TYPE = Integer.class;
 	public static final String POSITION_X_ATTRIBUTE = "position_x";
 	public static final Class<Integer> POSITION_X_ATTRIBUTE_TYPE = Integer.class;
-	public static final String EU_RECEIVER_ATTRIBUTE = "eu_receiver";
-	public static final Class<Integer> EU_RECEIVER_ATTRIBUTE_TYPE = Integer.class;
 	public static final String POSITION_Y_ATTRIBUTE = "position_y";
 	public static final Class<Integer> POSITION_Y_ATTRIBUTE_TYPE = Integer.class;
-	public static final String EU_SENDER_ATTRIBUTE = "eu_sender";
-	public static final Class<Integer> EU_SENDER_ATTRIBUTE_TYPE = Integer.class;
 	/*INPUT ARGUMENTS*/
 	/*ENVIRONMENT ATTRIBUTES*/
-	public static final String EU_GLOBAL_ATTRIBUTE = "eu_global";
-	public static final Class<Integer> EU_GLOBAL_ATTRIBUTE_TYPE = Integer.class;
-	public static final String TEST_Y_ATTRIBUTE = "test_y";
-	public static final Class<Integer> TEST_Y_ATTRIBUTE_TYPE = Integer.class;
 	public static final String TRANSACTIONS_ATTRIBUTE = "transactions";
 	public static final Class<Integer> TRANSACTIONS_ATTRIBUTE_TYPE = Integer.class;
-	public static final String TEST_X_ATTRIBUTE = "test_x";
-	public static final Class<Integer> TEST_X_ATTRIBUTE_TYPE = Integer.class;
 	/*ACTION*/
 	public static final int PRODUCE = 0;
 	public static final int SEND = 1;
 	public static final int CONSUME = 2;
 	/*RATES*/
 	public static final double TRUE_SEND_RATE = 1;
-	public static final double TRUE_PRODUCE_RATE = 1;
-	public static final double FALSE_PRODUCE_RATE = 1;
-	public static final double SENDER_EU_SENDER_EQUA_1_PRODUCE_RATE = 0.5;
-	public static final double GLOBAL_EU_GLOBAL_EQUA_1_PRODUCE_RATE = 1;
-	public static final double SENDER_EU_SENDER_EQUA_1_AND_GLOBAL_EU_GLOBAL_EQUA_1_SEND_RATE = 1;
+	public static final double TRUE_PRODUCE_RATE = 0.5;
 	/*PROCESS*/
 	public static final CarmaProcessAutomaton ProducerProcess = createProducerProcess();
 	
@@ -88,22 +74,7 @@ public class CGT11Definition {
 			
 			@Override
 			protected CarmaPredicate getPredicate(CarmaStore outputStore) {
-				return new CarmaPredicate() {
-					@Override
-					public boolean satisfy(CarmaStore inputStore) {
-						boolean hasAttributes = true;
-						int eu_receiver_i = 0;
-						if(inputStore.get("eu_receiver" , Integer.class) != null){
-							eu_receiver_i = inputStore.get("eu_receiver" , Integer.class); 
-						} else { 
-							hasAttributes = false;
-						}
-						if(hasAttributes)
-							return eu_receiver_i == 1;
-						else
-							return false;
-					}
-				};
+				return CarmaPredicate.FALSE;
 			}
 		
 			@Override
@@ -134,7 +105,7 @@ public class CGT11Definition {
 			}
 		};
 		
-		CarmaPredicate Send_Guard = new CarmaPredicate() {
+		CarmaPredicate Produce_Guard = new CarmaPredicate() {
 			@Override
 			public boolean satisfy(CarmaStore store) {
 				boolean hasAttributes = true;
@@ -145,12 +116,12 @@ public class CGT11Definition {
 					hasAttributes = false;
 				}
 				if(hasAttributes)
-					return product > 0;
+					return product >= 0;
 				else
 					return false;
 			}
 		};
-		CarmaPredicate Produce_Guard = new CarmaPredicate() {
+		CarmaPredicate Send_Guard = new CarmaPredicate() {
 			@Override
 			public boolean satisfy(CarmaStore store) {
 				boolean hasAttributes = true;
@@ -168,8 +139,8 @@ public class CGT11Definition {
 		};
 		
 		//create the transitions between states
-		toReturn.addTransition(state_Send,Send_Guard,send_Action,state_Send);
 		toReturn.addTransition(state_Produce,Produce_Guard,produce_Action,state_Produce);
+		toReturn.addTransition(state_Send,Send_Guard,send_Action,state_Send);
 		
 		return toReturn;
 	}
@@ -222,6 +193,18 @@ public class CGT11Definition {
 							int product = 0;
 							if(store.get("product" , Integer.class) != null){
 								product = store.get("product" , Integer.class); 
+							} else { 
+								hasAttributes = false;
+							}
+							int position_x = 0;
+							if(store.get("position_x" , Integer.class) != null){
+								position_x = store.get("position_x" , Integer.class );
+							} else { 
+								hasAttributes = false;
+							}
+							int position_y = 0;
+							if(store.get("position_y" , Integer.class) != null){
+								position_y = store.get("position_y" , Integer.class );
 							} else { 
 								hasAttributes = false;
 							}
@@ -283,26 +266,10 @@ public class CGT11Definition {
 					return false;
 			}
 		};
-		CarmaPredicate Receive_Guard = new CarmaPredicate() {
-			@Override
-			public boolean satisfy(CarmaStore store) {
-				boolean hasAttributes = true;
-				int product = 0;
-				if(store.get("product" , Integer.class) != null){
-					product = store.get("product" , Integer.class); 
-				} else { 
-					hasAttributes = false;
-				}
-				if(hasAttributes)
-					return product >= 0;
-				else
-					return false;
-			}
-		};
 		
 		//create the transitions between states
 		toReturn.addTransition(state_Consume,Consume_Guard,consume_Action,state_Consume);
-		toReturn.addTransition(state_Receive,Receive_Guard,send_Action,state_Receive);
+		toReturn.addTransition(state_Receive,send_Action,state_Receive);
 		
 		return toReturn;
 	}
@@ -323,19 +290,31 @@ public class CGT11Definition {
 		};
 	}
 	//predicate for boolean expression get_MeasureName_BooleanExpression_Predicate()
-	protected static CarmaPredicate getPredicateWaiting_Producer_Send(final int iMin, final int jMin) {
+	protected static CarmaPredicate getPredicateWaiting_Producer_Send(final int i, final int j) {
 		return new CarmaPredicate() {
 			@Override
 			public boolean satisfy(CarmaStore store) {
 				boolean hasAttributes = true;
-				int eu_sender = 0;
-				if(store.get("eu_sender" , Integer.class) != null){
-					eu_sender = store.get("eu_sender" , Integer.class); 
+				int product = 0;
+				if(store.get("product" , Integer.class) != null){
+					product = store.get("product" , Integer.class); 
+				} else { 
+					hasAttributes = false;
+				}
+				int position_x = 0;
+				if(store.get("position_x" , Integer.class) != null){
+					position_x = store.get("position_x" , Integer.class );
+				} else { 
+					hasAttributes = false;
+				}
+				int position_y = 0;
+				if(store.get("position_y" , Integer.class) != null){
+					position_y = store.get("position_y" , Integer.class );
 				} else { 
 					hasAttributes = false;
 				}
 				if(hasAttributes)
-					return eu_sender == 1;
+					return product > 1 && position_x == i && position_y == j;
 				else
 					return false;
 			}
@@ -343,12 +322,12 @@ public class CGT11Definition {
 	}
 	
 	
-	public static ComponentPredicate getMeasureWaiting_Producer_Send_BooleanExpression_Predicate(final int iMin, final int jMin){
+	public static ComponentPredicate getMeasureWaiting_Producer_Send_BooleanExpression_Predicate(final int i, final int j){
 		return new ComponentPredicate() {
 			
 			@Override
 			public boolean eval(CarmaComponent c){
-				return getPredicateWaiting_Producer_Send(iMin, jMin).satisfy(c.getStore()) && (c.isRunning(getMeasureWaiting_Producer_Send_State_Predicate()));
+				return getPredicateWaiting_Producer_Send(i, j).satisfy(c.getStore()) && (c.isRunning(getMeasureWaiting_Producer_Send_State_Predicate()));
 			}
 		};
 	}

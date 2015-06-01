@@ -229,10 +229,14 @@ class GenerateDefinitions {
 		CarmaPredicate «key» = new CarmaPredicate() {
 			@Override
 			public boolean satisfy(CarmaStore store) {
+				boolean hasAttributes = true;
 				«FOR vr : guards.get(key).eAllOfType(VariableReference)»
 				«vr.getStore»
 				«ENDFOR»
-				return «guards.get(key).booleanExpression.labelJava»;
+				if(hasAttributes)
+					return «guards.get(key).booleanExpression.labelJava»;
+				else
+					return false;
 			}
 		};
 		«ENDFOR»
@@ -270,8 +274,12 @@ class GenerateDefinitions {
 					return new CarmaPredicate() {
 						@Override
 						public boolean satisfy(CarmaStore inputStore) {
+							boolean hasAttributes = true;
 							«be.getAllVariablesOutputAction»
-							return «be.convertToJavaOutputAction»;
+							if(hasAttributes)
+								return «be.convertToJavaOutputAction»;
+							else
+								return false;
 						}
 					};
 				}
@@ -322,8 +330,8 @@ class GenerateDefinitions {
 				
 				@Override
 				public void update(RandomGenerator r, CarmaStore store) {
+					boolean hasAttributes = true;
 					«output»
-				
 				}
 			};
 		}
@@ -398,9 +406,13 @@ class GenerateDefinitions {
 						return new CarmaPredicate() {
 							@Override
 							public boolean satisfy(CarmaStore inputStore) {
+								boolean hasAttributes = true;
 								«getAndSetInputArgumentsBool(new ArrayList<VariableName>(action.eAllOfType(InputActionArguments).get(0).eAllOfType(VariableName)))»
 								«be.getAllVariablesInputAction»
-								return «be.convertToJavaInputAction»;
+								if(hasAttributes)
+									return «be.convertToJavaInputAction»;
+								else
+									return false;
 							}
 						};
 					}
@@ -436,6 +448,7 @@ class GenerateDefinitions {
 				@Override
 				public void update(RandomGenerator r, CarmaStore store) {
 					if (value instanceof int[]){
+						boolean hasAttributes = true;
 						«getAndSetInputArguments(new ArrayList<VariableName>(action.eAllOfType(InputActionArguments).get(0).eAllOfType(VariableName)))»
 						«defineInputUpdates(new ArrayList<UpdateAssignment>(action.eAllOfType(UpdateAssignment)))»
 					};
@@ -600,22 +613,24 @@ class GenerateDefinitions {
 	
 	def String defineGetBooleanExpressionPredicateMeasure(Measure measure, String measureName, String stateName){
 		var exp = (measure.measure as EnvironmentMeasure).booleanExpression
+		var parameters = measure.parameters
 		var argsi = new ArrayList<String>()
 		var args = new ArrayList<String>()
-		for(vr : exp.eAllOfType(VariableReference)){
-			if(vr.variableDeclaration == null){
-				args.add('''final int «vr.convertToJava»''')
-				argsi.add('''«vr.convertToJava»''')
-			}
+		for(vd : parameters.eAllOfType(VariableDeclaration)){
+			args.add('''final «vd.convertToJava.split(" ").get(0) + " " + vd.convertToJava.split(" ").get(1).substring(0,vd.convertToJava.split(" ").get(1).length - 3)»''')
+			argsi.add('''«vd.convertToJava.split(" ").get(1).substring(0,vd.convertToJava.split(" ").get(1).length - 3)»''')
 		}
-		
 		'''
 		protected static CarmaPredicate getPredicate«measureName»_«stateName»(«args.generateArgs») {
 			return new CarmaPredicate() {
 				@Override
 				public boolean satisfy(CarmaStore store) {
+					boolean hasAttributes = true;
 					«exp.getAllVariablesMeasure»
-					return «exp.convertToJava»;
+					if(hasAttributes)
+						return «exp.convertToJava»;
+					else
+						return false;
 				}
 			};
 		}
@@ -645,25 +660,15 @@ class GenerateDefinitions {
 		output
 	}
 	
-	def String getBooleanExpressionFromEnvironmentMeasure(Measure measure){
-		var exp = (measure.measure as EnvironmentMeasure).booleanExpression
-		
-		'''
-		'''
-	}
-	
 	def String defineGetMeasureMethod(Measure measure, String measureName, String stateName){
 		
-		var exp = (measure.measure as EnvironmentMeasure).booleanExpression
+		var exp = measure.parameters
 		var argsi = new ArrayList<String>()
 		var args = new ArrayList<String>()
-		for(vr : exp.eAllOfType(VariableReference)){
-			if(vr.variableDeclaration == null){
-				args.add('''final int «vr.convertToJava»''')
-				argsi.add('''«vr.convertToJava»''')
-			}
+		for(vd : exp.eAllOfType(VariableDeclaration)){
+			args.add('''final «vd.convertToJava.split(" ").get(0) + " " + vd.convertToJava.split(" ").get(1)»''')
+			argsi.add('''«vd.convertToJava.split(" ").get(1)»''')
 		}
-		
 		'''
 		public static Measure<CarmaSystem> getMeasure«measureName»_«stateName»(«args.generateArgs»){
 			

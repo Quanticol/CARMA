@@ -1533,10 +1533,14 @@ class Util {
 		//get ComponentBlockDeclaration
 		var cbnds = vn.getCBNDs
 		var ComponentBlockNewDeclaration cbnd = null
-		for(cd : cbnds.keySet)
-			for(c : cbnds.get(cd))
+		for(cd : cbnds.keySet){
+			for(c : cbnds.get(cd)){
 				if(c.getContainerOfType(ComponentBlockStyleCollective) != null)
-					cbnd = (cbnds.get(c) as ComponentBlockNewDeclaration)
+					cbnd = (c as ComponentBlockNewDeclaration)
+			}
+		}
+			
+					
 		//get Records
 		if(cbnd != null)
 			new ArrayList<RecordDeclaration>(cbnd.componentInputArguments.inputArguments.get(position).eAllOfType(RecordDeclaration))

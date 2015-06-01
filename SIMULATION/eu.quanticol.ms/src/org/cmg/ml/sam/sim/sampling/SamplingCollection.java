@@ -58,5 +58,13 @@ public class SamplingCollection<S> implements SamplingFunction<S> {
 			f.start();
 		}
 	}
+	
+	public int size(){
+		return this.functions.size();
+	}
+	
+	public SamplingFunction<S> get(int i){
+		return this.functions.get(i);
+	}
 
 }

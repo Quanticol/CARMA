@@ -246,6 +246,14 @@ class LabelUtil {
 		return "[" + eu.guard.label + "]" + eu.stub.label
 	}
 	
+	def String convertToPredicateName(EnvironmentOperation eo){
+		switch(eo){
+			Probability:		eo.convertToPredicateName
+			Rate:				eo.convertToPredicateName
+			EnvironmentUpdate:  eo.convertToPredicateName
+		}
+	}
+	
 	def String convertToPredicateName(Probability cast){
 		if(cast.stub.isBroadcast)
 		'''get'''+cast.convertToJavaName+'''_BroadcastPredicateProb'''
@@ -297,10 +305,19 @@ class LabelUtil {
 	
 	def String convertToJava(VariableDeclaration vd){
 		switch(vd){
-			VariableDeclarationEnum: 		"int " 		+ vd.name.label + " = " + (vd.assign as EnumAssignment).label
-			VariableDeclarationRecord:		"int " 		+ vd.name.label + " = " + (vd.assign as RecordDeclarations).label
-			VariableDeclarationCarmaDouble:	"double " 	+ vd.name.label + " = " + (vd.assign as DoubleAssignment).label
-			VariableDeclarationCarmaIntger:	"int " 		+ vd.name.label + " = " + (vd.assign as IntegerAssignment).label
+			VariableDeclarationEnum: 		(vd.assign as EnumAssignment).convertToJava("int " + vd.name.label)
+			VariableDeclarationRecord:		(vd.assign as RecordDeclarations).convertToJava("int " + vd.name.label)
+			VariableDeclarationCarmaDouble:	(vd.assign as DoubleAssignment).convertToJava("double " + vd.name.label)
+			VariableDeclarationCarmaIntger:	(vd.assign as IntegerAssignment).convertToJava("int " + vd.name.label)
+		}
+	}
+	
+	def String convertToJavaType(VariableDeclaration vd){
+		switch(vd){
+			VariableDeclarationEnum: 		(vd.assign as EnumAssignment).convertToJava("int " + vd.name.label)
+			VariableDeclarationRecord:		(vd.assign as RecordDeclarations).convertToJava("int " + vd.name.label)
+			VariableDeclarationCarmaDouble:	(vd.assign as DoubleAssignment).convertToJava("double " + vd.name.label)
+			VariableDeclarationCarmaIntger:	(vd.assign as IntegerAssignment).convertToJava("int " + vd.name.label)
 		}
 	}
 	
@@ -760,6 +777,15 @@ class LabelUtil {
 		}
 	}
 	
+	def String convertToJava(EnumAssignment ea, String assignment){
+		switch(ea){
+			EnumAssignmentCarmaInteger: 	(ea.naturalValue as CarmaInteger).convertToJava(assignment)
+			EnumAssignmentMethodReference: 	(ea.method as MethodExpressions).convertToJava(assignment)
+			EnumAssignmentRange:			(ea.range as Range).convertToJava(assignment)
+			EnumAssignmentVariableName: 	(ea.ref as VariableReference).convertToJava(assignment)
+		}
+	}
+	
 	def convertToJavaName(EnumAssignment ea){
 		switch(ea){
 			EnumAssignmentCarmaInteger: 	(ea.naturalValue as CarmaInteger).convertToJavaName
@@ -776,6 +802,13 @@ class LabelUtil {
 			(rds as Records).label 
 	}
 	
+	def convertToJava(RecordDeclarations rds, String assignment){
+		if(rds.ref != null)
+			assignment + " = " + rds.ref.label
+		else
+			(rds as Records).convertToJava(assignment) 
+	}
+	
 	def getLabel(DoubleAssignment da){
 		switch(da){
 		DoubleAssignmentCarmaDouble: 		da.doubleValue.label	
@@ -784,11 +817,27 @@ class LabelUtil {
 		}
 	}
 	
+	def convertToJava(DoubleAssignment da, String assignment){
+		switch(da){
+		DoubleAssignmentCarmaDouble: 		assignment + " = " + da.doubleValue.label	
+		DoubleAssignmentMethodReference: 	assignment + " = " + da.method.label	
+		DoubleAssignmentVariableName: 		assignment + " = " + da.reference.label
+		}
+	}
+	
 	def getLabel(IntegerAssignment ia){
 		switch(ia){
 		IntegerAssignmentCarmaInteger: 		ia.integerValue.label
 		IntegerAssignmentMethodReference: 	ia.method.label	
 		IntegerAssignmentVariableName: 		ia.reference.label
+		}
+	}
+	
+	def convertToJava(IntegerAssignment ia, String assignment){
+		switch(ia){
+		IntegerAssignmentCarmaInteger: 		assignment + " = " + ia.integerValue.label
+		IntegerAssignmentMethodReference: 	assignment + " = " + ia.method.label	
+		IntegerAssignmentVariableName: 		assignment + " = " + ia.reference.label
 		}
 	}
 	
@@ -803,7 +852,22 @@ class LabelUtil {
 			}
 			CarmaInteger:	""+e.value
 			CarmaBoolean:	e.value
-			Range:			e.min + "..." + e.max
+			Range:			"//" + e.min + "..." + e.max + " LabelUtil.getLabel"
+		}
+	}
+	
+	def String convertToJava(PrimitiveType e, String assignment){
+		switch(e){
+			CarmaDouble:	{
+				var String output = assignment+"= " 
+				output = e.left.toString + "." + e.right.toString
+				if(e.exponent != null)
+					output = output + e.exponent.label
+				return output
+			}
+			CarmaInteger:	assignment+" = "+e.value
+			CarmaBoolean:	assignment+" = "+e.value
+			Range:			assignment+"Min = "+ e.min + ", "+assignment+"Max = " + e.max
 		}
 	}
 	
@@ -846,6 +910,19 @@ class LabelUtil {
 		return output
 	}
 	
+	def String convertToJava(Records e, String assignment){
+		var String output = ""
+		
+		if(e.recordDeclarations.size > 0){
+			output = output + e.recordDeclarations.get(0).convertToJava(assignment)
+			for(var i = 1; i < e.recordDeclarations.size; i++)
+				output = output + " , " + e.recordDeclarations.get(i).convertToJava(assignment)
+		}
+		
+		output = output + "}"
+		return output
+	}
+	
 	def String getLabelForArgs(Records e){
 		var String output = ""
 		
@@ -881,6 +958,10 @@ class LabelUtil {
 		e.name.label + " := " + e.assign.label
 	}
 	
+	def String convertToJava(RecordDeclaration e, String assign){
+		assign + "_" + e.name.label + " = " + e.assign.label
+	}
+	
 	def String getLabelForArgs(RecordDeclaration e){
 		e.assign.label
 	}
@@ -906,6 +987,23 @@ class LabelUtil {
 			RecordReferenceSender:			{"sender" 			+ "." + vr.name.label + "." + vr.record.label	}
 			VariableReferenceGlobal:		{"global."			+ vr.name.label}
 			RecordReferenceGlobal:			{"global" 			+ "." + vr.name.label + "." + vr.record.label	}
+		}
+	}
+	
+	def String convertToJava(VariableReference vr, String assignment){
+		switch(vr){
+			VariableReferencePure: 			{assignment + " = " + vr.name.label}
+			VariableReferenceMy: 			{assignment + " = " + vr.name.label}
+			VariableReferenceThis: 			{assignment + " = " + vr.name.label}
+			VariableReferenceReceiver:		{assignment + " = " + vr.name.label+"_r"}
+			VariableReferenceSender:		{assignment + " = " + vr.name.label+"_s"}
+			RecordReferencePure:			{assignment + " = " + vr.name.label+"_"+vr.record.label}
+			RecordReferenceMy:				{assignment + " = " + vr.name.label+"_"+vr.record.label}
+			RecordReferenceThis:			{assignment + " = " + vr.name.label+"_"+vr.record.label}
+			RecordReferenceReceiver:		{assignment + " = " + vr.name.label+"_"+vr.record.label+"_r"}
+			RecordReferenceSender:			{assignment + " = " + vr.name.label+"_"+vr.record.label+"_s"}
+			VariableReferenceGlobal:		{assignment + " = " + vr.name.label}
+			RecordReferenceGlobal:			{assignment + " = " + vr.name.label+"_"+vr.record.label}
 		}
 	}
 	
@@ -1009,6 +1107,23 @@ class LabelUtil {
 		}
 	}
 	
+	def String convertToJava(MethodExpressions e, String assignment){
+		switch(e){
+			MethodSubtraction:							{e.left.convertToJava(assignment) + " - " + e.right.convertToJava(assignment) }
+			MethodAddition:								{e.left.convertToJava(assignment) + " + " + e.right.convertToJava(assignment) }
+			MethodMultiplication:						{e.left.convertToJava(assignment) + " * " + e.right.convertToJava(assignment) }
+			MethodModulo:								{e.left.convertToJava(assignment) + " % " + e.right.convertToJava(assignment) }
+			MethodDivision:								{e.left.convertToJava(assignment) + " / " + e.right.convertToJava(assignment) }
+			MethodAtomicPrimitive:						(e.value as PrimitiveType).convertToJava(assignment)
+			MethodAtomicRecords:						(e.value as Records).convertToJava(assignment)
+			MethodAtomicVariable:						assignment + " = "+ e.value
+			MethodAtomicMethodReference:				(e.value as MethodExpressions).convertToJava(assignment)
+			MethodReferenceMethodDeclaration: 			(e.ref as MethodDeclaration).convertToJava(assignment)
+			MethodReferencePredefinedMethodDeclaration: (e.ref as PredefinedMethodDeclaration).convertToJava(assignment)
+			MethodExpression:							e.expression.convertToJava(assignment)
+		}
+	}
+	
 	def String convertToJavaName(MethodExpressions e){
 		switch(e){
 			MethodSubtraction:							{e.left.convertToJavaName + "_SUB_" + e.right.convertToJavaName }
@@ -1030,6 +1145,10 @@ class LabelUtil {
 		e.name.label
 	}
 	
+	def String convertToJava(MethodDeclaration e, String assignment){
+		assignment + " = " + e.name.label
+	}
+	
 	def String getLabel(PredefinedMethodDeclaration e){
 		switch(e){	
 			PDFunction:			"PDF()"
@@ -1038,6 +1157,17 @@ class LabelUtil {
 			FloorFunction: 		"Floor()"
 			MaxFunction:		"Max()"
 			MinFunction:		"Min()"
+		}
+	}
+	
+	def String convertToJava(PredefinedMethodDeclaration e, String assignment){
+		switch(e){	
+			PDFunction:			assignment + "= PDF()"
+			UniformFunction: 	assignment + "= Uniform()"
+			CeilingFunction: 	assignment + "= Ceiling()"
+			FloorFunction: 		assignment + "= Floor()"
+			MaxFunction:		assignment + "= Max()"
+			MinFunction:		assignment + "= Min()"
 		}
 	}
 	
