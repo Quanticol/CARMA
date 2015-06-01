@@ -456,7 +456,7 @@ class GeneratorUtils {
 	def String anAssignment(EnvironmentExpressions ee){
 		'''
 		«ee.getAllVariables»
-		return «ee.label»;
+		return «ee.convertToJava»;
 		'''
 	}
 	

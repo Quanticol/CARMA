@@ -85,6 +85,11 @@ public class Simple extends CarmaSystem {
 	
 	@Override
 	public double unicastProbability(CarmaStore sender, CarmaStore receiver,int action){
+		if (action == CGT12Definition.SEND
+		&& CarmaPredicate.TRUE.satisfy(sender)
+		) {
+				return 1;
+		}
 		return 1.0;
 	}
 	

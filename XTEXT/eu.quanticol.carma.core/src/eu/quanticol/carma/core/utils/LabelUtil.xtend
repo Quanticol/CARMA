@@ -198,6 +198,7 @@ import java.util.HashMap
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import eu.quanticol.carma.core.carma.MethodExpression
+import eu.quanticol.carma.core.carma.EnvironmentMeasure
 
 class LabelUtil {
 	
@@ -407,18 +408,37 @@ class LabelUtil {
 	
 	def String getLabel(EnvironmentExpressions e){
 		switch(e){
-			EnvironmentSubtraction:							{e.left.label + " - " + e.right }
-			EnvironmentAddition:							{e.left.label + " + " + e.right }
-			EnvironmentMultiplication:						{e.left.label + " * " + e.right }
-			EnvironmentModulo:								{e.left.label + " % " + e.right }
-			EnvironmentDivision:							{e.left.label + " / " + e.right }
+			EnvironmentSubtraction:							{e.left.label + " - " + e.right.label}
+			EnvironmentAddition:							{e.left.label + " + " + e.right.label}
+			EnvironmentMultiplication:						{e.left.label + " * " + e.right.label}
+			EnvironmentModulo:								{e.left.label + " % " + e.right.label}
+			EnvironmentDivision:							{e.left.label + " / " + e.right.label}
 			EnvironmentAtomicPrimitive:						(e.value as PrimitiveType).label
 			EnvironmentAtomicRecords:						(e.value as Records).label
 			EnvironmentAtomicVariable:						e.value.label
 			EnvironmentAtomicMethodReference:				(e.value as MethodExpressions).label 
 			EnvironmentAtomicNow:							"now.LabelUtil.getLabel"
-			EnvironmentAtomicMeasure:						"measure.LabelUtil.getLabel"
+			EnvironmentAtomicMeasure:						e.value.label
 			EnvironmentExpression:							e.expression.label
+			EnvironmentMeasure:								"Measure"+e.hashCode+"_"+e.componentReference.getLabel.toFirstUpper
+		}
+	}
+	
+	def String convertToJava(EnvironmentExpressions e){
+		switch(e){
+			EnvironmentSubtraction:							{e.left.convertToJava + " - " + e.right.convertToJava }
+			EnvironmentAddition:							{e.left.convertToJava + " + " + e.right.convertToJava }
+			EnvironmentMultiplication:						{e.left.convertToJava + " * " + e.right.convertToJava }
+			EnvironmentModulo:								{e.left.convertToJava + " % " + e.right.convertToJava }
+			EnvironmentDivision:							{e.left.convertToJava + " / " + e.right.convertToJava }
+			EnvironmentAtomicPrimitive:						(e.value as PrimitiveType).label
+			EnvironmentAtomicRecords:						(e.value as Records).label
+			EnvironmentAtomicVariable:						e.value.label
+			EnvironmentAtomicMethodReference:				(e.value as MethodExpressions).label 
+			EnvironmentAtomicNow:							"now.LabelUtil.getLabel"
+			EnvironmentAtomicMeasure:						e.value.convertToJava
+			EnvironmentExpression:							e.expression.convertToJava
+			EnvironmentMeasure:								"1.0; //getMeasure"+e.hashCode+"_"+e.componentReference.getLabel.toFirstUpper+"().measure(t)"
 		}
 	}
 	
@@ -433,7 +453,7 @@ class LabelUtil {
 			EnvironmentUpdateAtomicMethodReference:					(e.value as MethodExpressions).label 
 			EnvironmentUpdateExpression:							e.expression.label
 			EnvironmentUpdateAtomicNow:								"now.LabelUtil.getLabel"
-			EnvironmentUpdateAtomicMeasure:							"measure.LabelUtil.getLabel"
+			EnvironmentUpdateAtomicMeasure:							"getMeasure"+e.hashCode+"()"
 		}
 	}
 	

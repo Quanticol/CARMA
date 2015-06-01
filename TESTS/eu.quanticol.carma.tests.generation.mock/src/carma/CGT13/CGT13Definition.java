@@ -1,11 +1,11 @@
-package carma.CGT12;
+package carma.CGT13;
 
 import org.apache.commons.math3.random.RandomGenerator;
 import org.cmg.ml.sam.sim.SimulationEnvironment;
 import org.cmg.ml.sam.sim.sampling.*;
 import eu.quanticol.carma.simulator.*;
 
-public class CGT12Definition {
+public class CGT13Definition {
 	
 	/*METHOD VARIABLES*/
 	/*COMPONENT ATTRIBUTES*/
@@ -256,8 +256,8 @@ public class CGT12Definition {
 		};
 		
 		//create the transitions between states
-		toReturn.addTransition(state_Consume,Consume_Guard,consume_Action,state_Consume);
 		toReturn.addTransition(state_Receive,Receive_Guard,send_Action,state_Receive);
+		toReturn.addTransition(state_Consume,Consume_Guard,consume_Action,state_Consume);
 		
 		return toReturn;
 	}

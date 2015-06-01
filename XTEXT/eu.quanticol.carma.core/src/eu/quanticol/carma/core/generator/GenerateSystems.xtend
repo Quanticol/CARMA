@@ -50,6 +50,8 @@ import eu.quanticol.carma.core.carma.MeasureVariableDeclarations
 import eu.quanticol.carma.core.carma.BlockSpawn
 import eu.quanticol.carma.core.carma.ComponentBlockNewDeclarationSpawn
 import eu.quanticol.carma.core.carma.LineSpawn
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressions
+import java.util.HashMap
 
 class GenerateSystems {
 	
@@ -60,6 +62,7 @@ class GenerateSystems {
 	@Inject extension GenerateSystemEnvironmentUpdate
 	@Inject extension GenerateSystemRate
 	@Inject extension GenerateSystemProbability
+	@Inject extension GenerateDefinitions
 	
 	def String compileSystem(System system, String packageName){
 		'''
@@ -68,6 +71,7 @@ class GenerateSystems {
 		import org.apache.commons.math3.random.RandomGenerator;
 		import org.cmg.ml.sam.sim.SimulationEnvironment;
 		import eu.quanticol.carma.simulator.*;
+		import org.cmg.ml.sam.sim.sampling.Measure;
 		import org.cmg.ml.sam.sim.sampling.SamplingCollection;
 		import org.cmg.ml.sam.sim.sampling.StatisticSampling;
 		public class «system.label» extends CarmaSystem {
@@ -94,6 +98,9 @@ class GenerateSystems {
 			«system.defineProbabilities»
 			
 			«system.defineEnvironmentUpdates»
+			
+			//measures
+			«system.defineMeasures»
 			
 			//main
 			«system.defineMain»
@@ -499,6 +506,130 @@ class GenerateSystems {
 	
 	def String lineSpawn(LineSpawn bs){
 		//TODO
+	}
+	
+	def String defineMeasures(System system){
+		var measures = new ArrayList<EnvironmentMeasure>(system.eAllOfType(EnvironmentMeasure))
+		'''
+		«FOR m : measures»
+		«m.defineGetBooleanExpressionStateMeasure()»
+		«m.defineGetBooleanExpressionPredicateMeasure()»
+		//getMethod
+		«m.defineGetMeasureMethod()»
+		«ENDFOR»
+		'''
+	}
+	
+	def String defineGetBooleanExpressionStateMeasure(EnvironmentMeasure measure){
+		
+		var ems = (measure.componentReference as EnvironmentMacroExpressions)
+		
+		
+		'''
+		public static CarmaProcessPredicate get«measure.label»_State_Predicate(){
+			return new CarmaProcessPredicate() {
+				
+				@Override
+				public boolean eval(CarmaProcess p) {
+					return «ems.booleanExpressionFromEMS»
+				}
+			};
+		}
+		'''
+	}
+	
+	def String defineGetBooleanExpressionPredicateMeasure(EnvironmentMeasure measure){
+		var exp = measure.booleanExpression
+		'''
+		protected static CarmaPredicate getPredicate«measure.label»() {
+			return new CarmaPredicate() {
+				@Override
+				public boolean satisfy(CarmaStore store) {
+					boolean hasAttributes = true;
+					«exp.getAllVariablesMeasure»
+					if(hasAttributes)
+						return «exp.convertToJava»;
+					else
+						return false;
+				}
+			};
+		}
+		
+		
+		public static ComponentPredicate get«measure.label»_BooleanExpression_Predicate(){
+			return new ComponentPredicate() {
+				
+				@Override
+				public boolean eval(CarmaComponent c){
+					return getPredicate«measure.label»().satisfy(c.getStore()) && (c.isRunning(get«measure.label»_State_Predicate()));
+				}
+			};
+		}
+		'''
+	}
+	
+	def String defineGetMeasureMethod(EnvironmentMeasure measure){
+		
+		'''
+		public static Measure<CarmaSystem> get«measure.label»(){
+			
+			return new Measure<CarmaSystem>(){
+			
+				ComponentPredicate predicate = get«measure.label»_BooleanExpression_Predicate();
+			
+				@Override
+				public double measure(CarmaSystem t){
+					//TODO
+				
+					return t.measure(predicate);
+			
+				};
+			
+				@Override
+				public String getName() {
+					return "«measure.label»";
+				}
+			};
+		}
+		'''
+	}
+	
+	def String getBooleanExpressionFromEMS(EnvironmentMacroExpressions ems){
+		var componentState = new HashMap<String,ArrayList<String>>()
+		ems.emsExpression(componentState)
+		var output = ""
+		if(componentState.keySet.size > 0){
+			output = output + '''
+			( 
+			(((CarmaSequentialProcess) p).automaton() ==  «ems.getContainerOfType(Model).label»Definition.«componentState.keySet.get(0)») && (
+			'''
+			for(state : componentState.get(componentState.keySet.get(0))){
+				output = output + '''
+				(((CarmaSequentialProcess) p).automaton().getState("«state»") != null ) ||
+				'''
+			}
+			output = output + '''
+			(((CarmaSequentialProcess) p).getState() !=  null))
+			)
+			'''
+			for(var int i = 1; i < componentState.keySet.size; i++){
+				output = output + '''
+				||( 
+				(((CarmaSequentialProcess) p).automaton() ==  «ems.getContainerOfType(Model).label»Definition.«componentState.keySet.get(i)») && (
+				'''
+				for(state : componentState.get(componentState.keySet.get(i))){
+					output = output + '''
+					(((CarmaSequentialProcess) p).automaton().getState("«state»") != null ) ||
+					'''
+				}
+				
+				output = output + '''
+				(((CarmaSequentialProcess) p).getState() !=  null))
+				)
+				'''
+			}
+		}
+		return output + ";"
 	}
 	
 }
