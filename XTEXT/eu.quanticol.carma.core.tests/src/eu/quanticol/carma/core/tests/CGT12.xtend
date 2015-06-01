@@ -33,7 +33,7 @@ component Producer(enum a, enum b, enum c, enum d, Z){
 
     behaviour{
         Produce = [my.product >= 0] produce*{product := product + 1}.Produce;
-        Send = [my.product > 0] send<1>{product := product - 1}.Send;
+        Send = send<1>{product := product - 1}.Send;
     }
 
     init{
@@ -50,7 +50,7 @@ component Consumer(enum a, enum b, record p, Z){
 
     behaviour{
         Consume = [my.product > 0] consume*{product := product - 1}.Consume;
-        Receive = send[my.product < 10 && z == 1](z){product := product - z, position.x := 2}.Receive;
+        Receive = send(z){product := product - z}.Receive;
     }
     
     init{
@@ -59,7 +59,7 @@ component Consumer(enum a, enum b, record p, Z){
 }
 
 measures{
-	measure Waiting[ enum i := 1..3, enum j := 1..3] = #{ Producer[Send]  | product > 1 && position.x == i && position.y == j};
+	measure Waiting[ enum i := 1..3, enum j := 1..3] = #{ Producer[Send]  | position.x == i && position.y == j};
 }
 
 

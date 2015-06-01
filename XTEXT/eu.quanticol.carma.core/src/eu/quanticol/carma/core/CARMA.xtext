@@ -1133,6 +1133,6 @@ EnvironmentUpdateAtomic returns EnvironmentUpdateExpressions hidden(ML_COMMENT,S
 	{EnvironmentUpdateAtomicMeasure}				value=EnvironmentMeasure
 ;
 
-terminal BOOLEANVALUE: 	('True' | 'False' | 'true' | 'false');
+terminal BOOLEANVALUE: 	('true' | 'false');
 terminal LOWERST: 		("a".."z") ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*;
 terminal UPPERST: 		("A".."Z") ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*;

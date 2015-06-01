@@ -388,6 +388,10 @@ class LabelUtil {
 		dc.name.label
 	}
 	
+	def String getLabel(ComponentBlockNewDeclarationSpawn dc){
+		dc.name.label
+	}
+	
 	def String getLabel(UpdateExpressions e){
 		switch(e){
 			UpdateSubtraction:							{e.left.label + " - " + e.right.label }

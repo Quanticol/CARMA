@@ -290,7 +290,7 @@ class GenerateDefinitions {
 			'''
 			@Override
 			protected CarmaPredicate getPredicate(CarmaStore outputStore) {
-				return CarmaPredicate.FALSE;
+				return CarmaPredicate.TRUE;
 			}
 			'''
 		}
@@ -547,23 +547,38 @@ class GenerateDefinitions {
 		var componentState = new HashMap<String,ArrayList<String>>()
 		ems.emsExpression(componentState)
 		var output = ""
-		for(component : componentState.keySet){
+		if(componentState.keySet.size > 0){
 			output = output + '''
 			( 
-			(((CarmaSequentialProcess) p).automaton() ==  «component») && (
+			(((CarmaSequentialProcess) p).automaton() ==  «componentState.keySet.get(0)») && (
 			'''
-			for(state : componentState.get(component)){
+			for(state : componentState.get(componentState.keySet.get(0))){
 				output = output + '''
 				(((CarmaSequentialProcess) p).automaton().getState("«state»") != null ) ||
 				'''
 			}
-			
 			output = output + '''
 			(((CarmaSequentialProcess) p).getState() !=  null))
-			) && 
+			)
 			'''
+			for(var int i = 1; i < componentState.keySet.size; i++){
+				output = output + '''
+				||( 
+				(((CarmaSequentialProcess) p).automaton() ==  «componentState.keySet.get(i)») && (
+				'''
+				for(state : componentState.get(componentState.keySet.get(i))){
+					output = output + '''
+					(((CarmaSequentialProcess) p).automaton().getState("«state»") != null ) ||
+					'''
+				}
+				
+				output = output + '''
+				(((CarmaSequentialProcess) p).getState() !=  null))
+				)
+				'''
+			}
 		}
-		return output + "true;"
+		return output + ";"
 	}
 	
 	def void emsExpression(EnvironmentMacroExpressions ems, HashMap<String,ArrayList<String>> componentState){

@@ -47,6 +47,9 @@ import eu.quanticol.carma.core.carma.Measure
 import eu.quanticol.carma.core.carma.EnvironmentMeasure
 import eu.quanticol.carma.core.carma.VariableDeclaration
 import eu.quanticol.carma.core.carma.MeasureVariableDeclarations
+import eu.quanticol.carma.core.carma.BlockSpawn
+import eu.quanticol.carma.core.carma.ComponentBlockNewDeclarationSpawn
+import eu.quanticol.carma.core.carma.LineSpawn
 
 class GenerateSystems {
 	
@@ -420,5 +423,82 @@ class GenerateSystems {
 		}'''
 	}
 	
+	
+	def String blockSpawn(BlockSpawn bs){
+		var declaredComponents = bs.eAllOfType(ComponentBlockNewDeclarationSpawn)
+		var String output = ""
+		for(dc : declaredComponents){
+			if((dc.eAllOfType(Range).size > 0)){
+				output = output + rangeDeclaration(dc)
+			}else{
+				output = output + singleDeclaration(dc)
+			}
+		}
+		return output
+	}
+	
+	def String rangeDeclaration(ComponentBlockNewDeclarationSpawn dc){
+		var output = ""
+		var arguments = dc.eAllOfType(NCA)
+		var ArrayList<PrimitiveType> temp = new ArrayList<PrimitiveType>()
+		
+		//We don't want to pick up the Macro
+		for(argument : arguments){
+			if(argument.type.toString.equals("component"))
+				for(pt : argument.eAllOfType(PrimitiveType))
+					temp.add(pt)
+		}
+		
+		var ArrayList<ArrayList<String>> array1 = new ArrayList<ArrayList<String>>()
+		
+		for(argument : temp){
+			array1.add(argument.strip)
+		}
+		var array2 = new ArrayList<ArrayList<String>>()
+		forBlock(array1,array2)
+		for(list : array2){
+			output = output + singleDeclaration(dc, list)
+		}
+		return output
+	}
+	
+	def String singleDeclaration(ComponentBlockNewDeclarationSpawn dc, ArrayList<String> args){
+		'''
+		addComponent(get«dc.label.toFirstUpper»(«args.stripArguments»));
+		'''
+	}
+
+	def String singleDeclaration(ComponentBlockNewDeclarationSpawn dc){
+		'''
+		addComponent(get«dc.label.toFirstUpper»(«dc.stripArguments»));
+		'''
+	}
+	
+	def String stripArguments(ComponentBlockNewDeclarationSpawn dc){
+		
+		var arguments = dc.eAllOfType(NCA)
+		var output = ""
+		var ArrayList<NCA> temp = new ArrayList<NCA>()
+		
+		//We don't want to pick up the Macro
+		for(argument : arguments){
+			if(argument.type.toString.equals("component"))
+				temp.add(argument)
+		}
+		
+		//now create the string
+		if(temp.size > 0){
+			output = arguments.get(0).getLabelForArgs
+			for(var i = 1; i < temp.size; i++)
+				output = output + "," + temp.get(i).getLabelForArgs
+		}
+		
+		return output
+	}
+
+	
+	def String lineSpawn(LineSpawn bs){
+		//TODO
+	}
 	
 }

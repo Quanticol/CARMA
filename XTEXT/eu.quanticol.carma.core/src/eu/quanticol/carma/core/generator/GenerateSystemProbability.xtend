@@ -62,13 +62,10 @@ class GenerateSystemProbability {
 			else
 				unicasts.add(eu)
 		'''
-		/*ENVIRONMENT PROBABILITY PREDICATES*/
-		//BROADCAST ENVIRONMENT PROBABILITY PREDICATES
 		«FOR broadcast : broadcasts»
 		«defineCastPredicates(broadcast)»
 		«ENDFOR»
 		
-		//UNICAST ENVIRONMENT PROBABILITY PREDICATES
 		«FOR unicast : unicasts»
 		«defineCastPredicates(unicast)»
 		«ENDFOR»

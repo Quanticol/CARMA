@@ -30,13 +30,10 @@ class GenerateSystemEnvironmentUpdate {
 			else
 				unicasts.add(eu)
 		'''
-		/*ENVIRONMENT UPDATE PREDICATES*/
-		//BROADCAST ENVIRONMENT UPDATE PREDICATES
 		«FOR broadcast : broadcasts»
 		«defineCastPredicates(broadcast)»
 		«ENDFOR»
 		
-		//UNICAST ENVIRONMENT UPDATE PREDICATES
 		«FOR unicast : unicasts»
 		«defineCastPredicates(unicast)»
 		«ENDFOR»

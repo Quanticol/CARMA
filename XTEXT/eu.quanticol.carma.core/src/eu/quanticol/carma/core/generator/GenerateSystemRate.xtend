@@ -63,13 +63,10 @@ class GenerateSystemRate {
 			else
 				unicasts.add(eu)
 		'''
-		/*ENVIRONMENT RATE PREDICATES*/
-		//BROADCAST ENVIRONMENT RATE PREDICATES
 		«FOR broadcast : broadcasts»
 		«defineCastPredicates(broadcast)»
 		«ENDFOR»
 		
-		//UNICAST ENVIRONMENT RATE PREDICATES
 		«FOR unicast : unicasts»
 		«defineCastPredicates(unicast)»
 		«ENDFOR»

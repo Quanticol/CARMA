@@ -45,12 +45,18 @@ import eu.quanticol.carma.core.carma.Rate
 import eu.quanticol.carma.core.carma.UpdateBlock
 import eu.quanticol.carma.core.carma.RateBlock
 import eu.quanticol.carma.core.carma.ProbabilityBlock
+import eu.quanticol.carma.core.carma.BlockSpawn
+import eu.quanticol.carma.core.carma.LineSpawn
+import eu.quanticol.carma.core.carma.ComponentBlockNewDeclarationSpawn
+import eu.quanticol.carma.core.carma.NCA
+import eu.quanticol.carma.core.carma.PrimitiveType
 
 class GeneratorUtils {
 	
 	@Inject extension TypeProvider
 	@Inject extension LabelUtil
 	@Inject extension Util
+	@Inject extension GenerateSystems
 	
 	def String declareVariable(VariableReference vr){
 		switch(vr){
@@ -310,10 +316,10 @@ class GeneratorUtils {
 	}
 	
 	def String booleanToPredicate(BooleanExpressions be){
-		if(be.label.equals("True") || be.label.equals("true")){
+		if(be.label.equals("true")){
 			return '''CarmaPredicate.TRUE.satisfy(sender)'''
 		}
-		else if(be.label.equals("False") || be.label.equals("false")){
+		else if(be.label.equals("false")){
 			return '''CarmaPredicate.FALSE.satisfy(sender)'''
 		}
 		else {
@@ -355,21 +361,6 @@ class GeneratorUtils {
 			'''
 			«actionStub.getContainerOfType(EnvironmentOperation).eAllOfType(EnvironmentExpression).get(0).anAssignment»
 			'''
-		}
-	}
-	
-	def String defineEUActionStub(ActionStub actionStub){
-		if(actionStub.getContainerOfType(EnvironmentUpdate).eAllOfType(Spawn).size > 0){
-			'''//spawns'''
-		} else if (actionStub.getContainerOfType(EnvironmentUpdate).eAllOfType(EnvironmentUpdateAssignment).size > 0){
-			'''
-			boolean hasAttributes = true;
-			«FOR e :actionStub.getContainerOfType(EnvironmentUpdate).expression»
-			«e.anAssignment»
-			«ENDFOR»
-			'''
-		} else {
-			'''//«actionStub.label» invalid'''
 		}
 	}
 	
@@ -429,6 +420,30 @@ class GeneratorUtils {
 			«returnValue»
 		}
 		'''
+	}
+	
+	def String defineEUActionStub(ActionStub actionStub){
+		
+		var spawns = new ArrayList<Spawn>(actionStub.getContainerOfType(EnvironmentUpdate).eAllOfType(Spawn))
+		var updates = new ArrayList<EnvironmentUpdateAssignment>(actionStub.getContainerOfType(EnvironmentUpdate).eAllOfType(EnvironmentUpdateAssignment))
+		
+		'''
+		«FOR spawn : spawns»
+		«spawn.aSpawn»
+		«ENDFOR»
+		boolean hasAttributes = true;
+		«FOR update : updates»
+		«update.anAssignment»
+		«ENDFOR»
+		'''
+	}
+	
+	def String aSpawn(Spawn s){
+		var spawn = s.spawn
+		switch(spawn){
+			BlockSpawn: spawn.blockSpawn
+			LineSpawn : spawn.lineSpawn
+		}
 	}
 	
 	def String anAssignment(EnvironmentUpdateAssignment eua){

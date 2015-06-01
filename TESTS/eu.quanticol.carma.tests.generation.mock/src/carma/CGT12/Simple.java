@@ -49,20 +49,11 @@ public class Simple extends CarmaSystem {
 	}
 	
 	//predicates
-	/*ENVIRONMENT PROBABILITY PREDICATES*/
-	//BROADCAST ENVIRONMENT PROBABILITY PREDICATES
 	
-	//UNICAST ENVIRONMENT PROBABILITY PREDICATES
 	
-	/*ENVIRONMENT RATE PREDICATES*/
-	//BROADCAST ENVIRONMENT RATE PREDICATES
 	
-	//UNICAST ENVIRONMENT RATE PREDICATES
 	
-	/*ENVIRONMENT UPDATE PREDICATES*/
-	//BROADCAST ENVIRONMENT UPDATE PREDICATES
 	
-	//UNICAST ENVIRONMENT UPDATE PREDICATES
 	
 	//evol rules
 	@Override
@@ -70,7 +61,7 @@ public class Simple extends CarmaSystem {
 		if (action == CGT12Definition.PRODUCE
 		&& CarmaPredicate.TRUE.satisfy(sender)
 		) {
-				return 0.5;
+				return 1;
 		}
 		return 1.0;
 	}
@@ -92,11 +83,6 @@ public class Simple extends CarmaSystem {
 	
 	@Override
 	public double unicastProbability(CarmaStore sender, CarmaStore receiver,int action){
-		if (action == CGT12Definition.SEND
-		&& CarmaPredicate.TRUE.satisfy(sender)
-		) {
-				return 1;
-		}
 		return 1.0;
 	}
 	
@@ -109,7 +95,17 @@ public class Simple extends CarmaSystem {
 		if (action == CGT12Definition.SEND
 		&& CarmaPredicate.TRUE.satisfy(sender)
 		) {
-				//spawns
+				addComponent(getProducer(1,1,1,1));
+				boolean hasAttributes = true;
+				int transactions = 0;
+				if(global_store.get("transactions" , Integer.class) != null){
+					transactions = global_store.get("transactions" , Integer.class); 
+				} else { 
+					hasAttributes = false;
+				}
+				if(hasAttributes){
+					global_store.set("transactions",transactions + 1);
+				}
 		}
 	}
 	
@@ -124,15 +120,15 @@ public class Simple extends CarmaSystem {
 		
 		SamplingCollection<CarmaSystem> sc = new SamplingCollection<CarmaSystem>();
 		
-		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting_Producer_Send(1,1)));
-		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting_Producer_Send(2,1)));
-		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting_Producer_Send(3,1)));
-		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting_Producer_Send(1,2)));
-		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting_Producer_Send(2,2)));
-		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting_Producer_Send(3,2)));
-		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting_Producer_Send(1,3)));
-		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting_Producer_Send(2,3)));
-		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting_Producer_Send(3,3)));
+		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting__All(1,1)));
+		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting__All(2,1)));
+		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting__All(3,1)));
+		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting__All(1,2)));
+		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting__All(2,2)));
+		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting__All(3,2)));
+		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting__All(1,3)));
+		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting__All(2,3)));
+		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting__All(3,3)));
 		
 		system.setSampling(sc);
 		system.simulate(100,50);
