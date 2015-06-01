@@ -26,12 +26,6 @@ public class Simple extends CarmaSystem {
 		c4rm4.addAgent( new CarmaSequentialProcess(c4rm4, 
 		CGT12Definition.ProducerProcess,
 		CGT12Definition.ProducerProcess.getState("state_Send" )));
-		c4rm4.addAgent( new CarmaSequentialProcess(c4rm4, 
-		CGT12Definition.ProducerProcess,
-		CGT12Definition.ProducerProcess.getState("state_Produce" )));
-		c4rm4.addAgent( new CarmaSequentialProcess(c4rm4, 
-		CGT12Definition.ProducerProcess,
-		CGT12Definition.ProducerProcess.getState("state_Send" )));
 		return c4rm4;
 	}
 	private CarmaComponent getConsumer(int a,int b, int x, int y) {
@@ -45,6 +39,14 @@ public class Simple extends CarmaSystem {
 		c4rm4.addAgent( new CarmaSequentialProcess(c4rm4, 
 		CGT12Definition.ConsumerProcess,
 		CGT12Definition.ConsumerProcess.getState("state_Receive" )));
+		return c4rm4;
+	}
+	private CarmaComponent getChild() {
+		CarmaComponent c4rm4 = new CarmaComponent();
+		c4rm4.set( CGT12Definition.ME_ATTRIBUTE, 0);
+		c4rm4.addAgent( new CarmaSequentialProcess(c4rm4, 
+		CGT12Definition.ChildProcess,
+		CGT12Definition.ChildProcess.getState("state_Nothing" )));
 		return c4rm4;
 	}
 	
@@ -95,7 +97,7 @@ public class Simple extends CarmaSystem {
 		if (action == CGT12Definition.SEND
 		&& CarmaPredicate.TRUE.satisfy(sender)
 		) {
-				addComponent(getProducer(1,1,1,1));
+				addComponent(getChild());
 				boolean hasAttributes = true;
 				int transactions = 0;
 				if(global_store.get("transactions" , Integer.class) != null){
@@ -120,15 +122,7 @@ public class Simple extends CarmaSystem {
 		
 		SamplingCollection<CarmaSystem> sc = new SamplingCollection<CarmaSystem>();
 		
-		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting__All(1,1)));
-		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting__All(2,1)));
-		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting__All(3,1)));
-		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting__All(1,2)));
-		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting__All(2,2)));
-		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting__All(3,2)));
-		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting__All(1,3)));
-		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting__All(2,3)));
-		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting__All(3,3)));
+		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, CGT12Definition.getMeasureWaiting__All(1)));
 		
 		system.setSampling(sc);
 		system.simulate(100,50);

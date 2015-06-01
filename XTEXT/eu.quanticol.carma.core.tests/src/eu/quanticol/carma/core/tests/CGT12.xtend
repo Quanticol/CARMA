@@ -33,7 +33,7 @@ component Producer(enum a, enum b, enum c, enum d, Z){
 
     behaviour{
         Produce = [my.product >= 0] produce*{product := product + 1}.Produce;
-        Send = send<1>{product := product - 1}.Send;
+        Send = [my.product >= 0] send<1>{product := product - 1}.Send;
     }
 
     init{
@@ -50,7 +50,7 @@ component Consumer(enum a, enum b, record p, Z){
 
     behaviour{
         Consume = [my.product > 0] consume*{product := product - 1}.Consume;
-        Receive = send(z){product := product - z}.Receive;
+        Receive = [my.product < 1] send(z){product := product + z}.Receive;
     }
     
     init{
@@ -58,8 +58,23 @@ component Consumer(enum a, enum b, record p, Z){
     }
 }
 
+component Child(){
+	
+	store{
+		enum me := 0;
+	}
+	
+	behaviour{
+        Nothing = nothing*.Nothing;
+    }
+    
+    init{
+        Nothing;
+    }
+}
+
 measures{
-	measure Waiting[ enum i := 1..3, enum j := 1..3] = #{ Producer[Send]  | position.x == i && position.y == j};
+	measure Waiting[enum i := 1] = #{ *  | true };
 }
 
 
@@ -77,16 +92,16 @@ system Simple{
     	}
     	
     	prob{
-    		[True] 	send : 1;
+    		//[true] 	send : 1;
     	}
     	
         rate{
-        	[True] 	send : 1;
-        	[True] 	produce* : 0.5;
+        	[true] 	send : 1;
+        	[true] 	produce* : 1;
         }
         
         update{
-        	[True] 	send : transactions := transactions + 1, new Producer(1,1,1,1,Produce|Send);
+        	[true] 	send : transactions := transactions + 1, new Child();
         }
     }
 }'''

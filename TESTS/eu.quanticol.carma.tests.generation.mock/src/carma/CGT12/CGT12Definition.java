@@ -15,6 +15,8 @@ public class CGT12Definition {
 	public static final Class<Integer> POSITION_X_ATTRIBUTE_TYPE = Integer.class;
 	public static final String POSITION_Y_ATTRIBUTE = "position_y";
 	public static final Class<Integer> POSITION_Y_ATTRIBUTE_TYPE = Integer.class;
+	public static final String ME_ATTRIBUTE = "me";
+	public static final Class<Integer> ME_ATTRIBUTE_TYPE = Integer.class;
 	/*INPUT ARGUMENTS*/
 	/*ENVIRONMENT ATTRIBUTES*/
 	public static final String TRANSACTIONS_ATTRIBUTE = "transactions";
@@ -23,6 +25,7 @@ public class CGT12Definition {
 	public static final int PRODUCE = 0;
 	public static final int SEND = 1;
 	public static final int CONSUME = 2;
+	public static final int NOTHING = 3;
 	/*RATES*/
 	public static final double TRUE_SEND_RATE = 1;
 	public static final double TRUE_PRODUCE_RATE = 1;
@@ -105,7 +108,7 @@ public class CGT12Definition {
 			}
 		};
 		
-		CarmaPredicate Send_Guard = new CarmaPredicate() {
+		CarmaPredicate Produce_Guard = new CarmaPredicate() {
 			@Override
 			public boolean satisfy(CarmaStore store) {
 				boolean hasAttributes = true;
@@ -121,7 +124,7 @@ public class CGT12Definition {
 					return false;
 			}
 		};
-		CarmaPredicate Produce_Guard = new CarmaPredicate() {
+		CarmaPredicate Send_Guard = new CarmaPredicate() {
 			@Override
 			public boolean satisfy(CarmaStore store) {
 				boolean hasAttributes = true;
@@ -139,8 +142,8 @@ public class CGT12Definition {
 		};
 		
 		//create the transitions between states
-		toReturn.addTransition(state_Send,Send_Guard,send_Action,state_Send);
 		toReturn.addTransition(state_Produce,Produce_Guard,produce_Action,state_Produce);
+		toReturn.addTransition(state_Send,Send_Guard,send_Action,state_Send);
 		
 		return toReturn;
 	}
@@ -258,6 +261,46 @@ public class CGT12Definition {
 		
 		return toReturn;
 	}
+	public static final CarmaProcessAutomaton ChildProcess = createChildProcess();
+	
+	private static CarmaProcessAutomaton createChildProcess() {
+		
+		CarmaProcessAutomaton toReturn = new CarmaProcessAutomaton("Child");
+		
+		
+		//create the states in the automata 
+		CarmaProcessAutomaton.State state_Nothing = toReturn.newState("state_Nothing");
+		
+		CarmaOutput nothing_Action = new CarmaOutput( NOTHING, true ) {
+			
+			@Override
+			protected CarmaPredicate getPredicate(CarmaStore outputStore) {
+				return CarmaPredicate.TRUE;
+			}
+		
+			@Override
+			protected CarmaStoreUpdate getUpdate() {
+				return new CarmaStoreUpdate() {
+					
+					@Override
+					public void update(RandomGenerator r, CarmaStore store) {
+						boolean hasAttributes = true;
+					}
+				};
+			}
+		
+			@Override
+			protected Object getValue(CarmaStore store) {
+			return new Object();
+			}
+		};
+		
+		
+		//create the transitions between states
+		toReturn.addTransition(state_Nothing,nothing_Action,state_Nothing);
+		
+		return toReturn;
+	}
 	/*MEASURES*/
 	//predicate states get_MeasureName_State(ProcessName_ProcessName... || All)Predicate()
 	public static CarmaProcessPredicate getMeasureWaiting__All_State_Predicate(){
@@ -266,6 +309,11 @@ public class CGT12Definition {
 			@Override
 			public boolean eval(CarmaProcess p) {
 				return ( 
+				(((CarmaSequentialProcess) p).automaton() ==  ChildProcess) && (
+				(((CarmaSequentialProcess) p).automaton().getState("state_Nothing") != null ) ||
+				(((CarmaSequentialProcess) p).getState() !=  null))
+				)
+				||( 
 				(((CarmaSequentialProcess) p).automaton() ==  ProducerProcess) && (
 				(((CarmaSequentialProcess) p).automaton().getState("state_Send") != null ) ||
 				(((CarmaSequentialProcess) p).automaton().getState("state_Produce") != null ) ||
@@ -282,7 +330,7 @@ public class CGT12Definition {
 		};
 	}
 	//predicate for boolean expression get_MeasureName_BooleanExpression_Predicate()
-	protected static CarmaPredicate getPredicateWaiting__All(final int i, final int j) {
+	protected static CarmaPredicate getPredicateWaiting__All(final int i) {
 		return new CarmaPredicate() {
 			@Override
 			public boolean satisfy(CarmaStore store) {
@@ -296,21 +344,21 @@ public class CGT12Definition {
 	}
 	
 	
-	public static ComponentPredicate getMeasureWaiting__All_BooleanExpression_Predicate(final int i, final int j){
+	public static ComponentPredicate getMeasureWaiting__All_BooleanExpression_Predicate(final int i){
 		return new ComponentPredicate() {
 			
 			@Override
 			public boolean eval(CarmaComponent c){
-				return getPredicateWaiting__All(i, j).satisfy(c.getStore()) && (c.isRunning(getMeasureWaiting__All_State_Predicate()));
+				return getPredicateWaiting__All(i).satisfy(c.getStore()) && (c.isRunning(getMeasureWaiting__All_State_Predicate()));
 			}
 		};
 	}
 	//getMethod
-	public static Measure<CarmaSystem> getMeasureWaiting__All(final int iMin, final int jMin){
+	public static Measure<CarmaSystem> getMeasureWaiting__All(final int i){
 		
 		return new Measure<CarmaSystem>(){
 		
-			ComponentPredicate predicate = getMeasureWaiting__All_BooleanExpression_Predicate(iMin, jMin);
+			ComponentPredicate predicate = getMeasureWaiting__All_BooleanExpression_Predicate(i);
 		
 			@Override
 			public double measure(CarmaSystem t){

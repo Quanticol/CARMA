@@ -39,6 +39,7 @@ import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionAll
 import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAllStates
 import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAState
 import eu.quanticol.carma.core.carma.MacroExpressionReference
+import eu.quanticol.carma.core.carma.Range
 
 class GenerateDefinitions {
 	
@@ -632,8 +633,14 @@ class GenerateDefinitions {
 		var argsi = new ArrayList<String>()
 		var args = new ArrayList<String>()
 		for(vd : parameters.eAllOfType(VariableDeclaration)){
-			args.add('''final «vd.convertToJava.split(" ").get(0) + " " + vd.convertToJava.split(" ").get(1).substring(0,vd.convertToJava.split(" ").get(1).length - 3)»''')
-			argsi.add('''«vd.convertToJava.split(" ").get(1).substring(0,vd.convertToJava.split(" ").get(1).length - 3)»''')
+			if(vd.eAllOfType(Range).size > 0){
+				args.add('''final «vd.convertToJava.split(" ").get(0) + " " + vd.convertToJava.split(" ").get(1).substring(0,vd.convertToJava.split(" ").get(1).length - 3)»''')
+				argsi.add('''«vd.convertToJava.split(" ").get(1).substring(0,vd.convertToJava.split(" ").get(1).length - 3)»''')
+			} else {
+				args.add('''final «vd.convertToJava.split(" ").get(0) + " " + vd.convertToJava.split(" ").get(1)»''')
+				argsi.add('''«vd.convertToJava.split(" ").get(1)»''')
+			}
+			
 		}
 		'''
 		protected static CarmaPredicate getPredicate«measureName»_«stateName»(«args.generateArgs») {
