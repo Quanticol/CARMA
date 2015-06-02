@@ -85,7 +85,7 @@ system Simple{
 
     collective{
         new Producer(1,1,1,1,Produce|Send);
-        new Consumer(1,1,{x := 1, y := 1},Consume|Receive);
+        new Consumer(1,1,{x := 1..3, y := 1..3},Consume|Receive);
     }
 
     environment{

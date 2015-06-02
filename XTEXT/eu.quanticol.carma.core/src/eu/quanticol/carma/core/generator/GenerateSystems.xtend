@@ -461,19 +461,6 @@ class GenerateSystems {
 		return output
 	}
 	
-//	def ArrayList<String> strip(PrimitiveType pt){
-//		var temp = new ArrayList<String>()
-//		
-//		if(pt.eAllOfType(Range).size > 0)
-//			for(r : pt.eAllOfType(Range))
-//				temp.addAll(r.range)
-//		else
-//			temp.add(pt.label)
-//
-//
-//		return temp
-//	}
-	
 	def String singleDeclaration(ComponentBlockNewDeclarationSpawn dc, ArrayList<String> args){
 		'''
 		addComponent(get«dc.label.toFirstUpper»(«args.stripArguments»));

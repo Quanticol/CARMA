@@ -53,6 +53,8 @@ import eu.quanticol.carma.core.carma.PrimitiveType
 import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnReference
 import eu.quanticol.carma.core.carma.NewComponentArgumentMacro
 import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnMacro
+import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnPrimitive
+import eu.quanticol.carma.core.carma.Range
 
 class GeneratorUtils {
 	
@@ -323,14 +325,28 @@ class GeneratorUtils {
 	
 	def ArrayList<String> getAllVariablesNCA(NCA nca){
 		var HashSet<String> output = new HashSet<String>()
+		println(nca)
 		switch(nca){
 			NewComponentArgumentSpawnReference: output.add(nca.value.getNCAVRArgs)
-			NewComponentArgumentMacro: output.add(" ")
 			NewComponentArgumentSpawnMacro: output.add(" ")
+			NewComponentArgumentSpawnPrimitive: return nca.value.strip
 			default: output.add(nca.getLabelForArgs)
 		}
 		var ArrayList<String> returns = new ArrayList<String>(output)
 		return returns
+	}
+	
+	def ArrayList<String> strip(PrimitiveType pt){
+		var temp = new ArrayList<String>()
+		
+		if(pt.eAllOfType(Range).size > 0)
+			for(r : pt.eAllOfType(Range))
+				temp.addAll(r.range)
+		else
+			temp.add(pt.label)
+
+
+		return temp
 	}
 	
 	def String getNCAVRArgs(VariableReference vr){
