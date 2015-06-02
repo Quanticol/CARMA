@@ -370,7 +370,7 @@ class LabelUtil {
 			NewComponentArgumentDeclare			: (ca.value as Records).getLabelForArgs
 			NewComponentArgumentReference		: (ca.value as VariableReference).getLabel
 			NewComponentArgumentSpawnPrimitive 	: (ca.value as PrimitiveType).getLabel
-			NewComponentArgumentSpawnDeclare	: (ca.value as MacroExpressions).getLabel
+			NewComponentArgumentSpawnDeclare	: (ca.value as Records).getLabel
 			NewComponentArgumentSpawnMacro		: (ca.value as MethodExpressions).getLabel
 			NewComponentArgumentSpawnMethod		: (ca.value as Records).getLabelForArgs
 			NewComponentArgumentSpawnReference	: (ca.value as VariableReference).getLabel
@@ -620,23 +620,15 @@ class LabelUtil {
 		//get ComponentBlockDeclaration
 		var cbnds = vtr.getComponentToCBNDs
 		
-		println(vtr.label)
-		println(cbnds)	
-		
 		for(cd : cbnds.keySet){
 			for(c : cbnds.get(cd)){
 				if(c.getContainerOfType(ComponentBlockStyleCollective) != null){
 					rds.addAll((c as ComponentBlockNewDeclaration).componentInputArguments.inputArguments.get(position).eAllOfType(RecordDeclaration))
 				} else if (c.getContainerOfType(EnvironmentUpdate) != null) {
-					println("don't call me surely!")
 					if((c as ComponentBlockNewDeclarationSpawn).componentInputArguments.inputArguments.get(position).eAllOfType(NewComponentArgumentSpawnReference).size > 0){
-						println("reference")
 						var vr = (c as ComponentBlockNewDeclarationSpawn).componentInputArguments.inputArguments.get(position).eAllOfType(NewComponentArgumentSpawnReference).get(0).value
 						var vd = vr.variableDeclaration as VariableDeclarationRecord
-						println(vd.label)
 						rds.addAll(vd.recordDeclarations) 
-						println("vdr")
-						println(rds)
 					}
 					rds.addAll((c as ComponentBlockNewDeclarationSpawn).componentInputArguments.inputArguments.get(position).eAllOfType(RecordDeclaration))
 				}
@@ -652,7 +644,7 @@ class LabelUtil {
 				output = output + ", int " + rds.get(i).name.label
 			}
 		} else {
-			output = "//UNTIL SENDER/RECEIVER/GLOBAL RESOLVED NO ARGUMENTS FOR SPAWN @ LabelUtil.spread()"
+			output = "Check @ LabelUtil.spread()"
 		}
 		
 		

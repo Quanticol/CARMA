@@ -104,7 +104,7 @@ system Simple{
         }
         
         update{
-        	[true]	send : transactions := transactions + 1, new Child(sender.position);
+        	[true]	send : transactions := transactions + 1, new Child({x := 1..3, y := 1..3});
 
         }
     }

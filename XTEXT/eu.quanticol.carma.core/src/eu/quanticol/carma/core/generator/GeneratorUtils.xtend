@@ -50,6 +50,9 @@ import eu.quanticol.carma.core.carma.LineSpawn
 import eu.quanticol.carma.core.carma.ComponentBlockNewDeclarationSpawn
 import eu.quanticol.carma.core.carma.NCA
 import eu.quanticol.carma.core.carma.PrimitiveType
+import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnReference
+import eu.quanticol.carma.core.carma.NewComponentArgumentMacro
+import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnMacro
 
 class GeneratorUtils {
 	
@@ -269,6 +272,127 @@ class GeneratorUtils {
 		«vr»
 		«ENDFOR»
 		'''
+	}
+	
+	def String getAllVariablesComponentBlockNewDeclarationSpawn(ComponentBlockNewDeclarationSpawn cbnds){
+		var HashSet<String> output = new HashSet<String>()
+		var arguments = cbnds.eAllOfType(NCA)
+		for(arg : arguments){
+			switch(arg){
+				NewComponentArgumentSpawnReference: output.add(arg.value.getNCAVR)
+			}
+		}
+		'''
+		«FOR vr : output»
+		«vr»
+		«ENDFOR»
+		'''
+	}
+	
+	def String getNCAVR(VariableReference vr){
+		switch(vr){
+			VariableReferencePure:		vr.global
+			VariableReferenceReceiver:	vr.receiver
+			VariableReferenceSender:	vr.sender
+			VariableReferenceGlobal:	vr.global
+			RecordReferencePure:		vr.global
+			RecordReferenceReceiver:	vr.receiver
+			RecordReferenceSender:		vr.sender
+			RecordReferenceGlobal:		vr.global
+		}
+	}
+	
+	def String getAllVariablesComponentBlockNewDeclarationSpawnArgs(ComponentBlockNewDeclarationSpawn cbnds){
+		var HashSet<String> output = new HashSet<String>()
+		var arguments = cbnds.eAllOfType(NCA)
+		for(arg : arguments){
+			switch(arg){
+				NewComponentArgumentSpawnReference: output.add(arg.value.getNCAVRArgs)
+				default: output.add(arg.getLabelForArgs)
+			}
+		}
+		var returns = ""
+		if(output.size > 0){
+			returns = output.get(0)
+			for(var i = 1; i < output.size; i++){
+				returns = returns + ", " + output.get(i) 
+			}
+		}
+		return returns
+	}
+	
+	def ArrayList<String> getAllVariablesNCA(NCA nca){
+		var HashSet<String> output = new HashSet<String>()
+		switch(nca){
+			NewComponentArgumentSpawnReference: output.add(nca.value.getNCAVRArgs)
+			NewComponentArgumentMacro: output.add(" ")
+			NewComponentArgumentSpawnMacro: output.add(" ")
+			default: output.add(nca.getLabelForArgs)
+		}
+		var ArrayList<String> returns = new ArrayList<String>(output)
+		return returns
+	}
+	
+	def String getNCAVRArgs(VariableReference vr){
+		println(vr)
+		switch(vr){
+			VariableReferencePure:		vr.globalArg
+			VariableReferenceReceiver:	vr.receiverArg
+			VariableReferenceSender:	vr.senderArg
+			VariableReferenceGlobal:	vr.globalArg
+			RecordReferencePure:		vr.globalArg
+			RecordReferenceReceiver:	vr.receiverArg
+			RecordReferenceSender:		vr.senderArg
+			RecordReferenceGlobal:		vr.globalArg
+		}
+	}
+	
+	def String getGlobalArg(VariableReference vr){
+		'''
+		«var vd = vr.getVariableDeclarationEnv»
+		«switch(vd){
+			VariableDeclarationEnum:	vd.getVariable("")
+			VariableDeclarationRecord:	vd.getVariable("")
+		}»
+		'''
+	}
+	
+	def String getSenderArg(VariableReference vr){
+		'''
+		«var vd = vr.getVariableDeclaration»
+		«switch(vd){
+			VariableDeclarationEnum:	vd.getVariable("_s")
+			VariableDeclarationRecord:	vd.getVariable("_s")
+		}»
+		'''
+	}
+	
+	def String getReceiverArg(VariableReference vr){
+		'''
+		«var vd = vr.getVariableDeclaration»
+		«switch(vd){
+			VariableDeclarationEnum:	vd.getVariable("_r")
+			VariableDeclarationRecord:	vd.getVariable("_r")
+		}»
+		'''
+	}
+	
+	def String getVariable(VariableDeclarationEnum vde, String ext){
+		'''
+		«vde.name.label»«ext» 
+		'''
+	}
+	
+	def String getVariable(VariableDeclarationRecord vdr, String ext){
+		var output = ""
+		var rds = vdr.recordDeclarations
+		if(rds.size > 0){
+			output = vdr.name.label+"_"+rds.get(0).name.label+ext		
+			for(var i = 1; i < rds.size; i++){
+				output = output + ", "+vdr.name.label+"_"+rds.get(i).name.label+ext
+			}
+		}
+		return output
 	}
 	
 	def String defineCastPredicates(EnvironmentOperation cast){

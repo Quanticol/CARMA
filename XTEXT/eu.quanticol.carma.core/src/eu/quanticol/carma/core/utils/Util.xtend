@@ -110,6 +110,12 @@ import eu.quanticol.carma.core.carma.UpdateExpressions
 import eu.quanticol.carma.core.carma.ComponentBlockDefinitionArgumentMacro
 import eu.quanticol.carma.core.carma.MacroType
 import eu.quanticol.carma.core.carma.MacroExpressions
+import eu.quanticol.carma.core.carma.VariableDeclarationCarmaDouble
+import eu.quanticol.carma.core.carma.VariableDeclarationCarmaIntger
+import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnPrimitive
+import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnMacro
+import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnMethod
+import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnReference
 
 class Util {
 	
@@ -1189,7 +1195,52 @@ class Util {
 	 */
 	def VariableDeclaration getVariableDeclaration(VariableReference vrr){
 		var components = new ArrayList<Component>(vrr.getContainerOfType(Model).eAllOfType(Component))
-		components.getVariableDeclaration(vrr.name)
+		switch(vrr){
+			VariableReferencePure		: components.getVariableDeclaration(vrr.name)
+			VariableReferenceMy			: components.getVariableDeclaration(vrr.name)
+			VariableReferenceThis		: components.getVariableDeclaration(vrr.name)
+			VariableReferenceReceiver	: vrr.variableDeclarationAny
+			VariableReferenceSender		: vrr.variableDeclarationAny
+			VariableReferenceGlobal		: vrr.variableDeclarationEnv
+			RecordReferencePure			: components.getVariableDeclaration(vrr.name)
+			RecordReferenceMy			: components.getVariableDeclaration(vrr.name)
+			RecordReferenceThis			: components.getVariableDeclaration(vrr.name)
+			RecordReferenceReceiver		: vrr.variableDeclarationAny
+			RecordReferenceSender		: vrr.variableDeclarationAny
+			RecordReferenceGlobal		: vrr.variableDeclarationEnv
+		}
+	}
+	
+	/**
+	 * Given a variable reference, find full variabledeclaration from anywhere
+	 */
+	def VariableDeclaration getVariableDeclarationAny(VariableReference vrr){
+		var vds = vrr.getContainerOfType(Model).eAllOfType(VariableDeclaration)
+		for(v :vds){
+			if(v.name.sameName(vrr.name))
+				if(v.getFullDeclaration != null ){
+					return v.getFullDeclaration
+				}
+	
+		}
+		return null
+	}
+	
+	def VariableDeclaration getFullDeclaration(VariableDeclaration vd){
+		switch(vd){
+			VariableDeclarationEnum			:	if(vd.eAllOfType(VariableReference).size == 0){return vd}
+			VariableDeclarationCarmaDouble	:	if(vd.eAllOfType(VariableReference).size == 0){return vd}
+			VariableDeclarationCarmaIntger	: 	if(vd.eAllOfType(VariableReference).size == 0){return vd}
+			VariableDeclarationRecord		:	return (vd as VariableDeclarationRecord).getFullDeclaration
+		}
+		return null
+	}
+	
+	def VariableDeclaration getFullDeclaration(VariableDeclarationRecord vdr){
+		if(vdr.eAllOfType(Records).size > 0 || vdr.recordDeclarations.size > 0) {
+			return (vdr as VariableDeclaration)
+		}
+		return null
 	}
 	
 	/**
@@ -1543,25 +1594,28 @@ class Util {
 		var position = vn.getPosition
 		//get ComponentBlockDeclaration
 		var cbnds = vn.getCBNDs
-		var ComponentBlockNewDeclaration cbnd = null
+		var output = new ArrayList<RecordDeclaration>()
 		for(cd : cbnds.keySet){
 			for(c : cbnds.get(cd)){
-				if(c.getContainerOfType(ComponentBlockStyleCollective) != null){
-					cbnd = (c as ComponentBlockNewDeclaration)
+				switch(c){
+					ComponentBlockNewDeclaration		: output.addAll((c as ComponentBlockNewDeclaration).componentInputArguments.inputArguments.get(position).eAllOfType(RecordDeclaration))
+					ComponentBlockNewDeclarationSpawn	: output.addAll((c as ComponentBlockNewDeclarationSpawn).componentInputArguments.inputArguments.get(position).recordDeclarationsFromNewComponentArgumentSpawn)
 				}
-//				if (c.getContainerOfType(EnvironmentUpdate) != null) {
-//					cbnd = (c as ComponentBlockNewDeclarationSpawn)
-//				}
 			}
 		}
+		return output
 			
-					
-		//get Records
-		if(cbnd != null)
-			new ArrayList<RecordDeclaration>(cbnd.componentInputArguments.inputArguments.get(position).eAllOfType(RecordDeclaration))
-		else
-			new ArrayList<RecordDeclaration>()
-			
+	}
+	
+	def ArrayList<RecordDeclaration> getRecordDeclarationsFromNewComponentArgumentSpawn(NCA nca){
+		switch(nca){
+			NewComponentArgumentSpawnPrimitive	:	null
+			NewComponentArgumentSpawnDeclare	:	new ArrayList<RecordDeclaration>(nca.eAllOfType(RecordDeclaration))
+			NewComponentArgumentSpawnMacro		:	null
+			NewComponentArgumentSpawnMethod		:	null
+			NewComponentArgumentSpawnReference	:	new ArrayList<RecordDeclaration>((nca.value.variableDeclaration as VariableDeclarationRecord).recordDeclarations)
+		}
+		
 	}
 	
 	def int getPosition(VariableName vn){
@@ -2079,7 +2133,6 @@ class Util {
 		var ArrayList<RecordDeclaration> rds = new ArrayList<RecordDeclaration>()
 		if(vdr.assign.ref != null){
 			rds.addAll(vdr.assign.ref.getRecordDeclarationsFromCBND)
-			println(vdr.assign.ref.getRecordDeclarationsFromCBND)
 		} else {
 			rds.addAll(vdr.eAllOfType(RecordDeclaration))
 		}

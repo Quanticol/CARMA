@@ -128,8 +128,8 @@ class GenerateSystems {
 								c4rm4.set( «system.getContainerOfType(Model).label»Definition.«vd.name.label.toUpperCase»_«rd.name.label.toUpperCase»_ATTRIBUTE, «system.getContainerOfType(Model).getValue(component.label,vd.name.label,rd.name.label)»);
 								«ENDFOR»
 								'''
-							} else {
-								rds = vd.assign.ref.recordDeclarationsFromCBND
+							} else if (vd.recordDeclarations.size > 0) {
+								rds = vd.recordDeclarations
 								'''
 								«FOR rd : rds»
 								c4rm4.set( «system.getContainerOfType(Model).label»Definition.«vd.name.label.toUpperCase»_«rd.name.label.toUpperCase»_ATTRIBUTE, «rd.name.label»);
@@ -445,21 +445,13 @@ class GenerateSystems {
 	}
 	
 	def String rangeDeclaration(ComponentBlockNewDeclarationSpawn dc){
-		var output = ""
+		var output = '''«dc.getAllVariablesComponentBlockNewDeclarationSpawn»'''
 		var arguments = dc.eAllOfType(NCA)
-		var ArrayList<PrimitiveType> temp = new ArrayList<PrimitiveType>()
-		
-		//We don't want to pick up the Macro
-		for(argument : arguments){
-			if(argument.type.toString.equals("component"))
-				for(pt : argument.eAllOfType(PrimitiveType))
-					temp.add(pt)
-		}
 		
 		var ArrayList<ArrayList<String>> array1 = new ArrayList<ArrayList<String>>()
 		
-		for(argument : temp){
-			array1.add(argument.strip)
+		for(argument : arguments){
+			array1.addAll(argument.getAllVariablesNCA)
 		}
 		var array2 = new ArrayList<ArrayList<String>>()
 		forBlock(array1,array2)
@@ -469,6 +461,19 @@ class GenerateSystems {
 		return output
 	}
 	
+//	def ArrayList<String> strip(PrimitiveType pt){
+//		var temp = new ArrayList<String>()
+//		
+//		if(pt.eAllOfType(Range).size > 0)
+//			for(r : pt.eAllOfType(Range))
+//				temp.addAll(r.range)
+//		else
+//			temp.add(pt.label)
+//
+//
+//		return temp
+//	}
+	
 	def String singleDeclaration(ComponentBlockNewDeclarationSpawn dc, ArrayList<String> args){
 		'''
 		addComponent(get«dc.label.toFirstUpper»(«args.stripArguments»));
@@ -477,30 +482,9 @@ class GenerateSystems {
 
 	def String singleDeclaration(ComponentBlockNewDeclarationSpawn dc){
 		'''
-		addComponent(get«dc.label.toFirstUpper»(«dc.stripArguments»));
+		«dc.getAllVariablesComponentBlockNewDeclarationSpawn»
+		addComponent(get«dc.label.toFirstUpper»(«dc.getAllVariablesComponentBlockNewDeclarationSpawnArgs»));
 		'''
-	}
-	
-	def String stripArguments(ComponentBlockNewDeclarationSpawn dc){
-		
-		var arguments = dc.eAllOfType(NCA)
-		var output = ""
-		var ArrayList<NCA> temp = new ArrayList<NCA>()
-		
-		//We don't want to pick up the Macro
-		for(argument : arguments){
-			if(argument.type.toString.equals("component"))
-				temp.add(argument)
-		}
-		
-		//now create the string
-		if(temp.size > 0){
-			output = arguments.get(0).getLabelForArgs
-			for(var i = 1; i < temp.size; i++)
-				output = output + "," + temp.get(i).getLabelForArgs
-		}
-		
-		return output
 	}
 
 	
