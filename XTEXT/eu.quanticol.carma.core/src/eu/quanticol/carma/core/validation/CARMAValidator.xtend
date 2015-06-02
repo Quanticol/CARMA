@@ -857,6 +857,32 @@ class CARMAValidator extends AbstractCARMAValidator {
 		}
 	}
 	
+	public static val ERROR_ActionStub_input = "Error: Environment probability determines the probability of a message being received. There cannot be Spontaneous actions here."
+	/**
+	 * Probability
+	 * <p>
+	 * ERROR_ActionStub_input
+	 * <p>	
+	 * @author 	CDW <br>
+	 */
+	@Check
+	def check_ERROR_ActionStub_input(ActionStub actionStub){
+		var String message = ERROR_ActionStub_input
+		var test = true
+		
+		if(actionStub.getContainerOfType(Probability) != null)
+			for(action : actionStub.actions)
+				test = test && !action.spont			
+
+		
+		if(!test){
+			error( message ,
+					CarmaPackage::eINSTANCE.actionStub_Name,
+					ERROR_ActionStub_input
+			)
+		}
+	}
+	
 	public static val ERROR_EnvironmentMacroExpressionComponentAllStates_ref = "Error: Must reference a Component in this model."
 	/**
 	 * EnvironmentMacroExpressionComponentAllStates

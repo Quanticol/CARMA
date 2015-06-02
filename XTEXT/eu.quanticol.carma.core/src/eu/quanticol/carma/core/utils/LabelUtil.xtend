@@ -417,7 +417,7 @@ class LabelUtil {
 			EnvironmentAtomicRecords:						(e.value as Records).label
 			EnvironmentAtomicVariable:						e.value.label
 			EnvironmentAtomicMethodReference:				(e.value as MethodExpressions).label 
-			EnvironmentAtomicNow:							"now.LabelUtil.getLabel"
+			EnvironmentAtomicNow:							"now()"
 			EnvironmentAtomicMeasure:						e.value.label
 			EnvironmentExpression:							e.expression.label
 			EnvironmentMeasure:								"Measure"+e.hashCode+"_"+e.componentReference.getLabel.toFirstUpper
@@ -435,7 +435,7 @@ class LabelUtil {
 			EnvironmentAtomicRecords:						(e.value as Records).label
 			EnvironmentAtomicVariable:						e.value.label
 			EnvironmentAtomicMethodReference:				(e.value as MethodExpressions).label 
-			EnvironmentAtomicNow:							"now.LabelUtil.getLabel"
+			EnvironmentAtomicNow:							"now()"
 			EnvironmentAtomicMeasure:						e.value.convertToJava
 			EnvironmentExpression:							e.expression.convertToJava
 			EnvironmentMeasure:								"1.0; //getMeasure"+e.hashCode+"_"+e.componentReference.getLabel.toFirstUpper+"().measure(t)"
@@ -452,7 +452,7 @@ class LabelUtil {
 			EnvironmentUpdateAtomicVariable:						e.value.convertToJava
 			EnvironmentUpdateAtomicMethodReference:					(e.value as MethodExpressions).label 
 			EnvironmentUpdateExpression:							e.expression.label
-			EnvironmentUpdateAtomicNow:								"now.LabelUtil.getLabel"
+			EnvironmentUpdateAtomicNow:								"now()"
 			EnvironmentUpdateAtomicMeasure:							"getMeasure"+e.hashCode+"()"
 		}
 	}
@@ -619,16 +619,31 @@ class LabelUtil {
 		var position = vtr.getPosition
 		//get ComponentBlockDeclaration
 		var cbnds = vtr.getComponentToCBNDs
-			
+		
+		println(vtr.label)
+		println(cbnds)	
+		
 		for(cd : cbnds.keySet){
 			for(c : cbnds.get(cd)){
 				if(c.getContainerOfType(ComponentBlockStyleCollective) != null){
 					rds.addAll((c as ComponentBlockNewDeclaration).componentInputArguments.inputArguments.get(position).eAllOfType(RecordDeclaration))
 				} else if (c.getContainerOfType(EnvironmentUpdate) != null) {
+					println("don't call me surely!")
+					if((c as ComponentBlockNewDeclarationSpawn).componentInputArguments.inputArguments.get(position).eAllOfType(NewComponentArgumentSpawnReference).size > 0){
+						println("reference")
+						var vr = (c as ComponentBlockNewDeclarationSpawn).componentInputArguments.inputArguments.get(position).eAllOfType(NewComponentArgumentSpawnReference).get(0).value
+						var vd = vr.variableDeclaration as VariableDeclarationRecord
+						println(vd.label)
+						rds.addAll(vd.recordDeclarations) 
+						println("vdr")
+						println(rds)
+					}
 					rds.addAll((c as ComponentBlockNewDeclarationSpawn).componentInputArguments.inputArguments.get(position).eAllOfType(RecordDeclaration))
 				}
 			}
 		}
+		
+		
 		var String output = ""
 		
 		if(rds.size > 0){
@@ -676,7 +691,7 @@ class LabelUtil {
 			BooleanAtomicRecords:			(e.value as Records).label			
 			BooleanAtomicVariable:			(e.value as VariableReference).label 
 			BooleanAtomicMethodReference:	(e.value as MethodExpressions).label			
-			BooleanAtomicNow:				"now"	
+			BooleanAtomicNow:				"now()"	
 			BooleanExpression:				e.expression.label
 		}
 	}
@@ -696,7 +711,7 @@ class LabelUtil {
 			BooleanAtomicPrimitive:			(e.value as PrimitiveType).label			
 			BooleanAtomicVariable:			(e.value as VariableReference).convertToJava 
 			BooleanAtomicMethodReference:	(e.value as MethodExpressions).label			
-			BooleanAtomicNow:				"now"	
+			BooleanAtomicNow:				"now()"	
 			BooleanExpression:				e.expression.convertToJava
 		}
 	}
@@ -716,7 +731,7 @@ class LabelUtil {
 			BooleanAtomicPrimitive:			(e.value as PrimitiveType).label			
 			BooleanAtomicVariable:			(e.value as VariableReference).convertToJavaInputAction 
 			BooleanAtomicMethodReference:	(e.value as MethodExpressions).label			
-			BooleanAtomicNow:				"now"	
+			BooleanAtomicNow:				"now()"	
 			BooleanExpression:				e.expression.convertToJavaInputAction
 		}
 	}
@@ -736,7 +751,7 @@ class LabelUtil {
 			BooleanAtomicPrimitive:			(e.value as PrimitiveType).label			
 			BooleanAtomicVariable:			(e.value as VariableReference).convertToJavaOutputAction 
 			BooleanAtomicMethodReference:	(e.value as MethodExpressions).label			
-			BooleanAtomicNow:				"now"	
+			BooleanAtomicNow:				"now()"	
 			BooleanExpression:				e.expression.convertToJavaOutputAction
 		}
 	}
@@ -778,7 +793,7 @@ class LabelUtil {
 			BooleanAtomicRecords:			(e.value as Records).label			
 			BooleanAtomicVariable:			(e.value as VariableReference).labelJava
 			BooleanAtomicMethodReference:	(e.value as MethodExpressions).label			
-			BooleanAtomicNow:				"now"	
+			BooleanAtomicNow:				"now()"	
 			BooleanExpression:				e.expression.labelJava
 		}
 	}

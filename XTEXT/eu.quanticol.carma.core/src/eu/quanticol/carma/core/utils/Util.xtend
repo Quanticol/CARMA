@@ -809,6 +809,17 @@ class Util {
 	}
 	
 	/**
+	 * Give an ActionStub, return all Actions
+	 */
+	def ArrayList<Action> getActions(ActionStub actionStub){
+		var output = new ArrayList<Action>()
+		for(proc : actionStub.processes){
+			output.addAll(proc.eAllOfType(Action))
+		}
+		return output
+	}
+	
+	/**
 	 * Given a Component return the state Tree
 	 */
 	def Tree getTree(Component component){
@@ -1535,8 +1546,12 @@ class Util {
 		var ComponentBlockNewDeclaration cbnd = null
 		for(cd : cbnds.keySet){
 			for(c : cbnds.get(cd)){
-				if(c.getContainerOfType(ComponentBlockStyleCollective) != null)
+				if(c.getContainerOfType(ComponentBlockStyleCollective) != null){
 					cbnd = (c as ComponentBlockNewDeclaration)
+				}
+//				if (c.getContainerOfType(EnvironmentUpdate) != null) {
+//					cbnd = (c as ComponentBlockNewDeclarationSpawn)
+//				}
 			}
 		}
 			
@@ -2064,6 +2079,7 @@ class Util {
 		var ArrayList<RecordDeclaration> rds = new ArrayList<RecordDeclaration>()
 		if(vdr.assign.ref != null){
 			rds.addAll(vdr.assign.ref.getRecordDeclarationsFromCBND)
+			println(vdr.assign.ref.getRecordDeclarationsFromCBND)
 		} else {
 			rds.addAll(vdr.eAllOfType(RecordDeclaration))
 		}

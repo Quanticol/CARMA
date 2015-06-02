@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Caspa
-Bundle-SymbolicName: eu.quanticol.carma.simulator
+Bundle-SymbolicName: eu.quanticol.carma.simulator;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Export-Package: eu.quanticol.carma.simulator
 Require-Bundle: eu.quanticol.ms;bundle-version="1.0.0",
