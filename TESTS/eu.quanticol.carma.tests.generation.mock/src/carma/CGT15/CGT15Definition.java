@@ -126,8 +126,8 @@ public class CGT15Definition {
 		
 		
 		//create the transitions between states
-		toReturn.addTransition(state_Send,send_Action,state_Send);
 		toReturn.addTransition(state_Produce,produce_Action,state_Produce);
+		toReturn.addTransition(state_Send,send_Action,state_Send);
 		
 		return toReturn;
 	}
@@ -224,8 +224,8 @@ public class CGT15Definition {
 		};
 		
 		//create the transitions between states
-		toReturn.addTransition(state_Receive,send_Action,state_Receive);
 		toReturn.addTransition(state_Consume,Consume_Guard,consume_Action,state_Consume);
+		toReturn.addTransition(state_Receive,send_Action,state_Receive);
 		
 		return toReturn;
 	}
@@ -265,7 +265,7 @@ public class CGT15Definition {
 		
 		
 		//create the transitions between states
-		toReturn.addTransition(state_Nothing,nothing_Action,null);
+		toReturn.addTransition(state_Nothing,nothing_Action,state_Nothing);
 		
 		return toReturn;
 	}
