@@ -126,8 +126,8 @@ public class CGT15Definition {
 		
 		
 		//create the transitions between states
-		toReturn.addTransition(state_Produce,produce_Action,state_Produce);
 		toReturn.addTransition(state_Send,send_Action,state_Send);
+		toReturn.addTransition(state_Produce,produce_Action,state_Produce);
 		
 		return toReturn;
 	}

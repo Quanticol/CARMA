@@ -85,7 +85,7 @@ system Simple{
 
     collective{
         new Producer(1,1,1,1,Produce|Send);
-        new Consumer(1,1,{x := 1..3, y := 1},Consume|Receive);
+        new Consumer(1,1,{x := 1..3, y := 1..3},Consume|Receive);
     }
 
     environment{
@@ -105,7 +105,7 @@ system Simple{
         }
         
         update{
-        	[true]	send : transactions := transactions + 1, new Child({x := 1..3, y := 1},Nothing);
+        	[true]	send : transactions := transactions + 1, new Child({x := 1..3, y := 1..3},Nothing);
         }
     }
 }'''

@@ -478,22 +478,23 @@ class GenerateSystems {
 				}}
 				NewComponentArgumentSpawnMethod		: array1.addAll(argument.allVariablesNCA)
 				NewComponentArgumentSpawnDeclare	: {
-				if(argument.eAllOfType(Range).size > 0){
-					for(rec : argument.eAllOfType(RecordDeclaration)){
-						if(rec.eAllOfType(Range).size > 0){
-							for(r : argument.eAllOfType(Range)){
-								array1.add(r.range)
+					if(argument.eAllOfType(Range).size > 0){
+						for(rec : argument.eAllOfType(RecordDeclaration)){
+							if(rec.eAllOfType(Range).size > 0){
+								for(r : rec.eAllOfType(Range)){
+									array1.add(r.range)
+								}
+							} else {
+								var temp2 = new ArrayList<String>()
+								temp2.add(rec.getLabelForArgs)
+								array1.add(temp2)
 							}
-						} else {
-							var temp2 = new ArrayList<String>()
-							temp2.add(rec.getLabelForArgs)
-							array1.add(temp2)
-						}
 						
+						}
+					}else{
+						array1.addAll(argument.allVariablesNCA)
 					}
-				}else{
-					array1.addAll(argument.allVariablesNCA)
-				}}
+				}
 				NewComponentArgumentSpawnReference	: array1.addAll(argument.allVariablesNCA)
 			}
 		}
