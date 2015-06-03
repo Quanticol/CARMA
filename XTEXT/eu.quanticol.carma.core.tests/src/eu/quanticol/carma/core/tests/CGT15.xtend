@@ -16,7 +16,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 
 @RunWith(typeof(XtextRunner))
 @InjectWith(typeof(CARMAInjectorProviderCustom))
-class CGT14 {
+class CGT15 {
 	@Inject extension CompilationTestHelper
 	@Inject ParseHelper<Model> parseHelper 
 	@Inject IGenerator underTest
@@ -33,8 +33,8 @@ component Producer(enum a, enum b, enum c, enum d, Z){
     }
 
     behaviour{
-        Produce = [my.product > 0] produce*{product := product + 1}.Produce;
-        Send = [my.product > 1] send[type == 1]<1>{product := product - 1}.Send;
+        Produce = produce*{product := product + 1}.Produce;
+        Send = send[type == 0]<1>{product := product - 1}.Send;
     }
 
     init{
@@ -60,15 +60,15 @@ component Consumer(enum a, enum b, record p, Z){
     }
 }
 
-component Child(record q, Z, enum t){
+component Child(record q, Z){
 	
 	store{
         record position := q;
-        enum type := t;
+        enum type := 2;
     }
 
     behaviour{
-        Nothing = nothing*.Nothing;
+        Nothing = nothing*.kill;
     }
     
     init{
@@ -85,7 +85,7 @@ system Simple{
 
     collective{
         new Producer(1,1,1,1,Produce|Send);
-        new Consumer(1,1,{x := 1..3, y := 1..3},Consume|Receive);
+        new Consumer(1,1,{x := 1..3, y := 1},Consume|Receive);
     }
 
     environment{
@@ -99,13 +99,13 @@ system Simple{
     	}
     	
         rate{
-        	[true] 	send : 1;
-        	[true]	produce* : 1;
+        	[true] send : 1;
+        	[true] produce* : 1;
+        	[true] nothing* : 8;
         }
         
         update{
-        	[true]	send : transactions := transactions + 1, new Child({x := 1..3, y := 1..3},Nothing,sender.type);
-
+        	[true]	send : transactions := transactions + 1, new Child({x := 1..3, y := 1},Nothing);
         }
     }
 }'''

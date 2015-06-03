@@ -52,6 +52,12 @@ import eu.quanticol.carma.core.carma.ComponentBlockNewDeclarationSpawn
 import eu.quanticol.carma.core.carma.LineSpawn
 import eu.quanticol.carma.core.carma.EnvironmentMacroExpressions
 import java.util.HashMap
+import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnPrimitive
+import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnMethod
+import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnDeclare
+import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnReference
+import eu.quanticol.carma.core.carma.MethodExpressions
+import eu.quanticol.carma.core.carma.Records
 
 class GenerateSystems {
 	
@@ -276,8 +282,6 @@ class GenerateSystems {
 		}
 	}
 	
-	
-	
 	def ArrayList<String> strip(PrimitiveType pt){
 		var temp = new ArrayList<String>()
 		
@@ -445,19 +449,62 @@ class GenerateSystems {
 	}
 	
 	def String rangeDeclaration(ComponentBlockNewDeclarationSpawn dc){
-		var output = '''«dc.getAllVariablesComponentBlockNewDeclarationSpawn»'''
+		var output = '''
+		«dc.getAllVariablesComponentBlockNewDeclarationSpawn»
+		if(hasAttributes){
+			
+		'''
 		var arguments = dc.eAllOfType(NCA)
+		var ArrayList<NCA> temp = new ArrayList<NCA>()
+		
+		//We don't want to pick up the Macro
+		for(argument : arguments){
+			if(argument.type.toString.equals("component"))
+				for(pt : argument.eAllOfType(NCA))
+					temp.add(pt)
+		}
 		
 		var ArrayList<ArrayList<String>> array1 = new ArrayList<ArrayList<String>>()
 		
-		for(argument : arguments){
-			array1.addAll(argument.getAllVariablesNCA)
+		for(argument : temp){
+			switch(argument){
+				NewComponentArgumentSpawnPrimitive 	: {
+				if(argument.eAllOfType(Range).size > 0){
+					for(r : argument.eAllOfType(Range)){
+						array1.add(r.range)
+					}
+				}else{
+					array1.addAll(argument.allVariablesNCA)
+				}}
+				NewComponentArgumentSpawnMethod		: array1.addAll(argument.allVariablesNCA)
+				NewComponentArgumentSpawnDeclare	: {
+				if(argument.eAllOfType(Range).size > 0){
+					for(rec : argument.eAllOfType(RecordDeclaration)){
+						if(rec.eAllOfType(Range).size > 0){
+							for(r : argument.eAllOfType(Range)){
+								array1.add(r.range)
+							}
+						} else {
+							var temp2 = new ArrayList<String>()
+							temp2.add(rec.getLabelForArgs)
+							array1.add(temp2)
+						}
+						
+					}
+				}else{
+					array1.addAll(argument.allVariablesNCA)
+				}}
+				NewComponentArgumentSpawnReference	: array1.addAll(argument.allVariablesNCA)
+			}
 		}
 		var array2 = new ArrayList<ArrayList<String>>()
 		forBlock(array1,array2)
 		for(list : array2){
 			output = output + singleDeclaration(dc, list)
 		}
+		
+		output = output + "}"
+		
 		return output
 	}
 	

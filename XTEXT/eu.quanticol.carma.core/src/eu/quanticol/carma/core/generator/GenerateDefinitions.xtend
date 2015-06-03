@@ -203,7 +203,9 @@ class GenerateDefinitions {
 		'''
 		//create the states in the automata 
 		«FOR state : states»
-			CarmaProcessAutomaton.State «state» = toReturn.newState("«state»");
+		«IF !state.equals("null")»
+		CarmaProcessAutomaton.State «state» = toReturn.newState("«state»");
+		«ENDIF»
 		«ENDFOR»
 		'''
 	}

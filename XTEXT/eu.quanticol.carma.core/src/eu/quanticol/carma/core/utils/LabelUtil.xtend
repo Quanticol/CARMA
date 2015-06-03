@@ -214,14 +214,15 @@ class LabelUtil {
 	def String flatten(NCA nca){
 		switch(nca){
 			NewComponentArgumentPrimitive 		: (nca.value as PrimitiveType).getLabel
+			NewComponentArgumentDeclare			: (nca.value as Records).flatten
 			NewComponentArgumentMacro 			: (nca.value as MacroExpressions).getLabel
 			NewComponentArgumentMethod			: (nca.value as MethodExpressions).getLabel
-			NewComponentArgumentDeclare			: (nca.value as Records).flatten
 			NewComponentArgumentReference		: (nca.value as VariableReference).getLabel
+			
 			NewComponentArgumentSpawnPrimitive 	: (nca.value as PrimitiveType).getLabel
-			NewComponentArgumentSpawnDeclare	: (nca.value as MacroExpressions).getLabel
-			NewComponentArgumentSpawnMacro		: (nca.value as MethodExpressions).getLabel
-			NewComponentArgumentSpawnMethod		: (nca.value as Records).flatten
+			NewComponentArgumentSpawnDeclare	: (nca.value as Records).flatten
+			NewComponentArgumentSpawnMacro		: (nca.value as MacroExpressions).getLabel
+			NewComponentArgumentSpawnMethod		: (nca.value as MethodExpressions).getLabel
 			NewComponentArgumentSpawnReference	: (nca.value as VariableReference).getLabel
 		}
 	}
@@ -369,10 +370,11 @@ class LabelUtil {
 			NewComponentArgumentMethod			: (ca.value as MethodExpressions).getLabel
 			NewComponentArgumentDeclare			: (ca.value as Records).getLabelForArgs
 			NewComponentArgumentReference		: (ca.value as VariableReference).getLabel
+			
 			NewComponentArgumentSpawnPrimitive 	: (ca.value as PrimitiveType).getLabel
-			NewComponentArgumentSpawnDeclare	: (ca.value as Records).getLabel
-			NewComponentArgumentSpawnMacro		: (ca.value as MethodExpressions).getLabel
-			NewComponentArgumentSpawnMethod		: (ca.value as Records).getLabelForArgs
+			NewComponentArgumentSpawnMacro		: (ca.value as MacroExpressions).getLabel
+			NewComponentArgumentSpawnMethod		: (ca.value as MethodExpressions).getLabel
+			NewComponentArgumentSpawnDeclare	: (ca.value as Records).getLabelForArgs
 			NewComponentArgumentSpawnReference	: (ca.value as VariableReference).getLabel
 		}
 	}

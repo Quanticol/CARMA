@@ -16,7 +16,9 @@ Require-Bundle: eu.quanticol.carma.core;visibility:=reexport,
  org.antlr.runtime,
  org.eclipse.xtext.common.types.ui,
  org.eclipse.xtext.ui.codetemplates.ui,
- org.eclipse.compare
+ org.eclipse.compare,
+ eu.quanticol.carma.simulator;bundle-version="1.0.0",
+ eu.quanticol.ms;bundle-version="1.0.0"
 Import-Package: org.apache.log4j
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: eu.quanticol.carma.core.ui.quickfix,

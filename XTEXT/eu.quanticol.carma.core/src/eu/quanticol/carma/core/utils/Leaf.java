@@ -78,6 +78,8 @@ public class Leaf {
 	}
 	
 	public String getState(){
+		if(this.state.equals("null"))
+			return "null";
 		return "state_"+this.state;
 	}
 	
@@ -150,7 +152,7 @@ public class Leaf {
 			if (pe instanceof ProcessExpressionLeaf) {
 				matched=true;
 				ProcessExpression expression = ((ProcessExpressionLeaf)pe);
-				state = state + expression;
+				state = "null";
 			}
 		}
 		if(!matched){
