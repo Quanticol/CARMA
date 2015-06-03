@@ -487,27 +487,33 @@ class GeneratorUtils {
 	}
 	
 	def String defineEnvironmentUpdates(System system){
-		system.defineEnvironmentOperation(system.eAllOfType(UpdateBlock).get(0).eAllOfType(EnvironmentOperation),
-		"void",
-		"Update(RandomGenerator r , CarmaStore sender, int action, Object value)",
-		"Update(RandomGenerator r , CarmaStore sender, CarmaStore receiver, int action, Object value)",
-		"")
+		if(system.eAllOfType(UpdateBlock).size > 0){
+			system.defineEnvironmentOperation(system.eAllOfType(UpdateBlock).get(0).eAllOfType(EnvironmentOperation),
+			"void",
+			"Update(RandomGenerator r , CarmaStore sender, int action, Object value)",
+			"Update(RandomGenerator r , CarmaStore sender, CarmaStore receiver, int action, Object value)",
+			"")
+		}
 	}
 	
 	def String defineRates(System system){
-		system.defineEnvironmentOperation(system.eAllOfType(RateBlock).get(0).eAllOfType(EnvironmentOperation),
-		"double",
-		"Rate(CarmaStore sender, int action)",
-		"Rate(CarmaStore sender, int action)",
-		"return 1.0;")
+		if(system.eAllOfType(RateBlock).size > 0){
+			system.defineEnvironmentOperation(system.eAllOfType(RateBlock).get(0).eAllOfType(EnvironmentOperation),
+			"double",
+			"Rate(CarmaStore sender, int action)",
+			"Rate(CarmaStore sender, int action)",
+			"return 1.0;")
+		}
 	}
 	
 	def String defineProbabilities(System system){
-		system.defineEnvironmentOperation(system.eAllOfType(ProbabilityBlock).get(0).eAllOfType(EnvironmentOperation),
-		"double",
-		"Probability(CarmaStore sender, CarmaStore receiver,int action)",
-		"Probability(CarmaStore sender, CarmaStore receiver,int action)",
-		"return 1.0;")
+		if(system.eAllOfType(ProbabilityBlock).size > 0){
+			system.defineEnvironmentOperation(system.eAllOfType(ProbabilityBlock).get(0).eAllOfType(EnvironmentOperation),
+			"double",
+			"Probability(CarmaStore sender, CarmaStore receiver,int action)",
+			"Probability(CarmaStore sender, CarmaStore receiver,int action)",
+			"return 1.0;")
+		}
 	}
 	
 	def String defineEnvironmentOperation(System system, List<EnvironmentOperation> actions, 
