@@ -1760,6 +1760,9 @@ class Util {
 		if(vr.getContainerOfType(MethodDefinition) != null){
 			return ""
 		}
+		if(vr.getContainerOfType(ComponentBlockForStatement) != null){
+			return ""
+		}
 		message + "."
 	}
 	
