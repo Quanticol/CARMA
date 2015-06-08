@@ -17,7 +17,7 @@ public class MyOutputConfigurationProvider implements
 	public Set<OutputConfiguration> getOutputConfigurations() {
 	    OutputConfiguration defaultOutput = new OutputConfiguration(IFileSystemAccess.DEFAULT_OUTPUT);
 	    defaultOutput.setDescription("Output Folder");
-	    defaultOutput.setOutputDirectory("./src");
+	    defaultOutput.setOutputDirectory("./src-gen");
 	    defaultOutput.setOverrideExistingResources(true);
 	    defaultOutput.setCreateOutputDirectory(true);
 	    defaultOutput.setCleanUpDerivedResources(true);
