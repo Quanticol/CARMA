@@ -4,10 +4,32 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.util.Modules;
+
 /**
  * The activator class controls the plug-in life cycle
  */
 public class Activator extends AbstractUIPlugin {
+	
+	Injector injector;
+	
+	public Injector getInjector() {
+		return injector;  
+	}  
+		  
+	@Override  
+	public void start(BundleContext context) throws Exception {
+		super.start(context);
+		plugin = this;
+		
+		injector = Guice.createInjector(
+		// Wizard:
+		Modules.override(new CARMAUiModule(this))
+		// Workspace etc.:  
+	    .with(new org.eclipse.xtext.ui.shared.SharedStateModule()));
+	}
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "eu.quanticol.carma.ui.wizard"; //$NON-NLS-1$
@@ -25,10 +47,10 @@ public class Activator extends AbstractUIPlugin {
 	 * (non-Javadoc)
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
 	 */
-	public void start(BundleContext context) throws Exception {
-		super.start(context);
-		plugin = this;
-	}
+//	public void start(BundleContext context) throws Exception {
+//		super.start(context);
+//		plugin = this;
+//	}
 
 	/*
 	 * (non-Javadoc)

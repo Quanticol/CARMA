@@ -493,6 +493,17 @@ class GeneratorUtils {
 			"Update(RandomGenerator r , CarmaStore sender, int action, Object value)",
 			"Update(RandomGenerator r , CarmaStore sender, CarmaStore receiver, int action, Object value)",
 			"")
+		} else {
+			'''
+			@Override
+			public void broadcastUpdate(RandomGenerator random, CarmaStore sender,
+					int action, Object value) {
+			}
+			@Override
+			public void unicastUpdate(RandomGenerator random, CarmaStore sender,
+					CarmaStore receiver, int action, Object value) {
+			}
+			'''
 		}
 	}
 	
@@ -503,6 +514,16 @@ class GeneratorUtils {
 			"Rate(CarmaStore sender, int action)",
 			"Rate(CarmaStore sender, int action)",
 			"return 1.0;")
+		} else {
+			'''
+			@Override
+			public double unicastRate(CarmaStore sender, int action){
+				return 1.0;
+			}
+			@Override
+			public double broadcastRate(CarmaStore sender, int action){
+				return 1.0;
+			}'''
 		}
 	}
 	
@@ -513,6 +534,19 @@ class GeneratorUtils {
 			"Probability(CarmaStore sender, CarmaStore receiver,int action)",
 			"Probability(CarmaStore sender, CarmaStore receiver,int action)",
 			"return 1.0;")
+		} else {
+			'''
+			@Override
+			public double broadcastProbability(CarmaStore sender, CarmaStore receiver,
+			int action) {
+				return 1;
+			}
+			@Override
+			public double unicastProbability(CarmaStore sender, CarmaStore receiver,
+			int action) {
+				return 1;
+			}
+			'''
 		}
 	}
 	
