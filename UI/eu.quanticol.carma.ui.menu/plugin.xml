@@ -5,24 +5,24 @@
    <extension
          point="org.eclipse.ui.actionSets">
       <actionSet
-            label="Sample Action Set"
+            label="CARMA"
             visible="true"
             id="eu.quanticol.carma.ui.menu.actionSet">
          <menu
-               label="Sample &amp;Menu"
-               id="sampleMenu">
+               label="CARMA"
+               id="carmaMenu">
             <separator
-                  name="sampleGroup">
+                  name="carmaGroup">
             </separator>
          </menu>
          <action
-               label="&amp;Sample Action"
+               label="&amp;Simulate"
                icon="icons/sample.gif"
-               class="eu.quanticol.carma.ui.menu.actions.CARMAAction"
-               tooltip="Hello, Eclipse world"
-               menubarPath="sampleMenu/sampleGroup"
-               toolbarPath="sampleGroup"
-               id="eu.quanticol.carma.ui.menu.actions.CARMAAction">
+               class="eu.quanticol.carma.ui.menu.actions.Simulate"
+               tooltip="CARMA!"
+               menubarPath="carmaMenu/carmaGroup"
+               toolbarPath="carmaGroup"
+               id="eu.quanticol.carma.ui.menu.actions.Simulate">
          </action>
       </actionSet>
    </extension>
