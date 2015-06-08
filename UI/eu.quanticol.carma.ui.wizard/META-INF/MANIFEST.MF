@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Wizard
+Bundle-SymbolicName: eu.quanticol.carma.ui.wizard;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: eu.quanticol.carma.ui.wizard.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.core.resources
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ActivationPolicy: lazy
