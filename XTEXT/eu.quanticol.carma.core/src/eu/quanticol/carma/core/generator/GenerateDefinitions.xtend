@@ -86,7 +86,7 @@ class GenerateDefinitions {
 				switch(vd){
 					VariableDeclarationEnum:	vds.put(vd.name.label,vd)
 					VariableDeclarationRecord:	{
-						var rds = vd.eAllOfType(RecordDeclaration)
+						var rds = vd.recordDeclarations
 						for(rd : rds)
 							vds.put(vd.name.label+"_"+rd.name.label,vd)
 					}
