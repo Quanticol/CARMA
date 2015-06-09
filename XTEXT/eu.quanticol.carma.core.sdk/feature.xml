@@ -9,6 +9,10 @@
          version="0.0.0"
          search-location="both"/>
 
+   <includes
+         id="org.eclipse.pde"
+         version="0.0.0"/>
+
    <requires>
       <import plugin="org.eclipse.xtext"/>
       <import plugin="org.eclipse.xtext.util"/>
@@ -28,6 +32,15 @@
       <import plugin="org.eclipse.xtext.common.types.ui"/>
       <import plugin="org.eclipse.xtext.ui.codetemplates.ui"/>
       <import plugin="org.eclipse.compare"/>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.core.resources"/>
+      <import plugin="org.eclipse.xtend"/>
+      <import plugin="org.eclipse.xpand"/>
+      <import plugin="org.apache.commons.math"/>
+      <import plugin="org.eclipse.jdt.core"/>
+      <import plugin="org.eclipse.jdt.launching"/>
+      <import plugin="org.eclipse.ui.workbench"/>
+      <import plugin="org.eclipse.m2e.maven.runtime"/>
    </requires>
 
    <plugin
