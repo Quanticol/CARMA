@@ -337,7 +337,6 @@ class GeneratorUtils {
 	}
 	
 	def String getNCAVRArgs(VariableReference vr){
-		println(vr)
 		switch(vr){
 			VariableReferencePure:		vr.globalArg
 			VariableReferenceReceiver:	vr.receiverArg
