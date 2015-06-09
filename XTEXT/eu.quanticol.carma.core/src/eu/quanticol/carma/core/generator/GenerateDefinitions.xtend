@@ -710,7 +710,7 @@ class GenerateDefinitions {
 			
 				@Override
 				public String getName() {
-					return "«measureName»_«stateName»";
+					return "«measureName»_«stateName»_«((measure.measure as EnvironmentMeasure).booleanExpression).convertToJavaName»";
 				}
 			};
 		}

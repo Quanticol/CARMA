@@ -81,5 +81,13 @@ public class StatisticSampling<S> implements SamplingFunction<S> {
 			time += dt;
 		}
 	}
+	
+	public void printName(PrintStream out){
+		out.print(this.measure.getName());
+	}
+	
+	public void printlnName(PrintStream out){
+		out.println(this.measure.getName());
+	}
 
 }
