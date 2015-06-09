@@ -15,26 +15,7 @@
                   name="carmaGroup">
             </separator>
          </menu>
-         <action
-               label="&amp;Simulation..."
-               icon="icons/sample.gif"
-               class="eu.quanticol.carma.ui.menu.actions.SimulateActionDelegate"
-               tooltip="CARMA!"
-               menubarPath="carmaMenu/carmaGroup"
-               toolbarPath="carmaGroup"
-               id="eu.quanticol.carma.ui.menu.actions.SimulateAction">
-         </action>
       </actionSet>
-   </extension>
-   <extension
-         point="org.eclipse.ui.commands">
-   </extension>
-   <extension
-         point="org.eclipse.ui.menus">
-      <menuContribution
-            allPopups="false"
-            locationURI="eu.quanticol.carma.ui.menu.menuContribution1">
-      </menuContribution>
    </extension>
 
 </plugin>
