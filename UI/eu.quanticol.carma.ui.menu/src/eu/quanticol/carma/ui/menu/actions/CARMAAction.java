@@ -47,29 +47,29 @@ public class CARMAAction implements IWorkbenchWindowActionDelegate {
 	 */
 	public void run(IAction action) {
 		
-		IProject myProject = ResourcesPlugin.getWorkspace().getRoot().getProject("outputFolder");
-		ClassLoader parentClassLoader = myProject.getClass().getClassLoader();
-		try {
-			String[] classPathEntries = JavaRuntime.computeDefaultRuntimeClassPath(JavaCore.create(myProject));
-			 String entry = classPathEntries[0];
-			 IPath path = new Path(entry);
-			 URL url = path.toFile().toURI().toURL();
-			 URLClassLoader classLoader = new URLClassLoader(new URL[] { url } , parentClassLoader);
-			 
-			 Class<?> myClass = classLoader.loadClass("carma.CGT15.Simple");
-			 Object system = myClass.newInstance();
-			 Method myMethod = myClass.getMethod("main",new Class[]{});
-			 
-			 myClass = classLoader.loadClass("carma.CGT15.CGT15Definition");
-			 Object definition = myClass.newInstance();
-			 myClass = classLoader.loadClass("carma.CGT15.CGT15Factory");
-			 Object factory = myClass.newInstance();
-			 
-			 myMethod.invoke(system,new Object[]{});
-			 
-		} catch (CoreException | MalformedURLException | ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException e) {
-			e.printStackTrace();
-		}
+//		IProject myProject = ResourcesPlugin.getWorkspace().getRoot().getProject("outputFolder");
+//		ClassLoader parentClassLoader = myProject.getClass().getClassLoader();
+//		try {
+//			String[] classPathEntries = JavaRuntime.computeDefaultRuntimeClassPath(JavaCore.create(myProject));
+//			 String entry = classPathEntries[0];
+//			 IPath path = new Path(entry);
+//			 URL url = path.toFile().toURI().toURL();
+//			 URLClassLoader classLoader = new URLClassLoader(new URL[] { url } , parentClassLoader);
+//			 
+//			 Class<?> myClass = classLoader.loadClass("carma.CGT15.Simple");
+//			 Object system = myClass.newInstance();
+//			 Method myMethod = myClass.getMethod("main",new Class[]{});
+//			 
+//			 myClass = classLoader.loadClass("carma.CGT15.CGT15Definition");
+//			 Object definition = myClass.newInstance();
+//			 myClass = classLoader.loadClass("carma.CGT15.CGT15Factory");
+//			 Object factory = myClass.newInstance();
+//			 
+//			 myMethod.invoke(system,new Object[]{});
+//			 
+//		} catch (CoreException | MalformedURLException | ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException e) {
+//			e.printStackTrace();
+//		}
 		
 		
 //		IProject myProject = null;

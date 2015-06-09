@@ -104,7 +104,7 @@ public class Simple extends CarmaSystem {
 			}
 		};
 	}
-	public static CarmaPredicate get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_send_UnicastPredicateProb(CarmaStore sender){
+	public static CarmaPredicate get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_send_UnicastPredicateProb(final CarmaStore sender){
 		return new CarmaPredicate() {
 			@Override
 			public boolean satisfy(CarmaStore receiver) {
@@ -128,7 +128,7 @@ public class Simple extends CarmaSystem {
 			}
 		};
 	}
-	public static CarmaPredicate get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_AND_global_eu_global_EQUA_1_send_UnicastPredicateProb(CarmaStore sender){
+	public static CarmaPredicate get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_AND_global_eu_global_EQUA_1_send_UnicastPredicateProb(final CarmaStore sender){
 		return new CarmaPredicate() {
 			@Override
 			public boolean satisfy(CarmaStore receiver) {
@@ -282,7 +282,7 @@ public class Simple extends CarmaSystem {
 			}
 		};
 	}
-	public static CarmaPredicate get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_send_UnicastPredicateUpdate(CarmaStore sender){
+	public static CarmaPredicate get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_send_UnicastPredicateUpdate(final CarmaStore sender){
 		return new CarmaPredicate() {
 			@Override
 			public boolean satisfy(CarmaStore receiver) {
@@ -306,7 +306,7 @@ public class Simple extends CarmaSystem {
 			}
 		};
 	}
-	public static CarmaPredicate get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_AND_global_eu_global_EQUA_1_send_UnicastPredicateUpdate(CarmaStore sender){
+	public static CarmaPredicate get_sender_eu_sender_EQUA_1_AND_receiver_eu_receiver_EQUA_1_AND_global_eu_global_EQUA_1_send_UnicastPredicateUpdate(final CarmaStore sender){
 		return new CarmaPredicate() {
 			@Override
 			public boolean satisfy(CarmaStore receiver) {

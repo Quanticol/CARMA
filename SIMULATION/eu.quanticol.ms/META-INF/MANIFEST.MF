@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Sim
 Bundle-SymbolicName: eu.quanticol.ms;singleton:=true
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 1.0.0
 Export-Package: org.apache.commons.math3.random,
  org.cmg.ml.sam.sim,
  org.cmg.ml.sam.sim.ds,

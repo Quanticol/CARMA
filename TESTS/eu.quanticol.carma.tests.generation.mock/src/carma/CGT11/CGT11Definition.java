@@ -187,7 +187,7 @@ public class CGT11Definition {
 		CarmaInput send_Action = new CarmaInput( SEND, false ) {
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore outputStore, Object value) {
+			protected CarmaPredicate getPredicate(CarmaStore outputStore, final Object value) {
 				if (value instanceof int[]){
 					return new CarmaPredicate() {
 						@Override

@@ -387,7 +387,7 @@ class GenerateDefinitions {
 				return 
 				'''
 				@Override
-				protected CarmaPredicate getPredicate(CarmaStore outputStore, Object value) {
+				protected CarmaPredicate getPredicate(CarmaStore outputStore, final Object value) {
 					return CarmaPredicate.TRUE;
 				}
 				'''
@@ -395,7 +395,7 @@ class GenerateDefinitions {
 				return 
 				'''
 				@Override
-				protected CarmaPredicate getPredicate(CarmaStore outputStore, Object value) {
+				protected CarmaPredicate getPredicate(CarmaStore outputStore, final Object value) {
 					return CarmaPredicate.FALSE;
 				}
 				'''
@@ -403,7 +403,7 @@ class GenerateDefinitions {
 				return
 				'''
 				@Override
-				protected CarmaPredicate getPredicate(CarmaStore outputStore, Object value) {
+				protected CarmaPredicate getPredicate(CarmaStore outputStore, final Object value) {
 					if (value instanceof int[]){
 						return new CarmaPredicate() {
 							@Override
