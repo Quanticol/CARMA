@@ -1226,11 +1226,21 @@ class Util {
 		return null
 	}
 	
+//	def VariableDeclaration getFullDeclaration(VariableDeclaration vd){
+//		switch(vd){
+//			VariableDeclarationEnum			:	if(vd.eAllOfType(VariableReference).size == 0){return vd}
+//			VariableDeclarationCarmaDouble	:	if(vd.eAllOfType(VariableReference).size == 0){return vd}
+//			VariableDeclarationCarmaIntger	: 	if(vd.eAllOfType(VariableReference).size == 0){return vd}
+//			VariableDeclarationRecord		:	return (vd as VariableDeclarationRecord).getFullDeclaration
+//		}
+//		return null
+//	}
+	
 	def VariableDeclaration getFullDeclaration(VariableDeclaration vd){
 		switch(vd){
-			VariableDeclarationEnum			:	if(vd.eAllOfType(VariableReference).size == 0){return vd}
-			VariableDeclarationCarmaDouble	:	if(vd.eAllOfType(VariableReference).size == 0){return vd}
-			VariableDeclarationCarmaIntger	: 	if(vd.eAllOfType(VariableReference).size == 0){return vd}
+			VariableDeclarationEnum			:	return vd
+			VariableDeclarationCarmaDouble	:	return vd
+			VariableDeclarationCarmaIntger	: 	return vd
 			VariableDeclarationRecord		:	return (vd as VariableDeclarationRecord).getFullDeclaration
 		}
 		return null

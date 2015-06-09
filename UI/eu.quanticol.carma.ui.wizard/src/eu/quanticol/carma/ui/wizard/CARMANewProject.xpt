@@ -21,6 +21,10 @@ component Producer(enum a, Z){
 
 }
 
+measures{
+	measure Count[enum i := 1] = #{Producer[*] | product > 0};
+}
+
 system Simple{
 
     collective{
@@ -28,8 +32,11 @@ system Simple{
     }
 
     environment{
+    	
         rate{
-        [true] produce* : 1;
+        	[sender.product == 0] produce* : 0;
+        	[sender.product > 0 && sender.product <= 5] produce* : 0;
+        	[sender.product > 5 && sender.product <= 10] produce* : 0;
         }
     }
 }

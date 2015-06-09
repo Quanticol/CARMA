@@ -192,8 +192,9 @@ class GeneratorUtils {
 			output.add(vr.getGlobal)
 		for(vr : bes.getReceivers)
 			output.add(vr.getReceiver)
-		for(vr : bes.getSenders)
+		for(vr : bes.getSenders){
 			output.add(vr.getSender)
+		}
 		'''
 		«FOR vr : output»
 		«vr»
