@@ -6,37 +6,80 @@
 
 «DEFINE model FOR CARMAProjectInfo»
 «FILE "src/model/Model.carma"-»
-component Producer(enum a, Z){
+component Sensor(enum a, enum b, enum c, Z){
+    
     store{
-        enum product := a;
+        enum data := a;
+        enum type := 0;
+        record position := {x := b, y := c};
     }
 
     behaviour{
-        Produce = produce*.Produce;
+        Sense 	= [my.data > 0] sense*{data := data + 1}.Sense;
+        Send 	= [my.data > 0] send[type == 1]<1>{data := data - 1}.Send;
     }
 
     init{
         Z;
     }
+}
 
+component Monitor(enum a, record d, Z){
+    
+    store{
+        enum data := a;
+        enum type := 1;
+        record position := d;
+        
+    }
+
+    behaviour{
+        Analyse = [my.data > 0] analyse*{data := data - 1}.Analyse;
+        Receive = [my.data >= 0] send[my.data < 10 && z == 1](z){data := data + z}.Receive;
+    }
+    
+    init{
+        Z;
+    }
 }
 
 measures{
-	measure Count[enum i := 1] = #{Producer[*] | product > 0};
+	measure Waiting[ enum i := 1..3, enum j := 1..3] = #{ Sensor[Send]  | type == 1 };
 }
+
 
 system Simple{
 
     collective{
-        new Producer(1, Produce);
+        new Sensor(1,1,1,Sense|Send);
+        new Monitor(1,{x := 1, y := 1},Analyse|Receive);
     }
 
     environment{
     	
+    	store{
+    		enum reports 	:= 0;
+    		record center := {x := 2, y := 2};
+    		enum type 		:= 2;
+    	}
+    	
+    	prob{
+    		[(receiver.position.x - global.center.x == 0) && (receiver.position.y - global.center.y == 0)]	send : 1;
+    		[(sender.position.x - global.center.x == 0) && (sender.position.y - global.center.y == 0)]	send : 0.75;
+        	default : 0.5;
+    	}
+    	
         rate{
-        	[sender.product == 0] produce* : 0;
-        	[sender.product > 0 && sender.product <= 5] produce* : 0;
-        	[sender.product > 5 && sender.product <= 10] produce* : 0;
+        	[sender.data == 0] sense* : 10;
+        	[sender.data > 0 && sender.data <= 5 && (global.reports % 2 == 1)] sense* : 5;
+        	[sender.data > 0 && sender.data <= 5 && (global.reports % 2 == 0)] sense* : 6;
+        	[sender.data > 5 && sender.data <= 10] sense* : 1;
+        	[true]	sense* : 1;
+        	[true]	analyse* : 1;
+        }
+        
+        update{
+        	[true] send : global.reports := global.reports + 1;
         }
     }
 }
