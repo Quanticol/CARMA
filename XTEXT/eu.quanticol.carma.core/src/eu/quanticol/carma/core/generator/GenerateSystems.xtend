@@ -74,6 +74,7 @@ class GenerateSystems {
 		'''
 		«packageName»;
 		
+		import java.util.ArrayList;
 		import org.apache.commons.math3.random.RandomGenerator;
 		import org.cmg.ml.sam.sim.SimulationEnvironment;
 		import eu.quanticol.carma.simulator.*;
@@ -409,6 +410,7 @@ class GenerateSystems {
 		var stateName = (m.measure as EnvironmentMeasure).componentReference.getLabel.toFirstUpper
 		'''
 		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, «s.getContainerOfType(Model).label»Definition.getMeasure«measureName»_«stateName»(«args.stripArguments»)));
+		inputs.add("«args.stripArguments»");
 		'''
 	}
 	
@@ -420,8 +422,8 @@ class GenerateSystems {
 				new «system.getContainerOfType(Model).label»Factory()
 			);
 		
-			int deadline = 50;
-			
+			int deadline = 50; 
+			ArrayList<String> inputs = new ArrayList<String>();
 			SamplingCollection<CarmaSystem> sc = new SamplingCollection<CarmaSystem>();
 			
 			«system.setupMeasures»
@@ -429,6 +431,7 @@ class GenerateSystems {
 			system.setSampling(sc);
 			system.simulate(100,50);
 			for(int i = 0; i < sc.size(); i++){
+				((StatisticSampling<CarmaSystem>) sc.get(i)).printName(System.out); if(inputs.size() > i){System.out.println(" with '" + inputs.get(i)+"' as arguments.");}
 				((StatisticSampling<CarmaSystem>) sc.get(i)).printTimeSeries(System.out);
 			}
 		}'''
