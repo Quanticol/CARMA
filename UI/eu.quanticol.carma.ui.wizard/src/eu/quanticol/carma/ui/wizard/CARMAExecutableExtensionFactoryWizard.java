@@ -13,16 +13,16 @@ import com.google.inject.Injector;
  * This class was generated. Customizations should only happen in a newly
  * introduced subclass. 
  */
-public class CARMAExecutableExtensionFactory extends AbstractGuiceAwareExecutableExtensionFactory {
+public class CARMAExecutableExtensionFactoryWizard extends AbstractGuiceAwareExecutableExtensionFactory {
 
 	@Override
 	protected Bundle getBundle() {
-		return Activator.getDefault().getBundle();
+		return ActivatorWizard.getDefault().getBundle();
 	}
 	
 	@Override
 	protected Injector getInjector() {
-		return Activator.getDefault().getInjector();
+		return ActivatorWizard.getDefault().getInjector();
 	}
 	
 }

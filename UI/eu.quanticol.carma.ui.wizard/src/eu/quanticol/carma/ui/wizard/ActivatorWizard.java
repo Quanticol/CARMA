@@ -11,7 +11,7 @@ import com.google.inject.util.Modules;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class Activator extends AbstractUIPlugin {
+public class ActivatorWizard extends AbstractUIPlugin {
 	
 	Injector injector;
 	
@@ -26,7 +26,7 @@ public class Activator extends AbstractUIPlugin {
 		
 		injector = Guice.createInjector(
 		// Wizard:
-		Modules.override(new CARMAUiModule(this))
+		Modules.override(new CARMAUiModuleWizard(this))
 		// Workspace etc.:  
 	    .with(new org.eclipse.xtext.ui.shared.SharedStateModule()));
 	}
@@ -35,12 +35,12 @@ public class Activator extends AbstractUIPlugin {
 	public static final String PLUGIN_ID = "eu.quanticol.carma.ui.wizard"; //$NON-NLS-1$
 
 	// The shared instance
-	private static Activator plugin;
+	private static ActivatorWizard plugin;
 	
 	/**
 	 * The constructor
 	 */
-	public Activator() {
+	public ActivatorWizard() {
 	}
 
 	/*
@@ -66,7 +66,7 @@ public class Activator extends AbstractUIPlugin {
 	 *
 	 * @return the shared instance
 	 */
-	public static Activator getDefault() {
+	public static ActivatorWizard getDefault() {
 		return plugin;
 	}
 
