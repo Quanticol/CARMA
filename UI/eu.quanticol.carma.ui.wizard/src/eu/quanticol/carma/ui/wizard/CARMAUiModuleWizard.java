@@ -24,7 +24,7 @@ public class CARMAUiModuleWizard extends AbstractGenericModule {
 	}
 
 	public void configureLanguageName(Binder binder) {
-		binder.bind(String.class).annotatedWith(Names.named(Constants.LANGUAGE_NAME)).toInstance("CARMA");
+		binder.bind(String.class).annotatedWith(Names.named(Constants.LANGUAGE_NAME)).toInstance("eu.quanticol.carma.core.CARMA");
 	}
 
 	public void configureFileExtensions(Binder binder) {

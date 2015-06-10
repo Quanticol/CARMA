@@ -65,10 +65,10 @@ public abstract class CarmaInput implements CarmaAction {
 
 	@Override
 	public WeightedStructure<Activity> receive( 
-			CarmaSystem caspaSystem , 
+			final CarmaSystem caspaSystem , 
 			final CarmaComponent caspaComponent ,
-			CarmaStore sender , 
-			int	action ,
+			final CarmaStore sender , 
+			final int	action ,
 			final Object value , 
 			boolean broadcast , 
 			Activity continuation ) {
