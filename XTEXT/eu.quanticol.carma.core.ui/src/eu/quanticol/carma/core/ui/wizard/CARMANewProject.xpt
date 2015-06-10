@@ -1,0 +1,14 @@
+«IMPORT eu::quanticol::carma::core::ui::wizard»
+
+«DEFINE main FOR CARMAProjectInfo»
+«EXPAND model FOR this»
+«ENDDEFINE»
+
+«DEFINE model FOR CARMAProjectInfo»
+«FILE "src/model/Model.carma"-»
+/*
+ * This is an example model
+ */
+Hello Xtext!
+«ENDFILE»
+«ENDDEFINE»
