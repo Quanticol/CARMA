@@ -129,9 +129,9 @@ Workflow {
     		fragment = compare.CompareFragment auto-inject {}
     		
     		// project wizard (optional)
-    		fragment = projectWizard.SimpleProjectWizardFragment {
-    			generatorProjectName = "${projectName}"   
-    		} 
+//    		fragment = projectWizard.SimpleProjectWizardFragment {
+//    			generatorProjectName = "${projectName}"   
+//    		} 
     	}
     }
 }
