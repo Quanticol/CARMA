@@ -14,17 +14,17 @@ import com.google.inject.name.Names;
 /**
  * Use this class to register components to be used within the IDE.
  */
-public class CARMAUiModule extends AbstractGenericModule {
+public class CARMAUiModuleWizard extends AbstractGenericModule {
 	 
 	private AbstractUIPlugin plugin;
 
 
-	public CARMAUiModule(AbstractUIPlugin plugin) {
+	public CARMAUiModuleWizard(AbstractUIPlugin plugin) {
 		this.plugin = plugin;
 	}
 
 	public void configureLanguageName(Binder binder) {
-		binder.bind(String.class).annotatedWith(Names.named(Constants.LANGUAGE_NAME)).toInstance("CARMA");
+		binder.bind(String.class).annotatedWith(Names.named(Constants.LANGUAGE_NAME)).toInstance("eu.quanticol.carma.core.CARMA");
 	}
 
 	public void configureFileExtensions(Binder binder) {

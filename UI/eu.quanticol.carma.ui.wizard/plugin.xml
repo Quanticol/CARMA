@@ -26,7 +26,7 @@
          point="org.eclipse.ui.newWizards">
       <wizard
             category="eu.quanticol.carma.ui.wizard.categoryCarma"
-            class="eu.quanticol.carma.ui.wizard.CARMAExecutableExtensionFactory:eu.quanticol.carma.ui.wizard.CARMANewProjectWizard"
+            class="eu.quanticol.carma.ui.wizard.CARMAExecutableExtensionFactoryWizard:eu.quanticol.carma.ui.wizard.CARMANewProjectWizard"
             id="eu.quanticol.carma.ui.wizard.CARMANewProjectWizard"
             name="CARMA Project"
             project="true">
