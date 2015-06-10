@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: eu.quanticol.carma.core.ui
-Bundle-Vendor: My Company
-Bundle-Version: 0.0.0.beta
+Bundle-Vendor: Edinburgh University
+Bundle-Version: 0.0.1.beta
 Bundle-SymbolicName: eu.quanticol.carma.core.ui; singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: eu.quanticol.carma.core;visibility:=reexport,
@@ -22,7 +22,9 @@ Require-Bundle: eu.quanticol.carma.core;visibility:=reexport,
  org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.eclipse.xtend,
- org.eclipse.xpand
+ org.eclipse.xpand,
+ eu.quanticol.carma.ui.menu;bundle-version="0.0.1",
+ eu.quanticol.carma.ui.wizard;bundle-version="0.0.1"
 Import-Package: org.apache.log4j
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: eu.quanticol.carma.core.ui.quickfix,

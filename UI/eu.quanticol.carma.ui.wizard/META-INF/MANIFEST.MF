@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Wizard
 Bundle-SymbolicName: eu.quanticol.carma.ui.wizard;singleton:=true
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 0.0.1.beta
 Bundle-Activator: eu.quanticol.carma.ui.wizard.Activator
 Require-Bundle: eu.quanticol.carma.core;visibility:=reexport,
  org.eclipse.xtext.ui,
@@ -23,6 +23,6 @@ Require-Bundle: eu.quanticol.carma.core;visibility:=reexport,
  org.eclipse.xtend,
  org.eclipse.xpand,
  org.eclipse.ui.workbench
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Import-Package: com.google.inject
+Export-Package: eu.quanticol.carma.ui.wizard
