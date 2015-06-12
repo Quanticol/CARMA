@@ -127,6 +127,10 @@ VariableDeclaration returns VariableDeclaration hidden(ML_COMMENT,SL_COMMENT,WS)
 	)
 ;
 
+ForVariableDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
+	type="integer"	name=VariableName ":=" assign=CarmaInteger
+;
+
 //VariableDeclarations returns VariableDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
 //	variables+=VariableDeclaration
 //	("," variables+=VariableDeclaration+)*
@@ -304,7 +308,7 @@ MethodIfBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 	
 
 MethodForStatement hidden(ML_COMMENT,SL_COMMENT,WS):
-	"for" "(" variable=VariableDeclaration ";" expression=BooleanExpression ";" afterThought=MethodAfterThought")" 
+	"for" "(" variable=ForVariableDeclaration ";" expression=BooleanExpression ";" afterThought=MethodAfterThought")" 
 	MethodForBlock=MethodForBlock
 ;
 	
@@ -603,7 +607,7 @@ NewComponentArgumentSpawn returns NCA hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 ComponentBlockForStatement hidden(ML_COMMENT,SL_COMMENT,WS):
-	"for" "(" variable=VariableDeclaration ";" expression=BooleanExpression ";" afterThought=ComponentAfterThought")" 
+	"for" "(" variable=ForVariableDeclaration ";" expression=BooleanExpression ";" afterThought=ComponentAfterThought")" 
 	componentBlockForBlock=ComponentBlockForBlock
 ;
 
@@ -629,7 +633,7 @@ ComponentLine returns Component hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 	
 ComponentLineForStatement hidden(ML_COMMENT,SL_COMMENT,WS):
-	"for" "(" variable=VariableDeclaration ";" expression=BooleanExpression ";" afterThought=ComponentAfterThought")" 
+	"for" "(" variable=ForVariableDeclaration ";" expression=BooleanExpression ";" afterThought=ComponentAfterThought")" 
 	componentBlockForBlock=ComponentLineForBlock
 ;
 

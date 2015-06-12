@@ -1,16 +1,44 @@
 package eu.quanticol.carma.core.generator
 
 import com.google.inject.Inject
+import eu.quanticol.carma.core.carma.ActionStub
+import eu.quanticol.carma.core.carma.BlockSpawn
+import eu.quanticol.carma.core.carma.BooleanExpressions
+import eu.quanticol.carma.core.carma.ComponentBlockNewDeclarationSpawn
+import eu.quanticol.carma.core.carma.Environment
+import eu.quanticol.carma.core.carma.EnvironmentExpression
+import eu.quanticol.carma.core.carma.EnvironmentExpressions
+import eu.quanticol.carma.core.carma.EnvironmentGuard
+import eu.quanticol.carma.core.carma.EnvironmentOperation
+import eu.quanticol.carma.core.carma.EnvironmentUpdate
+import eu.quanticol.carma.core.carma.EnvironmentUpdateAssignment
+import eu.quanticol.carma.core.carma.EnvironmentUpdateExpressions
+import eu.quanticol.carma.core.carma.LineSpawn
+import eu.quanticol.carma.core.carma.Model
+import eu.quanticol.carma.core.carma.NCA
+import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnDeclare
+import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnMethod
+import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnReference
+import eu.quanticol.carma.core.carma.ProbabilityBlock
+import eu.quanticol.carma.core.carma.RateBlock
 import eu.quanticol.carma.core.carma.RecordDeclaration
+import eu.quanticol.carma.core.carma.RecordReferenceGlobal
 import eu.quanticol.carma.core.carma.RecordReferenceMy
 import eu.quanticol.carma.core.carma.RecordReferencePure
 import eu.quanticol.carma.core.carma.RecordReferenceReceiver
 import eu.quanticol.carma.core.carma.RecordReferenceSender
 import eu.quanticol.carma.core.carma.RecordReferenceThis
+import eu.quanticol.carma.core.carma.Spawn
+import eu.quanticol.carma.core.carma.System
+import eu.quanticol.carma.core.carma.UpdateBlock
+import eu.quanticol.carma.core.carma.UpdateExpressions
 import eu.quanticol.carma.core.carma.VariableDeclaration
+import eu.quanticol.carma.core.carma.VariableDeclarationCarmaDouble
+import eu.quanticol.carma.core.carma.VariableDeclarationCarmaIntger
 import eu.quanticol.carma.core.carma.VariableDeclarationEnum
 import eu.quanticol.carma.core.carma.VariableDeclarationRecord
 import eu.quanticol.carma.core.carma.VariableReference
+import eu.quanticol.carma.core.carma.VariableReferenceGlobal
 import eu.quanticol.carma.core.carma.VariableReferenceMy
 import eu.quanticol.carma.core.carma.VariableReferencePure
 import eu.quanticol.carma.core.carma.VariableReferenceReceiver
@@ -19,44 +47,24 @@ import eu.quanticol.carma.core.carma.VariableReferenceThis
 import eu.quanticol.carma.core.typing.TypeProvider
 import eu.quanticol.carma.core.utils.LabelUtil
 import eu.quanticol.carma.core.utils.Util
-
-import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.carma.VariableReferenceGlobal
-import eu.quanticol.carma.core.carma.RecordReferenceGlobal
-import eu.quanticol.carma.core.carma.Environment
-import eu.quanticol.carma.core.carma.BooleanExpressions
-import eu.quanticol.carma.core.carma.EnvironmentUpdateAssignment
-import eu.quanticol.carma.core.carma.EnvironmentUpdateExpressions
-import eu.quanticol.carma.core.carma.EnvironmentExpression
-import eu.quanticol.carma.core.carma.EnvironmentExpressions
 import java.util.ArrayList
 import java.util.HashSet
-import eu.quanticol.carma.core.carma.System
-import eu.quanticol.carma.core.carma.EnvironmentOperation
-import eu.quanticol.carma.core.carma.ActionStub
-import eu.quanticol.carma.core.carma.EnvironmentGuard
-import eu.quanticol.carma.core.carma.Model
-import eu.quanticol.carma.core.carma.EnvironmentUpdate
-import eu.quanticol.carma.core.carma.Spawn
-import org.eclipse.emf.common.util.EList
 import java.util.List
-import eu.quanticol.carma.core.carma.Probability
+
+import static extension org.eclipse.xtext.EcoreUtil2.*
+import eu.quanticol.carma.core.generator.carmaVariable.CarmaVariableManager
+import eu.quanticol.carma.core.carma.VariableType
+import eu.quanticol.carma.core.carma.VariableTypeEnum
+import eu.quanticol.carma.core.carma.VariableTypeRecord
+import eu.quanticol.carma.core.carma.VariableTypeCarmaDouble
+import eu.quanticol.carma.core.carma.VariableTypeCarmaIntger
+import eu.quanticol.carma.core.carma.MeasureBlock
+import eu.quanticol.carma.core.generator.actions.ActionManager
+import eu.quanticol.carma.core.carma.Action
 import eu.quanticol.carma.core.carma.Rate
-import eu.quanticol.carma.core.carma.UpdateBlock
-import eu.quanticol.carma.core.carma.RateBlock
-import eu.quanticol.carma.core.carma.ProbabilityBlock
-import eu.quanticol.carma.core.carma.BlockSpawn
-import eu.quanticol.carma.core.carma.LineSpawn
-import eu.quanticol.carma.core.carma.ComponentBlockNewDeclarationSpawn
-import eu.quanticol.carma.core.carma.NCA
-import eu.quanticol.carma.core.carma.PrimitiveType
-import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnReference
-import eu.quanticol.carma.core.carma.NewComponentArgumentMacro
-import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnMacro
-import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnPrimitive
-import eu.quanticol.carma.core.carma.Range
-import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnMethod
-import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnDeclare
+import eu.quanticol.carma.core.carma.Probability
+import eu.quanticol.carma.core.carma.Component
+import eu.quanticol.carma.core.generator.components.ComponentManager
 
 class GeneratorUtils {
 	
@@ -64,6 +72,18 @@ class GeneratorUtils {
 	@Inject extension LabelUtil
 	@Inject extension Util
 	@Inject extension GenerateSystems
+	@Inject extension ExpressionHandler
+	
+
+	def String getStore(String carma_name, String carma_type, String java_assign, String store, String booleanFail){
+		'''
+		if(store.get(«carma_name»,«carma_type») != null){
+			«java_assign» = «store».get(«carma_name»,«carma_type»);
+		} else {
+			«booleanFail» = false;
+		}
+		'''
+	}
 	
 	def String declareVariable(VariableReference vr){
 		switch(vr){
@@ -480,9 +500,12 @@ class GeneratorUtils {
 		if(actionStub.getContainerOfType(EnvironmentUpdate) != null){
 			'''«defineEUActionStub(actionStub)»'''
 		} else {
-			'''
-			«actionStub.getContainerOfType(EnvironmentOperation).eAllOfType(EnvironmentExpression).get(0).anAssignment»
-			'''
+			if(actionStub.getContainerOfType(EnvironmentOperation).eAllOfType(EnvironmentExpression).size > 0){
+				'''
+				«actionStub.getContainerOfType(EnvironmentOperation).eAllOfType(EnvironmentExpression).get(0).anAssignment»
+				'''
+			} 
+			
 		}
 	}
 	
@@ -639,7 +662,7 @@ class GeneratorUtils {
 		}
 	}
 	
-	def String setStore(VariableDeclaration vd, String expression){
+	def String setStore(VariableDeclaration vd, UpdateExpressions expression){
 		var output = ""
 		switch(vd){
 			VariableDeclarationEnum: {
@@ -701,6 +724,90 @@ class GeneratorUtils {
 			global_store.set("«variable»",«expression»);
 		}
 		'''
+	}
+	
+	def void populateCarmaVariableManager(CarmaVariableManager cvm, Model model){
+		for(vd : model.eAllOfType(VariableDeclaration)){
+			if(vd.getContainerOfType(MeasureBlock) == null){
+				switch(vd){
+					VariableDeclarationEnum:		cvm.loadDeclaration(vd.name.label,true,false,vd.hashCode,vd.assign)
+					VariableDeclarationRecord:{
+							var rds = vd.recordDeclarations
+							for(rd : rds)
+								cvm.loadDeclaration(vd.name.label+"_"+rd.name.label,true,true,rd.hashCode,rd.assign)
+					}
+					VariableDeclarationCarmaDouble:	cvm.loadDeclaration(vd.name.label,false,false,vd.hashCode,vd.assign)
+					VariableDeclarationCarmaIntger: cvm.loadDeclaration(vd.name.label,true,false,vd.hashCode,vd.assign)
+				}
+			}
+		}
+		for(vt : model.eAllOfType(VariableType)){
+			switch(vt){
+				VariableTypeEnum:			cvm.loadType(vt.name.label,true,false,vt.hashCode,null)
+				VariableTypeRecord:			cvm.loadType(vt.name.label,true,true,vt.hashCode,null)
+				VariableTypeCarmaDouble:	cvm.loadType(vt.name.label,false,false,vt.hashCode,null)
+				VariableTypeCarmaIntger:	cvm.loadType(vt.name.label,true,false,vt.hashCode,null)
+			}
+		}
+		for(vr : model.eAllOfType(VariableReference)){
+			switch(vr){
+				VariableReferencePure:		cvm.loadReference(vr.name.label,true,false,vr.hashCode,null,"")
+				VariableReferenceMy:		cvm.loadReference(vr.name.label,true,false,vr.hashCode,null,"my_")
+				VariableReferenceThis:		cvm.loadReference(vr.name.label,true,false,vr.hashCode,null,"this_")
+				VariableReferenceReceiver:	cvm.loadReference(vr.name.label,true,false,vr.hashCode,null,"receiver_")
+				VariableReferenceSender:	cvm.loadReference(vr.name.label,true,false,vr.hashCode,null,"sender_")
+				VariableReferenceGlobal:	cvm.loadReference(vr.name.label,true,false,vr.hashCode,null,"global_")
+				RecordReferencePure:		cvm.loadReference(vr.name.label+"_"+vr.record.label,true,true,vr.hashCode,null,"")
+				RecordReferenceMy:			cvm.loadReference(vr.name.label+"_"+vr.record.label,true,true,vr.hashCode,null,"my_")
+				RecordReferenceThis:		cvm.loadReference(vr.name.label+"_"+vr.record.label,true,true,vr.hashCode,null,"this_")
+				RecordReferenceReceiver:	cvm.loadReference(vr.name.label+"_"+vr.record.label,true,true,vr.hashCode,null,"receiver_")
+				RecordReferenceSender:		cvm.loadReference(vr.name.label+"_"+vr.record.label,true,true,vr.hashCode,null,"sender_")
+				RecordReferenceGlobal:		cvm.loadReference(vr.name.label+"_"+vr.record.label,true,true,vr.hashCode,null,"global_")
+			}
+		}
+	}
+	
+	def void populateActionManager(ActionManager am, Model model){
+		
+		var actions = model.eAllOfType(Action)
+		var actionStubs = model.eAllOfType(ActionStub)
+		
+		for(action : actions)
+			am.loadAction(action.labelIO)
+			
+		for(actionStub : actionStubs){
+			var String type = ""
+			var String guard = ""
+			var String expression = ""
+			var eo = actionStub.getContainerOfType(EnvironmentOperation)
+			switch(eo){
+				Rate:				{
+					type = "rate" 
+					guard = eo.guard.booleanExpression.disarmExpression.toUpperCase
+					expression = eo.expression.evaluateExpression
+				}
+				EnvironmentUpdate:  {
+					type = "upda"
+					guard = eo.guard.booleanExpression.disarmExpression.toUpperCase
+					expression = eo.expression.evaluateExpression
+				}
+				Probability:		{
+					type = "prob"
+					guard = eo.guard.booleanExpression.disarmExpression.toUpperCase
+					expression = eo.expression .evaluateExpression
+				}
+			}
+			am.loadStub(actionStub.name.label,type,guard,expression)
+		}
+	}
+	
+	def void populateComponentManager(ComponentManager cm, Model model,ActionManager am, CarmaVariableManager vm){
+		
+		var components = model.eAllOfType(Component)
+		
+		for(component : components)
+			cm.loadComponent(component.label,component.getTree,am,vm);
+		
 	}
 	
 }

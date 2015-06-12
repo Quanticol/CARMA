@@ -10,6 +10,7 @@ import com.google.inject.Inject;
 
 import eu.quanticol.carma.core.carma.Action;
 import eu.quanticol.carma.core.carma.ActionName;
+import eu.quanticol.carma.core.carma.BooleanExpressions;
 import eu.quanticol.carma.core.carma.Guard;
 import eu.quanticol.carma.core.carma.Name;
 import eu.quanticol.carma.core.carma.Process;
@@ -30,7 +31,7 @@ public class Leaf {
 	//state to Leaf
 	private HashMap<String,Leaf> children;
 	private String state;
-	private Guard guard = null;
+	private BooleanExpressions guard = null;
 	private Action action = null;
 	private boolean choice = false;
 	private boolean leaf = false;
@@ -112,7 +113,7 @@ public class Leaf {
 			}
 	}
 	
-	public void getAllGuards(HashMap<String,Guard> guards){
+	public void getAllGuards(HashMap<String,BooleanExpressions> guards){
 		if(this.guard != null)
 			guards.put(getGuard(), this.guard);
 		if(children != null)
@@ -206,7 +207,7 @@ public class Leaf {
 			if (this.me instanceof ProcessExpressionGuard) {
 //				System.out.println("guard");
 				matched=true;
-				this.guard						= ((ProcessExpressionGuard)this.me).getExpression();
+				this.guard						= ((ProcessExpressionGuard)this.me).getExpression().getBooleanExpression();
 				ProcessExpression reference		= ((ProcessExpressionGuard)this.me).getReference();
 				if(reference instanceof ProcessExpressionAction){
 					this.action 	= ((ProcessExpressionAction)reference).getExpression();

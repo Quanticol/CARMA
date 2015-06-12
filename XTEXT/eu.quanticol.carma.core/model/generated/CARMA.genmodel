@@ -31,6 +31,11 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//VariableDeclaration/type"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//VariableDeclaration/name"/>
     </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//ForVariableDeclaration">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//ForVariableDeclaration/type"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ForVariableDeclaration/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ForVariableDeclaration/assign"/>
+    </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//EnumAssignment"/>
     <genClasses ecoreClass="CARMA.ecore#//RecordDeclarations">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordDeclarations/ref"/>

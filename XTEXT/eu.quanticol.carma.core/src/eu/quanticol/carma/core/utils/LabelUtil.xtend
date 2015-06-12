@@ -199,6 +199,7 @@ import java.util.HashMap
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import eu.quanticol.carma.core.carma.MethodExpression
 import eu.quanticol.carma.core.carma.EnvironmentMeasure
+import eu.quanticol.carma.core.carma.ForVariableDeclaration
 
 class LabelUtil {
 	
@@ -305,6 +306,10 @@ class LabelUtil {
 		eg.booleanExpression.convertToJava
 	}
 	
+	def String convertToJava(ForVariableDeclaration fvd){
+		return "int " + fvd.name.label + " = " + fvd.assign
+	}
+	
 	def String convertToJava(VariableDeclaration vd){
 		switch(vd){
 			VariableDeclarationEnum: 		(vd.assign as EnumAssignment).convertToJava("int " + vd.name.label)
@@ -405,6 +410,19 @@ class LabelUtil {
 			UpdateAtomicVariable:						e.value.label
 			UpdateAtomicMethodReference:				(e.value as MethodExpressions).label 
 			UpdateExpression:							e.expression.label
+		}
+	}
+	
+	def String convertToJava(UpdateExpressions e){
+		switch(e){
+			UpdateSubtraction:							{e.left.convertToJava + " - " + e.right.convertToJava }
+			UpdateAddition:								{e.left.convertToJava + " + " + e.right.convertToJava }
+			UpdateMultiplication:						{e.left.convertToJava + " * " + e.right.convertToJava }
+			UpdateAtomicPrimitive:						(e.value as PrimitiveType).label
+			UpdateAtomicRecords:						(e.value as Records).label
+			UpdateAtomicVariable:						e.value.convertToJava
+			UpdateAtomicMethodReference:				(e.value as MethodExpressions).label
+			UpdateExpression:							e.expression.convertToJava
 		}
 	}
 	
@@ -522,14 +540,6 @@ class LabelUtil {
 		if(actionStub.cast != null){
 			output = output + "*"
 		}
-		
-//		if(actionStub.io != null){
-//			if(actionStub.io.in != null)
-//				output = output + "()"
-//			else
-//				output = output + "<>"
-//		}
-		
 		
 		return output
 		
@@ -689,6 +699,8 @@ class LabelUtil {
 			BooleanExpression:				e.expression.label
 		}
 	}
+	
+
 	
 	def String convertToJava(BooleanExpressions e){
 		switch(e){
@@ -1238,6 +1250,20 @@ class LabelUtil {
 	def String getLabel(Action a){
 		
 		var multicast 		= a.eAllOfType(MultiCast).size > 0
+		var output 			= a.name.getLabel
+		
+		if(multicast){
+			output = output + "*"
+		} 
+
+		
+		return output
+		
+	}
+	
+	def String getLabelIO(Action a){
+		
+		var multicast 		= a.eAllOfType(MultiCast).size > 0
 		var inputAction  	= a.eAllOfType(InputAction).size > 0
 		var outputAction 	= a.eAllOfType(OutputAction).size > 0
 		var output 			= a.name.getLabel
@@ -1246,13 +1272,13 @@ class LabelUtil {
 			output = output + "*"
 		} 
 		
-//		if(inputAction){
-//			output = output + "()"
-//		}
-//		
-//		if(outputAction){
-//			output = output + "<>"
-//		}
+		if(inputAction){
+			output = output + "()"
+		}
+		
+		if(outputAction){
+			output = output + "<>"
+		}
 		
 		return output
 		

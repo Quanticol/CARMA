@@ -1,45 +1,41 @@
 package eu.quanticol.carma.core.generator
 
-import eu.quanticol.carma.core.carma.Model
-import eu.quanticol.carma.core.carma.System
 import com.google.inject.Inject
-import eu.quanticol.carma.core.typing.TypeProvider
-import eu.quanticol.carma.core.utils.LabelUtil
-import eu.quanticol.carma.core.utils.Util
-import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.carma.Component
-import java.util.HashMap
-import eu.quanticol.carma.core.carma.VariableDeclaration
-import eu.quanticol.carma.core.carma.ActionName
-import eu.quanticol.carma.core.carma.ActionStub
-import eu.quanticol.carma.core.carma.Rate
 import eu.quanticol.carma.core.carma.Action
-import eu.quanticol.carma.core.carma.UpdateAssignment
-import java.util.HashSet
-import java.util.ArrayList
-import eu.quanticol.carma.core.utils.Tree
+import eu.quanticol.carma.core.carma.BooleanExpression
+import eu.quanticol.carma.core.carma.Component
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionAll
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAState
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAllStates
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionParallel
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressions
+import eu.quanticol.carma.core.carma.EnvironmentMeasure
 import eu.quanticol.carma.core.carma.Guard
+import eu.quanticol.carma.core.carma.InputActionArguments
+import eu.quanticol.carma.core.carma.MacroExpressionReference
+import eu.quanticol.carma.core.carma.Measure
+import eu.quanticol.carma.core.carma.MeasureBlock
+import eu.quanticol.carma.core.carma.Model
 import eu.quanticol.carma.core.carma.OutputActionArgument
 import eu.quanticol.carma.core.carma.OutputActionArgumentVR
-import eu.quanticol.carma.core.carma.VariableDeclarationEnum
-import eu.quanticol.carma.core.carma.VariableDeclarationRecord
-import eu.quanticol.carma.core.carma.RecordDeclaration
-import eu.quanticol.carma.core.carma.VariableReference
-import eu.quanticol.carma.core.carma.InputActionArguments
-import eu.quanticol.carma.core.carma.VariableName
-import eu.quanticol.carma.core.carma.MeasureBlock
-import eu.quanticol.carma.core.carma.Measure
-import eu.quanticol.carma.core.carma.EnvironmentMeasure
-import eu.quanticol.carma.core.carma.MeasureBlock
-import eu.quanticol.carma.core.carma.ActionGuard
-import eu.quanticol.carma.core.carma.BooleanExpression
-import eu.quanticol.carma.core.carma.EnvironmentMacroExpressions
-import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionParallel
-import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionAll
-import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAllStates
-import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAState
-import eu.quanticol.carma.core.carma.MacroExpressionReference
 import eu.quanticol.carma.core.carma.Range
+import eu.quanticol.carma.core.carma.UpdateAssignment
+import eu.quanticol.carma.core.carma.VariableDeclaration
+import eu.quanticol.carma.core.carma.VariableName
+import eu.quanticol.carma.core.carma.VariableReference
+import eu.quanticol.carma.core.generator.actions.ActionManager
+import eu.quanticol.carma.core.generator.carmaVariable.CarmaVariableManager
+import eu.quanticol.carma.core.generator.components.ComponentManager
+import eu.quanticol.carma.core.typing.TypeProvider
+import eu.quanticol.carma.core.utils.LabelUtil
+import eu.quanticol.carma.core.utils.Tree
+import eu.quanticol.carma.core.utils.Util
+import java.util.ArrayList
+import java.util.HashMap
+import java.util.HashSet
+
+import static extension org.eclipse.xtext.EcoreUtil2.*
+import eu.quanticol.carma.core.generator.predicates.Predicates
 
 class GenerateDefinitions {
 	
@@ -47,8 +43,14 @@ class GenerateDefinitions {
 		@Inject extension LabelUtil
 		@Inject extension Util
 		@Inject extension GeneratorUtils
+		@Inject extension Predicates
 	
-		def String compileDefinitions(Model model, String packageName){
+		def String compileDefinitions(Model model, 
+			String packageName, 
+			CarmaVariableManager variableManager, 
+			ActionManager actionManager,
+			ComponentManager componentManager
+		){
 		'''
 		«packageName»;
 		
@@ -59,188 +61,39 @@ class GenerateDefinitions {
 		
 		public class «model.label»Definition {
 			
-			/*ATTRIBUTES*/
-			«model.defineComponentAttributes»
-			/*ACTION*/
-			«model.defineActionDefinitions»
-			/*RATES*/
-			«model.defineRateDefinitions»
-			/*PROCESS*/
-			«model.defineProcessDefinitions»
-			/*MEASURES*/
+			«variableManager.declareAllAttributesAndTypes»
+			«actionManager.declareAllActionsAndRates»
+			«componentManager.declareAllCarmaProcessAutomatons»
+			«componentManager.defineProcessDefinitions»
 			«model.defineMeasures»
 		}
 		'''
 	}
 	
-	def String defineComponentAttributes(Model model){
-		
-		var cat = model.getComponentAttributeType
-		var HashMap<String,VariableDeclaration> vds = new HashMap<String,VariableDeclaration>()
-		for(component : cat.keySet){
-			for(vd : cat.get(component)){
-				switch(vd){
-					VariableDeclarationEnum:	vds.put(vd.name.label,vd)
-					VariableDeclarationRecord:	{
-						var rds = vd.recordDeclarations
-						for(rd : rds)
-							vds.put(vd.name.label+"_"+rd.name.label,vd)
-					}
-				}
-				
-			}
-		}
-		
-		var envAttributes = model.environmentAttributes
-		for(vd : envAttributes){
-			switch(vd){
-				VariableDeclarationEnum:	vds.put(vd.name.label,vd)
-				VariableDeclarationRecord:	{
-						var rds = vd.eAllOfType(RecordDeclaration)
-						for(rd : rds)
-							vds.put(vd.name.label+"_"+rd.name.label,vd)
-					}
-			}
-		}
+	def String defineProcessDefinitions(ComponentManager componentManager){
+		'''
+		«FOR component_name : componentManager.getComponentGenerators().keySet»
 			
-		'''
-		«FOR vdName : vds.keySet»
-		public static final String «vdName.toUpperCase»_ATTRIBUTE = "«vdName»";
-		public static final Class<«vds.get(vdName).convertType»> «vdName.toUpperCase»_ATTRIBUTE_TYPE = «vds.get(vdName).convertType».class;
-		«ENDFOR»
-		'''
-	}
-	
-//	def String defineEnvironmentAttributes(Model model){
-//		
-//		var HashMap<String,String> names = new HashMap<String,String>()
-//
-//		'''
-//		«FOR key : names.keySet»
-//		public static final String «key.toUpperCase»_ATTRIBUTE = "«key»";
-//		public static final Class<«names.get(key)»> «key.toUpperCase»_ATTRIBUTE_TYPE = «names.get(key)».class;
-//		«ENDFOR»
-//		'''
-//		
-//	}
-	
-	def String defineActionDefinitions(Model model){
-		
-		//public static final int PRODUCE = 0;
-		
-		var actions = model.eAllOfType(ActionName)
-		var seen = new HashSet<String>()
-		var int count = 0;
-		
-		'''
-			«FOR action : actions»
-			«IF seen.add(action.label)»
-			public static final int «action.label.toUpperCase» = «count++»;
-			«ENDIF»
-			«ENDFOR»
-		'''
-		
-	}
-	
-	def String defineRateDefinitions(Model model){
-		
-		//public static final double PRODUCE_RATE = 1;
-		
-		var actionStubs = model.eAllOfType(ActionStub)
-		
-		'''
-		«FOR actionStub : actionStubs»
-		«IF actionStub.getContainerOfType(Rate) != null»
-		public static final double «actionStub.convertToJavaNameDefinitions.toUpperCase»_RATE = «actionStub.getRates»;
-		«ENDIF»
-		«ENDFOR»
-		'''
-		
-	}
-	
-	def String getRates(ActionStub actionStub){
-		actionStub.getContainerOfType(Rate).expression.label
-	}
-	
-	def String defineProcessDefinitions(Model model){
-		
-		/*ProcessAutomaton*/
-		//create#COMPONENTNAME#Process
-		//public static final CarmaProcessAutomaton ProducerProcess = createProducerProcess();
-		
-		//private static CarmaProcessAutomaton createProducerProcess() {
-		
-		var components = model.eAllOfType(Component)
-		
-		'''
-		«FOR component : components»
-			public static final CarmaProcessAutomaton «component.label»Process = create«component.label»Process();
-			
-			private static CarmaProcessAutomaton create«component.label»Process() {
+			private static CarmaProcessAutomaton create«component_name»Process() {
 				
-				CarmaProcessAutomaton toReturn = new CarmaProcessAutomaton("«component.label»");
+				CarmaProcessAutomaton toReturn = new CarmaProcessAutomaton("«component_name»");
 				
-				«var tree = component.getTree»
-				
-				«tree.declareStates»
-				
-				«tree.declareActions»
-				
-				«tree.declareGuards»
-				
-				«tree.declareTransitions»
-				
+				«FOR statement : componentManager.getComponentGenerators().get(component_name).declareStates»
+				«statement»
+				«ENDFOR»
+				«var actionExpression = componentManager.getComponentGenerators().get(component_name).declareActions»
+				«FOR key : actionExpression.keySet»
+				«key.getAction(actionExpression(key),componentManager.getCVM)»
+				«ENDFOR»
+				«var guardExpressions = componentManager.getComponentGenerators().get(component_name).declareGuards»
+				«FOR key : guardExpressions.keySet»
+				«key.getGuardPredicate(guardExpressions.get(key),componentManager.getCVM)»
+				«ENDFOR»
+				«FOR transition : componentManager.getComponentGenerators().get(component_name).declareTransitions»
+				«transition»
+				«ENDFOR»
 				return toReturn;
 			}
-		«ENDFOR»
-		'''
-	}
-	
-	def String declareStates(Tree tree){
-		var HashSet<String> states = new HashSet<String>()
-		tree.getStates(states)
-		'''
-		//create the states in the automata 
-		«FOR state : states»
-		«IF !state.equals("null")»
-		CarmaProcessAutomaton.State «state» = toReturn.newState("«state»");
-		«ENDIF»
-		«ENDFOR»
-		'''
-	}
-	
-	def String declareActions(Tree tree){
-		var HashMap<String,Action> actions = new HashMap<String,Action>()
-		tree.getActions(actions)
-		'''
-		«FOR key : actions.keySet»
-			«IF(actions.get(key).type.set.equals("outputAction"))»
-			«actions.get(key).outputAction(key)»
-			«ELSE»
-			«actions.get(key).inputAction(key)»
-			«ENDIF»
-		«ENDFOR»
-		'''
-	}
-	
-	def String declareGuards(Tree tree){
-		var HashMap<String,Guard> guards = new HashMap<String,Guard>()
-		tree.getGuards(guards)
-		'''
-		«FOR key : guards.keySet»
-		CarmaPredicate «key» = new CarmaPredicate() {
-			@Override
-			public boolean satisfy(CarmaStore store) {
-				boolean hasAttributes = true;
-				«FOR vr : guards.get(key).eAllOfType(VariableReference)»
-				«vr.getStore»
-				«ENDFOR»
-				if(hasAttributes)
-					return «guards.get(key).booleanExpression.labelJava»;
-				else
-					return false;
-			}
-		};
 		«ENDFOR»
 		'''
 	}
@@ -322,7 +175,7 @@ class GenerateDefinitions {
 			
 			for(update : updates){
 				var vd = update.storeReference.variableDeclaration
-				output = output + vd.setStore(update.expression.label)
+				output = output + vd.setStore(update.expression)
 			}
 		}
 		'''
@@ -479,7 +332,7 @@ class GenerateDefinitions {
 			
 			for(update : updates){
 				var vd = update.storeReference.variableDeclaration
-				output = output + vd.setStore(update.expression.label)
+				output = output + vd.setStore(update.expression)
 			}
 		}
 		return output
@@ -496,16 +349,7 @@ class GenerateDefinitions {
 		'''
 	}
 	
-	def String declareTransitions(Tree tree){
-		var ArrayList<String> transitions = new ArrayList<String>()
-		tree.getTransitions(transitions)
-		'''
-		//create the transitions between states
-		«FOR transition : transitions»
-			«transition»
-		«ENDFOR»
-		'''
-	}
+
 	
 	def String defineMeasures(Model model){
 		var measuresBlock = model.eAllOfType(MeasureBlock)

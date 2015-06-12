@@ -47,7 +47,7 @@ system Simple{
 
     environment{
         rate{
-        [True] produce* := 1;
+        [true] produce* := 1;
         }
     }
 }

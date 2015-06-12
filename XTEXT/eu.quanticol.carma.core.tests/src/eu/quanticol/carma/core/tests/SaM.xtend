@@ -16,7 +16,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 
 @RunWith(typeof(XtextRunner))
 @InjectWith(typeof(CARMAInjectorProviderCustom))
-class CGT11 {
+class SaM {
 	@Inject extension CompilationTestHelper
 	@Inject ParseHelper<Model> parseHelper 
 	@Inject IGenerator underTest
@@ -24,17 +24,17 @@ class CGT11 {
 	@Test
 	def void testGenerationCodeProducer(){
 		val model = parseHelper.parse('''
-component Producer(enum a, enum b, enum c, enum d, Z){
+component Sensor(enum a, enum b, enum c, Z){
     
     store{
-        enum product := a;
-        record position := {x := c, y := d};
-        enum eu_sender := 1;
+        enum data := a;
+        enum type := 0;
+        record position := {x := b, y := c};
     }
 
     behaviour{
-        Produce = [my.product > 0] produce*{product := product + 1}.Produce;
-        Send = [my.product > 0] send[eu_receiver == 1]<1>{product := product - 1}.Send;
+        Sense 	= [my.data > 0] sense*{data := data + 1}.Sense;
+        Send 	= [my.data > 0] send[type == 1]<1>{data := data - 1}.Send;
     }
 
     init{
@@ -42,17 +42,18 @@ component Producer(enum a, enum b, enum c, enum d, Z){
     }
 }
 
-component Consumer(enum a, enum b, record p, Z){
+component Monitor(enum a, record d, Z){
     
     store{
-        enum product := a;
-        record position := p;
-        enum eu_receiver := 1;
+        enum data := a;
+        enum type := 1;
+        record position := d;
+        
     }
 
     behaviour{
-        Consume = [my.product > 0] consume*{product := product - 1}.Consume;
-        Receive = [my.product >= 0] send[my.product < 10 && z == 1](z){product := product - z, position.x := 2}.Receive;
+        Analyse = [my.data > 0] analyse*{data := data - 1}.Analyse;
+        Receive = [my.data >= 0] send[my.data < 10 && z == 1](z){data := data + z}.Receive;
     }
     
     init{
@@ -61,53 +62,42 @@ component Consumer(enum a, enum b, record p, Z){
 }
 
 measures{
-	measure Waiting[ enum i := 1..3, enum j := 1..3] = #{ Producer[Send]  | eu_sender == 1 };
+	measure Waiting[ enum i := 1..3, enum j := 1..3] = #{ *  | data >= 0 };
 }
 
 
 system Simple{
 
     collective{
-        new Producer(1,1,1,1,Produce|Send);
-        new Consumer(1,1,{x := 1, y := 1},Consume|Receive);
+        new Sensor(1,1,1,Sense|Send);
+        new Monitor(1,{x := 1, y := 1},Analyse|Receive);
     }
 
     environment{
     	
     	store{
-    		enum transactions 	:= 0;
-    		record test := {x:= 1, y:=1};
-    		enum eu_global 		:= 1;
+    		enum reports 	:= 0;
+    		enum type 		:= 2;
+    		record center := {x := 2, y := 2};
     	}
     	
     	prob{
-    		[true] 						send : 1;
-        	[true] 						produce* : 1;
-        	[false] 					produce* : 1;
-        	[sender.eu_sender == 1] 														produce* : 1;
-        	[receiver.eu_receiver == 1] 													send : 1;
-        	[global.eu_global == 1] 														produce* : 1;
-        	[sender.eu_sender == 1 && receiver.eu_receiver == 1] 							send : 1;
-        	[sender.eu_sender == 1 && receiver.eu_receiver == 1 && global.eu_global == 1] 	send : 1;
+    		[(receiver.position.x - global.center.x == 0) && (receiver.position.y - global.center.y == 0)]	send : 1;
+    		[(sender.position.x - global.center.x == 0) && (sender.position.y - global.center.y == 0)]	send : 0.75;
+        	default : 0.5;
     	}
     	
         rate{
-        	[true] 						send : 1;
-        	[true] 						produce* : 1;
-        	[false] 					produce* : 1;
-        	[sender.eu_sender == 1] 														produce* : 0.5;
-        	[global.eu_global == 1] 														produce* : 1;
-        	[sender.eu_sender == 1  && global.eu_global == 1] 	send : 1;
+        	[sender.data == 0] sense* : 10;
+        	[sender.data > 0 && sender.data <= 5 && (global.reports % 2 == 1)] sense* : 5;
+        	[sender.data > 0 && sender.data <= 5 && (global.reports % 2 == 0)] sense* : 6;
+        	[sender.data > 5 && sender.data <= 10] sense* : 1;
+        	[true]	sense* : 1;
+        	[true]	analyse* : 1;
         }
         
         update{
-        	[true] 																			send : transactions := transactions + 1;
-        	[false] 																		send : transactions := transactions + 1;
-        	[sender.eu_sender == 1] 														send : transactions := transactions + 1;
-        	[receiver.eu_receiver == 1] 													send : transactions := transactions + 1;
-        	[global.eu_global == 1] 														send : transactions := transactions + 1;
-        	[sender.eu_sender == 1 && receiver.eu_receiver == 1] 							send : transactions := transactions + 1;
-        	[sender.eu_sender == 1 && receiver.eu_receiver == 1 && global.eu_global == 1] 	send : transactions := transactions + 1;
+        	[true] send : global.reports := global.reports + 1;
         }
     }
 }'''

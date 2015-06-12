@@ -3,25 +3,18 @@
  */
 package eu.quanticol.carma.core.generator
 
-import org.eclipse.emf.ecore.resource.Resource
-import org.eclipse.xtext.generator.IGenerator
-import org.eclipse.xtext.generator.IFileSystemAccess
+import com.google.inject.Inject
 import eu.quanticol.carma.core.carma.Model
 import eu.quanticol.carma.core.carma.System
-import com.google.inject.Inject
+import eu.quanticol.carma.core.generator.carmaVariable.CarmaVariableManager
 import eu.quanticol.carma.core.typing.TypeProvider
 import eu.quanticol.carma.core.utils.LabelUtil
 import eu.quanticol.carma.core.utils.Util
-import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.carma.ActionName
-import eu.quanticol.carma.core.carma.ActionStub
-import eu.quanticol.carma.core.carma.Rate
-import eu.quanticol.carma.core.carma.Component
-import eu.quanticol.carma.core.carma.Action
-import java.util.HashMap
-import eu.quanticol.carma.core.carma.UpdateAssignment
-import java.util.HashSet
-import eu.quanticol.carma.core.carma.VariableDeclaration
+import org.eclipse.emf.ecore.resource.Resource
+import org.eclipse.xtext.generator.IFileSystemAccess
+import org.eclipse.xtext.generator.IGenerator
+import eu.quanticol.carma.core.generator.actions.ActionManager
+import eu.quanticol.carma.core.generator.components.ComponentManager
 
 /**
  * Generates code from your model files on save.
@@ -36,18 +29,28 @@ class CARMAGenerator implements IGenerator {
 	@Inject extension GenerateDefinitions
 	@Inject extension GenerateFactory
 	@Inject extension GenerateSystems
+	@Inject extension GeneratorUtils
 	
 	override void doGenerate(Resource resource, IFileSystemAccess fsa) {
 		
 		var Model model = resource.allContents.toIterable.filter(Model).get(0)
 		var systems = resource.allContents.toIterable.filter(System)
 		
+		var variableManager = new CarmaVariableManager()
+		variableManager.populateCarmaVariableManager(model)
+		
+		var actionManager = new ActionManager()
+		actionManager.populateActionManager(model)
+		
+		var componentManager = new ComponentManager(actionManager,variableManager)
+		componentManager.populateComponentManager(model,actionManager,variableManager)
+		
 		var modelName = model.label
 		var URI = "carma" + "/" + modelName
 		var packageName = "package carma." + modelName
 		
 		//Definitions
-		fsa.generateFile(URI + "/" + modelName + "Definition.java",model.compileDefinitions(packageName))
+		fsa.generateFile(URI + "/" + modelName + "Definition.java",model.compileDefinitions(packageName,variableManager,actionManager,componentManager))
 		
 		//Systems
 		for(system : systems){

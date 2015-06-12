@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import eu.quanticol.carma.core.carma.Action;
+import eu.quanticol.carma.core.carma.BooleanExpressions;
 import eu.quanticol.carma.core.carma.Guard;
 import eu.quanticol.carma.core.carma.Process;
 import eu.quanticol.carma.core.carma.ProcessExpression;
@@ -26,7 +27,7 @@ public class Tree {
 			this.structure.get(key).getAllActions(actions);
 	}
 	
-	public void getGuards(HashMap<String,Guard> guards){
+	public void getGuards(HashMap<String,BooleanExpressions> guards){
 		for(Process key : structure.keySet())
 			this.structure.get(key).getAllGuards(guards);
 	}
