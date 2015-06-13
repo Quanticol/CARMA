@@ -7,10 +7,14 @@ import org.eclipse.xtext.xbase.lib.Extension;
 
 import com.google.inject.Inject;
 
+import eu.quanticol.carma.core.carma.BooleanExpressions;
 import eu.quanticol.carma.core.carma.EnvironmentOperation;
 import eu.quanticol.carma.core.carma.EnvironmentUpdate;
+import eu.quanticol.carma.core.carma.InputActionArguments;
+import eu.quanticol.carma.core.carma.OutputActionArguments;
 import eu.quanticol.carma.core.carma.Probability;
 import eu.quanticol.carma.core.carma.Rate;
+import eu.quanticol.carma.core.carma.Update;
 import eu.quanticol.carma.core.generator.ExpressionHandler;
 
 public class ActionVariable {
@@ -21,23 +25,36 @@ public class ActionVariable {
 	
 	private String carma_name = "";
 	private int counter = 0;
-	private HashSet<String> names;
+	private HashMap<String,Integer> names;
+	private HashMap<Integer,String> hashes;
+	private HashMap<Integer,BooleanExpressions> predicates;
+	private HashMap<Integer,Update> updates;
+	private HashMap<Integer, OutputActionArguments> outputArgs;
+	private HashMap<Integer, InputActionArguments> inputArgs;
 	private String psf = "public static final ";
 	private String eq = " = ";
 	private String end = ";";
 	private HashMap<String,String> rates;
 	private HashMap<String,String> probs;
 	private HashMap<String,String> updas;
+	private boolean isBroadcast = false;
 	
 	
-	public ActionVariable(String name, int counter){
+	public ActionVariable(String name, int counter, int hashCode){
 		this.counter = counter;
 		setCarmaName(name);
-		names = new HashSet<String>();
+		names = new HashMap<String, Integer>();
+		hashes = new HashMap<Integer, String>();
 		rates = new HashMap<String, String>();
 		probs = new HashMap<String, String>();
 		updas = new HashMap<String, String>();
-		names.add(name);
+		names.put(name,hashCode);
+		hashes.put(hashCode, name);
+		predicates = new HashMap<Integer, BooleanExpressions>();
+		updates = new HashMap<Integer, Update>();
+		outputArgs = new HashMap<Integer, OutputActionArguments>();
+		inputArgs = new HashMap<Integer, InputActionArguments>();
+		setBroadcast(name.contains("*"));
 	}
 	
 	private void setCarmaName(String name){
@@ -45,6 +62,22 @@ public class ActionVariable {
 		friendly_name = friendly_name.replace("<>","");
 		friendly_name = friendly_name.replace("()","");
 		carma_name = friendly_name.toUpperCase();
+	}
+	
+	public void setUpdates(int hashCode, Update u){
+		this.updates.put(hashCode, u);
+	}
+	
+	public Update getUpdate(int hashCode){
+		return this.updates.get(hashCode);
+	}
+	
+	public void setPredicate(int hashCode, BooleanExpressions bes){
+		this.predicates.put(hashCode, bes);
+	}
+	
+	public BooleanExpressions getPredicate(int hashCode){
+		return this.predicates.get(hashCode);
 	}
 	
 	public String getCarmaName(){
@@ -55,8 +88,8 @@ public class ActionVariable {
 		return psf + "int " + carma_name + " " + eq + counter + end + "\n";
 	}
 
-	public void include(String name) {
-		this.names.add(name);
+	public void include(String name, int hashCode) {
+		this.names.put(name, hashCode);
 	}
 	
 	public String declareRates(){
@@ -81,6 +114,32 @@ public class ActionVariable {
 		if(type.equals("upda")){
 			updas.put(guard, expression);
 		}
+	}
+
+	public boolean isBroadcast() {
+		return isBroadcast;
+	}
+
+	public void setBroadcast(boolean isBroadcast) {
+		this.isBroadcast = isBroadcast;
+	}
+
+	public void setOutputActionArguments(int hashCode,
+			OutputActionArguments outputArgs) {
+		this.outputArgs.put(hashCode, outputArgs);
+	}
+	
+	public OutputActionArguments getOutputActionArguments(int hashCode){
+		return this.outputArgs.get(hashCode);
+	}
+	
+	public void setInputActionArguments(int hashCode,
+			InputActionArguments inputArgs) {
+		this.inputArgs.put(hashCode, inputArgs);
+	}
+	
+	public InputActionArguments getInputActionArguments(int hashCode){
+		return this.inputArgs.get(hashCode);
 	}
 
 }

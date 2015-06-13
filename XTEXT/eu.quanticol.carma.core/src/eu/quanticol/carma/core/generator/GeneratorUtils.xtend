@@ -65,6 +65,14 @@ import eu.quanticol.carma.core.carma.Rate
 import eu.quanticol.carma.core.carma.Probability
 import eu.quanticol.carma.core.carma.Component
 import eu.quanticol.carma.core.generator.components.ComponentManager
+import eu.quanticol.carma.core.carma.ActionGuard
+import eu.quanticol.carma.core.generator.actions.NullBooleanExpression
+import eu.quanticol.carma.core.carma.Update
+import eu.quanticol.carma.core.generator.actions.NullUpdate
+import eu.quanticol.carma.core.carma.OutputActionArguments
+import eu.quanticol.carma.core.generator.actions.NullOutputActionArguments
+import eu.quanticol.carma.core.carma.InputActionArguments
+import eu.quanticol.carma.core.generator.actions.NullInputActionArguments
 
 class GeneratorUtils {
 	
@@ -77,7 +85,7 @@ class GeneratorUtils {
 
 	def String getStore(String carma_name, String carma_type, String java_assign, String store, String booleanFail){
 		'''
-		if(store.get(«carma_name»,«carma_type») != null){
+		if(«store».get(«carma_name»,«carma_type») != null){
 			«java_assign» = «store».get(«carma_name»,«carma_type»);
 		} else {
 			«booleanFail» = false;
@@ -767,13 +775,50 @@ class GeneratorUtils {
 		}
 	}
 	
+	def BooleanExpressions getBooleanExpression(Action action){
+		if(action.eAllOfType(ActionGuard).size > 0){
+			return action.eAllOfType(ActionGuard).get(0).booleanExpression
+		} else {
+			return new NullBooleanExpression();
+		}
+	}
+	
+	def Update getUpdate(Action action){
+		if(action.eAllOfType(Update).size > 0){
+			return action.eAllOfType(Update).get(0)
+		} else {
+			return new NullUpdate();
+		}
+	}
+	
+	def OutputActionArguments getOutputActionArguments(Action action){
+		if(action.eAllOfType(OutputActionArguments).size > 0){
+			return action.eAllOfType(OutputActionArguments).get(0)
+		} else {
+			return new NullOutputActionArguments();
+		}
+	}
+	
+	def InputActionArguments getInputActionArguments(Action action){
+		if(action.eAllOfType(InputActionArguments).size > 0){
+			return action.eAllOfType(InputActionArguments).get(0)
+		} else {
+			return new NullInputActionArguments();
+		}
+	}
+	
 	def void populateActionManager(ActionManager am, Model model){
 		
 		var actions = model.eAllOfType(Action)
 		var actionStubs = model.eAllOfType(ActionStub)
 		
-		for(action : actions)
-			am.loadAction(action.labelIO)
+		for(action : actions){
+			am.loadAction(action.labelIO, action.hashCode)
+			am.loadPredicate(action.name.label,action.hashCode,action.booleanExpression)
+			am.loadUpdate(action.name.label,action.hashCode,action.update)
+			am.loadOutputActionArguments(action.name.label,action.hashCode,action.outputActionArguments)
+			am.loadInputActionArguments(action.name.label,action.hashCode,action.inputActionArguments)
+		}
 			
 		for(actionStub : actionStubs){
 			var String type = ""

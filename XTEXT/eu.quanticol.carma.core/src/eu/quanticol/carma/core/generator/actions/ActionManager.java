@@ -2,7 +2,11 @@ package eu.quanticol.carma.core.generator.actions;
 
 import java.util.HashMap;
 
+import eu.quanticol.carma.core.carma.BooleanExpressions;
 import eu.quanticol.carma.core.carma.EnvironmentOperation;
+import eu.quanticol.carma.core.carma.InputActionArguments;
+import eu.quanticol.carma.core.carma.OutputActionArguments;
+import eu.quanticol.carma.core.carma.Update;
 
 public class ActionManager {
 	
@@ -13,15 +17,20 @@ public class ActionManager {
 		this.actions = new HashMap<String,ActionVariable>();
 	}
 	
-	public void loadAction(String actionName){
-		ActionVariable av = new ActionVariable(actionName,counter);
+	public void loadAction(String actionName, int hashCode){
+		ActionVariable av = new ActionVariable(actionName,counter,hashCode);
 		String name = av.getCarmaName();
 		if(actions.containsKey(name)){
-			actions.get(name).include(actionName);
+			actions.get(name).include(actionName,hashCode);
 		} else {
 			actions.put(name, av);
 		}
 		counter++;
+	}
+	
+	public void loadPredicate(String actionName, int hashCode, BooleanExpressions bes){
+		if(actions.containsKey(actionName.toUpperCase()))
+			actions.get(actionName.toUpperCase()).setPredicate(hashCode, bes);
 	}
 	
 	public void loadStub(String actionName, String type, String guard, String expression){
@@ -43,6 +52,21 @@ public class ActionManager {
 		friendly_name = friendly_name.replace("<>","");
 		friendly_name = friendly_name.replace("()","");
 		return this.actions.get(friendly_name.toUpperCase());
+	}
+
+	public void loadUpdate(String actionName, int hashCode, Update update) {
+		if(actions.containsKey(actionName.toUpperCase()))
+			actions.get(actionName.toUpperCase()).setUpdates(hashCode, update);
+	}
+	
+	public void loadOutputActionArguments(String actionName, int hashCode, OutputActionArguments outputArgs) {
+		if(actions.containsKey(actionName.toUpperCase()))
+			actions.get(actionName.toUpperCase()).setOutputActionArguments(hashCode, outputArgs);
+	}
+	
+	public void loadInputActionArguments(String actionName, int hashCode, InputActionArguments inputArgs) {
+		if(actions.containsKey(actionName.toUpperCase()))
+			actions.get(actionName.toUpperCase()).setInputActionArguments(hashCode, inputArgs);
 	}
 
 }

@@ -22,6 +22,10 @@ public class ComponentManager {
 		return this.vm;
 	}
 	
+	public ActionManager getAM(){
+		return this.am;
+	}
+	
 	public void loadComponent(String component_name, Tree tree, ActionManager am, CarmaVariableManager vm){
 		ComponentGenerator cg = new ComponentGenerator(component_name, tree, am, vm);
 		this.components.put(component_name,cg);

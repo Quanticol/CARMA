@@ -105,12 +105,16 @@ public class CarmaVariable {
 		return this.class_ass;
 	}
 	
-	public boolean isSame(String vDotR){
-		return carma_attribute.equals(vDotR.replace(".", "_")+"_ATTRIBUTE");
+	public boolean isSame(String name){
+		return carma_attribute.equals(name);
 	}
 	
 	public void setPrefix(String prefix){
 		this.prefix = prefix;
+	}
+	
+	public String getPrefix(){
+		return this.prefix;
 	}
 	
 	public void addValue(int hashCode, Object value){

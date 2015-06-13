@@ -94,7 +94,6 @@ public class ExpressionHandler {
 	
 	def String evaluateExpression(Object obj){
 		var String toReturn = "evaluateExpression";
-		println("eval " + obj)
 		switch(obj){
 			EnvironmentExpressions: 		return obj.asJava
 			EnvironmentUpdateExpressions:	return obj.asJava

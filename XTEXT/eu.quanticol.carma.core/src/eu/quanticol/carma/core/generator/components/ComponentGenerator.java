@@ -62,7 +62,7 @@ public class ComponentGenerator {
 		return output;
 	}
 	
-	public HashMap<String,Action> declareActions(Tree tree){
+	public HashMap<String,Action> declareActions(){
 		HashMap<String,Action> actions = new HashMap<String,Action>();
 		tree.getActions(actions);
 		return actions;

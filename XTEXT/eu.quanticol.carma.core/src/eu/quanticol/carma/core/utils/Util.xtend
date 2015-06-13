@@ -2153,8 +2153,6 @@ class Util {
 	}
 	
 	def boolean hasAccess(Component component, MacroExpressions macro){
-		var test = true
-		
 		var mers = macro.eAllOfType(MacroExpressionReference)
 		var HashSet<String> references = new HashSet<String>()
 		

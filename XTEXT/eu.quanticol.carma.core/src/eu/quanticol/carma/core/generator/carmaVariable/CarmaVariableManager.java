@@ -2,9 +2,7 @@ package eu.quanticol.carma.core.generator.carmaVariable;
 
 import java.util.HashMap;
 
-import eu.quanticol.carma.core.carma.VariableDeclaration;
 import eu.quanticol.carma.core.carma.VariableReference;
-import eu.quanticol.carma.core.carma.VariableType;
 
 public class CarmaVariableManager {
 	
@@ -68,14 +66,18 @@ public class CarmaVariableManager {
 		return this.prefixes.get(name);
 	}
 	
-	public String getJavaDeclaration(String name, VariableReference vr){
+	public String getJavaDeclaration(String name, VariableReference vr, String modifier){
 		String cv_name = this.prefixes.get(name);
-		return this.references.get(cv_name).declareJava("");
+		return this.references.get(cv_name).declareJava(modifier);
 	}
 	
-	public String getJavaAssign(String name, VariableReference vr){
+	public String getJavaAssign(String name, VariableReference vr, String modifier){
 		String cv_name = this.prefixes.get(name);
-		return this.references.get(cv_name).assignJava("");
+		return this.references.get(cv_name).assignJava(modifier);
+	}
+	
+	public boolean contains(String name) {
+		return this.variables.containsKey(name);
 	}
 
 }

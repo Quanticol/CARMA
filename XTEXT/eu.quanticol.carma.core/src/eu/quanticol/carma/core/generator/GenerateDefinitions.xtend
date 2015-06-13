@@ -10,7 +10,6 @@ import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAllState
 import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionParallel
 import eu.quanticol.carma.core.carma.EnvironmentMacroExpressions
 import eu.quanticol.carma.core.carma.EnvironmentMeasure
-import eu.quanticol.carma.core.carma.Guard
 import eu.quanticol.carma.core.carma.InputActionArguments
 import eu.quanticol.carma.core.carma.MacroExpressionReference
 import eu.quanticol.carma.core.carma.Measure
@@ -22,20 +21,20 @@ import eu.quanticol.carma.core.carma.Range
 import eu.quanticol.carma.core.carma.UpdateAssignment
 import eu.quanticol.carma.core.carma.VariableDeclaration
 import eu.quanticol.carma.core.carma.VariableName
-import eu.quanticol.carma.core.carma.VariableReference
 import eu.quanticol.carma.core.generator.actions.ActionManager
+import eu.quanticol.carma.core.generator.actions.Actions
 import eu.quanticol.carma.core.generator.carmaVariable.CarmaVariableManager
 import eu.quanticol.carma.core.generator.components.ComponentManager
+import eu.quanticol.carma.core.generator.predicates.Predicates
 import eu.quanticol.carma.core.typing.TypeProvider
 import eu.quanticol.carma.core.utils.LabelUtil
-import eu.quanticol.carma.core.utils.Tree
 import eu.quanticol.carma.core.utils.Util
 import java.util.ArrayList
 import java.util.HashMap
 import java.util.HashSet
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.generator.predicates.Predicates
+import eu.quanticol.carma.core.utils.Tree
 
 class GenerateDefinitions {
 	
@@ -44,6 +43,7 @@ class GenerateDefinitions {
 		@Inject extension Util
 		@Inject extension GeneratorUtils
 		@Inject extension Predicates
+		@Inject extension Actions
 	
 		def String compileDefinitions(Model model, 
 			String packageName, 
@@ -83,7 +83,7 @@ class GenerateDefinitions {
 				«ENDFOR»
 				«var actionExpression = componentManager.getComponentGenerators().get(component_name).declareActions»
 				«FOR key : actionExpression.keySet»
-				«key.getAction(actionExpression(key),componentManager.getCVM)»
+				«key.getAction(actionExpression.get(key),componentManager.getCVM, componentManager.getAM)»
 				«ENDFOR»
 				«var guardExpressions = componentManager.getComponentGenerators().get(component_name).declareGuards»
 				«FOR key : guardExpressions.keySet»
@@ -94,6 +94,20 @@ class GenerateDefinitions {
 				«ENDFOR»
 				return toReturn;
 			}
+		«ENDFOR»
+		'''
+	}
+	
+	def String declareActions(Tree tree){
+		var HashMap<String,Action> actions = new HashMap<String,Action>()
+		tree.getActions(actions)
+		'''
+		«FOR key : actions.keySet»
+			«IF(actions.get(key).type.set.equals("outputAction"))»
+			«actions.get(key).outputAction(key)»
+			«ELSE»
+			«actions.get(key).inputAction(key)»
+			«ENDIF»
 		«ENDFOR»
 		'''
 	}
