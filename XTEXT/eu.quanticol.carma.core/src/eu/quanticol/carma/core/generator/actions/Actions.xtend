@@ -23,7 +23,7 @@ class Actions {
 		var av = am.get(action.name.label)		
 		'''
 		«IF(action.type.set.equals("outputAction"))»
-		«name.getActionOutput(av.carmaName,
+		«name.getActionOutput(av.staticName,
 			av.isBroadcast,
 			av.getPredicate(action.hashCode), 
 			av.getUpdate(action.hashCode),
@@ -31,7 +31,7 @@ class Actions {
 			cvm
 		)»
 		«ELSE»
-		«name.getActionInput(av.carmaName,
+		«name.getActionInput(av.staticName,
 			av.isBroadcast,
 			av.getPredicate(action.hashCode), 
 			av.getUpdate(action.hashCode),
@@ -57,7 +57,7 @@ class Actions {
 		
 			«getOutputUpdate(updateBlock,cvm)»
 		
-			«getValues(valueBlock)»
+			«getValues(valueBlock,cvm)»
 		};
 		'''
 	}
@@ -73,9 +73,9 @@ class Actions {
 		'''
 		CarmaInput «action_name» = new CarmaInput( «action_enum», «isBroadcast» ) {
 			
-			«getInputActionPredicate(satisfyBlock, valueBlock,cvm)»
+			«getInputActionPredicate(satisfyBlock, valueBlock, cvm)»
 		
-			«getInputUpdate(updateBlock,cvm)»
+			«getInputUpdate(updateBlock,valueBlock, cvm)»
 		
 		};
 		'''

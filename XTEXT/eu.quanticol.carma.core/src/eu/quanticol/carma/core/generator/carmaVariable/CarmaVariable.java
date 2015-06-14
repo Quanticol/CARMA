@@ -3,6 +3,7 @@ package eu.quanticol.carma.core.generator.carmaVariable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import eu.quanticol.carma.core.carma.CarmaInteger;
 import eu.quanticol.carma.core.carma.DoubleAssignment;
 import eu.quanticol.carma.core.carma.DoubleAssignmentCarmaDouble;
 import eu.quanticol.carma.core.carma.DoubleAssignmentMethodReference;
@@ -17,10 +18,14 @@ import eu.quanticol.carma.core.carma.IntegerAssignmentCarmaInteger;
 import eu.quanticol.carma.core.carma.IntegerAssignmentMethodReference;
 import eu.quanticol.carma.core.carma.IntegerAssignmentVariableName;
 import eu.quanticol.carma.core.carma.MethodReferenceMethodDeclaration;
+import eu.quanticol.carma.core.carma.PrimitiveType;
 import eu.quanticol.carma.core.carma.Range;
+import eu.quanticol.carma.core.carma.RecordDeclaration;
+import eu.quanticol.carma.core.carma.RecordName;
 import eu.quanticol.carma.core.carma.VariableDeclarationCarmaDouble;
 import eu.quanticol.carma.core.carma.VariableDeclarationCarmaIntger;
 import eu.quanticol.carma.core.carma.VariableDeclarationEnum;
+import eu.quanticol.carma.core.carma.VariableName;
 
 
 public class CarmaVariable {
@@ -33,16 +38,16 @@ public class CarmaVariable {
 	private String class_ass = "Integer.class";
 	private boolean isRecord = false;
 	private boolean isInt = true;
+	private boolean isGlobal = false;
 	private HashMap<Integer,CarmaVariableAssignment> assigns;
 	private String prefix;
-	
 	private String psf = "public static final ";
 	private String eq = " = ";
 	private String end = ";";
 	private char q = '"';
 	
 	//assumes that if this is a record, we have variable_record
-	public CarmaVariable(String name, Boolean isInt, Boolean isRecord){
+	public CarmaVariable(String name, Boolean isInt, Boolean isRecord, Boolean isGlobal){
 		setAttribute(name);
 		setType(name);
 		setJavaName(name);
@@ -50,6 +55,7 @@ public class CarmaVariable {
 			changeTypeToDouble();
 		this.isRecord = isRecord;
 		this.assigns = new HashMap<Integer,CarmaVariableAssignment>();
+		this.isGlobal = isGlobal;
 	}
 	
 	private void changeTypeToDouble(){
@@ -119,62 +125,87 @@ public class CarmaVariable {
 	
 	public void addValue(int hashCode, Object value){
 		CarmaVariableAssignment toAssign = new CarmaVariableNull();
-		
 		if(value instanceof EnumAssignmentCarmaInteger){
 			CarmaVariableInteger cv = new CarmaVariableInteger();
-			Object v = ((EnumAssignmentCarmaInteger) value).getNaturalValue();
-			setValue(toAssign,cv,v);
+			Object v = ((CarmaInteger) ((EnumAssignmentCarmaInteger) value).getNaturalValue()).getValue();
+			setValue(assigns,toAssign,cv,v,hashCode);
+			
 		} else if (value instanceof EnumAssignmentMethodReference){	
 			CarmaVariableMethodRefence cv = new CarmaVariableMethodRefence();
 			Object v = ((EnumAssignmentMethodReference) value).getMethod();
-			setValue(toAssign,cv,v);
+			setValue(assigns,toAssign,cv,v,hashCode);
+			
 		} else if (value instanceof EnumAssignmentRange){
 			CarmaVariableRange cv = new CarmaVariableRange();
 			ArrayList<Integer> range = new ArrayList<Integer>();
 			range.add(((Range) ((EnumAssignmentRange) value).getRange()).getMin());
 			range.add(((Range) ((EnumAssignmentRange) value).getRange()).getMin());
 			Object v = range;
-			setValue(toAssign,cv,v);
+			setValue(assigns,toAssign,cv,v,hashCode);
+			
 		} else if (value instanceof EnumAssignmentVariableName){
 			CarmaVariableReference cv = new CarmaVariableReference();
-			Object v = ((EnumAssignmentVariableName) value).getRef();
-			setValue(toAssign,cv,v);
-		} else if (value instanceof EnumAssignmentVariableName){
-			CarmaVariableReference cv = new CarmaVariableReference();
-			Object v = ((EnumAssignmentVariableName) value).getRef();
-			setValue(toAssign,cv,v);
+			Object v = ((VariableName) ((EnumAssignmentVariableName) value).getRef().getName()).getName();
+			setValue(assigns,toAssign,cv,v,hashCode);
+			
 		} else if (value instanceof DoubleAssignmentCarmaDouble){
 			CarmaVariableDouble cv = new CarmaVariableDouble();
 			Object v = ((DoubleAssignmentCarmaDouble) value).getDoubleValue();
-			setValue(toAssign,cv,v);
+			setValue(assigns,toAssign,cv,v,hashCode);
+			
 		} else if (value instanceof DoubleAssignmentMethodReference){
 			CarmaVariableMethodRefence cv = new CarmaVariableMethodRefence();
 			Object v = ((DoubleAssignmentMethodReference) value).getMethod();
-			setValue(toAssign,cv,v);
+			setValue(assigns,toAssign,cv,v,hashCode);
+			
 		} else if (value instanceof DoubleAssignmentVariableName){
 			CarmaVariableReference cv = new CarmaVariableReference();
-			Object v = ((DoubleAssignmentVariableName) value).getReference();
-			setValue(toAssign,cv,v);
+			Object v = ((VariableName) ((DoubleAssignmentVariableName) value).getReference().getName()).getName();
+			setValue(assigns,toAssign,cv,v,hashCode);
+			
 		} else if (value instanceof IntegerAssignmentCarmaInteger){
 			CarmaVariableDouble cv = new CarmaVariableDouble();
 			Object v = ((IntegerAssignmentCarmaInteger) value).getIntegerValue();
-			setValue(toAssign,cv,v);
+			setValue(assigns,toAssign,cv,v,hashCode);
+			
 		} else if (value instanceof IntegerAssignmentMethodReference){
 			CarmaVariableMethodRefence cv = new CarmaVariableMethodRefence();
 			Object v = ((IntegerAssignmentMethodReference) value).getMethod();
-			setValue(toAssign,cv,v);
+			setValue(assigns,toAssign,cv,v,hashCode);
+			
 		} else if (value instanceof IntegerAssignmentVariableName){
 			CarmaVariableReference cv = new CarmaVariableReference();
-			Object v = ((IntegerAssignmentVariableName) value).getReference();
-			setValue(toAssign,cv,v);
-		}
-		this.assigns.put(hashCode,toAssign);
+			Object v = ((VariableName) ((IntegerAssignmentVariableName) value).getReference().getName()).getName();
+			setValue(assigns,toAssign,cv,v,hashCode);
+			
+		} else if (value instanceof RecordDeclaration){
+			CarmaVariableReference cv = new CarmaVariableReference();
+			Object v = ((RecordName) ((RecordDeclaration) value).getName()).getName();
+			setValue(assigns,toAssign,cv,v,hashCode);
+			
+		} 
+		
 	}
 	
-	private void setValue(CarmaVariableAssignment toAssign, CarmaVariableAssignment cv, Object value){
+	private void setValue(HashMap<Integer,CarmaVariableAssignment> assigns, 
+			CarmaVariableAssignment toAssign, 
+			CarmaVariableAssignment cv, 
+			Object value,
+			int hashCode){
+		
 		if(cv.setValue(value)){
-			toAssign = cv;
+			assigns.put(hashCode,cv);
+		} else {
+			assigns.put(hashCode,toAssign);
 		}
+	}
+	
+	public boolean isGlobal(){
+		return this.isGlobal;
+	}
+	
+	public String getValueAsString(int hashCode){
+		return this.assigns.get(hashCode).getValue()+"";
 	}
 	
 }

@@ -61,16 +61,32 @@ component Monitor(enum a, record d, Z){
     }
 }
 
+component Flash(enum a, enum b){
+	store{
+		enum x := a;
+		enum y := b;
+	}
+	
+	behaviour{
+		Die = think*.nil;
+	}
+	
+	init{
+		Die;
+	}
+}
+
 measures{
-	measure Waiting[ enum i := 1..3, enum j := 1..3] = #{ *  | data >= 0 };
+	measure Waiting[ enum i := 1..3, enum j := 1..3] = #{ *  | position.x == i && position.y == j };
 }
 
 
 system Simple{
 
     collective{
-        new Sensor(1,1,1,Sense|Send);
-        new Monitor(1,{x := 1, y := 1},Analyse|Receive);
+    	new Monitor(1,{x := 1..3, y := 1..3},Analyse|Receive);
+        new Sensor(1,1..3,1..3,Sense|Send);
+        
     }
 
     environment{
@@ -82,8 +98,8 @@ system Simple{
     	}
     	
     	prob{
-    		[(receiver.position.x - global.center.x == 0) && (receiver.position.y - global.center.y == 0)]	send : 1;
-    		[(sender.position.x - global.center.x == 0) && (sender.position.y - global.center.y == 0)]	send : 0.75;
+    		[(receiver.position.x - global.center.x == 0) && (receiver.position.y - global.center.y == 0)]	send : 1.0;
+    		[(receiver.position.x - global.center.x == 1) && (receiver.position.y - global.center.y == 1)] send : 0.5;
         	default : 0.5;
     	}
     	
@@ -94,10 +110,11 @@ system Simple{
         	[sender.data > 5 && sender.data <= 10] sense* : 1;
         	[true]	sense* : 1;
         	[true]	analyse* : 1;
+        	[true]	think* : 1/#{ *  | true };
         }
         
         update{
-        	[true] send : global.reports := global.reports + 1;
+        	[true] send : global.reports := global.reports + 1, new Flash(1..3,sender.position.y);
         }
     }
 }'''

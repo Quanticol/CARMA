@@ -15,6 +15,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.generator.IGenerator
 import eu.quanticol.carma.core.generator.actions.ActionManager
 import eu.quanticol.carma.core.generator.components.ComponentManager
+import eu.quanticol.carma.core.generator.measures.MeasureManager
 
 /**
  * Generates code from your model files on save.
@@ -43,18 +44,31 @@ class CARMAGenerator implements IGenerator {
 		actionManager.populateActionManager(model)
 		
 		var componentManager = new ComponentManager(actionManager,variableManager)
-		componentManager.populateComponentManager(model,actionManager,variableManager)
+		componentManager.populateComponentManager(model)
+		
+		var measureManager = new MeasureManager(actionManager,variableManager,componentManager)
+		measureManager.populateMeasureManager(model)
 		
 		var modelName = model.label
-		var URI = "carma" + "/" + modelName
-		var packageName = "package carma." + modelName
+		var URI = "carma" + "/" + modelName.toLowerCase
+		var packageName = "package carma." + modelName.toLowerCase
 		
 		//Definitions
-		fsa.generateFile(URI + "/" + modelName + "Definition.java",model.compileDefinitions(packageName,variableManager,actionManager,componentManager))
+		fsa.generateFile(URI + "/" + modelName + "Definition.java",model.compileDefinitions(packageName,
+			variableManager,
+			actionManager,
+			componentManager,
+			measureManager
+		))
 		
 		//Systems
 		for(system : systems){
-			fsa.generateFile(URI + "/" + system.label + ".java", system.compileSystem(packageName))
+			fsa.generateFile(URI + "/" + system.label + ".java", system.compileSystem(packageName,
+				variableManager,
+				actionManager,
+				componentManager,
+				measureManager
+			))
 		}
 		
 		//Factory

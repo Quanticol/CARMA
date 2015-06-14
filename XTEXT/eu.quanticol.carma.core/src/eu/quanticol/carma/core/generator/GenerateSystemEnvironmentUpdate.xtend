@@ -4,41 +4,25 @@ import com.google.inject.Inject
 import eu.quanticol.carma.core.carma.EnvironmentUpdate
 import eu.quanticol.carma.core.carma.Model
 import eu.quanticol.carma.core.carma.System
-import eu.quanticol.carma.core.typing.TypeProvider
+import eu.quanticol.carma.core.generator.carmaVariable.CarmaVariableManager
+import eu.quanticol.carma.core.generator.predicates.Predicates
 import eu.quanticol.carma.core.utils.LabelUtil
-import eu.quanticol.carma.core.utils.Util
-import java.util.ArrayList
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
 
 class GenerateSystemEnvironmentUpdate {
 	
-	@Inject extension TypeProvider
 	@Inject extension LabelUtil
-	@Inject extension Util
-	@Inject extension GeneratorUtils
+	@Inject extension Predicates
 	
-	def String defineEnvironmentUpdatesPredicates(System system){
+	def String defineEnvironmentUpdatePredicates(System system, CarmaVariableManager cvm){
 		
-		var updates = system.getContainerOfType(Model).eAllOfType(EnvironmentUpdate)
-		var unicasts = new ArrayList<EnvironmentUpdate>()
-		var broadcasts = new ArrayList<EnvironmentUpdate>()
-		
-		for(eu : updates)
-			if(eu.stub.isBroadcast)
-				broadcasts.add(eu)
-			else
-				unicasts.add(eu)
+		var casts = system.getContainerOfType(Model).eAllOfType(EnvironmentUpdate)
 		'''
-		«FOR broadcast : broadcasts»
-		«defineCastPredicates(broadcast)»
-		«ENDFOR»
-		
-		«FOR unicast : unicasts»
-		«defineCastPredicates(unicast)»
+		«FOR cast : casts»
+		«cast.convertToPredicateName.getEvolutionRulePredicate("rstore","sstore",cast.guard.booleanExpression,cvm)»
 		«ENDFOR»
 		'''
 		
 	}
-	
 }

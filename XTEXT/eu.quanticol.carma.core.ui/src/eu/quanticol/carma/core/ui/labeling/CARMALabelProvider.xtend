@@ -17,6 +17,7 @@ import eu.quanticol.carma.core.carma.BlockSystem
 import eu.quanticol.carma.core.carma.Name
 import eu.quanticol.carma.core.carma.BooleanExpression
 import eu.quanticol.carma.core.carma.Measure
+import eu.quanticol.carma.core.generator.ExpressionHandler
 
 /**
  * Provides labels for a EObjects.
@@ -30,7 +31,8 @@ class CARMALabelProvider extends DefaultEObjectLabelProvider {
 		super(delegate);
 	}
 	
-	@Inject extension LabelUtil 
+	@Inject extension LabelUtil
+	@Inject extension ExpressionHandler
 
 	// Labels and icons can be computed like this:
 	
@@ -67,7 +69,7 @@ class CARMALabelProvider extends DefaultEObjectLabelProvider {
 	}
 	
 	def text(BooleanExpression x){
-		x.label
+		x.disarmExpression
 	}
 	
 }

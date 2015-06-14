@@ -20,6 +20,12 @@ import java.util.ArrayList
 import java.util.HashMap
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
+import eu.quanticol.carma.core.carma.VariableReferenceReceiver
+import eu.quanticol.carma.core.carma.RecordReferenceReceiver
+import eu.quanticol.carma.core.carma.VariableReferenceSender
+import eu.quanticol.carma.core.carma.RecordReferenceSender
+import eu.quanticol.carma.core.carma.VariableReferenceGlobal
+import eu.quanticol.carma.core.carma.RecordReferenceGlobal
 
 class SatisfyBlock {
 	
@@ -27,130 +33,43 @@ class SatisfyBlock {
 	@Inject extension GeneratorUtils
 	@Inject extension ExpressionHandler
 	
-	def String getInputSatisfyBlock(BooleanExpressions bes, InputActionArguments value, CarmaVariableManager manager){
-		switch(bes){
-			NullBooleanExpression: '''return true;'''
-			default: '''
+	def String getMeasureSatisfyBlock(BooleanExpressions bes, CarmaVariableManager manager){
+		var HashMap<String,VariableReference> vrs = getAllInput(bes,manager)
+		'''
 		boolean hasAttributes = true;
-		«bes.declareAll(manager)»
-		«setupInputArguments(value)»
-		«bes.setupInputActionStores(manager)»
-		«bes.express»
-		'''
-		}
-		
-	}
-	
-	def String setupInputArguments(InputActionArguments value){
-		var ArrayList<VariableName> vns = new ArrayList<VariableName>(value.eAllOfType(VariableName))
-		'''
-		«FOR vn : vns»
-		«vn.label» = ((int[]) value)[«vns.indexOf(vn)»];
+		«FOR item : manager.declareAll(vrs,"")»
+		«item»
 		«ENDFOR»
-		'''	
-	}
-	
-	def String getOutputSatisfyBlock(BooleanExpressions bes, CarmaVariableManager manager){
-		switch(bes){
-			NullBooleanExpression: '''return true;'''
-			default: '''
-		boolean hasAttributes = true;
-		«bes.declareAll(manager)»
-		«bes.setupOutputActionStores(manager)»
+		«manager.setupStores(vrs,"")»
 		«bes.express»
 		'''
-		}
-		
 	}
 	
-	//always its own Store, no "outside" values
 	def String getGuardSatisfyBlock(BooleanExpressions bes, CarmaVariableManager manager){
+		var vrs = getAll(bes,manager)
 		'''
 		boolean hasAttributes = true;
-		«bes.declareAll(manager)»
-		«bes.setupStores(manager)»
+		«FOR item : manager.declareAll(vrs,"")»
+		«item»
+		«ENDFOR»
+		«manager.setupStores(vrs,"")»
 		«bes.express»
 		'''
 	}
 	
-	def String declareAll(BooleanExpressions expressions, CarmaVariableManager manager){
-		var vrs = expressions.eAllOfType(VariableReference)
-		'''
-		«FOR vr : vrs»
-		«var name = manager.cleanName(vr.label)»
-		«manager.getJavaDeclaration(name,vr,"")» = 0;
-		«ENDFOR»
-		'''
-	}
-	
-	def String setupStores(BooleanExpressions expressions, CarmaVariableManager manager){
-		var vrs = expressions.eAllOfType(VariableReference)
-		'''
-		«FOR vr : vrs»
-		«var name = manager.cleanName(vr.label)»
-		«manager.getCarmaName(name,vr).getStore("Integer.class",manager.getJavaAssign(name,vr,""),"store","hasAttributes")»
-		«ENDFOR»
-		'''
-	}
-	
-	def String setupInputActionStores(BooleanExpressions expressions, CarmaVariableManager manager){
+	def HashMap<String,VariableReference> getAll(BooleanExpressions expressions, CarmaVariableManager manager){
 		var HashMap<String,VariableReference> vrs 	= new HashMap<String,VariableReference>()
-		
-		for(vr : expressions.eAllOfType(VariableReferencePure)){
-			vrs.put(manager.cleanName(vr.name.label),vr);
-		}
-		for(vr : expressions.eAllOfType(VariableReferenceMy)){
-			vrs.put(manager.cleanName(vr.name.label),vr);
-		}
-		for(vr : expressions.eAllOfType(VariableReferenceThis)){
-			vrs.put(manager.cleanName(vr.name.label),vr);
-		}
-		for(vr : expressions.eAllOfType(RecordReferencePure)){
-			vrs.put(manager.cleanName(vr.name.label+"_"+vr.record.label),vr);
+		for(vr : expressions.eAllOfType(VariableReference)){
+			vrs.put(manager.cleanName(vr.asJava),vr);
 		}	
-		for(vr : expressions.eAllOfType(RecordReferenceMy)){
-			vrs.put(manager.cleanName(vr.name.label+"_"+vr.record.label),vr);
-		}		
-		for(vr : expressions.eAllOfType(RecordReferenceThis)){
-			vrs.put(manager.cleanName(vr.name.label+"_"+vr.record.label),vr);
-		}				
+		return vrs
+	}
+	
+	def String setupStores(CarmaVariableManager manager, HashMap<String,VariableReference> vrs, String modifier){
 		'''
 		«FOR key : vrs.keySet»
-		«IF manager.contains(key)»
-		«manager.getCarmaName(key,vrs.get(key)).getStore("Integer.class",manager.getJavaAssign(key,vrs.get(key),""),"inputStore","hasAttributes")»
-		«ENDIF»
-		«ENDFOR»
-		'''
-	}
-	
-	def String setupOutputActionStores(BooleanExpressions expressions, CarmaVariableManager manager){
-		var HashMap<String,VariableReference> vrs_ia 	= new HashMap<String,VariableReference>()
-		var HashMap<String,VariableReference> vrs_oa 	= new HashMap<String,VariableReference>()
-		
-		for(vr : expressions.eAllOfType(VariableReferencePure)){
-			vrs_ia.put(manager.cleanName(vr.label),vr);
-		}
-		for(vr : expressions.eAllOfType(VariableReferenceMy)){
-			vrs_oa.put(manager.cleanName(vr.label),vr);
-		}
-		for(vr : expressions.eAllOfType(VariableReferenceThis)){
-			vrs_oa.put(manager.cleanName(vr.label),vr);
-		}
-		for(vr : expressions.eAllOfType(RecordReferencePure)){
-			vrs_ia.put(manager.cleanName(vr.label),vr);
-		}	
-		for(vr : expressions.eAllOfType(RecordReferenceMy)){
-			vrs_oa.put(manager.cleanName(vr.label),vr);
-		}		
-		for(vr : expressions.eAllOfType(RecordReferenceThis)){
-			vrs_oa.put(manager.cleanName(vr.label),vr);
-		}	
-		'''
-		«FOR key : vrs_ia.keySet»
-		«manager.getCarmaName(key,vrs_ia.get(key)).getStore("Integer.class",manager.getJavaAssign(key,vrs_ia.get(key),""),"inputStore","hasAttributes")»
-		«ENDFOR»
-		«FOR key : vrs_oa.keySet»
-		«manager.getCarmaName(key,vrs_oa.get(key)).getStore("Integer.class",manager.getJavaAssign(key,vrs_oa.get(key),""),"outputStore","hasAttributes")»
+		«var vr = vrs.get(key)»
+		«manager.getCarmaName(key,vr).getStore("Integer.class",manager.getJavaAssign(key,vr,modifier),modifier+"store","hasAttributes")»
 		«ENDFOR»
 		'''
 	}
@@ -164,6 +83,195 @@ class SatisfyBlock {
 		}
 		'''
 	}
+	
+	def String getInputSatisfyBlock(BooleanExpressions bes, InputActionArguments value, CarmaVariableManager manager){
+		var HashMap<String,VariableReference> vrs = getAllInput(bes,manager)
+		switch(bes){
+			NullBooleanExpression: '''return true;'''
+			default: {
+				'''
+				boolean hasAttributes = true;
+				«FOR item : manager.declareAll(vrs,"i")»
+				«item»
+				«ENDFOR»
+				«setupInputArguments(value)»
+				«manager.setupStores(vrs,"i")»
+				«bes.expressInputAction»
+				'''
+			}
+		}
+		
+	}
+	
+	def HashMap<String,VariableReference> getAllInput(BooleanExpressions expressions, CarmaVariableManager manager){
+		var HashMap<String,VariableReference> vrs 	= new HashMap<String,VariableReference>()
+		
+		for(vr : expressions.eAllOfType(VariableReference)){
+			if(manager.contains(manager.cleanName(vr.asJava)))
+				vrs.put(manager.cleanName(vr.asJava),vr);
+		}
+		return vrs
+	}
+	
+	def String setupInputArguments(InputActionArguments value){
+		var ArrayList<VariableName> vns = new ArrayList<VariableName>(value.eAllOfType(VariableName))
+		'''
+		«FOR vn : vns»
+		int «vn.label»_i = ((int[]) value)[«vns.indexOf(vn)»];
+		«ENDFOR»
+		'''	
+	}
+	
+	def String expressInputAction(BooleanExpressions expressions){
+		'''
+		if(hasAttributes){
+			return «expressions.asJavaInputAction»;
+		} else {
+			return false;
+		}
+		'''
+	}
+	
+	def String getOutputSatisfyBlock(BooleanExpressions bes, CarmaVariableManager manager){
+		switch(bes){
+			NullBooleanExpression: '''return true;'''
+			default: {
+				var HashMap<String,VariableReference> vrs_i = getAllOutputI(bes,manager)
+				var HashMap<String,VariableReference> vrs_o = getAllOutputO(bes,manager)
+				'''
+				boolean hasAttributes = true;
+				«FOR item : manager.declareAllCheck(vrs_i,"i")»
+				«item»
+				«ENDFOR»
+				«FOR item : manager.declareAllCheck(vrs_o,"o")»
+				«item»
+				«ENDFOR»
+				«manager.setupStores(vrs_i,"i")»
+				«manager.setupStores(vrs_o,"o")»
+				«bes.expressOutputAction»
+				'''
+			}
+		}
+	}
+	
+	def HashMap<String,VariableReference> getAllOutputI(BooleanExpressions expressions, CarmaVariableManager manager){
+		var HashMap<String,VariableReference> vrs 	= new HashMap<String,VariableReference>()
+		
+		for(vr : expressions.eAllOfType(VariableReferencePure)){
+			vrs.put(manager.cleanName(vr.asJava),vr);
+		}
+		for(vr : expressions.eAllOfType(RecordReferencePure)){
+			vrs.put(manager.cleanName(vr.asJava),vr);
+		}	
+		return vrs
+	}
+	
+	def HashMap<String,VariableReference> getAllOutputO(BooleanExpressions expressions, CarmaVariableManager manager){
+		var HashMap<String,VariableReference> vrs 	= new HashMap<String,VariableReference>()
 
+		for(vr : expressions.eAllOfType(VariableReferenceMy)){
+			vrs.put(manager.cleanName(vr.asJava),vr);
+		}
+		for(vr : expressions.eAllOfType(VariableReferenceThis)){
+			vrs.put(manager.cleanName(vr.asJava),vr);
+		}
+		for(vr : expressions.eAllOfType(RecordReferenceMy)){
+			vrs.put(manager.cleanName(vr.asJava),vr);
+		}		
+		for(vr : expressions.eAllOfType(RecordReferenceThis)){
+			vrs.put(manager.cleanName(vr.asJava),vr);
+		}
+		return vrs	
+	}
+	
+	def String expressOutputAction(BooleanExpressions expressions){
+		'''
+		if(hasAttributes){
+			return «expressions.asJavaOutputAction»;
+		} else {
+			return false;
+		}
+		'''
+	}
+	
+	def String getCastSatisfyBlock(BooleanExpressions bes, CarmaVariableManager manager){
+		switch(bes){
+			NullBooleanExpression: '''return false;'''
+			default: {
+				var HashMap<String,VariableReference> vrs_r = getAllOutputR(bes,manager)
+				var HashMap<String,VariableReference> vrs_s = getAllOutputS(bes,manager)
+				var HashMap<String,VariableReference> vrs_g = getAllOutputG(bes,manager)
+				'''
+				boolean hasAttributes = true;
+				«FOR item : manager.declareAllCheck(vrs_r,"r")»
+				«item»
+				«ENDFOR»
+				«FOR item : manager.declareAllCheck(vrs_s,"s")»
+				«item»
+				«ENDFOR»
+				«FOR item : manager.declareAll(vrs_g,"global_")»
+				«item»
+				«ENDFOR»
+				«manager.setupStores(vrs_r,"r")»
+				«manager.setupStores(vrs_s,"s")»
+				«manager.setupStores(vrs_g,"global_")»
+				«bes.expressEvolutionRule»
+				'''
+			}
+		}
+	}
+	
+	def String expressEvolutionRule(BooleanExpressions expressions){
+		'''
+		if(hasAttributes){
+			return «expressions.asJavaEvolutionRule»;
+		} else {
+			return false;
+		}
+		'''
+	}
+	
+	def HashMap<String,VariableReference> getAllOutputR(BooleanExpressions expressions, CarmaVariableManager manager){
+		var HashMap<String,VariableReference> vrs 	= new HashMap<String,VariableReference>()
+		
+		for(vr : expressions.eAllOfType(VariableReferenceReceiver)){
+			vrs.put(manager.cleanName(vr.asJava),vr);
+		}
+		for(vr : expressions.eAllOfType(RecordReferenceReceiver)){
+			vrs.put(manager.cleanName(vr.asJava),vr);
+		}	
+		return vrs
+	}
+	
+	def HashMap<String,VariableReference> getAllOutputS(BooleanExpressions expressions, CarmaVariableManager manager){
+		var HashMap<String,VariableReference> vrs 	= new HashMap<String,VariableReference>()
+		
+		for(vr : expressions.eAllOfType(VariableReferenceSender)){
+			vrs.put(manager.cleanName(vr.asJava),vr);
+		}
+		for(vr : expressions.eAllOfType(RecordReferenceSender)){
+			vrs.put(manager.cleanName(vr.asJava),vr);
+		}	
+		return vrs
+	}
+	
+	def HashMap<String,VariableReference> getAllOutputG(BooleanExpressions expressions, CarmaVariableManager manager){
+		var HashMap<String,VariableReference> vrs 	= new HashMap<String,VariableReference>()
+		
+		for(vr : expressions.eAllOfType(VariableReferencePure)){
+			vrs.put(manager.cleanName(vr.asJava),vr);
+		}
+		for(vr : expressions.eAllOfType(RecordReferencePure)){
+			vrs.put(manager.cleanName(vr.asJava),vr);
+		}
+		for(vr : expressions.eAllOfType(VariableReferenceGlobal)){
+			vrs.put(manager.cleanName("GLOBAL_"+vr.asJava),vr);
+		}
+		for(vr : expressions.eAllOfType(RecordReferenceGlobal)){
+			vrs.put(manager.cleanName("GLOBAL_"+vr.asJava),vr);
+		}
+		System.out.println(vrs)
+		return vrs
+	}
 	
 }

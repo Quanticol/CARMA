@@ -4,7 +4,7 @@ import eu.quanticol.carma.core.carma.VariableReference;
 
 public class CarmaVariableReference implements CarmaVariableAssignment {
 
-	private VariableReference value = null;
+	private String value = "";
 	
 	public CarmaVariableReference(){
 	}
@@ -16,8 +16,8 @@ public class CarmaVariableReference implements CarmaVariableAssignment {
 	
 	@Override
 	public boolean setValue(Object obj) {
-		if(obj instanceof VariableReference){
-			this.value = (VariableReference) obj;
+		if(obj instanceof String){
+			this.value = (String) obj;
 			return true;
 		} else {
 			return false;

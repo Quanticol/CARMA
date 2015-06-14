@@ -38,10 +38,12 @@ public class ActionVariable {
 	private HashMap<String,String> probs;
 	private HashMap<String,String> updas;
 	private boolean isBroadcast = false;
+	private String modelName;
 	
 	
-	public ActionVariable(String name, int counter, int hashCode){
+	public ActionVariable(String name, int counter, int hashCode, String modelName){
 		this.counter = counter;
+		this.modelName = modelName;
 		setCarmaName(name);
 		names = new HashMap<String, Integer>();
 		hashes = new HashMap<Integer, String>();
@@ -78,6 +80,10 @@ public class ActionVariable {
 	
 	public BooleanExpressions getPredicate(int hashCode){
 		return this.predicates.get(hashCode);
+	}
+	
+	public String getStaticName(){
+		return this.modelName+"Definition."+this.carma_name;
 	}
 	
 	public String getCarmaName(){
@@ -140,6 +146,11 @@ public class ActionVariable {
 	
 	public InputActionArguments getInputActionArguments(int hashCode){
 		return this.inputArgs.get(hashCode);
+	}
+
+	public void loadModelName(String string) {
+		this.modelName = string;
+		
 	}
 
 }

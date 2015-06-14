@@ -21,6 +21,7 @@ import eu.quanticol.carma.core.carma.CarmaBoolean
 import eu.quanticol.carma.core.carma.CarmaDouble
 import eu.quanticol.carma.core.carma.CarmaInteger
 import eu.quanticol.carma.core.carma.CeilingFunction
+import eu.quanticol.carma.core.carma.Component
 import eu.quanticol.carma.core.carma.EnvironmentAddition
 import eu.quanticol.carma.core.carma.EnvironmentAtomicMeasure
 import eu.quanticol.carma.core.carma.EnvironmentAtomicMethodReference
@@ -30,6 +31,11 @@ import eu.quanticol.carma.core.carma.EnvironmentAtomicVariable
 import eu.quanticol.carma.core.carma.EnvironmentDivision
 import eu.quanticol.carma.core.carma.EnvironmentExpression
 import eu.quanticol.carma.core.carma.EnvironmentExpressions
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionAll
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAState
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAllStates
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionParallel
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressions
 import eu.quanticol.carma.core.carma.EnvironmentMeasure
 import eu.quanticol.carma.core.carma.EnvironmentModulo
 import eu.quanticol.carma.core.carma.EnvironmentMultiplication
@@ -45,6 +51,8 @@ import eu.quanticol.carma.core.carma.EnvironmentUpdateExpressions
 import eu.quanticol.carma.core.carma.EnvironmentUpdateMultiplication
 import eu.quanticol.carma.core.carma.EnvironmentUpdateSubtraction
 import eu.quanticol.carma.core.carma.FloorFunction
+import eu.quanticol.carma.core.carma.ForVariableDeclaration
+import eu.quanticol.carma.core.carma.MacroExpressionReference
 import eu.quanticol.carma.core.carma.MaxFunction
 import eu.quanticol.carma.core.carma.MethodAddition
 import eu.quanticol.carma.core.carma.MethodAtomicMethodReference
@@ -60,6 +68,13 @@ import eu.quanticol.carma.core.carma.MethodReferenceMethodDeclaration
 import eu.quanticol.carma.core.carma.MethodReferencePredefinedMethodDeclaration
 import eu.quanticol.carma.core.carma.MethodSubtraction
 import eu.quanticol.carma.core.carma.MinFunction
+import eu.quanticol.carma.core.carma.Model
+import eu.quanticol.carma.core.carma.NCA
+import eu.quanticol.carma.core.carma.NewComponentArgumentDeclare
+import eu.quanticol.carma.core.carma.NewComponentArgumentMacro
+import eu.quanticol.carma.core.carma.NewComponentArgumentMethod
+import eu.quanticol.carma.core.carma.NewComponentArgumentPrimitive
+import eu.quanticol.carma.core.carma.NewComponentArgumentReference
 import eu.quanticol.carma.core.carma.PDFunction
 import eu.quanticol.carma.core.carma.PredefinedMethodDeclaration
 import eu.quanticol.carma.core.carma.PrimitiveType
@@ -87,10 +102,18 @@ import eu.quanticol.carma.core.carma.VariableReferenceReceiver
 import eu.quanticol.carma.core.carma.VariableReferenceSender
 import eu.quanticol.carma.core.carma.VariableReferenceThis
 import eu.quanticol.carma.core.utils.LabelUtil
+import eu.quanticol.carma.core.utils.Util
+import java.util.ArrayList
+import java.util.HashMap
+import java.util.HashSet
+import static extension org.eclipse.xtext.EcoreUtil2.*
+import eu.quanticol.carma.core.carma.Records
+import eu.quanticol.carma.core.carma.RecordDeclaration
 
 public class ExpressionHandler {
 	
 	@Inject extension LabelUtil
+	@Inject extension Util
 	
 	def String evaluateExpression(Object obj){
 		var String toReturn = "evaluateExpression";
@@ -100,8 +123,91 @@ public class ExpressionHandler {
 			BooleanExpressions:				return obj.asJava
 			UpdateExpressions:				return obj.asJava
 			MethodExpressions:				return obj.asJava
+			EnvironmentMacroExpressions:	return obj.asJava
 			default:						return toReturn
 		}
+	}
+	
+	def String asJava(EnvironmentMacroExpressions ems){
+		var componentState = new HashMap<String,ArrayList<String>>()
+		ems.getComponentState(componentState)
+		var output = ""
+		if(componentState.keySet.size > 0){
+			output = output + '''
+			( 
+			(((CarmaSequentialProcess) p).automaton() ==  «ems.getContainerOfType(Model).label»Definition.«componentState.keySet.get(0)») && (
+			'''
+			for(state : componentState.get(componentState.keySet.get(0))){
+				output = output + '''
+				(((CarmaSequentialProcess) p).automaton().getState("«state»") != null ) ||
+				'''
+			}
+			output = output + '''
+			(((CarmaSequentialProcess) p).getState() !=  null))
+			)
+			'''
+			for(var int i = 1; i < componentState.keySet.size; i++){
+				output = output + '''
+				||( 
+				(((CarmaSequentialProcess) p).automaton() ==  «ems.getContainerOfType(Model).label»Definition.«componentState.keySet.get(i)») && (
+				'''
+				for(state : componentState.get(componentState.keySet.get(i))){
+					output = output + '''
+					(((CarmaSequentialProcess) p).automaton().getState("«state»") != null ) ||
+					'''
+				}
+				
+				output = output + '''
+				(((CarmaSequentialProcess) p).getState() !=  null))
+				)
+				'''
+			}
+		}
+		return output + ";"
+	}
+	
+	def void getComponentState(EnvironmentMacroExpressions ems, HashMap<String,ArrayList<String>> componentState){
+		
+		switch(ems){
+			EnvironmentMacroExpressionParallel: 			{ems.left.getComponentState(componentState)  ems.right.getComponentState(componentState)}  
+			EnvironmentMacroExpressionAll:					ems.allComponents(componentState)
+			EnvironmentMacroExpressionComponentAllStates:	ems.comp.getContainerOfType(Component).aComponentAllStates(componentState)
+			EnvironmentMacroExpressionComponentAState:		ems.comp.getContainerOfType(Component).aComponentAState(componentState,new ArrayList<MacroExpressionReference>(ems.state.eAllOfType(MacroExpressionReference)))
+		}
+	}
+	
+	def void allComponents(EnvironmentMacroExpressions ems, HashMap<String,ArrayList<String>> componentState){
+		var components = ems.getContainerOfType(Model).eAllOfType(Component)
+		for(component : components){
+			componentState.put('''«component.label»Process''',component.allStates)
+		}
+	}
+	
+	def void aComponentAllStates(Component component, HashMap<String,ArrayList<String>> componentState){
+		componentState.put('''«component.label»Process''',component.allStates)
+	}
+	
+	def void aComponentAState(Component component, HashMap<String,ArrayList<String>> componentState, ArrayList<MacroExpressionReference> states){
+		var allStates = allStates(component)
+		var ArrayList<String> output = new ArrayList<String>()
+		for(state : states){
+			for(s : allStates){
+				if(s.equals("state_"+state.label)){
+					output.add(s)
+				}			
+			}
+		}
+		componentState.put('''«component.label»Process''',output)
+	}
+	
+	def ArrayList<String> allStates(Component component){
+		var output = new ArrayList<String>()
+		var HashSet<String> states = new HashSet<String>()
+		var tree = component.getTree
+		tree.getStates(states)
+		for(state : states)
+			output.add(state)
+		return output
 	}
 	
 	def String asJava(UpdateExpressions e){
@@ -129,7 +235,7 @@ public class ExpressionHandler {
 			EnvironmentAtomicNow:							"now()"
 			EnvironmentAtomicMeasure:						e.value.asJava
 			EnvironmentExpression:							e.expression.asJava
-			EnvironmentMeasure:								"Measure"+e.hashCode+"_"+e.componentReference.getLabel.toFirstUpper
+			EnvironmentMeasure:								"getMeasure"+Math.abs(e.hashCode % 1969)+"().measure()"
 		}
 	}
 	
@@ -143,7 +249,7 @@ public class ExpressionHandler {
 			EnvironmentUpdateAtomicMethodReference:					(e.value as MethodExpressions).asJava 
 			EnvironmentUpdateExpression:							e.expression.asJava
 			EnvironmentUpdateAtomicNow:								"now()"
-			EnvironmentUpdateAtomicMeasure:							"getMeasure"+e.hashCode+"()"
+			EnvironmentUpdateAtomicMeasure:							"getMeasure"+Math.abs(e.hashCode % 1969)+"().measure()"
 		}
 	}
 	
@@ -193,6 +299,117 @@ public class ExpressionHandler {
 			RecordReferencePure:			vr.name.label + "_" + vr.record.label
 			RecordReferenceMy:				vr.name.label + "_" + vr.record.label
 			RecordReferenceThis:			vr.name.label + "_" + vr.record.label
+			RecordReferenceReceiver:		vr.name.label + "_" + vr.record.label
+			RecordReferenceSender:			vr.name.label + "_" + vr.record.label
+			RecordReferenceGlobal:			vr.name.label + "_" + vr.record.label
+		}
+	}
+	
+	def String asJavaEvolutionRule(BooleanExpressions e){
+		switch(e){
+			BooleanOr:						{e.left.asJavaEvolutionRule + " || " + e.right.asJavaEvolutionRule }
+			BooleanAnd:						{e.left.asJavaEvolutionRule + " && " + e.right.asJavaEvolutionRule }
+			BooleanEquality:				{e.left.asJavaEvolutionRule + " " + e.op + " " + e.right.asJavaEvolutionRule }
+			BooleanComparison:				{e.left.asJavaEvolutionRule + " " + e.op + " " + e.right.asJavaEvolutionRule }
+			BooleanSubtraction:				{e.left.asJavaEvolutionRule + " - " + e.right.asJavaEvolutionRule }
+			BooleanAddition:				{e.left.asJavaEvolutionRule + " + " + e.right.asJavaEvolutionRule }
+			BooleanMultiplication:			{e.left.asJavaEvolutionRule + " * " + e.right.asJavaEvolutionRule }
+			BooleanModulo:					{e.left.asJavaEvolutionRule + " % " + e.right.asJavaEvolutionRule }
+			BooleanDivision:				{e.left.asJavaEvolutionRule + " / " + e.right.asJavaEvolutionRule }
+			BooleanNot:						{"!"+e.expression.asJavaEvolutionRule}
+			BooleanAtomicPrimitive:			(e.value as PrimitiveType).asJava 	
+			BooleanAtomicVariable:			(e.value as VariableReference).asJavaEvolutionRule 
+			BooleanAtomicMethodReference:	(e.value as MethodExpressions).asJava			
+			BooleanAtomicNow:				"now()"	
+			BooleanExpression:				e.expression.asJavaEvolutionRule
+		}
+	}
+	
+	def String asJavaEvolutionRule(VariableReference vr){
+		switch(vr){
+			VariableReferencePure: 			vr.name.label+"_global_"
+			VariableReferenceMy: 			vr.name.label
+			VariableReferenceThis: 			vr.name.label
+			VariableReferenceReceiver:		vr.name.label+"_r"
+			VariableReferenceSender:		vr.name.label+"_s"
+			VariableReferenceGlobal:		vr.name.label+"_global_"
+			RecordReferencePure:			vr.name.label + "_" + vr.record.label+"_global_"
+			RecordReferenceMy:				vr.name.label + "_" + vr.record.label
+			RecordReferenceThis:			vr.name.label + "_" + vr.record.label
+			RecordReferenceReceiver:		vr.name.label + "_" + vr.record.label+"_r"
+			RecordReferenceSender:			vr.name.label + "_" + vr.record.label+"_s"
+			RecordReferenceGlobal:			vr.name.label + "_" + vr.record.label+"_global_"
+		}
+	}
+	
+	def String asJavaOutputAction(BooleanExpressions e){
+		switch(e){
+			BooleanOr:						{e.left.asJavaOutputAction + " || " + e.right.asJavaOutputAction }
+			BooleanAnd:						{e.left.asJavaOutputAction + " && " + e.right.asJavaOutputAction }
+			BooleanEquality:				{e.left.asJavaOutputAction + " " + e.op + " " + e.right.asJavaOutputAction }
+			BooleanComparison:				{e.left.asJavaOutputAction + " " + e.op + " " + e.right.asJavaOutputAction }
+			BooleanSubtraction:				{e.left.asJavaOutputAction + " - " + e.right.asJavaOutputAction }
+			BooleanAddition:				{e.left.asJavaOutputAction + " + " + e.right.asJavaOutputAction }
+			BooleanMultiplication:			{e.left.asJavaOutputAction + " * " + e.right.asJavaOutputAction }
+			BooleanModulo:					{e.left.asJavaOutputAction + " % " + e.right.asJavaOutputAction }
+			BooleanDivision:				{e.left.asJavaOutputAction + " / " + e.right.asJavaOutputAction }
+			BooleanNot:						{"!"+e.expression.asJavaOutputAction}
+			BooleanAtomicPrimitive:			(e.value as PrimitiveType).asJava 	
+			BooleanAtomicVariable:			(e.value as VariableReference).asJavaOutputAction 
+			BooleanAtomicMethodReference:	(e.value as MethodExpressions).asJava			
+			BooleanAtomicNow:				"now()"	
+			BooleanExpression:				e.expression.asJavaOutputAction
+		}
+	}
+	
+	def String asJavaOutputAction(VariableReference vr){
+		switch(vr){
+			VariableReferencePure: 			vr.name.label+"_i"
+			VariableReferenceMy: 			vr.name.label+"_o"
+			VariableReferenceThis: 			vr.name.label+"_o"
+			VariableReferenceReceiver:		vr.name.label
+			VariableReferenceSender:		vr.name.label
+			VariableReferenceGlobal:		vr.name.label
+			RecordReferencePure:			vr.name.label + "_" + vr.record.label+"_i"
+			RecordReferenceMy:				vr.name.label + "_" + vr.record.label+"_o"
+			RecordReferenceThis:			vr.name.label + "_" + vr.record.label+"_o"
+			RecordReferenceReceiver:		vr.name.label + "_" + vr.record.label
+			RecordReferenceSender:			vr.name.label + "_" + vr.record.label
+			RecordReferenceGlobal:			vr.name.label + "_" + vr.record.label
+		}
+	}
+	
+	def String asJavaInputAction(BooleanExpressions e){
+		switch(e){
+			BooleanOr:						{e.left.asJavaInputAction + " || " + e.right.asJavaInputAction }
+			BooleanAnd:						{e.left.asJavaInputAction + " && " + e.right.asJavaInputAction }
+			BooleanEquality:				{e.left.asJavaInputAction + " " + e.op + " " + e.right.asJavaInputAction }
+			BooleanComparison:				{e.left.asJavaInputAction + " " + e.op + " " + e.right.asJavaInputAction }
+			BooleanSubtraction:				{e.left.asJavaInputAction + " - " + e.right.asJavaInputAction }
+			BooleanAddition:				{e.left.asJavaInputAction + " + " + e.right.asJavaInputAction }
+			BooleanMultiplication:			{e.left.asJavaInputAction + " * " + e.right.asJavaInputAction }
+			BooleanModulo:					{e.left.asJavaInputAction + " % " + e.right.asJavaInputAction }
+			BooleanDivision:				{e.left.asJavaInputAction + " / " + e.right.asJavaInputAction }
+			BooleanNot:						{"!"+e.expression.asJavaInputAction}
+			BooleanAtomicPrimitive:			(e.value as PrimitiveType).asJava 	
+			BooleanAtomicVariable:			(e.value as VariableReference).asJavaInputAction 
+			BooleanAtomicMethodReference:	(e.value as MethodExpressions).asJava			
+			BooleanAtomicNow:				"now()"	
+			BooleanExpression:				e.expression.asJavaInputAction
+		}
+	}
+	
+	def String asJavaInputAction(VariableReference vr){
+		switch(vr){
+			VariableReferencePure: 			vr.name.label+"_i"
+			VariableReferenceMy: 			vr.name.label+"_i"
+			VariableReferenceThis: 			vr.name.label+"_i"
+			VariableReferenceReceiver:		vr.name.label
+			VariableReferenceSender:		vr.name.label
+			VariableReferenceGlobal:		vr.name.label
+			RecordReferencePure:			vr.name.label + "_" + vr.record.label+"_i"
+			RecordReferenceMy:				vr.name.label + "_" + vr.record.label+"_i"
+			RecordReferenceThis:			vr.name.label + "_" + vr.record.label+"_i"
 			RecordReferenceReceiver:		vr.name.label + "_" + vr.record.label
 			RecordReferenceSender:			vr.name.label + "_" + vr.record.label
 			RecordReferenceGlobal:			vr.name.label + "_" + vr.record.label
@@ -283,7 +500,7 @@ public class ExpressionHandler {
 			EnvironmentAtomicNow:							"_NOW"	
 			EnvironmentAtomicMeasure:						e.value.javaSafe
 			EnvironmentExpression:							e.expression.javaSafe
-			EnvironmentMeasure:								"Measure"+e.hashCode+"_"+e.componentReference.getLabel.toFirstUpper
+			EnvironmentMeasure:								"Measure"+Math.abs(e.hashCode % 1969)
 		}
 	}
 	
@@ -297,7 +514,7 @@ public class ExpressionHandler {
 			EnvironmentUpdateAtomicMethodReference:					(e.value as MethodExpressions).asJava 
 			EnvironmentUpdateExpression:							e.expression.javaSafe
 			EnvironmentUpdateAtomicNow:								"_NOW"
-			EnvironmentUpdateAtomicMeasure:							"Measure"+e.hashCode
+			EnvironmentUpdateAtomicMeasure:							"Measure"+Math.abs(e.hashCode % 1969)
 		}
 	}
 	
@@ -335,6 +552,6 @@ public class ExpressionHandler {
 			Range:			e.min + "_PPP_" + e.max
 		}
 	}
-
+	
 
 }

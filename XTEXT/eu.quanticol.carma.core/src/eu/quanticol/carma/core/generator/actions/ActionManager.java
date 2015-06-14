@@ -17,8 +17,8 @@ public class ActionManager {
 		this.actions = new HashMap<String,ActionVariable>();
 	}
 	
-	public void loadAction(String actionName, int hashCode){
-		ActionVariable av = new ActionVariable(actionName,counter,hashCode);
+	public void loadAction(String actionName, int hashCode, String modelName){
+		ActionVariable av = new ActionVariable(actionName,counter,hashCode,modelName);
 		String name = av.getCarmaName();
 		if(actions.containsKey(name)){
 			actions.get(name).include(actionName,hashCode);

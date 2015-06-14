@@ -5,23 +5,6 @@ import eu.quanticol.carma.core.carma.Action
 import eu.quanticol.carma.core.carma.ActionName
 import eu.quanticol.carma.core.carma.ActionStub
 import eu.quanticol.carma.core.carma.BlockSystem
-import eu.quanticol.carma.core.carma.BooleanAddition
-import eu.quanticol.carma.core.carma.BooleanAnd
-import eu.quanticol.carma.core.carma.BooleanAtomicMethodReference
-import eu.quanticol.carma.core.carma.BooleanAtomicNow
-import eu.quanticol.carma.core.carma.BooleanAtomicPrimitive
-import eu.quanticol.carma.core.carma.BooleanAtomicRecords
-import eu.quanticol.carma.core.carma.BooleanAtomicVariable
-import eu.quanticol.carma.core.carma.BooleanComparison
-import eu.quanticol.carma.core.carma.BooleanDivision
-import eu.quanticol.carma.core.carma.BooleanEquality
-import eu.quanticol.carma.core.carma.BooleanExpression
-import eu.quanticol.carma.core.carma.BooleanExpressions
-import eu.quanticol.carma.core.carma.BooleanModulo
-import eu.quanticol.carma.core.carma.BooleanMultiplication
-import eu.quanticol.carma.core.carma.BooleanNot
-import eu.quanticol.carma.core.carma.BooleanOr
-import eu.quanticol.carma.core.carma.BooleanSubtraction
 import eu.quanticol.carma.core.carma.CarmaBoolean
 import eu.quanticol.carma.core.carma.CarmaDouble
 import eu.quanticol.carma.core.carma.CarmaExponent
@@ -36,7 +19,6 @@ import eu.quanticol.carma.core.carma.ComponentBlockDefinitionArgumentVariable
 import eu.quanticol.carma.core.carma.ComponentBlockNewDeclaration
 import eu.quanticol.carma.core.carma.ComponentBlockNewDeclarationSpawn
 import eu.quanticol.carma.core.carma.ComponentBlockStyle
-import eu.quanticol.carma.core.carma.ComponentBlockStyleCollective
 import eu.quanticol.carma.core.carma.ComponentLineDefinition
 import eu.quanticol.carma.core.carma.ComponentName
 import eu.quanticol.carma.core.carma.ComponentStyle
@@ -67,6 +49,7 @@ import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAState
 import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAllStates
 import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionParallel
 import eu.quanticol.carma.core.carma.EnvironmentMacroExpressions
+import eu.quanticol.carma.core.carma.EnvironmentMeasure
 import eu.quanticol.carma.core.carma.EnvironmentModulo
 import eu.quanticol.carma.core.carma.EnvironmentMultiplication
 import eu.quanticol.carma.core.carma.EnvironmentOperation
@@ -84,6 +67,7 @@ import eu.quanticol.carma.core.carma.EnvironmentUpdateExpressions
 import eu.quanticol.carma.core.carma.EnvironmentUpdateMultiplication
 import eu.quanticol.carma.core.carma.EnvironmentUpdateSubtraction
 import eu.quanticol.carma.core.carma.FloorFunction
+import eu.quanticol.carma.core.carma.ForVariableDeclaration
 import eu.quanticol.carma.core.carma.Guard
 import eu.quanticol.carma.core.carma.InputAction
 import eu.quanticol.carma.core.carma.IntegerAssignment
@@ -110,6 +94,7 @@ import eu.quanticol.carma.core.carma.MethodDefinition
 import eu.quanticol.carma.core.carma.MethodDefinitionArgument
 import eu.quanticol.carma.core.carma.MethodDefinitionArguments
 import eu.quanticol.carma.core.carma.MethodDivision
+import eu.quanticol.carma.core.carma.MethodExpression
 import eu.quanticol.carma.core.carma.MethodExpressions
 import eu.quanticol.carma.core.carma.MethodModulo
 import eu.quanticol.carma.core.carma.MethodMultiplication
@@ -193,17 +178,15 @@ import eu.quanticol.carma.core.carma.VariableTypeCarmaDouble
 import eu.quanticol.carma.core.carma.VariableTypeCarmaIntger
 import eu.quanticol.carma.core.carma.VariableTypeEnum
 import eu.quanticol.carma.core.carma.VariableTypeRecord
-import java.util.ArrayList
+import eu.quanticol.carma.core.generator.ExpressionHandler
 import java.util.HashMap
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.carma.MethodExpression
-import eu.quanticol.carma.core.carma.EnvironmentMeasure
-import eu.quanticol.carma.core.carma.ForVariableDeclaration
 
 class LabelUtil {
 	
 	@Inject extension Util
+	@Inject extension ExpressionHandler
 	
 	def String flatten(Records records){
 		var output = ""
@@ -279,31 +262,27 @@ class LabelUtil {
 	}
 	
 	def String convertToJavaName(Probability eu){
-		return "_" + eu.guard.convertToJavaName + "_" + eu.stub.convertToJavaName
+		return "_" + eu.guard.disarmExpression + "_" + eu.stub.disarm
 	}
 	
 	def String convertToJavaName(Rate eu){
-		return "_" + eu.guard.convertToJavaName + "_" + eu.stub.convertToJavaName
+		return "_" + eu.guard.disarmExpression + "_" + eu.stub.disarm
 	}
 	
 	def String convertToJavaName(EnvironmentUpdate eu){
-		return "_" + eu.guard.convertToJavaName + "_" + eu.stub.convertToJavaName
+		return "_" + eu.guard.disarmExpression + "_" + eu.stub.disarm
 	}
 	
 	def String getLabel(EnvironmentGuard eg){
-		eg.booleanExpression.getLabel
-	}
-
-	def String convertToJavaName(EnvironmentGuard eg){
-		eg.booleanExpression.convertToJavaName 
+		eg.booleanExpression.disarmExpression
 	}
 	
 	def String getNameValue(ComponentAfterThought cat){
 		cat.name.label + " = " + cat.expression.label
 	}
 	
-	def String convertToJava(EnvironmentGuard eg){
-		eg.booleanExpression.convertToJava
+	def String disarmExpression(EnvironmentGuard eg){
+		eg.booleanExpression.disarmExpression
 	}
 	
 	def String convertToJava(ForVariableDeclaration fvd){
@@ -339,13 +318,6 @@ class LabelUtil {
 		switch(oa){
 			OutputActionArgumentVR:	(oa.ref as VariableReference).getLabel
 			OutputActionArgumentV:	(oa.value as PrimitiveType).getLabel
-		}
-	}
-	
-	def String convertToJava(ComponentArgument ca){
-		switch(ca){
-			ComponentBlockDefinitionArgumentVariable:	(ca.value as VariableType).convertToJava
-			ComponentBlockDefinitionArgumentMacro:		(ca.value as MacroType).getLabel
 		}
 	}
 	
@@ -546,28 +518,20 @@ class LabelUtil {
 	}
 	
 	
-	def String convertToJavaName(ActionStub actionStub){
+	def String disarm(ActionStub actionStub){
 		
 		var output = actionStub.name.name
 		
 		if(actionStub.cast != null){
 			output = output + "_BROADCAST_"
 		}
-		
-//		if(actionStub.io != null){
-//			if(actionStub.io.in != null)
-//				output = output + "_IN_"
-//			else
-//				output = output + "_OUT_"
-//		}
-		
-		
+			
 		return output
 		
 	}
 	
 	def String convertToJavaName(EnvironmentOperation eo){
-		eo.guard.convertToJavaName + "_" + eo.stub.getLabelName
+		eo.guard.disarmExpression + "_" + eo.stub.getLabelName
 	}
 	
 	def String convertToJavaNameDefinitions(ActionStub actionStub){
@@ -615,54 +579,6 @@ class LabelUtil {
 		}
 	}
 	
-	def String convertToJava(VariableType vt){
-		switch(vt){
-			VariableTypeEnum:			"int " 		+	vt.name.label 
-			VariableTypeRecord:			{vt.spread}
-			VariableTypeCarmaDouble:	"double "	+	vt.name.label
-			VariableTypeCarmaIntger:	"int " 		+	vt.name.label
-		}
-	}
-	
-	def String spread(VariableTypeRecord vtr){
-		
-		var ArrayList<RecordDeclaration> rds = new ArrayList<RecordDeclaration>()
-		//get position in the ComponentBlockDefinitionArguments
-		var position = vtr.getPosition
-		//get ComponentBlockDeclaration
-		var cbnds = vtr.getComponentToCBNDs
-		
-		for(cd : cbnds.keySet){
-			for(c : cbnds.get(cd)){
-				if(c.getContainerOfType(ComponentBlockStyleCollective) != null){
-					rds.addAll((c as ComponentBlockNewDeclaration).componentInputArguments.inputArguments.get(position).eAllOfType(RecordDeclaration))
-				} else if (c.getContainerOfType(EnvironmentUpdate) != null) {
-					if((c as ComponentBlockNewDeclarationSpawn).componentInputArguments.inputArguments.get(position).eAllOfType(NewComponentArgumentSpawnReference).size > 0){
-						var vr = (c as ComponentBlockNewDeclarationSpawn).componentInputArguments.inputArguments.get(position).eAllOfType(NewComponentArgumentSpawnReference).get(0).value
-						var vd = vr.variableDeclaration as VariableDeclarationRecord
-						rds.addAll(vd.recordDeclarations) 
-					}
-					rds.addAll((c as ComponentBlockNewDeclarationSpawn).componentInputArguments.inputArguments.get(position).eAllOfType(RecordDeclaration))
-				}
-			}
-		}
-		
-		
-		var String output = ""
-		
-		if(rds.size > 0){
-			output = " int " + rds.get(0).name.label
-			for(var i = 1; i < rds.size; i++){
-				output = output + ", int " + rds.get(i).name.label
-			}
-		} else {
-			output = "Check @ LabelUtil.spread()"
-		}
-		
-		
-		return output
-	}
-	
 	def String getLabel(ComponentStyle cs){
 		"Model"
 	}
@@ -677,131 +593,6 @@ class LabelUtil {
 	
 	def String getLabel(BlockSystem bs){
 		"System"
-	}
-	
-	def String getLabel(BooleanExpressions e){
-		switch(e){
-			BooleanOr:						{e.left.label + " || " + e.right.label }
-			BooleanAnd:						{e.left.label + " && " + e.right.label }
-			BooleanEquality:				{e.left.label + " " + e.op + " " + e.right.label }
-			BooleanComparison:				{e.left.label + " " + e.op + " " + e.right.label }
-			BooleanSubtraction:				{e.left.label + " - " + e.right.label }
-			BooleanAddition:				{e.left.label + " + " + e.right.label }
-			BooleanMultiplication:			{e.left.label + " * " + e.right.label }
-			BooleanModulo:					{e.left.label + " % " + e.right.label }
-			BooleanDivision:				{e.left.label + " / " + e.right.label }
-			BooleanNot:						{"!"+e.expression.label}
-			BooleanAtomicPrimitive:			(e.value as PrimitiveType).label			
-			BooleanAtomicRecords:			(e.value as Records).label			
-			BooleanAtomicVariable:			(e.value as VariableReference).label 
-			BooleanAtomicMethodReference:	(e.value as MethodExpressions).label			
-			BooleanAtomicNow:				"now()"	
-			BooleanExpression:				e.expression.label
-		}
-	}
-	
-
-	
-	def String convertToJava(BooleanExpressions e){
-		switch(e){
-			BooleanOr:						{e.left.convertToJava + " || " + e.right.convertToJava }
-			BooleanAnd:						{e.left.convertToJava + " && " + e.right.convertToJava }
-			BooleanEquality:				{e.left.convertToJava + " " + e.op + " " + e.right.convertToJava }
-			BooleanComparison:				{e.left.convertToJava + " " + e.op + " " + e.right.convertToJava }
-			BooleanSubtraction:				{e.left.convertToJava + " - " + e.right.convertToJava }
-			BooleanAddition:				{e.left.convertToJava + " + " + e.right.convertToJava }
-			BooleanMultiplication:			{e.left.convertToJava + " * " + e.right.convertToJava }
-			BooleanModulo:					{e.left.convertToJava + " % " + e.right.convertToJava }
-			BooleanDivision:				{e.left.convertToJava + " / " + e.right.convertToJava }
-			BooleanNot:						{"!"+e.expression.convertToJava}
-			BooleanAtomicPrimitive:			(e.value as PrimitiveType).label			
-			BooleanAtomicVariable:			(e.value as VariableReference).convertToJava 
-			BooleanAtomicMethodReference:	(e.value as MethodExpressions).label			
-			BooleanAtomicNow:				"now()"	
-			BooleanExpression:				e.expression.convertToJava
-		}
-	}
-	
-	def String convertToJavaInputAction(BooleanExpressions e){
-		switch(e){
-			BooleanOr:						{e.left.convertToJavaInputAction + " || " + e.right.convertToJavaInputAction }
-			BooleanAnd:						{e.left.convertToJavaInputAction + " && " + e.right.convertToJavaInputAction }
-			BooleanEquality:				{e.left.convertToJavaInputAction + " " + e.op + " " + e.right.convertToJavaInputAction }
-			BooleanComparison:				{e.left.convertToJavaInputAction + " " + e.op + " " + e.right.convertToJavaInputAction }
-			BooleanSubtraction:				{e.left.convertToJavaInputAction + " - " + e.right.convertToJavaInputAction }
-			BooleanAddition:				{e.left.convertToJavaInputAction + " + " + e.right.convertToJavaInputAction }
-			BooleanMultiplication:			{e.left.convertToJavaInputAction + " * " + e.right.convertToJavaInputAction }
-			BooleanModulo:					{e.left.convertToJavaInputAction + " % " + e.right.convertToJavaInputAction }
-			BooleanDivision:				{e.left.convertToJavaInputAction + " / " + e.right.convertToJavaInputAction }
-			BooleanNot:						{"!"+e.expression.convertToJavaInputAction}
-			BooleanAtomicPrimitive:			(e.value as PrimitiveType).label			
-			BooleanAtomicVariable:			(e.value as VariableReference).convertToJavaInputAction 
-			BooleanAtomicMethodReference:	(e.value as MethodExpressions).label			
-			BooleanAtomicNow:				"now()"	
-			BooleanExpression:				e.expression.convertToJavaInputAction
-		}
-	}
-	
-	def String convertToJavaOutputAction(BooleanExpressions e){
-		switch(e){
-			BooleanOr:						{e.left.convertToJavaOutputAction + " || " + e.right.convertToJavaOutputAction }
-			BooleanAnd:						{e.left.convertToJavaOutputAction + " && " + e.right.convertToJavaOutputAction }
-			BooleanEquality:				{e.left.convertToJavaOutputAction + " " + e.op + " " + e.right.convertToJavaOutputAction }
-			BooleanComparison:				{e.left.convertToJavaOutputAction + " " + e.op + " " + e.right.convertToJavaOutputAction }
-			BooleanSubtraction:				{e.left.convertToJavaOutputAction + " - " + e.right.convertToJavaOutputAction }
-			BooleanAddition:				{e.left.convertToJavaOutputAction + " + " + e.right.convertToJavaOutputAction }
-			BooleanMultiplication:			{e.left.convertToJavaOutputAction + " * " + e.right.convertToJavaOutputAction }
-			BooleanModulo:					{e.left.convertToJavaOutputAction + " % " + e.right.convertToJavaOutputAction }
-			BooleanDivision:				{e.left.convertToJavaOutputAction + " / " + e.right.convertToJavaOutputAction }
-			BooleanNot:						{"!"+e.expression.convertToJavaOutputAction}
-			BooleanAtomicPrimitive:			(e.value as PrimitiveType).label			
-			BooleanAtomicVariable:			(e.value as VariableReference).convertToJavaOutputAction 
-			BooleanAtomicMethodReference:	(e.value as MethodExpressions).label			
-			BooleanAtomicNow:				"now()"	
-			BooleanExpression:				e.expression.convertToJavaOutputAction
-		}
-	}
-	
-	def String convertToJavaName(BooleanExpressions e){
-		switch(e){
-			BooleanOr:						{e.left.convertToJavaName + "_OR_" + e.right.convertToJavaName }
-			BooleanAnd:						{e.left.convertToJavaName + "_AND_" + e.right.convertToJavaName }
-			BooleanEquality:				{e.left.convertToJavaName + "_EQUA_"+ e.right.convertToJavaName }
-			BooleanComparison:				{e.left.convertToJavaName + "_COMP_"+ e.right.label }
-			BooleanSubtraction:				{e.left.convertToJavaName + "_SUB_" + e.right.convertToJavaName }
-			BooleanAddition:				{e.left.convertToJavaName + "_PLU_" + e.right.convertToJavaName }
-			BooleanMultiplication:			{e.left.convertToJavaName + "_MUL_" + e.right.convertToJavaName }
-			BooleanModulo:					{e.left.convertToJavaName + "_MOD_" + e.right.convertToJavaName }
-			BooleanDivision:				{e.left.convertToJavaName + "_DIV_" + e.right.convertToJavaName }
-			BooleanNot:						{"_NOT_"+e.expression.convertToJavaName}
-			BooleanAtomicPrimitive:			(e.value as PrimitiveType).convertToJavaName			
-			BooleanAtomicRecords:			(e.value as Records).convertToJavaName		
-			BooleanAtomicVariable:			(e.value as VariableReference).convertToJavaName 
-			BooleanAtomicMethodReference:	(e.value as MethodExpressions).convertToJavaName	
-			BooleanAtomicNow:				"_NOW"	
-			BooleanExpression:				e.expression.convertToJavaName
-		}
-	}
-	
-	def String getLabelJava(BooleanExpressions e){
-		switch(e){
-			BooleanOr:						{e.left.labelJava + " || " + e.right.labelJava }
-			BooleanAnd:						{e.left.labelJava + " && " + e.right.labelJava }
-			BooleanEquality:				{e.left.labelJava + " " + e.op + " " + e.right.labelJava }
-			BooleanComparison:				{e.left.labelJava + " " + e.op + " " + e.right.labelJava }
-			BooleanSubtraction:				{e.left.labelJava + " - " + e.right.labelJava }
-			BooleanAddition:				{e.left.labelJava + " + " + e.right.labelJava }
-			BooleanMultiplication:			{e.left.labelJava + " * " + e.right.labelJava }
-			BooleanModulo:					{e.left.labelJava + " % " + e.right.labelJava }
-			BooleanDivision:				{e.left.labelJava + " / " + e.right.labelJava }
-			BooleanNot:						{"!"+e.expression.labelJava}
-			BooleanAtomicPrimitive:			(e.value as PrimitiveType).label			
-			BooleanAtomicRecords:			(e.value as Records).label			
-			BooleanAtomicVariable:			(e.value as VariableReference).labelJava
-			BooleanAtomicMethodReference:	(e.value as MethodExpressions).label			
-			BooleanAtomicNow:				"now()"	
-			BooleanExpression:				e.expression.labelJava
-		}
 	}
 	
 	def getLabel(VariableDeclaration vd){
@@ -1244,7 +1035,7 @@ class LabelUtil {
 	}
 	
 	def String getLabel(Guard g){
-		"[" + g.booleanExpression.getLabel + "]"
+		"[" + g.booleanExpression.disarmExpression + "]"
 	}
 	
 	def String getLabel(Action a){
