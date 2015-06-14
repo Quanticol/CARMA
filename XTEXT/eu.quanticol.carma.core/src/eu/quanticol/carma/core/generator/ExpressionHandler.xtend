@@ -253,6 +253,20 @@ public class ExpressionHandler {
 		}
 	}
 	
+	def String asJavaEvolutionRule(EnvironmentUpdateExpressions e){
+		switch(e){
+			EnvironmentUpdateSubtraction:							{e.left.asJavaEvolutionRule + " - " + e.right.asJavaEvolutionRule }
+			EnvironmentUpdateAddition:								{e.left.asJavaEvolutionRule + " + " + e.right.asJavaEvolutionRule }
+			EnvironmentUpdateMultiplication:						{e.left.asJavaEvolutionRule + " * " + e.right.asJavaEvolutionRule }
+			EnvironmentUpdateAtomicPrimitive:						(e.value as PrimitiveType).asJava
+			EnvironmentUpdateAtomicVariable:						(e.value as VariableReference).asJavaEvolutionRule
+			EnvironmentUpdateAtomicMethodReference:					(e.value as MethodExpressions).asJava 
+			EnvironmentUpdateExpression:							e.expression.asJavaEvolutionRule
+			EnvironmentUpdateAtomicNow:								"now()"
+			EnvironmentUpdateAtomicMeasure:							"getMeasure"+Math.abs(e.hashCode % 1969)+"().measure()"
+		}
+	}
+	
 	def String asJava(PrimitiveType e){
 		switch(e){
 			CarmaDouble:	{
@@ -302,6 +316,23 @@ public class ExpressionHandler {
 			RecordReferenceReceiver:		vr.name.label + "_" + vr.record.label
 			RecordReferenceSender:			vr.name.label + "_" + vr.record.label
 			RecordReferenceGlobal:			vr.name.label + "_" + vr.record.label
+		}
+	}
+	
+	def String asFullJava(VariableReference vr){
+		switch(vr){
+			VariableReferencePure: 			vr.name.label
+			VariableReferenceMy: 			"my_"+vr.name.label
+			VariableReferenceThis: 			"this_"+vr.name.label
+			VariableReferenceReceiver:		"receiver_"+vr.name.label
+			VariableReferenceSender:		"sender_"+vr.name.label
+			VariableReferenceGlobal:		"global_"+vr.name.label
+			RecordReferencePure:			vr.name.label + "_" + vr.record.label
+			RecordReferenceMy:				"my_"+vr.name.label + "_" + vr.record.label
+			RecordReferenceThis:			"this_"+vr.name.label + "_" + vr.record.label
+			RecordReferenceReceiver:		"receiver_"+vr.name.label + "_" + vr.record.label
+			RecordReferenceSender:			"sender_"+vr.name.label + "_" + vr.record.label
+			RecordReferenceGlobal:			"global_"+vr.name.label + "_" + vr.record.label
 		}
 	}
 	

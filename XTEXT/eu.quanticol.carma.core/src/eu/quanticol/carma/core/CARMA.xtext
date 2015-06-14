@@ -1131,7 +1131,7 @@ EnvironmentUpdatePrimary returns EnvironmentUpdateExpressions hidden(ML_COMMENT,
 EnvironmentUpdateAtomic returns EnvironmentUpdateExpressions hidden(ML_COMMENT,SL_COMMENT,WS):
 	{EnvironmentUpdateAtomicPrimitive}				value=PrimitiveType 			|
 	{EnvironmentUpdateAtomicRecords}				value=Records					|
-	{EnvironmentUpdateAtomicVariable}				value=VariableReference |
+	{EnvironmentUpdateAtomicVariable}				value=VariableReference 		|
 	{EnvironmentUpdateAtomicMethodReference}		value=MethodReference			|
 	{EnvironmentUpdateAtomicNow}					value=Now						|
 	{EnvironmentUpdateAtomicMeasure}				value=EnvironmentMeasure

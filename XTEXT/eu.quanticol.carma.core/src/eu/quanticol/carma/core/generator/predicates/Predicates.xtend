@@ -137,6 +137,24 @@ class Predicates {
 		'''
 	}
 	
+	def String getEvolutionRulePredicateRate(String predicateName, 
+		String sStore,
+		BooleanExpressions bes,
+		CarmaVariableManager cvm
+	){
+		'''
+		public static CarmaPredicate «predicateName»(){
+			return new CarmaPredicate() {
+				@Override
+				public boolean satisfy(CarmaStore «sStore») {
+					«bes.getCastSatisfyBlock(cvm)»
+				}
+			};
+		}
+		'''
+		
+	}
+	
 	def String getEvolutionRulePredicate(String predicateName, 
 		String rStore, 
 		String sStore,

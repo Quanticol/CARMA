@@ -60,7 +60,7 @@ class SatisfyBlock {
 	def HashMap<String,VariableReference> getAll(BooleanExpressions expressions, CarmaVariableManager manager){
 		var HashMap<String,VariableReference> vrs 	= new HashMap<String,VariableReference>()
 		for(vr : expressions.eAllOfType(VariableReference)){
-			vrs.put(manager.cleanName(vr.asJava),vr);
+			vrs.put(manager.cleanName(vr.asFullJava),vr);
 		}	
 		return vrs
 	}
@@ -85,10 +85,10 @@ class SatisfyBlock {
 	}
 	
 	def String getInputSatisfyBlock(BooleanExpressions bes, InputActionArguments value, CarmaVariableManager manager){
-		var HashMap<String,VariableReference> vrs = getAllInput(bes,manager)
 		switch(bes){
 			NullBooleanExpression: '''return true;'''
 			default: {
+				var HashMap<String,VariableReference> vrs = getAllInput(bes,manager)
 				'''
 				boolean hasAttributes = true;
 				«FOR item : manager.declareAll(vrs,"i")»
@@ -108,7 +108,7 @@ class SatisfyBlock {
 		
 		for(vr : expressions.eAllOfType(VariableReference)){
 			if(manager.contains(manager.cleanName(vr.asJava)))
-				vrs.put(manager.cleanName(vr.asJava),vr);
+				vrs.put(manager.cleanName(vr.asFullJava),vr);
 		}
 		return vrs
 	}
@@ -158,10 +158,10 @@ class SatisfyBlock {
 		var HashMap<String,VariableReference> vrs 	= new HashMap<String,VariableReference>()
 		
 		for(vr : expressions.eAllOfType(VariableReferencePure)){
-			vrs.put(manager.cleanName(vr.asJava),vr);
+			vrs.put(manager.cleanName(vr.asFullJava),vr);
 		}
 		for(vr : expressions.eAllOfType(RecordReferencePure)){
-			vrs.put(manager.cleanName(vr.asJava),vr);
+			vrs.put(manager.cleanName(vr.asFullJava),vr);
 		}	
 		return vrs
 	}
@@ -170,16 +170,16 @@ class SatisfyBlock {
 		var HashMap<String,VariableReference> vrs 	= new HashMap<String,VariableReference>()
 
 		for(vr : expressions.eAllOfType(VariableReferenceMy)){
-			vrs.put(manager.cleanName(vr.asJava),vr);
+			vrs.put(manager.cleanName(vr.asFullJava),vr);
 		}
 		for(vr : expressions.eAllOfType(VariableReferenceThis)){
-			vrs.put(manager.cleanName(vr.asJava),vr);
+			vrs.put(manager.cleanName(vr.asFullJava),vr);
 		}
 		for(vr : expressions.eAllOfType(RecordReferenceMy)){
-			vrs.put(manager.cleanName(vr.asJava),vr);
+			vrs.put(manager.cleanName(vr.asFullJava),vr);
 		}		
 		for(vr : expressions.eAllOfType(RecordReferenceThis)){
-			vrs.put(manager.cleanName(vr.asJava),vr);
+			vrs.put(manager.cleanName(vr.asFullJava),vr);
 		}
 		return vrs	
 	}
@@ -203,10 +203,10 @@ class SatisfyBlock {
 				var HashMap<String,VariableReference> vrs_g = getAllOutputG(bes,manager)
 				'''
 				boolean hasAttributes = true;
-				«FOR item : manager.declareAllCheck(vrs_r,"r")»
+				«FOR item : manager.declareAll(vrs_r,"r")»
 				«item»
 				«ENDFOR»
-				«FOR item : manager.declareAllCheck(vrs_s,"s")»
+				«FOR item : manager.declareAll(vrs_s,"s")»
 				«item»
 				«ENDFOR»
 				«FOR item : manager.declareAll(vrs_g,"global_")»
@@ -235,10 +235,10 @@ class SatisfyBlock {
 		var HashMap<String,VariableReference> vrs 	= new HashMap<String,VariableReference>()
 		
 		for(vr : expressions.eAllOfType(VariableReferenceReceiver)){
-			vrs.put(manager.cleanName(vr.asJava),vr);
+			vrs.put(manager.cleanName(vr.asFullJava),vr);
 		}
 		for(vr : expressions.eAllOfType(RecordReferenceReceiver)){
-			vrs.put(manager.cleanName(vr.asJava),vr);
+			vrs.put(manager.cleanName(vr.asFullJava),vr);
 		}	
 		return vrs
 	}
@@ -247,10 +247,10 @@ class SatisfyBlock {
 		var HashMap<String,VariableReference> vrs 	= new HashMap<String,VariableReference>()
 		
 		for(vr : expressions.eAllOfType(VariableReferenceSender)){
-			vrs.put(manager.cleanName(vr.asJava),vr);
+			vrs.put(manager.cleanName(vr.asFullJava),vr);
 		}
 		for(vr : expressions.eAllOfType(RecordReferenceSender)){
-			vrs.put(manager.cleanName(vr.asJava),vr);
+			vrs.put(manager.cleanName(vr.asFullJava),vr);
 		}	
 		return vrs
 	}
@@ -259,18 +259,17 @@ class SatisfyBlock {
 		var HashMap<String,VariableReference> vrs 	= new HashMap<String,VariableReference>()
 		
 		for(vr : expressions.eAllOfType(VariableReferencePure)){
-			vrs.put(manager.cleanName(vr.asJava),vr);
+			vrs.put(manager.cleanName(vr.asFullJava),vr);
 		}
 		for(vr : expressions.eAllOfType(RecordReferencePure)){
-			vrs.put(manager.cleanName(vr.asJava),vr);
+			vrs.put(manager.cleanName(vr.asFullJava),vr);
 		}
 		for(vr : expressions.eAllOfType(VariableReferenceGlobal)){
-			vrs.put(manager.cleanName("GLOBAL_"+vr.asJava),vr);
+			vrs.put(manager.cleanName(vr.asFullJava),vr);
 		}
 		for(vr : expressions.eAllOfType(RecordReferenceGlobal)){
-			vrs.put(manager.cleanName("GLOBAL_"+vr.asJava),vr);
+			vrs.put(manager.cleanName(vr.asFullJava),vr);
 		}
-		System.out.println(vrs)
 		return vrs
 	}
 	

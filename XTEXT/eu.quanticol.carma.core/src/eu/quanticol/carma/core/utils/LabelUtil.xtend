@@ -240,18 +240,18 @@ class LabelUtil {
 		}
 	}
 	
-	def String convertToPredicateName(Probability cast){
-		if(cast.stub.isBroadcast)
-		'''get'''+cast.convertToJavaName+'''_BroadcastPredicateProb'''
-		else
-		'''get'''+cast.convertToJavaName+'''_UnicastPredicateProb'''
-	}
-	
 	def String convertToPredicateName(Rate cast){
 		if(cast.stub.isBroadcast)
 		'''get'''+cast.convertToJavaName+'''_BroadcastPredicateRate'''
 		else
 		'''get'''+cast.convertToJavaName+'''_UnicastPredicateRate'''
+	}
+	
+	def String convertToPredicateName(Probability cast){
+		if(cast.stub.isBroadcast)
+		'''get'''+cast.convertToJavaName+'''_BroadcastPredicateProb'''
+		else
+		'''get'''+cast.convertToJavaName+'''_UnicastPredicateProb'''
 	}
 	
 	def String convertToPredicateName(EnvironmentUpdate cast){

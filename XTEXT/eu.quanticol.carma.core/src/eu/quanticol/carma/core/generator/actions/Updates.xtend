@@ -64,7 +64,7 @@ class Updates {
 	def HashMap<String,VariableReference> getAll(UpdateExpressions expressions, CarmaVariableManager manager){
 		var HashMap<String,VariableReference> vrs 	= new HashMap<String,VariableReference>()
 		for(vr : expressions.eAllOfType(VariableReference)){
-			vrs.put(manager.cleanName(vr.asJava),vr);
+			vrs.put(manager.cleanName(vr.asFullJava),vr);
 		}	
 		return vrs
 	}
@@ -79,7 +79,7 @@ class Updates {
 	}
 	
 	def String express(UpdateExpressions expressions, CarmaVariableManager manager, VariableReference vr, String modifier){
-		var key = manager.cleanName(vr.asJava)
+		var key = manager.cleanName(vr.asFullJava)
 		'''
 		if(hasAttributes){
 			«manager.getCarmaName(key,vr).setStore("Integer.class",manager.getJavaAssign(key,vr,modifier),modifier+"store",expressions.evaluateExpression)»
@@ -137,7 +137,7 @@ class Updates {
 		
 		for(vr : expressions.eAllOfType(VariableReference)){
 			if(manager.contains(manager.cleanName(vr.asJava)))
-				vrs.put(manager.cleanName(vr.asJava),vr);
+				vrs.put(manager.cleanName(vr.asFullJava),vr);
 		}
 		return vrs
 	}

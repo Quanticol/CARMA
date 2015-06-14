@@ -19,12 +19,14 @@ public class ComponentManager {
 	private ActionManager am;
 	private CarmaVariableManager vm;
 	private HashMap<String,NewComponentGenerator> newDecs;
+	private HashMap<Integer,Spawn> spawns;
 
 	public ComponentManager(ActionManager am, CarmaVariableManager vm) {
 		this.components = new HashMap<String,ComponentGenerator>();
 		this.newDecs = new HashMap<String,NewComponentGenerator>();
 		this.am = am;
 		this.vm = vm;
+		this.spawns = new HashMap<Integer, Spawn>();
 	}
 	
 	public CarmaVariableManager getCVM(){
@@ -74,6 +76,15 @@ public class ComponentManager {
 
 	public void loadVDS(String string, HashMap<String, Integer> map) {
 	  this.components.get(string).addVDS(map);
+	}
+
+	public void loadSpawn(String string, ArrayList<ArrayList<String>> lists, int i) {
+		Spawn temp = new Spawn(string,lists,i);
+		this.spawns.put(i,temp);
+	}
+	
+	public HashMap<Integer,Spawn> getSpawns(){
+		return this.spawns;
 	}
 
 }

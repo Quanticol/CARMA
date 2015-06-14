@@ -75,9 +75,6 @@ public class CarmaVariableManager {
 	}
 	
 	public String getJavaDeclaration(String name, VariableReference vr, String modifier){
-		System.out.println(name);
-		System.out.println(this.prefixes);
-		System.out.println(this.references);
 		String cv_name = this.prefixes.get(name);
 		return this.references.get(cv_name).declareJava(modifier);
 	}
@@ -135,6 +132,10 @@ public class CarmaVariableManager {
 	
 	public String getValueAsString(String name, int hashCode){
 		return variables.get(cleanName(name)).getValueAsString(hashCode);
+	}
+	
+	public HashMap<String,String> getPrefixes(){
+		return this.prefixes;
 	}
 	
 }
