@@ -562,10 +562,27 @@ public class ExpressionHandler {
 			BooleanDivision:				{e.left.javaSafe + "_DIV_" + e.right.javaSafe }
 			BooleanNot:						{"_NOT_"+e.expression.javaSafe}
 			BooleanAtomicPrimitive:			(e.value as PrimitiveType).javaSafe			
-			BooleanAtomicVariable:			(e.value as VariableReference).asJava
-			BooleanAtomicMethodReference:	(e.value as MethodExpressions).asJava	
+			BooleanAtomicVariable:			(e.value as VariableReference).javaSafe
+			BooleanAtomicMethodReference:	(e.value as MethodExpressions).javaSafe	
 			BooleanAtomicNow:				"_NOW"	
 			BooleanExpression:				e.expression.javaSafe
+		}
+	}
+	
+	def String javaSafe(VariableReference vr){
+		switch(vr){
+			VariableReferencePure: 			vr.name.label
+			VariableReferenceMy: 			"MY_"+vr.name.label
+			VariableReferenceThis: 			"THIS_"+vr.name.label
+			VariableReferenceReceiver:		"RECEIVER_"+vr.name.label
+			VariableReferenceSender:		"SENDER_"+vr.name.label
+			VariableReferenceGlobal:		"GLOBAL_"+vr.name.label
+			RecordReferencePure:			vr.name.label + "_" + vr.record.label
+			RecordReferenceMy:				"MY_"+vr.name.label + "_" + vr.record.label
+			RecordReferenceThis:			"THIS_"+vr.name.label + "_" + vr.record.label
+			RecordReferenceReceiver:		"RECEIVER_"+vr.name.label + "_" + vr.record.label
+			RecordReferenceSender:			"SENDER_"+vr.name.label + "_" + vr.record.label
+			RecordReferenceGlobal:			"GLOBAL_"+vr.name.label + "_" + vr.record.label
 		}
 	}
 	

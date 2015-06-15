@@ -111,19 +111,6 @@ class CARMAValidator extends AbstractCARMAValidator {
 			)
 		}
 	}
-
-//	public static val ERROR_VariableReference_type = "ERROR: '"
-//	@Check
-//	def check_ERROR_VariableReference_type(VariableReference vr){
-//		var message = ERROR_VariableReference_type + vr.label + "' has no type."
-//		var test = true
-//		
-//		test = vr.type.toString.equals("null")
-//		
-//		if(test){
-//			error(message,CarmaPackage::eINSTANCE.variableReference_Name,ERROR_VariableReference_type)
-//		}
-//	}
 	
 	public static val ERROR_VariableReference_ProcessExpression_type = "ERROR: '"
 	@Check

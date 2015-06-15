@@ -684,8 +684,10 @@ ComponentAfterThought hidden(ML_COMMENT,SL_COMMENT,WS):
 ////////////////////////////////////////////////////PROCESS
 
 Processes hidden(ML_COMMENT,SL_COMMENT,WS):
+	"abstract" "{"
 	processes+=Process ";"
 	( processes+=Process ";" )*
+	"}"
 ;
 
 Process hidden(ML_COMMENT,SL_COMMENT,WS):
