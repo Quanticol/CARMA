@@ -17,6 +17,7 @@ public class MeasureManager {
 	private ComponentManager cm;
 	private HashMap<String,MeasureObject> measures;
 	private HashMap<String,EnvironmentMeasureObject> environmentMeasures;
+	private HashMap<String,ArrayList<String>> systemMeasure;
 	
 	public MeasureManager(ActionManager am, CarmaVariableManager vm, ComponentManager cm) {
 		this.am = am;
@@ -24,6 +25,7 @@ public class MeasureManager {
 		this.cm = cm;
 		this.measures = new HashMap<String, MeasureObject>();
 		this.environmentMeasures = new HashMap<String, EnvironmentMeasureObject>();
+		this.systemMeasure = new HashMap<String, ArrayList<String>>();
 	}
 
 	public void loadMeasure(String m, String e, HashMap<String,ArrayList<String>> args, EnvironmentExpressions em) {
@@ -46,6 +48,20 @@ public class MeasureManager {
 	
 	public CarmaVariableManager getCVM(){
 		return vm;
+	}
+
+	public void loadSystemMeasure(String system, String measure) {
+		if(this.systemMeasure.containsKey(system)){
+			this.systemMeasure.get(system).add(measure);
+		} else{
+			ArrayList<String> measures = new ArrayList<String>();
+			measures.add(measure);
+			this.systemMeasure.put(system,measures);
+		}
+	}
+	
+	public ArrayList<String> getMeasures(String systemName){
+		return this.systemMeasure.get(systemName);
 	}
 
 }

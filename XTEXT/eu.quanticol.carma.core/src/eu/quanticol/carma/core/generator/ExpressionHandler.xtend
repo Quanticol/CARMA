@@ -235,7 +235,7 @@ public class ExpressionHandler {
 			EnvironmentAtomicNow:							"now()"
 			EnvironmentAtomicMeasure:						e.value.asJava
 			EnvironmentExpression:							e.expression.asJava
-			EnvironmentMeasure:								"getMeasure"+Math.abs(e.hashCode % 1969)+"().measure()"
+			EnvironmentMeasure:								"getMeasure"+Math.abs(e.hashCode % 1969)+"().measure(this)"
 		}
 	}
 	
@@ -249,7 +249,7 @@ public class ExpressionHandler {
 			EnvironmentUpdateAtomicMethodReference:					(e.value as MethodExpressions).asJava 
 			EnvironmentUpdateExpression:							e.expression.asJava
 			EnvironmentUpdateAtomicNow:								"now()"
-			EnvironmentUpdateAtomicMeasure:							"getMeasure"+Math.abs(e.hashCode % 1969)+"().measure()"
+			EnvironmentUpdateAtomicMeasure:							"getMeasure"+Math.abs(e.hashCode % 1969)+"().measure(this)"
 		}
 	}
 	
@@ -263,7 +263,7 @@ public class ExpressionHandler {
 			EnvironmentUpdateAtomicMethodReference:					(e.value as MethodExpressions).asJava 
 			EnvironmentUpdateExpression:							e.expression.asJavaEvolutionRule
 			EnvironmentUpdateAtomicNow:								"now()"
-			EnvironmentUpdateAtomicMeasure:							"getMeasure"+Math.abs(e.hashCode % 1969)+"().measure()"
+			EnvironmentUpdateAtomicMeasure:							"getMeasure"+Math.abs(e.hashCode % 1969)+"().measure(this)"
 		}
 	}
 	

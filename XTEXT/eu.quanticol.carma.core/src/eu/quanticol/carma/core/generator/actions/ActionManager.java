@@ -42,7 +42,7 @@ public class ActionManager {
 		String output = "";
 		for(String key : actions.keySet()){
 			output = output + actions.get(key).declareAction();
-			output = output + actions.get(key).declareRates();
+			//output = output + actions.get(key).declareRates();
 		}
 		return output;
 	}

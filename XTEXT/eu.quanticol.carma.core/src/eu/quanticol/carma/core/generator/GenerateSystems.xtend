@@ -31,6 +31,7 @@ import eu.quanticol.carma.core.utils.LabelUtil
 import java.util.ArrayList
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
+import eu.quanticol.carma.core.generator.actions.Actions
 
 class GenerateSystems {
 	
@@ -43,6 +44,7 @@ class GenerateSystems {
 	@Inject extension ComponentNew
 	@Inject extension DeclareGlobalStore
 	@Inject extension ComponentDefine
+	@Inject extension Predicates
 	
 	def String compileSystem(System system, 
 		String packageName,
@@ -84,10 +86,34 @@ class GenerateSystems {
 			«system.defineEnvironmentProbRules(variableManager)»
 			«system.defineEnvironmentUpdateRules(variableManager,componentManager)»
 			
+			//measures
+			«measureManager.defineMeasures(systemName)»
+			
 			//main
 			«modelName.getMain(measureManager)»
 			
 		}
+		'''
+	}
+	
+	def String defineMeasures(MeasureManager mm, String system){
+		var measures = mm.getMeasures(system)
+		'''
+		«FOR key : measures»
+		«getMeasureStatePredicate(key,mm.getEnvMeasures.get(key).getEME)»
+		«getMeasureBooleanExpressionPredicate(key, 
+			mm.getEnvMeasures.get(key).getBES, 
+			mm.getEnvMeasures.get(key).getInArgs, 
+			mm.getEnvMeasures.get(key).getOutArgs, 
+			mm.getCVM
+		)»
+		«defineGetEnvMeasureMethod(key,
+			mm.getEnvMeasures.get(key).getBES, 
+			mm.getEnvMeasures.get(key).getInArgs, 
+			mm.getEnvMeasures.get(key).getOutArgs, 
+			mm.getCVM
+		)»
+		«ENDFOR»
 		'''
 	}
 }

@@ -9,25 +9,22 @@ import eu.quanticol.carma.core.carma.BlockSystem
 import eu.quanticol.carma.core.carma.BooleanExpressions
 import eu.quanticol.carma.core.carma.CarmaInteger
 import eu.quanticol.carma.core.carma.Component
+import eu.quanticol.carma.core.carma.ComponentArgument
+import eu.quanticol.carma.core.carma.ComponentBlockDefinitionArgumentVariable
 import eu.quanticol.carma.core.carma.ComponentBlockForStatement
 import eu.quanticol.carma.core.carma.ComponentBlockNewDeclaration
 import eu.quanticol.carma.core.carma.ComponentBlockNewDeclarationSpawn
+import eu.quanticol.carma.core.carma.ComponentBlockStyleCollective
 import eu.quanticol.carma.core.carma.EnumAssignment
 import eu.quanticol.carma.core.carma.EnumAssignmentCarmaInteger
 import eu.quanticol.carma.core.carma.EnumAssignmentMethodReference
 import eu.quanticol.carma.core.carma.EnumAssignmentRange
 import eu.quanticol.carma.core.carma.Environment
-import eu.quanticol.carma.core.carma.EnvironmentExpression
-import eu.quanticol.carma.core.carma.EnvironmentExpressions
-import eu.quanticol.carma.core.carma.EnvironmentGuard
 import eu.quanticol.carma.core.carma.EnvironmentMeasure
 import eu.quanticol.carma.core.carma.EnvironmentOperation
 import eu.quanticol.carma.core.carma.EnvironmentUpdate
-import eu.quanticol.carma.core.carma.EnvironmentUpdateAssignment
-import eu.quanticol.carma.core.carma.EnvironmentUpdateExpressions
 import eu.quanticol.carma.core.carma.ForVariableDeclaration
 import eu.quanticol.carma.core.carma.InputActionArguments
-import eu.quanticol.carma.core.carma.LineSpawn
 import eu.quanticol.carma.core.carma.Measure
 import eu.quanticol.carma.core.carma.MeasureBlock
 import eu.quanticol.carma.core.carma.MeasureVariableDeclarations
@@ -43,15 +40,14 @@ import eu.quanticol.carma.core.carma.NewComponentArgumentPrimitive
 import eu.quanticol.carma.core.carma.NewComponentArgumentReference
 import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnDeclare
 import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnMethod
+import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnPrimitive
 import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnReference
 import eu.quanticol.carma.core.carma.OutputActionArguments
 import eu.quanticol.carma.core.carma.PredefinedMethodDeclaration
 import eu.quanticol.carma.core.carma.PrimitiveType
 import eu.quanticol.carma.core.carma.Probability
-import eu.quanticol.carma.core.carma.ProbabilityBlock
 import eu.quanticol.carma.core.carma.Range
 import eu.quanticol.carma.core.carma.Rate
-import eu.quanticol.carma.core.carma.RateBlock
 import eu.quanticol.carma.core.carma.RecordDeclaration
 import eu.quanticol.carma.core.carma.RecordReferenceGlobal
 import eu.quanticol.carma.core.carma.RecordReferenceMy
@@ -63,8 +59,6 @@ import eu.quanticol.carma.core.carma.Records
 import eu.quanticol.carma.core.carma.Spawn
 import eu.quanticol.carma.core.carma.System
 import eu.quanticol.carma.core.carma.Update
-import eu.quanticol.carma.core.carma.UpdateBlock
-import eu.quanticol.carma.core.carma.UpdateExpressions
 import eu.quanticol.carma.core.carma.VariableDeclaration
 import eu.quanticol.carma.core.carma.VariableDeclarationCarmaDouble
 import eu.quanticol.carma.core.carma.VariableDeclarationCarmaIntger
@@ -95,21 +89,14 @@ import eu.quanticol.carma.core.utils.LabelUtil
 import eu.quanticol.carma.core.utils.Util
 import java.util.ArrayList
 import java.util.HashMap
-import java.util.HashSet
-import java.util.List
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.carma.ComponentArgument
-import eu.quanticol.carma.core.carma.ComponentBlockStyleCollective
-import eu.quanticol.carma.core.carma.ComponentBlockDefinitionArgumentVariable
-import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnPrimitive
 
 class GeneratorUtils {
 	
 	@Inject extension TypeProvider
 	@Inject extension LabelUtil
 	@Inject extension Util
-	@Inject extension GenerateSystems
 	@Inject extension ExpressionHandler
 
 
@@ -452,8 +439,10 @@ class GeneratorUtils {
 		}
 		
 		for(environmentMeasure : environmentMeasures)
-			if(environmentMeasure.getContainerOfType(Environment) != null)
+			if(environmentMeasure.getContainerOfType(Environment) != null){
+				mm.loadSystemMeasure(environmentMeasure.getContainerOfType(System).label,environmentMeasure.disarmExpression)
 				mm.loadEnvMeasure(environmentMeasure.disarmExpression,environmentMeasure)
+			}
 		
 	}
 

@@ -415,6 +415,26 @@
             extensions="carma">
     </provider>
   </extension>
+  <extension point="org.eclipse.team.core.fileTypes">
+    <fileTypes
+            extension="carma"
+            type="text">
+    </fileTypes>
+  </extension>
 
-   
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <wizard
+            category="eu.quanticol.carma.ui.wizard.categoryCarma"
+            class="eu.quanticol.carma.core.ui.CARMAExecutableExtensionFactory:eu.quanticol.carma.core.ui.wizard.CARMANewProjectWizard"
+            id="eu.quanticol.carma.core.ui.wizard.CARMANewProjectWizard"
+            name="CARMA Project"
+            project="true">
+      </wizard>
+      <category
+            id="eu.quanticol.carma.ui.wizard.categoryCarma"
+            name="CARMA">
+      </category>
+   </extension>
+
 </plugin>

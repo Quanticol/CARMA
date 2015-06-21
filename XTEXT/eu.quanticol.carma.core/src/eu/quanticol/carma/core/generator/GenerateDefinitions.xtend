@@ -89,21 +89,6 @@ class GenerateDefinitions {
 			mm.getCVM
 		)»
 		«ENDFOR»
-		«FOR key : mm.getEnvMeasures.keySet»
-		«getMeasureStatePredicate(key,mm.getEnvMeasures.get(key).getEME)»
-		«getMeasureBooleanExpressionPredicate(key, 
-			mm.getEnvMeasures.get(key).getBES, 
-			mm.getEnvMeasures.get(key).getInArgs, 
-			mm.getEnvMeasures.get(key).getOutArgs, 
-			mm.getCVM
-		)»
-		«defineGetEnvMeasureMethod(key,
-			mm.getEnvMeasures.get(key).getBES, 
-			mm.getEnvMeasures.get(key).getInArgs, 
-			mm.getEnvMeasures.get(key).getOutArgs, 
-			mm.getCVM
-		)»
-		«ENDFOR»
 		'''
 	}
 }

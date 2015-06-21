@@ -74,18 +74,4 @@
          version="0.0.0"
          unpack="false"/>
 
-   <plugin
-         id="eu.quanticol.carma.ui.menu"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="eu.quanticol.carma.ui.wizard"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
 </feature>

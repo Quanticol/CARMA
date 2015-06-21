@@ -6,16 +6,14 @@ package eu.quanticol.carma.core.generator
 import com.google.inject.Inject
 import eu.quanticol.carma.core.carma.Model
 import eu.quanticol.carma.core.carma.System
+import eu.quanticol.carma.core.generator.actions.ActionManager
 import eu.quanticol.carma.core.generator.carmaVariable.CarmaVariableManager
-import eu.quanticol.carma.core.typing.TypeProvider
+import eu.quanticol.carma.core.generator.components.ComponentManager
+import eu.quanticol.carma.core.generator.measures.MeasureManager
 import eu.quanticol.carma.core.utils.LabelUtil
-import eu.quanticol.carma.core.utils.Util
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.generator.IGenerator
-import eu.quanticol.carma.core.generator.actions.ActionManager
-import eu.quanticol.carma.core.generator.components.ComponentManager
-import eu.quanticol.carma.core.generator.measures.MeasureManager
 
 /**
  * Generates code from your model files on save.
@@ -24,9 +22,7 @@ import eu.quanticol.carma.core.generator.measures.MeasureManager
  */
 class CARMAGenerator implements IGenerator {
 	
-	@Inject extension TypeProvider
 	@Inject extension LabelUtil
-	@Inject extension Util
 	@Inject extension GenerateDefinitions
 	@Inject extension GenerateFactory
 	@Inject extension GenerateSystems
