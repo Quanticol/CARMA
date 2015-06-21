@@ -2,7 +2,7 @@ package eu.quanticol.carma.core.generator.actions
 
 import eu.quanticol.carma.core.carma.Update
 import eu.quanticol.carma.core.carma.UpdateExpressions
-import eu.quanticol.carma.core.generator.carmaVariable.CarmaVariableManager
+import eu.quanticol.carma.core.generator.carmavariable.CarmaVariableManager
 import eu.quanticol.carma.core.carma.VariableReference
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import com.google.inject.Inject

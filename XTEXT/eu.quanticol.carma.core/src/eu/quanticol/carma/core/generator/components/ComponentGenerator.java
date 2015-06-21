@@ -10,7 +10,7 @@ import eu.quanticol.carma.core.carma.BooleanExpressions;
 import eu.quanticol.carma.core.carma.Guard;
 import eu.quanticol.carma.core.carma.MacroExpressionReference;
 import eu.quanticol.carma.core.generator.actions.ActionManager;
-import eu.quanticol.carma.core.generator.carmaVariable.CarmaVariableManager;
+import eu.quanticol.carma.core.generator.carmavariable.CarmaVariableManager;
 import eu.quanticol.carma.core.utils.Tree;
 
 public class ComponentGenerator {

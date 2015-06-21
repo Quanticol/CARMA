@@ -4,7 +4,7 @@ import eu.quanticol.carma.core.carma.OutputActionArguments
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import eu.quanticol.carma.core.carma.OutputActionArgument
 import java.util.ArrayList
-import eu.quanticol.carma.core.generator.carmaVariable.CarmaVariableManager
+import eu.quanticol.carma.core.generator.carmavariable.CarmaVariableManager
 import java.util.HashMap
 import eu.quanticol.carma.core.carma.VariableReference
 import com.google.inject.Inject

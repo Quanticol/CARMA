@@ -81,7 +81,7 @@ import eu.quanticol.carma.core.generator.actions.NullBooleanExpression
 import eu.quanticol.carma.core.generator.actions.NullInputActionArguments
 import eu.quanticol.carma.core.generator.actions.NullOutputActionArguments
 import eu.quanticol.carma.core.generator.actions.NullUpdate
-import eu.quanticol.carma.core.generator.carmaVariable.CarmaVariableManager
+import eu.quanticol.carma.core.generator.carmavariable.CarmaVariableManager
 import eu.quanticol.carma.core.generator.components.ComponentManager
 import eu.quanticol.carma.core.generator.measures.MeasureManager
 import eu.quanticol.carma.core.typing.TypeProvider
@@ -441,6 +441,7 @@ class GeneratorUtils {
 		for(environmentMeasure : environmentMeasures)
 			if(environmentMeasure.getContainerOfType(Environment) != null){
 				mm.loadSystemMeasure(environmentMeasure.getContainerOfType(System).label,environmentMeasure.disarmExpression)
+				println(mm.getMeasures(environmentMeasure.getContainerOfType(System).label))
 				mm.loadEnvMeasure(environmentMeasure.disarmExpression,environmentMeasure)
 			}
 		

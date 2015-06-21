@@ -4,7 +4,7 @@ import com.google.inject.Inject
 import eu.quanticol.carma.core.carma.Model
 import eu.quanticol.carma.core.carma.Probability
 import eu.quanticol.carma.core.carma.System
-import eu.quanticol.carma.core.generator.carmaVariable.CarmaVariableManager
+import eu.quanticol.carma.core.generator.carmavariable.CarmaVariableManager
 import eu.quanticol.carma.core.generator.predicates.Predicates
 import eu.quanticol.carma.core.utils.LabelUtil
 

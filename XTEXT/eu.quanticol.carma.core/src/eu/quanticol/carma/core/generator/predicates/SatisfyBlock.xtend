@@ -14,7 +14,7 @@ import eu.quanticol.carma.core.carma.VariableReferenceThis
 import eu.quanticol.carma.core.generator.ExpressionHandler
 import eu.quanticol.carma.core.generator.GeneratorUtils
 import eu.quanticol.carma.core.generator.actions.NullBooleanExpression
-import eu.quanticol.carma.core.generator.carmaVariable.CarmaVariableManager
+import eu.quanticol.carma.core.generator.carmavariable.CarmaVariableManager
 import eu.quanticol.carma.core.utils.LabelUtil
 import java.util.ArrayList
 import java.util.HashMap

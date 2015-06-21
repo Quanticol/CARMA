@@ -1,4 +1,4 @@
-package eu.quanticol.carma.core.generator.carmaVariable;
+package eu.quanticol.carma.core.generator.carmavariable;
 
 import eu.quanticol.carma.core.carma.MethodExpressions;
 

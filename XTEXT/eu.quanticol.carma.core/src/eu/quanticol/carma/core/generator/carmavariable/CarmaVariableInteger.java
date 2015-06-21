@@ -1,4 +1,4 @@
-package eu.quanticol.carma.core.generator.carmaVariable;
+package eu.quanticol.carma.core.generator.carmavariable;
 
 public class CarmaVariableInteger implements CarmaVariableAssignment {
 

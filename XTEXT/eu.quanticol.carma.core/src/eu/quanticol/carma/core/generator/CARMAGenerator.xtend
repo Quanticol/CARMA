@@ -7,7 +7,7 @@ import com.google.inject.Inject
 import eu.quanticol.carma.core.carma.Model
 import eu.quanticol.carma.core.carma.System
 import eu.quanticol.carma.core.generator.actions.ActionManager
-import eu.quanticol.carma.core.generator.carmaVariable.CarmaVariableManager
+import eu.quanticol.carma.core.generator.carmavariable.CarmaVariableManager
 import eu.quanticol.carma.core.generator.components.ComponentManager
 import eu.quanticol.carma.core.generator.measures.MeasureManager
 import eu.quanticol.carma.core.utils.LabelUtil

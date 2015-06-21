@@ -3,7 +3,7 @@
    <description name="CARMA">
       Collective Adaptive Resource-sharing Markovian Agents
    </description>
-   <feature url="features/eu.quanticol.carma.core.sdk_0.0.2.beta.jar" id="eu.quanticol.carma.core.sdk" version="0.0.2.beta">
+   <feature url="features/eu.quanticol.carma.core.sdk_0.0.3.beta.jar" id="eu.quanticol.carma.core.sdk" version="0.0.3.beta">
       <category name="CARMA"/>
    </feature>
    <category-def name="CARMA" label="CARMA">

@@ -3,7 +3,7 @@ package eu.quanticol.carma.core.generator.actions
 import com.google.inject.Inject
 import eu.quanticol.carma.core.generator.predicates.Predicates
 import eu.quanticol.carma.core.carma.BooleanExpressions
-import eu.quanticol.carma.core.generator.carmaVariable.CarmaVariableManager
+import eu.quanticol.carma.core.generator.carmavariable.CarmaVariableManager
 import eu.quanticol.carma.core.carma.Action
 import eu.quanticol.carma.core.typing.TypeProvider
 import eu.quanticol.carma.core.utils.LabelUtil

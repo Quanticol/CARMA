@@ -1,6 +1,6 @@
 package eu.quanticol.carma.core.generator.components
 
-import eu.quanticol.carma.core.generator.carmaVariable.CarmaVariableManager
+import eu.quanticol.carma.core.generator.carmavariable.CarmaVariableManager
 import eu.quanticol.carma.core.carma.System
 
 import static extension org.eclipse.xtext.EcoreUtil2.*

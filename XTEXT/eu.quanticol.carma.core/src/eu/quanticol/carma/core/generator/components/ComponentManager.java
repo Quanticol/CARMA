@@ -8,7 +8,7 @@ import eu.quanticol.carma.core.carma.MacroExpressionReference;
 import eu.quanticol.carma.core.carma.MethodExpressions;
 import eu.quanticol.carma.core.carma.VariableReference;
 import eu.quanticol.carma.core.generator.actions.ActionManager;
-import eu.quanticol.carma.core.generator.carmaVariable.CarmaVariableManager;
+import eu.quanticol.carma.core.generator.carmavariable.CarmaVariableManager;
 import eu.quanticol.carma.core.utils.Tree;
 
 import java.util.ArrayList;

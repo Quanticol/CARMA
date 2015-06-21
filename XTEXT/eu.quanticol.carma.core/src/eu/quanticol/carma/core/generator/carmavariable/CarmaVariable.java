@@ -1,4 +1,4 @@
-package eu.quanticol.carma.core.generator.carmaVariable;
+package eu.quanticol.carma.core.generator.carmavariable;
 
 import java.util.ArrayList;
 import java.util.HashMap;

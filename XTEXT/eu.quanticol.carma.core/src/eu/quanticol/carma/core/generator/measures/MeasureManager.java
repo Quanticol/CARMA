@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import eu.quanticol.carma.core.generator.actions.ActionManager;
-import eu.quanticol.carma.core.generator.carmaVariable.CarmaVariableManager;
+import eu.quanticol.carma.core.generator.carmavariable.CarmaVariableManager;
 import eu.quanticol.carma.core.generator.components.ComponentManager;
 import eu.quanticol.carma.core.carma.EnvironmentExpressions;
 import eu.quanticol.carma.core.carma.Measure;
@@ -61,7 +61,10 @@ public class MeasureManager {
 	}
 	
 	public ArrayList<String> getMeasures(String systemName){
-		return this.systemMeasure.get(systemName);
+		if(this.systemMeasure.size() > 0)
+			return this.systemMeasure.get(systemName);
+		else
+			return new ArrayList<String>();
 	}
 
 }

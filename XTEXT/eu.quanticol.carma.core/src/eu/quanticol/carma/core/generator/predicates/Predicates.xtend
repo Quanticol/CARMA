@@ -2,7 +2,7 @@ package eu.quanticol.carma.core.generator.predicates
 
 import eu.quanticol.carma.core.carma.BooleanExpressions
 import com.google.inject.Inject
-import eu.quanticol.carma.core.generator.carmaVariable.CarmaVariableManager
+import eu.quanticol.carma.core.generator.carmavariable.CarmaVariableManager
 import eu.quanticol.carma.core.carma.InputActionArguments
 import eu.quanticol.carma.core.carma.EnvironmentMacroExpressions
 import eu.quanticol.carma.core.generator.ExpressionHandler
