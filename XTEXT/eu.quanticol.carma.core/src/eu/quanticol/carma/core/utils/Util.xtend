@@ -1,121 +1,96 @@
 package eu.quanticol.carma.core.utils
 
+import com.google.inject.Inject
 import eu.quanticol.carma.core.carma.Action
+import eu.quanticol.carma.core.carma.ActionGuard
 import eu.quanticol.carma.core.carma.ActionName
 import eu.quanticol.carma.core.carma.ActionStub
+import eu.quanticol.carma.core.carma.AttribParameter
+import eu.quanticol.carma.core.carma.AttribVariableDeclaration
+import eu.quanticol.carma.core.carma.BlockStyle
+import eu.quanticol.carma.core.carma.BlockSystem
+import eu.quanticol.carma.core.carma.BooleanExpressions
+import eu.quanticol.carma.core.carma.CBND
+import eu.quanticol.carma.core.carma.CompParameters
 import eu.quanticol.carma.core.carma.Component
 import eu.quanticol.carma.core.carma.ComponentBlockDefinition
 import eu.quanticol.carma.core.carma.ComponentBlockForStatement
-import eu.quanticol.carma.core.carma.ComponentBlockNewDeclaration
-import eu.quanticol.carma.core.carma.ComponentBlockNewDeclarationSpawn
+import eu.quanticol.carma.core.carma.ComponentBlockNew
+import eu.quanticol.carma.core.carma.ComponentBlockSpawn
 import eu.quanticol.carma.core.carma.ComponentLineDefinition
 import eu.quanticol.carma.core.carma.ComponentLineDefinitionSpawn
 import eu.quanticol.carma.core.carma.ComponentLineForStatement
-import eu.quanticol.carma.core.carma.ComponentLineStyle
 import eu.quanticol.carma.core.carma.ComponentName
+import eu.quanticol.carma.core.carma.ComponentSignature
 import eu.quanticol.carma.core.carma.ComponentStyle
 import eu.quanticol.carma.core.carma.Environment
+import eu.quanticol.carma.core.carma.EnvironmentExpressions
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionAll
 import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAState
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAllStates
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionParallel
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressions
+import eu.quanticol.carma.core.carma.EnvironmentOperation
 import eu.quanticol.carma.core.carma.EnvironmentUpdate
+import eu.quanticol.carma.core.carma.EnvironmentUpdateExpressions
 import eu.quanticol.carma.core.carma.InitBlock
 import eu.quanticol.carma.core.carma.InputAction
+import eu.quanticol.carma.core.carma.InputActionArguments
+import eu.quanticol.carma.core.carma.LineStyle
+import eu.quanticol.carma.core.carma.LineSystem
 import eu.quanticol.carma.core.carma.MacroExpressionReference
+import eu.quanticol.carma.core.carma.MacroExpressions
 import eu.quanticol.carma.core.carma.MacroName
+import eu.quanticol.carma.core.carma.Measure
+import eu.quanticol.carma.core.carma.MeasureVariableDeclaration
+import eu.quanticol.carma.core.carma.MethodDeclaration
 import eu.quanticol.carma.core.carma.MethodDefinition
+import eu.quanticol.carma.core.carma.Methods
 import eu.quanticol.carma.core.carma.Model
+import eu.quanticol.carma.core.carma.MultiCast
+import eu.quanticol.carma.core.carma.Name
 import eu.quanticol.carma.core.carma.OutputAction
+import eu.quanticol.carma.core.carma.OutputActionArgument
+import eu.quanticol.carma.core.carma.Parameters
 import eu.quanticol.carma.core.carma.Probability
 import eu.quanticol.carma.core.carma.Process
-import eu.quanticol.carma.core.carma.ProcessExpression
 import eu.quanticol.carma.core.carma.ProcessExpressionReference
 import eu.quanticol.carma.core.carma.ProcessName
+import eu.quanticol.carma.core.carma.Processes
+import eu.quanticol.carma.core.carma.ProcessesBlock
 import eu.quanticol.carma.core.carma.Rate
-import eu.quanticol.carma.core.carma.VariableDeclaration
+import eu.quanticol.carma.core.carma.RecordDefinition
+import eu.quanticol.carma.core.carma.RecordName
+import eu.quanticol.carma.core.carma.RecordReferenceGlobal
+import eu.quanticol.carma.core.carma.RecordReferenceMy
+import eu.quanticol.carma.core.carma.RecordReferencePure
+import eu.quanticol.carma.core.carma.RecordReferenceReceiver
+import eu.quanticol.carma.core.carma.RecordReferenceSender
+import eu.quanticol.carma.core.carma.RecordReferenceThis
+import eu.quanticol.carma.core.carma.SetComp
+import eu.quanticol.carma.core.carma.SpontaneousAction
+import eu.quanticol.carma.core.carma.StoreBlock
+import eu.quanticol.carma.core.carma.StoreDeclaration
+import eu.quanticol.carma.core.carma.StoreLine
+import eu.quanticol.carma.core.carma.System
+import eu.quanticol.carma.core.carma.UpdateExpressions
 import eu.quanticol.carma.core.carma.VariableName
-import eu.quanticol.carma.core.carma.VariableType
+import eu.quanticol.carma.core.carma.VariableReference
+import eu.quanticol.carma.core.carma.VariableReferenceGlobal
+import eu.quanticol.carma.core.carma.VariableReferenceMy
+import eu.quanticol.carma.core.carma.VariableReferencePure
+import eu.quanticol.carma.core.carma.VariableReferenceReceiver
+import eu.quanticol.carma.core.carma.VariableReferenceSender
+import eu.quanticol.carma.core.carma.VariableReferenceThis
+import eu.quanticol.carma.core.generator.carmavariable.Declaration
+import eu.quanticol.carma.core.typing.TypeProvider
 import java.util.ArrayList
 import java.util.HashMap
 import java.util.HashSet
 import java.util.List
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.carma.StoreLine
-import eu.quanticol.carma.core.carma.StoreBlock
-import eu.quanticol.carma.core.carma.InputActionArguments
-import com.google.inject.Inject
-import eu.quanticol.carma.core.typing.TypeProvider
-import eu.quanticol.carma.core.carma.Name
-import eu.quanticol.carma.core.carma.Processes
-import eu.quanticol.carma.core.carma.RecordDeclarations
-import eu.quanticol.carma.core.carma.Records
-import eu.quanticol.carma.core.carma.RecordDeclaration
-import eu.quanticol.carma.core.carma.ProcessesBlock
-import eu.quanticol.carma.core.carma.Methods
-import eu.quanticol.carma.core.carma.VariableDeclarationRecord
-import eu.quanticol.carma.core.carma.Measure
-import eu.quanticol.carma.core.carma.EnvironmentMacroExpressions
-import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionParallel
-import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionAll
-import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAllStates
-import eu.quanticol.carma.core.carma.EnvironmentMeasure
-import eu.quanticol.carma.core.carma.ProcessExpressionChoice
-import eu.quanticol.carma.core.carma.ProcessExpressionLeaf
-import eu.quanticol.carma.core.carma.ProcessExpressionGuard
-import eu.quanticol.carma.core.carma.ProcessExpressionAction
-import eu.quanticol.carma.core.carma.CBND
-import eu.quanticol.carma.core.carma.ComponentBlockStyle
-import eu.quanticol.carma.core.carma.MultiCast
-import eu.quanticol.carma.core.carma.SpontaneousAction
-import eu.quanticol.carma.core.carma.OutputActionArgument
-import eu.quanticol.carma.core.carma.Guard
-import eu.quanticol.carma.core.carma.System
-import eu.quanticol.carma.core.carma.BlockSystem
-import eu.quanticol.carma.core.carma.LineSystem
-import eu.quanticol.carma.core.carma.NCA
-import eu.quanticol.carma.core.carma.ComponentArgument
-import eu.quanticol.carma.core.carma.ComponentBlockDefinitionArguments
-import eu.quanticol.carma.core.carma.VariableReferencePure
-import eu.quanticol.carma.core.carma.VariableReferenceMy
-import eu.quanticol.carma.core.carma.VariableReferenceThis
-import eu.quanticol.carma.core.carma.VariableReferenceSender
-import eu.quanticol.carma.core.carma.RecordReferencePure
-import eu.quanticol.carma.core.carma.RecordReferenceMy
-import eu.quanticol.carma.core.carma.RecordReferenceThis
-import eu.quanticol.carma.core.carma.RecordReferenceSender
-import eu.quanticol.carma.core.carma.VariableReference
-import eu.quanticol.carma.core.carma.VariableDeclarationEnum
-import eu.quanticol.carma.core.carma.VariableTypeRecord
-import eu.quanticol.carma.core.carma.MethodDefinitionArguments
-import eu.quanticol.carma.core.carma.MethodDefinitionArgument
-import eu.quanticol.carma.core.carma.ComponentBlockDeclaration
-import eu.quanticol.carma.core.carma.ComponentBlockStyleCollective
-import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnDeclare
-import eu.quanticol.carma.core.carma.NewComponentArgumentDeclare
-import eu.quanticol.carma.core.carma.VariableReferenceGlobal
-import eu.quanticol.carma.core.carma.RecordReferenceGlobal
-import eu.quanticol.carma.core.carma.EnvironmentOperation
-import eu.quanticol.carma.core.carma.VariableReferenceReceiver
-import eu.quanticol.carma.core.carma.RecordReferenceReceiver
-import eu.quanticol.carma.core.carma.ActionGuard
-import eu.quanticol.carma.core.carma.MethodAtomicVariable
-import eu.quanticol.carma.core.carma.PredefinedMethodDeclarationArgument
-import eu.quanticol.carma.core.carma.BooleanExpression
-import eu.quanticol.carma.core.carma.UpdateExpression
-import eu.quanticol.carma.core.carma.EnvironmentUpdateExpression
-import eu.quanticol.carma.core.carma.EnvironmentExpression
-import eu.quanticol.carma.core.carma.BooleanExpressions
-import eu.quanticol.carma.core.carma.EnvironmentUpdateExpressions
-import eu.quanticol.carma.core.carma.EnvironmentExpressions
-import eu.quanticol.carma.core.carma.UpdateExpressions
-import eu.quanticol.carma.core.carma.ComponentBlockDefinitionArgumentMacro
-import eu.quanticol.carma.core.carma.MacroType
-import eu.quanticol.carma.core.carma.MacroExpressions
-import eu.quanticol.carma.core.carma.VariableDeclarationCarmaDouble
-import eu.quanticol.carma.core.carma.VariableDeclarationCarmaIntger
-import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnPrimitive
-import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnMacro
-import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnMethod
-import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnReference
+import eu.quanticol.carma.core.carma.GlobalStoreBlock
 
 class Util {
 	
@@ -123,8 +98,468 @@ class Util {
 	@Inject extension LabelUtil
 	
 	/**
-	 * 
+	 * Check if the names are the same!
 	 */
+	def boolean sameName(Name name1, Name name2){
+		name1.label.equals(name2.label)
+	}
+	
+	def Name getName(Component c){
+		return c.eAllOfType(ComponentSignature).get(0).eAllOfType(Name).get(0)
+	}
+	
+	def Name getName(Parameters parameter){
+		return parameter.eAllOfType(Name).get(0)
+	}
+	
+	def Name getName(CompParameters parameter){
+		return parameter.eAllOfType(Name).get(0)
+	}
+	
+	def Name getName(MethodDeclaration md){
+		return md.eAllOfType(Name).get(0)
+	}
+	
+	def Name getName(StoreDeclaration sd){
+		return sd.eAllOfType(Name).get(0)
+	}
+	
+	def ArrayList<Declaration> getDeclarations(VariableReference vr){
+		var roots = new ArrayList<Declaration>()
+		
+		if(vr.getContainerOfType(MethodDefinition) != null){
+		 	roots = vr.getDeclarations(vr.getContainerOfType(MethodDefinition))
+		}
+		
+		if(vr.getContainerOfType(RecordDefinition) != null){
+		 	roots = vr.getDeclarations(vr.getContainerOfType(RecordDefinition))
+		}
+		
+		if(vr.getContainerOfType(StoreBlock) != null){
+		 	roots = vr.getDeclarations(vr.getContainerOfType(Component))
+		}
+		
+		if(vr.getContainerOfType(StoreLine) != null){
+		 	roots = vr.getDeclarations(vr.getContainerOfType(Component))
+		}
+		
+		if(vr.getContainerOfType(Process) != null){
+		 	roots = vr.getDeclarations(vr.getContainerOfType(Process))
+		}
+		
+		if(vr.getContainerOfType(ComponentBlockForStatement) != null){
+			roots = vr.getDeclarations(vr.getContainerOfType(ComponentBlockForStatement))
+		}
+		
+		if(vr.getContainerOfType(ComponentLineForStatement) != null){
+			roots = vr.getDeclarations(vr.getContainerOfType(ComponentLineForStatement))
+		}
+		
+		//measure on its own
+		if(vr.getContainerOfType(Measure) != null && vr.getContainerOfType(EnvironmentOperation) == null){
+			roots = vr.getDeclarations(vr.getContainerOfType(Measure))
+		}
+		
+		//prob
+		if(vr.getContainerOfType(Probability) != null){
+			roots = vr.getDeclarations(vr.getContainerOfType(EnvironmentOperation))
+		}
+		
+		//rate
+		if(vr.getContainerOfType(Rate) != null){
+			roots = vr.getDeclarations(vr.getContainerOfType(EnvironmentOperation))
+		}
+		
+		//update
+		if(vr.getContainerOfType(EnvironmentUpdate) != null){
+			roots = vr.getDeclarations(vr.getContainerOfType(EnvironmentOperation))
+		}
+		
+		return roots
+	}
+	
+	def Name getRecordName(VariableReference vr){
+		if(vr.eAllOfType(RecordName).size > 0)
+			return vr.eAllOfType(RecordName).get(0)
+		else
+			return null
+	}
+	
+	def Name getVariableName(VariableReference vr){
+		if(vr.eAllOfType(VariableName).size > 0)
+			return vr.eAllOfType(VariableName).get(0)
+		else
+			return null
+	}
+	
+	def Name getRootName(VariableReference vr){
+		if(vr.recordName == null)
+			return vr.variableName
+		else
+			return vr.recordName
+	}
+	
+	def ArrayList<Declaration> getDeclarations(VariableReference vr, MethodDefinition md){
+		var roots = new ArrayList<Declaration>()
+		var fqn = vr.disarm
+		var Name rootName 	= vr.rootName
+		var parameters  	= md.eAllOfType(Parameters)
+		var declarations	= md.eAllOfType(MethodDeclaration)
+		
+		for(p:parameters){
+			if(rootName.sameName(p.name)){
+				var type = p.type
+				var Declaration dec = new Declaration()
+				dec.add(fqn,p.name,type)
+				roots.add(dec)
+			}
+		}
+		
+		for(d:declarations){
+			if(rootName.sameName(d.name)){
+				var type = d.type
+				var Declaration dec = new Declaration()
+				dec.add(fqn,d.name,type)
+				roots.add(dec)
+			}
+		}
+		
+		return roots
+	}
+	
+	def ArrayList<Declaration> getDeclarations(VariableReference vr, RecordDefinition rd){
+		var roots = new ArrayList<Declaration>()
+		var fqn = vr.disarm
+		var Name rootName 	= vr.rootName
+		var parameters  	= rd.eAllOfType(AttribParameter)
+		var declarations	= rd.eAllOfType(AttribVariableDeclaration)
+		
+		for(p:parameters){
+			if(rootName.sameName(p.name)){
+				var type = p.getBaseType
+				var Declaration dec = new Declaration()
+				dec.add(fqn,p.name,type)
+				roots.add(dec)
+			}
+		}
+		
+		for(d:declarations){
+			if(rootName.sameName(d.name)){
+				var type = d.getBaseType
+				var Declaration dec = new Declaration()
+				dec.add(fqn,d.name,type)
+				roots.add(dec)
+			}
+		}
+		
+		return roots
+	}
+	
+	def ArrayList<Declaration> getDeclarations(VariableReference vr, Component c){
+		var roots = new ArrayList<Declaration>()
+		var fqn = vr.disarm
+		var Name rootName 	= vr.rootName
+		var parameters  	= c.eAllOfType(CompParameters)
+		var declarations	= c.eAllOfType(StoreDeclaration)
+		
+		for(p:parameters){
+			if(rootName.sameName(p.name)){
+				var type = p.type
+				var Declaration dec = new Declaration()
+				dec.add(fqn,p.name,type)
+				roots.add(dec)
+			}
+		}
+		
+		for(d:declarations){
+			if(rootName.sameName(d.name)){
+				var type = d.type
+				var Declaration dec = new Declaration()
+				dec.add(fqn,d.name,type)
+				roots.add(dec)
+			}
+		}
+		
+		return roots
+	}
+	
+	def ArrayList<Declaration> getDeclarations(VariableReference vr, Process process){
+		var roots = new ArrayList<Declaration>()
+		var processes = new ArrayList<Process>()
+		
+		//if an input argument, get sender processes
+		if(vr.getContainerOfType(InputActionArguments) != null){
+			var ia = vr.getContainerOfType(InputAction)
+			var oas = ia.sender
+			for(oa : oas){
+				processes.add(oa.getContainerOfType(Process))
+			}
+		} else {
+			processes.add(process)
+		}
+		
+		//get all components that use this Process
+		var components = new ArrayList<Component>()
+		
+		for(p:processes){
+			components.addAll(p.components)
+		}
+		
+		for(c:components){
+			roots.addAll(vr.getDeclarations(c))
+		}
+		
+		return roots
+	}
+	
+	def ArrayList<Declaration> getDeclarations(VariableReference vr, Measure measure){
+		var roots = new ArrayList<Declaration>()
+		var fqn = vr.disarm
+		var Name rootName 	= vr.rootName
+		var declarations	= measure.eAllOfType(MeasureVariableDeclaration)
+		
+		for(d:declarations){
+			if(rootName.sameName(d.name)){
+				var type = d.getBaseType
+				var Declaration dec = new Declaration()
+				dec.add(fqn,d.name,type)
+				roots.add(dec)
+			}
+		}
+		
+		var components = new ArrayList<Component>()
+		var envMacro = (measure.measure as SetComp).componentReference
+		envMacro.getComponents(components)
+		
+		for(c:components){
+			roots.addAll(vr.getDeclarations(c))
+		}
+		return roots
+	}
+	
+	def ArrayList<Declaration> getDeclarations(VariableReference vr, ComponentBlockForStatement cbfs){
+		var roots = new ArrayList<Declaration>()
+		var fqn = vr.disarm
+		var Name rootName 	= vr.rootName
+		var declarations	= cbfs.eAllOfType(AttribVariableDeclaration)
+		
+		for(d:declarations){
+			if(rootName.sameName(d.name)){
+				var type = d.getBaseType
+				var Declaration dec = new Declaration()
+				dec.add(fqn,d.name,type)
+				roots.add(dec)
+			}
+		}
+		
+		return roots
+	}
+	
+	def ArrayList<Declaration> getDeclarations(VariableReference vr, ComponentLineForStatement clfs){
+		var roots = new ArrayList<Declaration>()
+		var fqn = vr.disarm
+		var Name rootName 	= vr.rootName
+		var declarations	= clfs.eAllOfType(AttribVariableDeclaration)
+
+		for(d:declarations){
+			if(rootName.sameName(d.name)){
+				var type = d.getBaseType
+				var Declaration dec = new Declaration()
+				dec.add(fqn,d.name,type)
+				roots.add(dec)
+			}
+		}
+		
+		return roots
+	}
+	
+	def ArrayList<Declaration> getDeclarations(VariableReference vr, EnvironmentOperation operation){
+		var roots = new ArrayList<Declaration>()
+		var processes = new ArrayList<Process>()
+		var components = new ArrayList<Component>()
+		switch(vr){
+			VariableReferencePure: 		{
+				if(vr.getContainerOfType(Measure) != null){
+					roots.addAll(vr.getDeclarations(vr.getContainerOfType(Measure)))
+				} 
+			}
+			RecordReferencePure: 		{
+				if(vr.getContainerOfType(Measure) != null){
+					roots.addAll(vr.getDeclarations(vr.getContainerOfType(Measure)))
+				}
+			}
+			VariableReferenceReceiver:	processes.addAll(operation.stub.getProcesses(false))
+			RecordReferenceReceiver: 	processes.addAll(operation.stub.getProcesses(false))
+			VariableReferenceSender: 	processes.addAll(operation.stub.getProcesses(true))
+			RecordReferenceSender:		processes.addAll(operation.stub.getProcesses(true))
+			VariableReferenceGlobal:	roots.addAll(vr.getDeclarations(vr.getContainerOfType(Model).eAllOfType(GlobalStoreBlock).get(0)))
+			RecordReferenceGlobal:		roots.addAll(vr.getDeclarations(vr.getContainerOfType(Model).eAllOfType(GlobalStoreBlock).get(0)))
+		}
+
+		return roots
+	}
+	
+	def ArrayList<Declaration> getDeclarations(VariableReference vr, GlobalStoreBlock gsb){
+		var roots = new ArrayList<Declaration>()
+		var fqn = vr.disarm
+		var Name rootName 	= vr.rootName
+		var declarations	= gsb.eAllOfType(StoreDeclaration)
+		
+		for(d:declarations){
+			if(rootName.sameName(d.name)){
+				var type = d.type
+				var Declaration dec = new Declaration()
+				dec.add(fqn,d.name,type)
+				roots.add(dec)
+			}
+		}
+		
+		return roots
+	}
+	
+	def ArrayList<Process> getProcesses(ActionStub stub, boolean output){
+	 	
+		var actions = stub.getContainerOfType(Model).eAllOfType(Action)
+	 	var processes = new ArrayList<Process>()
+	 	
+	 	for(action : actions){
+	 		if(action.name.sameName(stub.name)){
+	 			if(output && action.isOutput)
+	 					processes.add(action.getContainerOfType(Process))
+	 			if(!output && !action.isOutput)
+	 					processes.add(action.getContainerOfType(Process))
+	 		}
+	 	}
+		return processes
+	 	
+	}
+	
+	def void getComponents(EnvironmentMacroExpressions eme, ArrayList<Component> components){
+		switch(eme){
+			EnvironmentMacroExpressionParallel:				{
+				eme.left.getComponents(components)
+				eme.right.getComponents(components)
+				}
+			EnvironmentMacroExpressionAll:					{
+				components.addAll(eme.getContainerOfType(Model).eAllOfType(Component))
+			}
+			EnvironmentMacroExpressionComponentAllStates: {
+				components.add((eme as EnvironmentMacroExpressionComponentAllStates).comp.getContainerOfType(Component))
+			}
+			EnvironmentMacroExpressionComponentAState:	{
+				components.add((eme as EnvironmentMacroExpressionComponentAState).comp.getContainerOfType(Component))
+			}
+		}
+		
+	}
+	
+	
+	
+	/**
+	 * Return the components related to this Process 
+	 * 
+	 * @author 	CDW
+	 * @param	Process
+	 * @return	HashMap<Integer,ArrayList<String>>
+	 */
+	def ArrayList<Component> getComponents(Process proc){
+		
+		var output = new ArrayList<Component>
+		
+		if(proc.getContainerOfType(ComponentBlockDefinition) != null){
+			output.add(proc.getContainerOfType(ComponentBlockDefinition))
+		} else {
+			var ArrayList<Process> roots = proc.getRootProcesses
+			for(p2 : roots){
+				var ComponentStyle componentStyle = p2.getContainerOfType(ComponentStyle)
+				if(componentStyle.eAllOfType(LineStyle).size > 0){
+					var lines = componentStyle.eAllOfType(ComponentLineDefinition)
+					for(line : lines){
+						if(line.eAllOfType(MacroExpressionReference).getNames().contains((p2.name as ProcessName).name)){
+							output.add(line)
+						}
+					}
+					var spawns = componentStyle.eAllOfType(ComponentLineDefinitionSpawn)
+					for(line : spawns){
+						if(line.eAllOfType(MacroExpressionReference).getNames().contains((p2.name as ProcessName).name)){
+							output.add(line)
+						}
+					}
+				} else {
+					var news = componentStyle.eAllOfType(ComponentBlockNew)
+					var Component component = null
+					for(n : news){
+						if(n.eAllOfType(MacroExpressionReference).getNames().contains((p2.name as ProcessName).name)){
+							component = n.getComponent
+							output.add(component)
+						}
+					}
+					var spawns = componentStyle.eAllOfType(ComponentBlockSpawn)
+					for(s : spawns){
+						if(s.eAllOfType(MacroExpressionReference).getNames().contains((p2.name as ProcessName).name)){
+							component = s.getComponent
+							output.add(component)
+						}
+					}
+				}
+			}
+		}
+			
+		return output 
+	}
+	
+	def ArrayList<Process> getRootProcesses(Process p1){
+		
+		var ArrayList<Name> names = new ArrayList<Name>();
+		var ArrayList<Process> roots = new ArrayList<Process>();
+		
+		//process is in behaviour block
+		if(p1.getContainerOfType(ComponentBlockDefinition) != null){
+			var component = p1.getContainerOfType(Component)
+			var macros = component.eAllOfType(MacroExpressionReference)
+			for(macro : macros){
+					names.add(macro.name)
+			}
+		//process is not in behaviour block
+		} else {
+			var macros = p1.getContainerOfType(Model).eAllOfType(MacroExpressionReference)
+			for(macro : macros){
+				//ignore component-behaviour blocks, only check new/spawn 
+				if(macro.getContainerOfType(ComponentBlockDefinition) == null)
+						//associated to anything with the process name
+						names.add(macro.name)
+			}
+		}
+		for(Process p2 : p1.maximumFixedPoint(true))
+			for(name : names){
+				if(name.sameName(p2.name))
+					roots.add(p2)
+			}
+		return roots
+	}
+	
+	def ArrayList<String> getNames(List<MacroExpressionReference> macroExpressions){
+		var ArrayList<String> names = new ArrayList<String>()
+		for(macro : macroExpressions){
+			names.add((macro.name as MacroName).name.name)
+		}
+		return names
+	}
+
+	def Component getComponent(ComponentBlockNew cbn){
+		var components = cbn.getContainerOfType(Model).eAllOfType(Component)
+		for(component : components)
+			if(cbn.name.sameName(component.getName))
+				return component
+	}
+	
+	def Component getComponent(ComponentBlockSpawn cbn){
+		var components = cbn.getContainerOfType(Model).eAllOfType(Component)
+		for(component : components)
+			if(cbn.name.sameName(component.getName))
+				return component
+	}
+	
 	def boolean isNameInModel(Model model, Name name){
 		var test = false
 		var names = model.eAllOfType(Name)
@@ -134,22 +569,6 @@ class Util {
 		}
 		
 		return test
-	}
-	
-	/**
-	 * Check if the names are the same!
-	 */
-	def boolean sameName(Name name1, Name name2){
-		name1.label.equals(name2.label)
-	}
-	
-	def ArrayList<Name> getNames(RecordDeclarations rds){
-		var ArrayList<Name> names = new ArrayList<Name>()
-			if((rds as Records).recordDeclarations != null){
-				for(rd : (rds as Records).recordDeclarations)
-					names.add((rd as RecordDeclaration).name)
-			}
-		return names
 	}
 	
 	def ArrayList<Name> getNames(ProcessesBlock psb){
@@ -197,57 +616,6 @@ class Util {
 		return names
 	}
 	
-	/**
-	 * Given a componentName and model, return the component
-	 */
-	def Component getComponent(String name, Model model){
-		var Component c = null
-		for(component : model.eAllOfType(ComponentBlockDefinition))
-			if((component.name as ComponentName).name.equals(name))
-				c = component
-		for(component : model.eAllOfType(ComponentLineDefinition))
-			if((component.name as ComponentName).name.equals(name))
-				c = component		
-		return c
-	}
-	
-	/**
-	 * Get all componentNames referenced by MacroExpression
-	 */
-	def void getComponentName(EnvironmentMacroExpressions eme, ArrayList<String> output){
-		switch(eme){
-			EnvironmentMacroExpressionParallel:				{
-				eme.left.getComponentName(output)
-				eme.right.getComponentName(output)
-				}
-			EnvironmentMacroExpressionAll:					{
-				output.addAll(eme.getContainerOfType(Model).getAllComponentNames())
-			}
-			EnvironmentMacroExpressionComponentAllStates: {
-				output.add((eme as EnvironmentMacroExpressionComponentAllStates).comp.label)
-			}
-			EnvironmentMacroExpressionComponentAState:	{
-				output.add((eme as EnvironmentMacroExpressionComponentAState).comp.label)
-			}
-		}
-		
-	}
-	
-	/**
-	 * Given a model, get all component names
-	 */
-	def HashSet<String> getAllComponentNames(Model model){
-		var HashSet<String> output = new HashSet<String>()
-		
-		for(componentName : model.eAllOfType(ComponentName))
-			output.add(componentName.label)
-		
-		return output
-	}
-	
-	/**
-	 * Get opposite action
-	 */
 	def ArrayList<OutputAction> getSender(InputAction ia){
 		var ArrayList<OutputAction> output = new ArrayList<OutputAction>()
 		for(oa : ia.getContainerOfType(Model).eAllOfType(OutputAction))
@@ -256,15 +624,97 @@ class Util {
 		return output
 	}
 	
-	/**
-	 * Get opposite action
-	 */
 	def ArrayList<InputAction> getReceiver(OutputAction oa){
 		var ArrayList<InputAction> output = new ArrayList<InputAction>()
 		for(ia : oa.getContainerOfType(Model).eAllOfType(InputAction))
 			if((ia.getContainerOfType(Action).name as ActionName).name.equals((oa.getContainerOfType(Action).name as ActionName).name))
 				output.add(ia)
 		return output
+	}
+	
+	def ArrayList<Process> maximumFixedPoint(Process p1, boolean includeSelf){
+		
+		
+		var HashSet<Process> buffer1 = new HashSet<Process>()
+		var HashSet<Process> buffer2 = new HashSet<Process>()
+		
+		if(includeSelf)
+			buffer1.add(p1)
+		else
+			buffer1.addAll(getReferences(p1))
+		
+		while(buffer1.size > buffer2.size){
+			
+			buffer2.addAll(buffer1)
+			
+			for(Process p2 : buffer2){
+				if(includeSelf)
+					buffer1.addAll(getAllReferences(p2))
+				else
+					buffer1.addAll(getReferences(p2))
+			}
+		}
+		
+		var ArrayList<Process> output = new ArrayList<Process>(buffer1)
+		
+		return output
+		
+	}
+	
+	def HashSet<Process> getAllReferences(Process p1){
+		
+		var HashSet<Process> output = new HashSet<Process>()
+		
+		for(Process p2 : p1.getContainerOfType(ComponentStyle).eAllOfType(Process))
+			for(ProcessExpressionReference pr : p2.eAllOfType(ProcessExpressionReference))
+				if(p1.name.equals(pr.expression.name))
+					output.add(p2)
+		
+		for(ProcessExpressionReference pr : p1.eAllOfType(ProcessExpressionReference))
+			for(Process p2 : p1.getContainerOfType(ComponentStyle).eAllOfType(Process))
+				if(p2.name.equals(pr.expression.name))
+					output.add(p2)
+					
+		return output 
+		
+	}
+	
+	def HashSet<Process> getReferences(Process p1){
+		
+		var HashSet<Process> output = new HashSet<Process>()
+		
+		for(Process p2 : p1.getContainerOfType(ComponentStyle).eAllOfType(Process))
+			for(ProcessExpressionReference pr : p2.eAllOfType(ProcessExpressionReference))
+				if(p1.name.equals(pr.expression.name))
+					output.add(p2)
+							
+		return output 
+		
+	}
+
+	
+	//////here be dragons
+	
+	def ArrayList<Action> getActions(ActionStub actionStub){
+		var output = new ArrayList<Action>()
+		for(proc : actionStub.processes){
+			output.addAll(proc.eAllOfType(Action))
+		}
+		return output
+	}
+		
+	def ArrayList<Process> getProcesses(ActionStub stub){
+	 	
+		var actions = stub.getContainerOfType(Model).eAllOfType(Action)
+	 	var output = new ArrayList<Process>()
+	 	
+	 	for(action : actions){
+	 		if(action.name.sameName(stub.name)){
+	 			output.add(action.getContainerOfType(Process))
+	 		}
+	 	}
+		return output
+	 	
 	}
 	
 	def HashSet<String> getTypes(VariableReference vr, OutputAction oa){
@@ -359,222 +809,14 @@ class Util {
 		return output
 	}
 	
-	
-	/** 
-	 * @see MethodAtomic
-	 * 
-	 */
-	def HashSet<String> getTypes(VariableName vn, MethodAtomicVariable md ){
-		var HashSet<String> output = new HashSet<String>()
-		if(md != null ){
-			output.addAll(vn.getTypesVD(
-				new ArrayList<VariableDeclaration>(vn.getContainerOfType(MethodDefinition).eAllOfType(VariableDeclaration))
-			))
-			
-			output.addAll(vn.getTypesVT(
-				new ArrayList<VariableType>(vn.getContainerOfType(MethodDefinition).eAllOfType(VariableType))
-			))
-		}
-		return output
-	}
-	
-	
-	/**
-	 * PFD(arg_0,arg_1,...arg_N)
-	 * @see PredefinedMethodDeclarationArgument
-	 */
-	def HashSet<String> getTypes(VariableName vn, PredefinedMethodDeclarationArgument pmda){
-		var HashSet<String> output = new HashSet<String>()
-		//StoreBlock ->	componentArgs
-		if(vn.getContainerOfType(StoreBlock) != null ){
-			output.addAll(vn.getTypesVT(
-				new ArrayList<VariableType>(vn.getContainerOfType(ComponentBlockDefinition).eAllOfType(VariableType))
-			))
-		}
-		
-		//StoreLine	-> componentLineForStatement
-		if(vn.getContainerOfType(StoreLine) != null ){
-			output.addAll(vn.getTypesVD(
-					new ArrayList<VariableDeclaration>(vn.getContainerOfType(ComponentLineForStatement).eAllOfType(VariableDeclaration))
-			))
-		}
-		
-		//Update -> Store
-		if(vn.getContainerOfType(Action) != null ){
-			output.addAll(vn.getTypesVD(
-				new ArrayList<VariableDeclaration>(vn.getContainerOfType(ComponentBlockDefinition).eAllOfType(VariableDeclaration))
-			))
-		}
-		
-		//EUpdate ->	EStore
-		if(vn.getContainerOfType(Environment) != null ){
-			var rate   = vn.getContainerOfType(Rate)
-			var update = vn.getContainerOfType(EnvironmentUpdate)
-			var prob   = vn.getContainerOfType(Probability)
-			
-			var ActionStub actionStub = null
-			
-			if(rate != null)
-				actionStub = rate.eAllOfType(ActionStub).get(0)
-			if(update != null)
-				actionStub = update.eAllOfType(ActionStub).get(0)
-			if(prob != null)
-				actionStub = prob.eAllOfType(ActionStub).get(0)
-				
-			for(p : actionStub.processes){
-				var componentVariableMap = p.getComponentAndDeclarations
-				for(component : componentVariableMap.keySet)
-					output.addAll(vn.getTypesVD(componentVariableMap.get(component)))
-			}
-			
-			output.addAll(vn.getTypesVD(vn.getContainerOfType(Model).environmentAttributes))
-		}
-		
-		//ComponentLineForStatement -> 	VariableDeclaration
-		if(vn.getContainerOfType(ComponentLineForStatement) != null ){
-			output.addAll(vn.getTypesVD(
-					new ArrayList<VariableDeclaration>(vn.getContainerOfType(ComponentLineForStatement).eAllOfType(VariableDeclaration))
-			))
-		}
-		
-		//ComponentBlockForStatement ->	VariableDeclaration
-		if(vn.getContainerOfType(ComponentBlockForStatement) != null ){
-			output.addAll(vn.getTypesVD(
-					new ArrayList<VariableDeclaration>(vn.getContainerOfType(ComponentBlockForStatement).eAllOfType(VariableDeclaration))
-			))
-		}
-		
-		//MethodDefinition	->	VariableDeclaration
-		if(vn.getContainerOfType(MethodDefinition) != null ){
-			output.addAll(vn.getTypesVD(
-				new ArrayList<VariableDeclaration>(vn.getContainerOfType(MethodDefinition).eAllOfType(VariableDeclaration))
-			))
-			
-			output.addAll(vn.getTypesVT(
-				new ArrayList<VariableType>(vn.getContainerOfType(MethodDefinition).eAllOfType(VariableType))
-			))
-		}
-		return output
-	}
-	
-	/**
-	 * Search for all types associated with this reference
-	 */
-	def HashSet<String> getTypes(VariableReference vr){
-		var HashSet<String> output = new HashSet<String>()
-		var vn = (vr.name as VariableName)
-		
-		//ProcessExpression
-		if(vr.getContainerOfType(ProcessExpression) != null){
 
-			if(vr.getContainerOfType(Process) != null){
-				
-				var componentVariableMap = vr.getContainerOfType(Process).getComponentAndDeclarations
-				
-				for(component : componentVariableMap.keySet){
-					output.addAll(vn.getTypesVD(componentVariableMap.get(component)))
-				}
-				
-				//check the input arguments
-				if(vr.getContainerOfType(Action).eAllOfType(InputAction).size > 0){
-					output.addAll(vr.getTypes(vr.getContainerOfType(Action).eAllOfType(InputAction).get(0)))
-				}
-				
-				//check the Component that performs the input action
-				if(vr.getContainerOfType(Action).eAllOfType(OutputAction).size > 0){
-					output.addAll(vr.getTypes(vr.getContainerOfType(Action).eAllOfType(OutputAction).get(0)))
-				}
-					
-			}
-		}
-		//Environment
-		if(vr.getContainerOfType(Environment) != null){
-			
-			var rate   = vr.getContainerOfType(Rate)
-			var update = vr.getContainerOfType(EnvironmentUpdate)
-			var prob   = vr.getContainerOfType(Probability)
-			
-			var ActionStub actionStub = null
-			
-			if(rate != null)
-				actionStub = rate.eAllOfType(ActionStub).get(0)
-			if(update != null)
-				actionStub = update.eAllOfType(ActionStub).get(0)
-			if(prob != null)
-				actionStub = prob.eAllOfType(ActionStub).get(0)
-				
-			for(p : actionStub.processes){
-				var componentVariableMap = p.getComponentAndDeclarations
-				for(component : componentVariableMap.keySet){
-					
-					var vds = componentVariableMap.get(component)
-					output.addAll(vn.getTypesVD(vds))
-				}
-			}
-			output.addAll(vn.getTypesVD(vr.getContainerOfType(Model).environmentAttributes))
-			
-		}
-		
-		//Component
-		if(vr.getContainerOfType(ComponentBlockForStatement) != null || vr.getContainerOfType(ComponentLineForStatement) != null ){
-			if(vr.getContainerOfType(ComponentBlockForStatement) != null){
-				var vds = new ArrayList<VariableDeclaration>(vr.getContainerOfType(ComponentBlockForStatement).eAllOfType(VariableDeclaration))
-				output.addAll(vn.getTypesVD(vds))
-			}else{
-				var vds = new ArrayList<VariableDeclaration>(vr.getContainerOfType(ComponentBlockForStatement).eAllOfType(VariableDeclaration))
-				output.addAll(vn.getTypesVD(vds))
-			}
-		}
-		//Method
-		if(vr.getContainerOfType(MethodDefinition) != null ){
-			var vds = new ArrayList<VariableDeclaration>(vr.getContainerOfType(MethodDefinition).eAllOfType(VariableDeclaration))
-			var vts = new ArrayList<VariableType>(vr.getContainerOfType(MethodDefinition).eAllOfType(VariableType))
-			output.addAll(vn.getTypesVD(vds))
-			output.addAll(vn.getTypesVT(vts))
-		}
-		
-		//Measure
-		if(vr.getContainerOfType(Measure) != null){
-			var ArrayList<String> names = new ArrayList<String>()
-			(vr.getContainerOfType(Measure).measure as EnvironmentMeasure).componentReference.getComponentName(names)
-			for(name : names){
-				var component = name.getComponent(vr.getContainerOfType(Model))
-				var vds = new ArrayList<VariableDeclaration>(component.eAllOfType(VariableDeclaration))
-				output.addAll(vn.getTypesVD(vds))
-			}
-			var vds = new ArrayList<VariableDeclaration>(vr.getContainerOfType(Measure).parameters.eAllOfType(VariableDeclaration))
-			output.addAll(vn.getTypesVD(vds))
-		}
-		//Store
-		if(vr.getContainerOfType(StoreBlock) != null){
-			var name = (vr.name as VariableName)
-			var vts = new ArrayList<VariableType>(vr.getContainerOfType(ComponentBlockDefinition).eAllOfType(ComponentBlockDefinitionArguments).get(0).eAllOfType(VariableType))
-			output.addAll(name.getTypesVT(vts))
-		}
-		
-		return output
-	}
 	
 	/**
 	 * Return list of types that have this variable name
 	 * @author CDW
 	 */
-	def ArrayList<String> getTypesVD(VariableName variableName, ArrayList<VariableDeclaration> variables){
+	def ArrayList<String> getTypesVD(Name variableName, ArrayList<VariableDeclaration> variables){
 		var ArrayList<String> output = new ArrayList<String>()
-		for(variable : variables)
-			if(variable.name.sameName(variableName))
-				output.add(variable.type)
-		
-		return output
-	}
-	
-	/**
-	 * Return list of types that have this variable name
-	 * @author CDW
-	 */
-	def ArrayList<String> getTypesVT(VariableName variableName, ArrayList<VariableType> variables){
-		var ArrayList<String> output = new ArrayList<String>()
-		
 		for(variable : variables)
 			if(variable.name.sameName(variableName))
 				output.add(variable.type)
@@ -608,7 +850,7 @@ class Util {
 			
 			for(p2 : roots){
 				var ComponentStyle componentStyle = p2.getContainerOfType(ComponentStyle)
-				if(componentStyle.eAllOfType(ComponentLineStyle).size > 0){
+				if(componentStyle.eAllOfType(LineStyle).size > 0){
 					var ArrayList<ComponentLineDefinition> lines = new ArrayList<ComponentLineDefinition>(componentStyle.eAllOfType(ComponentLineDefinition))
 					for(line : lines){
 						if(line.eAllOfType(MacroExpressionReference).getNames().contains((p2.name as ProcessName).name)){
@@ -620,7 +862,7 @@ class Util {
 					var ArrayList<ComponentBlockDefinition> blocks = new ArrayList<ComponentBlockDefinition>(componentStyle.eAllOfType(ComponentBlockDefinition))
 					var HashMap<String,Component> components = new HashMap<String,Component>();
 					for(block : blocks){
-						components.put((block.name as ComponentName).name,block)
+						components.put(block.eAllOfType(ComponentName).get(0).name,block)
 						if(block.eAllOfType(MacroExpressionReference).getNames().contains((p2.name as ProcessName).name)){
 							var ArrayList<VariableDeclaration> attributes = new ArrayList<VariableDeclaration>(block.eAllOfType(VariableDeclaration))
 							output.put(block,attributes)
@@ -633,77 +875,17 @@ class Util {
 		return output 
 	}
 	
-	/**
-	 * Given a list of Macro's return a list of the Macro names
-	 * @author CDW
-	 */
-	 def ArrayList<String> getNames(List<MacroExpressionReference> macroExpressions){
-	 	
-	 	var ArrayList<String> names = new ArrayList<String>()
-	 	
-	 	for(macro : macroExpressions){
-	 		names.add((macro.name as MacroName).name.name)
-	 	}
-	 	
-	 	return names
-	 	
-	 }
-	 
-	/**
-	 * Given a Process, return the Processes the owning Component starts with.
-	 * <p>
-	 * 
-	 * @author 	CDW
-	 * @param	Process
-	 * @return	Process
-	 */
-	def ArrayList<Process> getRootProcesses(Process p1){
-		
-		var ArrayList<String> names = new ArrayList<String>();
-		var ArrayList<Process> roots = new ArrayList<Process>();
-		
-		//process is in behaviour block
-		if(p1.getContainerOfType(ComponentBlockDefinition) != null){
-			var String componentName = ""
-			componentName = (p1.getContainerOfType(ComponentBlockDefinition).name as ComponentName).name
-			var ArrayList<MacroExpressionReference> macros = new ArrayList<MacroExpressionReference>(p1.getContainerOfType(Model).eAllOfType(MacroExpressionReference))
-			for(macro : macros){
-				//can only be associated to components that have the same name
-				if(macro.getComponentName.equals(componentName)){
-					names.add((macro.name as MacroName).name.name)
-				}
-				
-			}
-		//process is not in behaviour block
-		} else {
-			var ArrayList<MacroExpressionReference> macros = new ArrayList<MacroExpressionReference>(p1.getContainerOfType(Model).eAllOfType(MacroExpressionReference))
-			for(macro : macros){
-				//ignore behaviour blocks
-				if(macro.getContainerOfType(ComponentBlockDefinition) == null)
-						//associated to anything with the process name
-						names.add((macro.name as MacroName).name.name)
-			}
-			
-		}
-		
-		for(Process p2 : p1.maximumFixedPoint(true))
-				if(names.contains((p2.name as ProcessName).name))
-					roots.add(p2)
-				
-//		println("roots:" + roots)
-		return roots
-	} 
 	
 	/**
 	 * Given a MacroExpression, return the name of the containing component
 	 */
 	def String getComponentName(MacroExpressionReference macro){
-		if(macro.getContainerOfType(ComponentBlockNewDeclaration) != null){
-			(macro.getContainerOfType(ComponentBlockNewDeclaration).name  as ComponentName).name
-		} else if (macro.getContainerOfType(ComponentBlockNewDeclarationSpawn) != null){
-			(macro.getContainerOfType(ComponentBlockNewDeclarationSpawn).name  as ComponentName).name
+		if(macro.getContainerOfType(ComponentBlockNew) != null){
+			(macro.getContainerOfType(ComponentBlockNew).name  as ComponentName).name
+		} else if (macro.getContainerOfType(ComponentBlockSpawn) != null){
+			(macro.getContainerOfType(ComponentBlockSpawn).name  as ComponentName).name
 		} else if (macro.getContainerOfType(InitBlock) != null){
-			(macro.getContainerOfType(ComponentBlockDefinition).name  as ComponentName).name
+			macro.getContainerOfType(ComponentBlockDefinition).eAllOfType(ComponentName).get(0).name
 		} else if (macro.getContainerOfType(ComponentLineDefinition) != null){
 			(macro.getContainerOfType(ComponentLineDefinition).name  as ComponentName).name
 		} else if (macro.getContainerOfType(ComponentLineDefinitionSpawn) != null){
@@ -716,116 +898,6 @@ class Util {
 	}
 	
 	/**
-	 * Return a List of all Processes associated with the given one. 
-	 * All Processes that transition from, or to, the Process argument. 
-	 * <p>
-	 * @author 	CDW <br>
-	 * @param	Process <br>
-	 * @return	ArrayList<Process>
-	 */
-	def ArrayList<Process> maximumFixedPoint(Process p1, boolean includeSelf){
-		
-		
-		var HashSet<Process> buffer1 = new HashSet<Process>()
-		var HashSet<Process> buffer2 = new HashSet<Process>()
-		
-		if(includeSelf)
-			buffer1.add(p1)
-		else
-			buffer1.addAll(getReferences(p1))
-		
-		while(buffer1.size > buffer2.size){
-			
-			buffer2.addAll(buffer1)
-			
-			for(Process p2 : buffer2){
-				if(includeSelf)
-					buffer1.addAll(getAllReferences(p2))
-				else
-					buffer1.addAll(getReferences(p2))
-			}
-		}
-		
-		var ArrayList<Process> output = new ArrayList<Process>(buffer1)
-		
-		return output
-		
-	}
-	
-	/**
-	 * Return all Processes referenced by the argument Process. Both parents and children.
-	 * 
-	 * @author 	CDW
-	 * @param	Process
-	 * @return	HashSet<Process>
-	 */
-	def HashSet<Process> getAllReferences(Process p1){
-		
-		var HashSet<Process> output = new HashSet<Process>()
-		
-		for(Process p2 : p1.getContainerOfType(ComponentStyle).eAllOfType(Process))
-			for(ProcessExpressionReference pr : p2.eAllOfType(ProcessExpressionReference))
-				if(p1.name.equals(pr.expression.name))
-					output.add(p2)
-		
-		for(ProcessExpressionReference pr : p1.eAllOfType(ProcessExpressionReference))
-			for(Process p2 : p1.getContainerOfType(ComponentStyle).eAllOfType(Process))
-				if(p2.name.equals(pr.expression.name))
-					output.add(p2)
-					
-		return output 
-		
-	}
-	
-	/**
-	 * Return all Processes referenced by the argument Process. Only children.
-	 * 
-	 * @author 	CDW
-	 * @param	Process
-	 * @return	HashSet<Process>
-	 */
-	def HashSet<Process> getReferences(Process p1){
-		
-		var HashSet<Process> output = new HashSet<Process>()
-		
-		for(Process p2 : p1.getContainerOfType(ComponentStyle).eAllOfType(Process))
-			for(ProcessExpressionReference pr : p2.eAllOfType(ProcessExpressionReference))
-				if(p1.name.equals(pr.expression.name))
-					output.add(p2)
-							
-		return output 
-		
-	}
-	
-	/**
-	 * Given an ActionStub, return all Processes which use that action
-	 */
-	def ArrayList<Process> getProcesses(ActionStub stub){
-	 	
-		var actions = stub.getContainerOfType(Model).eAllOfType(Action)
-	 	var output = new ArrayList<Process>()
-	 	
-	 	for(action : actions){
-	 		if(action.name.sameName(stub.name)){
-	 			output.add(action.getContainerOfType(Process))
-	 		}
-	 	}
-		return output
-	 	
-	}
-	
-	/**
-	 * Give an ActionStub, return all Actions
-	 */
-	def ArrayList<Action> getActions(ActionStub actionStub){
-		var output = new ArrayList<Action>()
-		for(proc : actionStub.processes){
-			output.addAll(proc.eAllOfType(Action))
-		}
-		return output
-	}
-	
-	/**
 	 * Given a Component return the state Tree
 	 */
 	def Tree getTree(Component component){
@@ -833,7 +905,7 @@ class Util {
 		var HashSet<Process> processes = new HashSet<Process>()
 		var Tree tree = null;
 		
-		if(component.getContainerOfType(ComponentBlockStyle) != null){
+		if(component.getContainerOfType(BlockStyle) != null){
 			
 			var ms = (component as ComponentBlockDefinition).getComponentBlockDeclarations.stripMacro
 			
@@ -883,10 +955,10 @@ class Util {
 	 * Given a ComponentBlockDefinition, return all declarations
 	 */
 	def ArrayList<CBND> getComponentBlockDeclarations(ComponentBlockDefinition cbd){
-		var cbndss = cbd.getContainerOfType(Model).eAllOfType(ComponentBlockNewDeclarationSpawn)
-		var cbnds = cbd.getContainerOfType(Model).eAllOfType(ComponentBlockNewDeclaration)
+		var cbndss = cbd.getContainerOfType(Model).eAllOfType(ComponentBlockSpawn)
+		var cbnds = cbd.getContainerOfType(Model).eAllOfType(ComponentBlockNew)
 		var ArrayList<CBND> output = new ArrayList<CBND>()
-		var name = cbd.name
+		var name = cbd.eAllOfType(ComponentName).get(0)
 		
 		for(cbnd : cbndss){
 			if(cbnd.name.equals(name))
@@ -995,7 +1067,7 @@ class Util {
 	def ArrayList<Action> getActionsFromComponent(Component component){
 		var ArrayList<Action> output = new ArrayList<Action>()
 		
-		if(component.getContainerOfType(ComponentBlockStyle) != null){
+		if(component.getContainerOfType(BlockStyle) != null){
 			
 			var ms = (component as ComponentBlockDefinition).getComponentBlockDeclarations.stripMacro
 			
@@ -1067,28 +1139,28 @@ class Util {
 		return output
 	}
 	
-	/**
-	 * Given a component name, and an attribute name, return the value of the attribute
-	 */
-	def String getValueEnv(Model model, String attributeName, String recordName){
-		var String output = ""
-		var attributes = model.environmentAttributes
-		
-		for(attribute : attributes){
-			if(attribute.name.label.equals(attributeName)){
-				var rds = attribute.eAllOfType(RecordDeclaration)
-					for(rd : rds){
-						if(rd.name.label.equals(recordName))
-							output = rd.assign.label
-					}
-				
-			}
-				
-				
-		}
-		
-		return output
-	}
+//	/**
+//	 * Given a component name, and an attribute name, return the value of the attribute
+//	 */
+//	def String getValueEnv(Model model, String attributeName, String recordName){
+//		var String output = ""
+//		var attributes = model.environmentAttributes
+//		
+//		for(attribute : attributes){
+//			if(attribute.name.label.equals(attributeName)){
+//				var rds = attribute.eAllOfType(RecordDeclaration)
+//					for(rd : rds){
+//						if(rd.name.label.equals(recordName))
+//							output = rd.assign.label
+//					}
+//				
+//			}
+//				
+//				
+//		}
+//		
+//		return output
+//	}
 	
 	/**
 	 * Given a component name, and an attribute name, return the value of the attribute
@@ -1106,29 +1178,29 @@ class Util {
 		return output
 	}
 	
-	/**
-	 * Given a component name, and an attribute name, return the value of the attribute
-	 */
-	def String getValue(Model model, String componentName, String attributeName, String recordName){
-		var String output = ""
-		var component = componentName.getComponent(model)
-		var attributes = component.eAllOfType(VariableDeclaration)
-		
-		for(attribute : attributes){
-			if(attribute.name.label.equals(attributeName)){
-				var rds = attribute.eAllOfType(RecordDeclaration)
-					for(rd : rds){
-						if(rd.name.label.equals(recordName))
-							output = rd.assign.label
-					}
-				
-			}
-				
-				
-		}
-		
-		return output
-	}
+//	/**
+//	 * Given a component name, and an attribute name, return the value of the attribute
+//	 */
+//	def String getValue(Model model, String componentName, String attributeName, String recordName){
+//		var String output = ""
+//		var component = componentName.getComponent(model)
+//		var attributes = component.eAllOfType(VariableDeclaration)
+//		
+//		for(attribute : attributes){
+//			if(attribute.name.label.equals(attributeName)){
+//				var rds = attribute.eAllOfType(RecordDeclaration)
+//					for(rd : rds){
+//						if(rd.name.label.equals(recordName))
+//							output = rd.assign.label
+//					}
+//				
+//			}
+//				
+//				
+//		}
+//		
+//		return output
+//	}
 	
 	def String convertType(VariableDeclaration vd){
 		if(vd.type.toString.equals("enum")){
@@ -1190,41 +1262,41 @@ class Util {
 		}
 	}
 	
-	/**
-	 * Given a variable reference, find variabledeclaration from COMPONENT!
-	 */
-	def VariableDeclaration getVariableDeclaration(VariableReference vrr){
-		var components = new ArrayList<Component>(vrr.getContainerOfType(Model).eAllOfType(Component))
-		switch(vrr){
-			VariableReferencePure		: components.getVariableDeclaration(vrr.name)
-			VariableReferenceMy			: components.getVariableDeclaration(vrr.name)
-			VariableReferenceThis		: components.getVariableDeclaration(vrr.name)
-			VariableReferenceReceiver	: vrr.variableDeclarationAny
-			VariableReferenceSender		: vrr.variableDeclarationAny
-			VariableReferenceGlobal		: vrr.variableDeclarationEnv
-			RecordReferencePure			: components.getVariableDeclaration(vrr.name)
-			RecordReferenceMy			: components.getVariableDeclaration(vrr.name)
-			RecordReferenceThis			: components.getVariableDeclaration(vrr.name)
-			RecordReferenceReceiver		: vrr.variableDeclarationAny
-			RecordReferenceSender		: vrr.variableDeclarationAny
-			RecordReferenceGlobal		: vrr.variableDeclarationEnv
-		}
-	}
+//	/**
+//	 * Given a variable reference, find variabledeclaration from COMPONENT!
+//	 */
+//	def VariableDeclaration getVariableDeclaration(VariableReference vrr){
+//		var components = new ArrayList<Component>(vrr.getContainerOfType(Model).eAllOfType(Component))
+//		switch(vrr){
+//			VariableReferencePure		: components.getVariableDeclaration(vrr.name)
+//			VariableReferenceMy			: components.getVariableDeclaration(vrr.name)
+//			VariableReferenceThis		: components.getVariableDeclaration(vrr.name)
+//			VariableReferenceReceiver	: vrr.variableDeclarationAny
+//			VariableReferenceSender		: vrr.variableDeclarationAny
+//			VariableReferenceGlobal		: vrr.variableDeclarationEnv
+//			RecordReferencePure			: components.getVariableDeclaration(vrr.name)
+//			RecordReferenceMy			: components.getVariableDeclaration(vrr.name)
+//			RecordReferenceThis			: components.getVariableDeclaration(vrr.name)
+//			RecordReferenceReceiver		: vrr.variableDeclarationAny
+//			RecordReferenceSender		: vrr.variableDeclarationAny
+//			RecordReferenceGlobal		: vrr.variableDeclarationEnv
+//		}
+//	}
 	
-	/**
-	 * Given a variable reference, find full variabledeclaration from anywhere
-	 */
-	def VariableDeclaration getVariableDeclarationAny(VariableReference vrr){
-		var vds = vrr.getContainerOfType(Model).eAllOfType(VariableDeclaration)
-		for(v :vds){
-			if(v.name.sameName(vrr.name))
-				if(v.getFullDeclaration != null ){
-					return v.getFullDeclaration
-				}
-	
-		}
-		return null
-	}
+//	/**
+//	 * Given a variable reference, find full variabledeclaration from anywhere
+//	 */
+//	def VariableDeclaration getVariableDeclarationAny(VariableReference vrr){
+//		var vds = vrr.getContainerOfType(Model).eAllOfType(VariableDeclaration)
+//		for(v :vds){
+//			if(v.name.sameName(vrr.name))
+//				if(v.getFullDeclaration != null ){
+//					return v.getFullDeclaration
+//				}
+//	
+//		}
+//		return null
+//	}
 	
 //	def VariableDeclaration getFullDeclaration(VariableDeclaration vd){
 //		switch(vd){
@@ -1236,22 +1308,22 @@ class Util {
 //		return null
 //	}
 	
-	def VariableDeclaration getFullDeclaration(VariableDeclaration vd){
-		switch(vd){
-			VariableDeclarationEnum			:	return vd
-			VariableDeclarationCarmaDouble	:	return vd
-			VariableDeclarationCarmaIntger	: 	return vd
-			VariableDeclarationRecord		:	return (vd as VariableDeclarationRecord).getFullDeclaration
-		}
-		return null
-	}
+//	def VariableDeclaration getFullDeclaration(VariableDeclaration vd){
+//		switch(vd){
+//			VariableDeclarationEnum			:	return vd
+//			VariableDeclarationCarmaDouble	:	return vd
+//			VariableDeclarationCarmaIntger	: 	return vd
+//			VariableDeclarationRecord		:	return (vd as VariableDeclarationRecord).getFullDeclaration
+//		}
+//		return null
+//	}
 	
-	def VariableDeclaration getFullDeclaration(VariableDeclarationRecord vdr){
-		if(vdr.eAllOfType(Records).size > 0 || vdr.recordDeclarations.size > 0) {
-			return (vdr as VariableDeclaration)
-		}
-		return null
-	}
+//	def VariableDeclaration getFullDeclaration(VariableDeclarationRecord vdr){
+//		if(vdr.eAllOfType(Records).size > 0 || vdr.recordDeclarations.size > 0) {
+//			return (vdr as VariableDeclaration)
+//		}
+//		return null
+//	}
 	
 	/**
 	 * Given a variable reference, find variabledeclaration from Environment!
@@ -1281,21 +1353,21 @@ class Util {
 		return output
 	}
 	
-	def boolean isRecord(Name name){
-		var vd = getVariableDeclaration(name)
-		switch(vd){
-			VariableDeclarationRecord: true
-			default: false
-		}
-	}
-	
-	def boolean isEnum(Name name){
-		var vd = getVariableDeclaration(name)
-		switch(vd){
-			VariableDeclarationEnum: true
-			default: false
-		}
-	}
+//	def boolean isRecord(Name name){
+//		var vd = getVariableDeclaration(name)
+//		switch(vd){
+//			VariableDeclarationRecord: true
+//			default: false
+//		}
+//	}
+//	
+//	def boolean isEnum(Name name){
+//		var vd = getVariableDeclaration(name)
+//		switch(vd){
+//			VariableDeclarationEnum: true
+//			default: false
+//		}
+//	}
 	
 	/**
 	 * Given a VariableDeclaration return all VariableDeclarations with the same name
@@ -1311,19 +1383,19 @@ class Util {
 		return output
 	}
 	
-	/**
-	 * Given a VariableType return all VariableType with the same name
-	 */
-	def ArrayList<VariableType> getSameDeclarations(VariableType vt){
-		var ArrayList<VariableType> output = new ArrayList<VariableType>()
-		
-		for(vardec : vt.getContainerOfType(Model).eAllOfType(VariableType)){
-			if(vardec.name.sameName(vt.name))
-				output.add(vardec)
-		}
-		
-		return output
-	}
+//	/**
+//	 * Given a VariableType return all VariableType with the same name
+//	 */
+//	def ArrayList<VariableType> getSameDeclarations(VariableType vt){
+//		var ArrayList<VariableType> output = new ArrayList<VariableType>()
+//		
+//		for(vardec : vt.getContainerOfType(Model).eAllOfType(VariableType)){
+//			if(vardec.name.sameName(vt.name))
+//				output.add(vardec)
+//		}
+//		
+//		return output
+//	}
 	
 	/**
 	 * Given a VariableDeclaration return boolean if all VariableDeclarations in the model
@@ -1340,20 +1412,20 @@ class Util {
 		return output
 	}
 	
-	/**
-	 * Given a VariableDeclaration return boolean if all VariableDeclarations in the model
-	 * are the same type
-	 */
-	def boolean sameType(VariableType vt){
-		var others = vt.sameDeclarations
-		var boolean output = true
-		
-		for(o : others){
-			output = output && vt.type.toString.equals(o.type.toString)
-		}
-		
-		return output
-	}
+//	/**
+//	 * Given a VariableDeclaration return boolean if all VariableDeclarations in the model
+//	 * are the same type
+//	 */
+//	def boolean sameType(VariableType vt){
+//		var others = vt.sameDeclarations
+//		var boolean output = true
+//		
+//		for(o : others){
+//			output = output && vt.type.toString.equals(o.type.toString)
+//		}
+//		
+//		return output
+//	}
 	
 	/**
 	 * Is this a BlockSystem?
@@ -1365,79 +1437,79 @@ class Util {
 		}
 	}
 	
-	/**
-	 * Given a CBND return ComponentBlockDefinition
-	 */
-	def ComponentBlockDefinition getComponent(CBND cbnd){
-		var ComponentBlockDefinition output = null
-		var name = cbnd.name
-		
-		for(component : cbnd.getContainerOfType(Model).eAllOfType(ComponentBlockDefinition))
-			if(component.name.sameName(name))
-				output = component
-		
-		return output
-	}
+//	/**
+//	 * Given a CBND return ComponentBlockDefinition
+//	 */
+//	def ComponentBlockDefinition getComponent(CBND cbnd){
+//		var ComponentBlockDefinition output = null
+//		var name = cbnd.name
+//		
+//		for(component : cbnd.getContainerOfType(Model).eAllOfType(ComponentBlockDefinition))
+//			if(component.name.sameName(name))
+//				output = component
+//		
+//		return output
+//	}
 	
-	/**
-	 * Given a CBND check argument count and type of matching ComponentBlockDefinition
-	 */
-	def boolean hasMatchingArguments(CBND cbnd){
-		var cbndArguments = cbnd.eAllOfType(NCA)
-		var componentArguments = cbnd.component.eAllOfType(ComponentArgument)
-		if(cbndArguments.size != componentArguments.size)
-			return false
-		else{
-			var output = true
-			var count = 0
-			for(;count < cbndArguments.size;count++){
-				output = output && cbndArguments.get(count).type.toString.equals(componentArguments.get(count).type.toString)
-			}
-			
-			return output
-		}	
-	}
+//	/**
+//	 * Given a CBND check argument count and type of matching ComponentBlockDefinition
+//	 */
+//	def boolean hasMatchingArguments(CBND cbnd){
+//		var cbndArguments = cbnd.eAllOfType(NCA)
+//		var componentArguments = cbnd.component.eAllOfType(ComponentArgument)
+//		if(cbndArguments.size != componentArguments.size)
+//			return false
+//		else{
+//			var output = true
+//			var count = 0
+//			for(;count < cbndArguments.size;count++){
+//				output = output && cbndArguments.get(count).type.toString.equals(componentArguments.get(count).type.toString)
+//			}
+//			
+//			return output
+//		}	
+//	}
 	
-	/**
-	 * Given a CBND check argument count and type of matching ComponentBlockDefinition
-	 */
-	def boolean hasMatchingArguments(CBND cbnd, ComponentBlockDefinition cbd){
-		var cbndArguments = cbnd.eAllOfType(NCA)
-		var componentArguments = cbd.eAllOfType(ComponentArgument)
-		if(cbndArguments.size != componentArguments.size){
-			return false
-		}else{
-			var output = true
-			var count = 0
-			for(;count < cbndArguments.size;count++){
-				output = output && cbndArguments.get(count).type.toString.equals(componentArguments.get(count).type.toString)
-			}
-			
-			return output
-		}	
-	}
+//	/**
+//	 * Given a CBND check argument count and type of matching ComponentBlockDefinition
+//	 */
+//	def boolean hasMatchingArguments(CBND cbnd, ComponentBlockDefinition cbd){
+//		var cbndArguments = cbnd.eAllOfType(NCA)
+//		var componentArguments = cbd.eAllOfType(ComponentArgument)
+//		if(cbndArguments.size != componentArguments.size){
+//			return false
+//		}else{
+//			var output = true
+//			var count = 0
+//			for(;count < cbndArguments.size;count++){
+//				output = output && cbndArguments.get(count).type.toString.equals(componentArguments.get(count).type.toString)
+//			}
+//			
+//			return output
+//		}	
+//	}
 	
-	/**
-	 * Given a component return all declarations
-	 */
-	def HashMap<Component,ArrayList<CBND>> getComponentToCBNDs(ComponentBlockDefinition cbd){
-		var HashMap<Component,ArrayList<CBND>> output = new HashMap<Component,ArrayList<CBND>>()
-		
-		
-		if(cbd != null){
-			var cbnds = new ArrayList<CBND>()
-			for(cbnd : cbd.getContainerOfType(Model).eAllOfType(CBND)){
-				if(cbd.name.sameName(cbnd.name)){
-					if(cbnd.hasMatchingArguments(cbd)){
-						cbnds.add(cbnd)
-					}
-				}
-			}
-			output.put(cbd,cbnds)
-			
-		}
-		return output
-	}
+//	/**
+//	 * Given a component return all declarations
+//	 */
+//	def HashMap<Component,ArrayList<CBND>> getComponentToCBNDs(ComponentBlockDefinition cbd){
+//		var HashMap<Component,ArrayList<CBND>> output = new HashMap<Component,ArrayList<CBND>>()
+//		
+//		
+//		if(cbd != null){
+//			var cbnds = new ArrayList<CBND>()
+//			for(cbnd : cbd.getContainerOfType(Model).eAllOfType(CBND)){
+//				if(cbd.name.sameName(cbnd.name)){
+//					if(cbnd.hasMatchingArguments(cbd)){
+//						cbnds.add(cbnd)
+//					}
+//				}
+//			}
+//			output.put(cbd,cbnds)
+//			
+//		}
+//		return output
+//	}
 	
 	def HashMap<String,String> getNameValue(ArrayList<VariableName> vns){
 		
@@ -1449,48 +1521,48 @@ class Util {
 		
 	}
 	
-	/**
-	 * Given a Component get MacroExpressionReference
-	 */
-	def ArrayList<MacroExpressionReference> getMacros(Component component){
-		
-		switch(component){
-			ComponentBlockDefinition: 	return (component as ComponentBlockDefinition).getMacrosBlock
-			default:					return (component as ComponentLineDefinition ).getMacrosLine
-		}
-		
-		
-	}
+//	/**
+//	 * Given a Component get MacroExpressionReference
+//	 */
+//	def ArrayList<MacroExpressionReference> getMacros(Component component){
+//		
+//		switch(component){
+//			ComponentBlockDefinition: 	return (component as ComponentBlockDefinition).getMacrosBlock
+//			default:					return (component as ComponentLineDefinition ).getMacrosLine
+//		}
+//		
+//		
+//	}
 	
-	def ArrayList<MacroExpressionReference> getMacrosBlock(ComponentBlockDefinition component){
-		var ArrayList<MacroExpressionReference> macros = new ArrayList<MacroExpressionReference>()
-		
-		var inits = component.eAllOfType(MacroExpressionReference)
-		var processes = component.getContainerOfType(Model).eAllOfType(Process)
-		
-		for(p : processes){
-			for(i : inits)
-				if(p.name.sameName(i.name))
-					macros.add(i)
-		}
-		
-		var cas = component.componentArguments.eAllOfType(ComponentArgument)
-		for(ca : cas){
-			if(ca.eAllOfType(ProcessName).size > 0)
-				for(i : inits){
-					if(i.name.sameName(ca.eAllOfType(ProcessName).get(0))){
-						var cToCBND = ca.componentToCBNDs
-						for(key : cToCBND.keySet){
-							for(cbnd : cToCBND.get(key)){
-								macros.addAll(cbnd.eAllOfType(NCA).get(ca.position).eAllOfType(MacroExpressionReference))
-							}
-						}
-					}
-				}
-		}
-		
-		return macros
-	}
+//	def ArrayList<MacroExpressionReference> getMacrosBlock(ComponentBlockDefinition component){
+//		var ArrayList<MacroExpressionReference> macros = new ArrayList<MacroExpressionReference>()
+//		
+//		var inits = component.eAllOfType(MacroExpressionReference)
+//		var processes = component.getContainerOfType(Model).eAllOfType(Process)
+//		
+//		for(p : processes){
+//			for(i : inits)
+//				if(p.name.sameName(i.name))
+//					macros.add(i)
+//		}
+//		
+//		var cas = component.componentArguments.eAllOfType(ComponentArgument)
+//		for(ca : cas){
+//			if(ca.eAllOfType(ProcessName).size > 0)
+//				for(i : inits){
+//					if(i.name.sameName(ca.eAllOfType(ProcessName).get(0))){
+//						var cToCBND = ca.componentToCBNDs
+//						for(key : cToCBND.keySet){
+//							for(cbnd : cToCBND.get(key)){
+//								macros.addAll(cbnd.eAllOfType(NCA).get(ca.position).eAllOfType(MacroExpressionReference))
+//							}
+//						}
+//					}
+//				}
+//		}
+//		
+//		return macros
+//	}
 	
 	def ArrayList<MacroExpressionReference> getMacrosLine(ComponentLineDefinition component){
 		new ArrayList<MacroExpressionReference>(component.eAllOfType(MacroExpressionReference))
@@ -1503,278 +1575,278 @@ class Util {
 		return actionStub.label.contains("*")
 	}
 	
-	/**
-	 * Given a VariableTypeRecord, return its ComponentBlockNewDeclarations
-	 */
-	def HashMap<Component,ArrayList<CBND>> getComponentToCBNDs(VariableTypeRecord vtr){
-		return vtr.getContainerOfType(ComponentArgument).getComponentToCBNDs
-	}
+//	/**
+//	 * Given a VariableTypeRecord, return its ComponentBlockNewDeclarations
+//	 */
+//	def HashMap<Component,ArrayList<CBND>> getComponentToCBNDs(VariableTypeRecord vtr){
+//		return vtr.getContainerOfType(ComponentArgument).getComponentToCBNDs
+//	}
 	
-	/**
-	 * Given a VariableName, return its ComponentBlockNewDeclarations
-	 */
-	def HashMap<Component,ArrayList<CBND>> getCBNDs(VariableName vtr){
-		return vtr.getContainerOfType(ComponentArgument).getComponentToCBNDs
-	}
+//	/**
+//	 * Given a VariableName, return its ComponentBlockNewDeclarations
+//	 */
+//	def HashMap<Component,ArrayList<CBND>> getCBNDs(VariableName vtr){
+//		return vtr.getContainerOfType(ComponentArgument).getComponentToCBNDs
+//	}
 	
-	/**
-	 * Given a ComponentArgument, return its ComponentBlockNewDeclarations
-	 */
-	def HashMap<Component,ArrayList<CBND>> getComponentToCBNDs(ComponentArgument ca){
-		ca.getContainerOfType(ComponentBlockDefinition).getComponentToCBNDs
-	}
+//	/**
+//	 * Given a ComponentArgument, return its ComponentBlockNewDeclarations
+//	 */
+//	def HashMap<Component,ArrayList<CBND>> getComponentToCBNDs(ComponentArgument ca){
+//		ca.getContainerOfType(ComponentBlockDefinition).getComponentToCBNDs
+//	}
 	
-	def int getPosition(ComponentArgument ca){
-		return ca.getContainerOfType(ComponentBlockDefinition).componentArguments.eAllOfType(ComponentArgument).indexOf(ca)
-	}
+//	def int getPosition(ComponentArgument ca){
+//		return ca.getContainerOfType(ComponentBlockDefinition).componentArguments.eAllOfType(ComponentArgument).indexOf(ca)
+//	}
 	
-	def int getPosition(CBND cbnd, NCA nca){
-		return cbnd.eAllOfType(NCA).indexOf(nca)
-	}
+//	def int getPosition(CBND cbnd, NCA nca){
+//		return cbnd.eAllOfType(NCA).indexOf(nca)
+//	}
 	
-	/**
-	 * Given a VariableTypeRecord, return position inside ComponentBlockDefinitionArguments or MethodDefinitionArguments
-	 */
-	def int getPosition(VariableTypeRecord vtr){
-		var position = -1
-		
-		if(vtr.getContainerOfType(ComponentBlockDefinitionArguments) != null){
-			var arguments = vtr.getContainerOfType(ComponentBlockDefinitionArguments).eAllOfType(ComponentArgument)
-			for(argument : arguments){
-				if(argument.eAllOfType(Name).get(0).sameName(vtr.name)){
-					position++
-					return position
-				} else {
-					position++
-				}
-			}
-		}
-		
-		if(vtr.getContainerOfType(MethodDefinitionArguments) != null){
-			var arguments = vtr.getContainerOfType(MethodDefinitionArguments).eAllOfType(MethodDefinitionArgument)
-			for(argument : arguments){
-				if(argument.eAllOfType(Name).get(0).sameName(vtr.name)){
-					position++
-					return position
-				} else {
-					position++
-				}
-			}
-		}
-		
-		return position
-	}
+//	/**
+//	 * Given a VariableTypeRecord, return position inside ComponentBlockDefinitionArguments or MethodDefinitionArguments
+//	 */
+//	def int getPosition(VariableTypeRecord vtr){
+//		var position = -1
+//		
+//		if(vtr.getContainerOfType(ComponentBlockDefinitionArguments) != null){
+//			var arguments = vtr.getContainerOfType(ComponentBlockDefinitionArguments).eAllOfType(ComponentArgument)
+//			for(argument : arguments){
+//				if(argument.eAllOfType(Name).get(0).sameName(vtr.name)){
+//					position++
+//					return position
+//				} else {
+//					position++
+//				}
+//			}
+//		}
+//		
+//		if(vtr.getContainerOfType(MethodDefinitionArguments) != null){
+//			var arguments = vtr.getContainerOfType(MethodDefinitionArguments).eAllOfType(MethodDefinitionArgument)
+//			for(argument : arguments){
+//				if(argument.eAllOfType(Name).get(0).sameName(vtr.name)){
+//					position++
+//					return position
+//				} else {
+//					position++
+//				}
+//			}
+//		}
+//		
+//		return position
+//	}
 	
-	/**
-	 * Given a VariableDeclarationRecord, return position inside ComponentBlockDefinitionArguments or MethodDefinitionArguments
-	 */
-	def int getPosition(VariableDeclarationRecord vdr){
-		var position = -1
-		
-		if(vdr.getContainerOfType(ComponentBlockDefinitionArguments) != null){
-			var arguments = vdr.getContainerOfType(ComponentBlockDefinitionArguments).eAllOfType(ComponentArgument)
-			for(argument : arguments){
-				if(argument.eAllOfType(Name).get(0).sameName(vdr.assign.ref)){
-					position++
-					return position
-				} else {
-					position++
-				}
-			}
-		}
-		
-		if(vdr.getContainerOfType(MethodDefinitionArguments) != null){
-			var arguments = vdr.getContainerOfType(MethodDefinitionArguments).eAllOfType(MethodDefinitionArgument)
-			for(argument : arguments){
-				if(argument.eAllOfType(Name).get(0).sameName(vdr.assign.ref)){
-					position++
-					return position
-				} else {
-					position++
-				}
-			}
-		}
-		
-		return position
-	}
+//	/**
+//	 * Given a VariableDeclarationRecord, return position inside ComponentBlockDefinitionArguments or MethodDefinitionArguments
+//	 */
+//	def int getPosition(VariableDeclarationRecord vdr){
+//		var position = -1
+//		
+//		if(vdr.getContainerOfType(ComponentBlockDefinitionArguments) != null){
+//			var arguments = vdr.getContainerOfType(ComponentBlockDefinitionArguments).eAllOfType(ComponentArgument)
+//			for(argument : arguments){
+//				if(argument.eAllOfType(Name).get(0).sameName(vdr.assign.ref)){
+//					position++
+//					return position
+//				} else {
+//					position++
+//				}
+//			}
+//		}
+//		
+//		if(vdr.getContainerOfType(MethodDefinitionArguments) != null){
+//			var arguments = vdr.getContainerOfType(MethodDefinitionArguments).eAllOfType(MethodDefinitionArgument)
+//			for(argument : arguments){
+//				if(argument.eAllOfType(Name).get(0).sameName(vdr.assign.ref)){
+//					position++
+//					return position
+//				} else {
+//					position++
+//				}
+//			}
+//		}
+//		
+//		return position
+//	}
 	
-	def ArrayList<RecordDeclaration> getRecordDeclarationsFromCBND(VariableName vn){
-		
-		//get position in the ComponentBlockDefinitionArguments
-		var position = vn.getPosition
-		//get ComponentBlockDeclaration
-		var cbnds = vn.getCBNDs
-		var output = new ArrayList<RecordDeclaration>()
-		for(cd : cbnds.keySet){
-			for(c : cbnds.get(cd)){
-				switch(c){
-					ComponentBlockNewDeclaration		: output.addAll((c as ComponentBlockNewDeclaration).componentInputArguments.inputArguments.get(position).eAllOfType(RecordDeclaration))
-					ComponentBlockNewDeclarationSpawn	: output.addAll((c as ComponentBlockNewDeclarationSpawn).componentInputArguments.inputArguments.get(position).recordDeclarationsFromNewComponentArgumentSpawn)
-				}
-			}
-		}
-		return output
-			
-	}
+//	def ArrayList<RecordDeclaration> getRecordDeclarationsFromCBND(VariableName vn){
+//		
+//		//get position in the ComponentBlockDefinitionArguments
+//		var position = vn.getPosition
+//		//get ComponentBlockDeclaration
+//		var cbnds = vn.getCBNDs
+//		var output = new ArrayList<RecordDeclaration>()
+//		for(cd : cbnds.keySet){
+//			for(c : cbnds.get(cd)){
+//				switch(c){
+//					ComponentBlockNewDeclaration		: output.addAll((c as ComponentBlockNewDeclaration).componentInputArguments.inputArguments.get(position).eAllOfType(RecordDeclaration))
+//					ComponentBlockNewDeclarationSpawn	: output.addAll((c as ComponentBlockNewDeclarationSpawn).componentInputArguments.inputArguments.get(position).recordDeclarationsFromNewComponentArgumentSpawn)
+//				}
+//			}
+//		}
+//		return output
+//			
+//	}
 	
-	def ArrayList<RecordDeclaration> getRecordDeclarationsFromNewComponentArgumentSpawn(NCA nca){
-		switch(nca){
-			NewComponentArgumentSpawnPrimitive	:	null
-			NewComponentArgumentSpawnDeclare	:	new ArrayList<RecordDeclaration>(nca.eAllOfType(RecordDeclaration))
-			NewComponentArgumentSpawnMacro		:	null
-			NewComponentArgumentSpawnMethod		:	null
-			NewComponentArgumentSpawnReference	:	new ArrayList<RecordDeclaration>((nca.value.variableDeclaration as VariableDeclarationRecord).recordDeclarations)
-		}
-		
-	}
+//	def ArrayList<RecordDeclaration> getRecordDeclarationsFromNewComponentArgumentSpawn(NCA nca){
+//		switch(nca){
+//			NewComponentArgumentSpawnPrimitive	:	null
+//			NewComponentArgumentSpawnDeclare	:	new ArrayList<RecordDeclaration>(nca.eAllOfType(RecordDeclaration))
+//			NewComponentArgumentSpawnMacro		:	null
+//			NewComponentArgumentSpawnMethod		:	null
+//			NewComponentArgumentSpawnReference	:	new ArrayList<RecordDeclaration>((nca.value.variableDeclaration as VariableDeclarationRecord).recordDeclarations)
+//		}
+//		
+//	}
 	
-	def int getPosition(VariableName vn){
-		var position = -1
-		if(vn.getContainerOfType(ComponentBlockDefinitionArguments) != null){
-			var arguments = vn.getContainerOfType(ComponentBlockDefinitionArguments).eAllOfType(ComponentArgument)
-			for(argument : arguments){
-				if(argument.eAllOfType(Name).get(0).sameName(vn)){
-					position++
-					return position
-				} else {
-					position++
-				}
-			}
-		}
-		
-		return position
-	}
+//	def int getPosition(VariableName vn){
+//		var position = -1
+//		if(vn.getContainerOfType(ComponentBlockDefinitionArguments) != null){
+//			var arguments = vn.getContainerOfType(ComponentBlockDefinitionArguments).eAllOfType(ComponentArgument)
+//			for(argument : arguments){
+//				if(argument.eAllOfType(Name).get(0).sameName(vn)){
+//					position++
+//					return position
+//				} else {
+//					position++
+//				}
+//			}
+//		}
+//		
+//		return position
+//	}
 	
-	def ArrayList<VariableDeclarationRecord> getAll(VariableDeclarationRecord vdr){
-		var vdrs = vdr.getContainerOfType(Model).eAllOfType(VariableDeclarationRecord)
-		var ArrayList<VariableDeclarationRecord> output = new ArrayList<VariableDeclarationRecord>()
-		
-		for(v : vdrs)
-			if(v.name.sameName(vdr.name))
-				output.add(v)
-		
-		return output
-	}
+//	def ArrayList<VariableDeclarationRecord> getAll(VariableDeclarationRecord vdr){
+//		var vdrs = vdr.getContainerOfType(Model).eAllOfType(VariableDeclarationRecord)
+//		var ArrayList<VariableDeclarationRecord> output = new ArrayList<VariableDeclarationRecord>()
+//		
+//		for(v : vdrs)
+//			if(v.name.sameName(vdr.name))
+//				output.add(v)
+//		
+//		return output
+//	}
 	
-	def ArrayList<Records> getAllRecords(VariableDeclarationRecord vdr){
-		var ArrayList<Records> records = new ArrayList<Records>()
-		
-		var vdrs = vdr.getAll
-		
-		for(v : vdrs)
-			records.addAll(v.eAllOfType(Records))
-		
-		return records
-	}
+//	def ArrayList<Records> getAllRecords(VariableDeclarationRecord vdr){
+//		var ArrayList<Records> records = new ArrayList<Records>()
+//		
+//		var vdrs = vdr.getAll
+//		
+//		for(v : vdrs)
+//			records.addAll(v.eAllOfType(Records))
+//		
+//		return records
+//	}
 	
-	def int getPosition(Records r){
-		var output = -1
-		var flat = r.flatten
-		
-		if(r.getContainerOfType(ComponentBlockNewDeclarationSpawn) != null){
-			for (nca : r.getContainerOfType(ComponentBlockNewDeclarationSpawn).eAllOfType(NCA)){
-				if(nca.flatten.equals(flat)){
-					output++
-					return output
-				} else {
-					output++
-				}
-			}
-		}
-		
-		if(r.getContainerOfType(ComponentBlockNewDeclaration) != null){
-			for (nca : r.getContainerOfType(ComponentBlockNewDeclaration).eAllOfType(NCA)){
-				if(nca.flatten.equals(flat)){
-					output++
-					return output
-				} else {
-					output++
-				}
-			}
-		}
-		return output
-	}
+//	def int getPosition(Records r){
+//		var output = -1
+//		var flat = r.flatten
+//		
+//		if(r.getContainerOfType(ComponentBlockNewDeclarationSpawn) != null){
+//			for (nca : r.getContainerOfType(ComponentBlockNewDeclarationSpawn).eAllOfType(NCA)){
+//				if(nca.flatten.equals(flat)){
+//					output++
+//					return output
+//				} else {
+//					output++
+//				}
+//			}
+//		}
+//		
+//		if(r.getContainerOfType(ComponentBlockNewDeclaration) != null){
+//			for (nca : r.getContainerOfType(ComponentBlockNewDeclaration).eAllOfType(NCA)){
+//				if(nca.flatten.equals(flat)){
+//					output++
+//					return output
+//				} else {
+//					output++
+//				}
+//			}
+//		}
+//		return output
+//	}
 	
-	def String satisfiesPrefix(VariableReference vr, String message){
-		switch(vr){
-			VariableReferencePure		: 	vr.prefixVariableReferencePure(message)
-			VariableReferenceMy			: 	vr.prefixComponent(message)
-			VariableReferenceThis		: 	vr.prefixComponent(message)
-			VariableReferenceReceiver	: 	vr.prefixInputComponent(message)  
-			VariableReferenceSender		:	vr.prefixOutputComponent(message)
-			VariableReferenceGlobal		:	vr.prefixGlobal(message)
-			RecordReferencePure			: 	vr.prefixVariableReferencePure(message)
-			RecordReferenceMy			: 	vr.prefixComponent(message)
-			RecordReferenceThis			: 	vr.prefixComponent(message)
-			RecordReferenceReceiver		: 	vr.prefixInputComponent(message)
-			RecordReferenceSender		:	vr.prefixOutputComponent(message)
-			RecordReferenceGlobal		:	vr.prefixGlobal(message)
-		}
-	}
+//	def String satisfiesPrefix(VariableReference vr, String message){
+//		switch(vr){
+//			VariableReferencePure		: 	vr.prefixVariableReferencePure(message)
+//			VariableReferenceMy			: 	vr.prefixComponent(message)
+//			VariableReferenceThis		: 	vr.prefixComponent(message)
+//			VariableReferenceReceiver	: 	vr.prefixInputComponent(message)  
+//			VariableReferenceSender		:	vr.prefixOutputComponent(message)
+//			VariableReferenceGlobal		:	vr.prefixGlobal(message)
+//			RecordReferencePure			: 	vr.prefixVariableReferencePure(message)
+//			RecordReferenceMy			: 	vr.prefixComponent(message)
+//			RecordReferenceThis			: 	vr.prefixComponent(message)
+//			RecordReferenceReceiver		: 	vr.prefixInputComponent(message)
+//			RecordReferenceSender		:	vr.prefixOutputComponent(message)
+//			RecordReferenceGlobal		:	vr.prefixGlobal(message)
+//		}
+//	}
 	
-	//component or global_store - depends on context
-	def String prefixVariableReferencePure(VariableReference vr, String message){
-		if(vr.getContainerOfType(Component) != null){
-			//if it is in a predicate, then it must reference the "other guy's" Store
-			if(vr.getContainerOfType(ActionGuard) != null){
-				var action = vr.getContainerOfType(Action)
-				if(action.isOutput){
-					if(vr.otherComponentHasVariableOutput)
-						return ""
-					else
-						return message + " in all Components performing opposite action."
-				} else {
-					if(vr.otherComponentHasVariableInput)
-						return ""
-					else
-						return message + " in Input arguments."
-				}
-				
-			}
-			if(vr.componentHasVariableAnywhere)
-				return ""
-			else
-				return message + " in Component."
-		} 
-		if(vr.getContainerOfType(Environment) != null){
-			if(vr.environmentHasVariable)
-				return ""
-			else
-				return message + " in Global Store."
-		}
-		if(vr.getContainerOfType(Component) == null && vr.getContainerOfType(Process) != null){
-			//if it is in a predicate, then it must reference the "other guy's" Store
-			if(vr.getContainerOfType(ActionGuard) != null){
-				var action = vr.getContainerOfType(Action)
-				if(action.isOutput){
-					if(vr.otherComponentHasVariableOutput)
-						return ""
-					else
-						return message + " in all Components performing opposite action."
-				} else {
-					if(vr.otherComponentHasVariableInput)
-						return ""
-					else
-						return message + " in Input arguments."
-				}
-				
-			}
-			if(vr.allComponentHaveVariable)
-				return ""
-			else
-				return message + " in Component."
-		}
-		if(vr.getContainerOfType(Measure) != null){
-			return ""
-		}
-		if(vr.getContainerOfType(MethodDefinition) != null){
-			return ""
-		}
-		if(vr.getContainerOfType(ComponentBlockForStatement) != null){
-			return ""
-		}
-		message + "."
-	}
+//	//component or global_store - depends on context
+//	def String prefixVariableReferencePure(VariableReference vr, String message){
+//		if(vr.getContainerOfType(Component) != null){
+//			//if it is in a predicate, then it must reference the "other guy's" Store
+//			if(vr.getContainerOfType(ActionGuard) != null){
+//				var action = vr.getContainerOfType(Action)
+//				if(action.isOutput){
+//					if(vr.otherComponentHasVariableOutput)
+//						return ""
+//					else
+//						return message + " in all Components performing opposite action."
+//				} else {
+//					if(vr.otherComponentHasVariableInput)
+//						return ""
+//					else
+//						return message + " in Input arguments."
+//				}
+//				
+//			}
+//			if(vr.componentHasVariableAnywhere)
+//				return ""
+//			else
+//				return message + " in Component."
+//		} 
+//		if(vr.getContainerOfType(Environment) != null){
+//			if(vr.environmentHasVariable)
+//				return ""
+//			else
+//				return message + " in Global Store."
+//		}
+//		if(vr.getContainerOfType(Component) == null && vr.getContainerOfType(Process) != null){
+//			//if it is in a predicate, then it must reference the "other guy's" Store
+//			if(vr.getContainerOfType(ActionGuard) != null){
+//				var action = vr.getContainerOfType(Action)
+//				if(action.isOutput){
+//					if(vr.otherComponentHasVariableOutput)
+//						return ""
+//					else
+//						return message + " in all Components performing opposite action."
+//				} else {
+//					if(vr.otherComponentHasVariableInput)
+//						return ""
+//					else
+//						return message + " in Input arguments."
+//				}
+//				
+//			}
+//			if(vr.allComponentHaveVariable)
+//				return ""
+//			else
+//				return message + " in Component."
+//		}
+//		if(vr.getContainerOfType(Measure) != null){
+//			return ""
+//		}
+//		if(vr.getContainerOfType(MethodDefinition) != null){
+//			return ""
+//		}
+//		if(vr.getContainerOfType(ComponentBlockForStatement) != null){
+//			return ""
+//		}
+//		message + "."
+//	}
 	
 	//component only - can only be in a component
 	def String prefixComponent(VariableReference vr, String message){
@@ -1826,26 +1898,26 @@ class Util {
 		message + "."
 	}
 	
-	def boolean componentHasVariableAnywhere(VariableReference vr){
-		if(vr.getContainerOfType(StoreBlock) != null){
-			var test = false
-			for(vd : vr.getContainerOfType(Component).eAllOfType(VariableDeclaration))
-				test = test || vd.name.sameName(vr.name)
-			for(vd : vr.getContainerOfType(Component).eAllOfType(VariableType))
-				test = test || vd.name.sameName(vr.name)
-			return test
-		} else if(vr.getContainerOfType(Process) != null){
-			var test = false
-			for(vd : vr.getContainerOfType(Component).eAllOfType(VariableDeclaration))
-				test = test || vd.name.sameName(vr.name)
-			if(vr.getContainerOfType(Component).eAllOfType(InputActionArguments).size > 0)
-				for(vd : vr.getContainerOfType(Component).eAllOfType(InputActionArguments).get(0).inputArguments)
-					test = test || (vd as VariableName).sameName(vr.name)
-			return test
-		} else {
-			false
-		}
-	}
+//	def boolean componentHasVariableAnywhere(VariableReference vr){
+//		if(vr.getContainerOfType(StoreBlock) != null){
+//			var test = false
+//			for(vd : vr.getContainerOfType(Component).eAllOfType(VariableDeclaration))
+//				test = test || vd.name.sameName(vr.name)
+//			for(vd : vr.getContainerOfType(Component).eAllOfType(VariableType))
+//				test = test || vd.name.sameName(vr.name)
+//			return test
+//		} else if(vr.getContainerOfType(Process) != null){
+//			var test = false
+//			for(vd : vr.getContainerOfType(Component).eAllOfType(VariableDeclaration))
+//				test = test || vd.name.sameName(vr.name)
+//			if(vr.getContainerOfType(Component).eAllOfType(InputActionArguments).size > 0)
+//				for(vd : vr.getContainerOfType(Component).eAllOfType(InputActionArguments).get(0).inputArguments)
+//					test = test || (vd as VariableName).sameName(vr.name)
+//			return test
+//		} else {
+//			false
+//		}
+//	}
 	
 	def boolean allComponentHaveVariable(VariableReference vr){
 		
@@ -2142,15 +2214,15 @@ class Util {
 		return vrs
 	}
 	
-	def ArrayList<RecordDeclaration> getRecordDeclarations(VariableDeclarationRecord vdr){
-		var ArrayList<RecordDeclaration> rds = new ArrayList<RecordDeclaration>()
-		if(vdr.assign.ref != null){
-			rds.addAll(vdr.assign.ref.getRecordDeclarationsFromCBND)
-		} else {
-			rds.addAll(vdr.eAllOfType(RecordDeclaration))
-		}
-		return rds
-	}
+//	def ArrayList<RecordDeclaration> getRecordDeclarations(VariableDeclarationRecord vdr){
+//		var ArrayList<RecordDeclaration> rds = new ArrayList<RecordDeclaration>()
+//		if(vdr.assign.ref != null){
+//			rds.addAll(vdr.assign.ref.getRecordDeclarationsFromCBND)
+//		} else {
+//			rds.addAll(vdr.eAllOfType(RecordDeclaration))
+//		}
+//		return rds
+//	}
 	
 	def boolean hasAccess(Component component, MacroExpressions macro){
 		var mers = macro.eAllOfType(MacroExpressionReference)

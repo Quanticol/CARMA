@@ -1,18 +1,22 @@
 package eu.quanticol.carma.core.typing
 
 import com.google.inject.Inject
-import eu.quanticol.carma.core.carma.Spawn
+import eu.quanticol.carma.core.carma.Action
+import eu.quanticol.carma.core.carma.ActionName
+import eu.quanticol.carma.core.carma.AttribAssignment
+import eu.quanticol.carma.core.carma.AttribParameter
+import eu.quanticol.carma.core.carma.AttribTypeLabel
 import eu.quanticol.carma.core.carma.BooleanAddition
 import eu.quanticol.carma.core.carma.BooleanAnd
 import eu.quanticol.carma.core.carma.BooleanAtomicMethodReference
 import eu.quanticol.carma.core.carma.BooleanAtomicNow
 import eu.quanticol.carma.core.carma.BooleanAtomicPrimitive
-import eu.quanticol.carma.core.carma.BooleanAtomicRecords
 import eu.quanticol.carma.core.carma.BooleanAtomicVariable
 import eu.quanticol.carma.core.carma.BooleanComparison
 import eu.quanticol.carma.core.carma.BooleanDivision
 import eu.quanticol.carma.core.carma.BooleanEquality
 import eu.quanticol.carma.core.carma.BooleanExpression
+import eu.quanticol.carma.core.carma.BooleanExpressions
 import eu.quanticol.carma.core.carma.BooleanModulo
 import eu.quanticol.carma.core.carma.BooleanMultiplication
 import eu.quanticol.carma.core.carma.BooleanNot
@@ -21,67 +25,66 @@ import eu.quanticol.carma.core.carma.BooleanSubtraction
 import eu.quanticol.carma.core.carma.CarmaBoolean
 import eu.quanticol.carma.core.carma.CarmaDouble
 import eu.quanticol.carma.core.carma.CarmaInteger
+import eu.quanticol.carma.core.carma.CarmaProb
+import eu.quanticol.carma.core.carma.CompArguments
+import eu.quanticol.carma.core.carma.CompParameters
 import eu.quanticol.carma.core.carma.DoubleAssignment
+import eu.quanticol.carma.core.carma.DoubleParameter
 import eu.quanticol.carma.core.carma.DoubleTypeLabel
-import eu.quanticol.carma.core.carma.EnumAssignment
-import eu.quanticol.carma.core.carma.EnumTypeLabel
 import eu.quanticol.carma.core.carma.EnvironmentAddition
 import eu.quanticol.carma.core.carma.EnvironmentAtomicMeasure
 import eu.quanticol.carma.core.carma.EnvironmentAtomicMethodReference
 import eu.quanticol.carma.core.carma.EnvironmentAtomicNow
 import eu.quanticol.carma.core.carma.EnvironmentAtomicPrimitive
-import eu.quanticol.carma.core.carma.EnvironmentAtomicRecords
 import eu.quanticol.carma.core.carma.EnvironmentAtomicVariable
 import eu.quanticol.carma.core.carma.EnvironmentDivision
 import eu.quanticol.carma.core.carma.EnvironmentExpression
-import eu.quanticol.carma.core.carma.EnvironmentMacroExpressions
+import eu.quanticol.carma.core.carma.EnvironmentExpressions
 import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionAll
 import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAState
 import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAllStates
 import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionParallel
+import eu.quanticol.carma.core.carma.EnvironmentMacroExpressions
 import eu.quanticol.carma.core.carma.EnvironmentModulo
 import eu.quanticol.carma.core.carma.EnvironmentMultiplication
+import eu.quanticol.carma.core.carma.EnvironmentOperation
 import eu.quanticol.carma.core.carma.EnvironmentSubtraction
 import eu.quanticol.carma.core.carma.EnvironmentUpdateAddition
 import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicMeasure
 import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicMethodReference
 import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicNow
 import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicPrimitive
-import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicRecords
 import eu.quanticol.carma.core.carma.EnvironmentUpdateAtomicVariable
 import eu.quanticol.carma.core.carma.EnvironmentUpdateExpression
+import eu.quanticol.carma.core.carma.EnvironmentUpdateExpressions
 import eu.quanticol.carma.core.carma.EnvironmentUpdateMultiplication
 import eu.quanticol.carma.core.carma.EnvironmentUpdateSubtraction
-import eu.quanticol.carma.core.carma.IntegerAssignment
 import eu.quanticol.carma.core.carma.IntegerTypeLabel
-import eu.quanticol.carma.core.carma.MacroExpressions
+import eu.quanticol.carma.core.carma.IntgerAssignment
+import eu.quanticol.carma.core.carma.IntgerParameter
 import eu.quanticol.carma.core.carma.MacroExpressionParallel
 import eu.quanticol.carma.core.carma.MacroExpressionReference
+import eu.quanticol.carma.core.carma.MacroExpressions
 import eu.quanticol.carma.core.carma.MethodAddition
 import eu.quanticol.carma.core.carma.MethodAtomicMethodReference
 import eu.quanticol.carma.core.carma.MethodAtomicPrimitive
-import eu.quanticol.carma.core.carma.MethodAtomicRecords
 import eu.quanticol.carma.core.carma.MethodAtomicVariable
 import eu.quanticol.carma.core.carma.MethodDeclaration
 import eu.quanticol.carma.core.carma.MethodDefinition
 import eu.quanticol.carma.core.carma.MethodDivision
 import eu.quanticol.carma.core.carma.MethodExpression
+import eu.quanticol.carma.core.carma.MethodExpressions
 import eu.quanticol.carma.core.carma.MethodModulo
 import eu.quanticol.carma.core.carma.MethodMultiplication
-import eu.quanticol.carma.core.carma.MethodReferenceMethodDeclaration
-import eu.quanticol.carma.core.carma.MethodReferencePredefinedMethodDeclaration
 import eu.quanticol.carma.core.carma.MethodSubtraction
-import eu.quanticol.carma.core.carma.PredefinedMethodDeclaration
-import eu.quanticol.carma.core.carma.PredefinedMethodDeclarationArgument
-import eu.quanticol.carma.core.carma.PredefinedMethodDeclarationArgumentADR
-import eu.quanticol.carma.core.carma.PredefinedMethodDeclarationArgumentNDR
-import eu.quanticol.carma.core.carma.PredefinedMethodDeclarationArgumentPT
-import eu.quanticol.carma.core.carma.PredefinedMethodDeclarationArgumentRecords
-import eu.quanticol.carma.core.carma.PredefinedMethodDeclarationArgumentReference
-import eu.quanticol.carma.core.carma.PredefinedMethodDeclarationArgumentVariable
-import eu.quanticol.carma.core.carma.PredefinedMethodDeclarationArguments
-import eu.quanticol.carma.core.carma.PredefinedMethodNaturalDistributionRule
+import eu.quanticol.carma.core.carma.MultiCast
+import eu.quanticol.carma.core.carma.OutputAction
+import eu.quanticol.carma.core.carma.OutputActionArgument
+import eu.quanticol.carma.core.carma.OutputActionArgumentCI
+import eu.quanticol.carma.core.carma.OutputActionArgumentVR
+import eu.quanticol.carma.core.carma.Parameters
 import eu.quanticol.carma.core.carma.PrimitiveType
+import eu.quanticol.carma.core.carma.Process
 import eu.quanticol.carma.core.carma.ProcessExpression
 import eu.quanticol.carma.core.carma.ProcessExpressionAction
 import eu.quanticol.carma.core.carma.ProcessExpressionChoice
@@ -89,69 +92,53 @@ import eu.quanticol.carma.core.carma.ProcessExpressionGuard
 import eu.quanticol.carma.core.carma.ProcessExpressionLeaf
 import eu.quanticol.carma.core.carma.ProcessExpressionReference
 import eu.quanticol.carma.core.carma.Range
-import eu.quanticol.carma.core.carma.RecordDeclarations
+import eu.quanticol.carma.core.carma.RecordDeclaration
+import eu.quanticol.carma.core.carma.RecordParameter
+import eu.quanticol.carma.core.carma.RecordParameters
+import eu.quanticol.carma.core.carma.RecordReferenceGlobal
+import eu.quanticol.carma.core.carma.RecordReferenceMy
+import eu.quanticol.carma.core.carma.RecordReferencePure
+import eu.quanticol.carma.core.carma.RecordReferenceReceiver
+import eu.quanticol.carma.core.carma.RecordReferenceSender
+import eu.quanticol.carma.core.carma.RecordReferenceThis
 import eu.quanticol.carma.core.carma.RecordTypeLabel
 import eu.quanticol.carma.core.carma.Records
-import eu.quanticol.carma.core.carma.TypeLabel
+import eu.quanticol.carma.core.carma.SetComp
+import eu.quanticol.carma.core.carma.Spawn
+import eu.quanticol.carma.core.carma.SpontaneousAction
+import eu.quanticol.carma.core.carma.StoreBlock
+import eu.quanticol.carma.core.carma.StoreLine
+import eu.quanticol.carma.core.carma.Types
 import eu.quanticol.carma.core.carma.UpdateAddition
 import eu.quanticol.carma.core.carma.UpdateAtomicMethodReference
 import eu.quanticol.carma.core.carma.UpdateAtomicPrimitive
-import eu.quanticol.carma.core.carma.UpdateAtomicRecords
 import eu.quanticol.carma.core.carma.UpdateAtomicVariable
 import eu.quanticol.carma.core.carma.UpdateExpression
+import eu.quanticol.carma.core.carma.UpdateExpressions
 import eu.quanticol.carma.core.carma.UpdateMultiplication
 import eu.quanticol.carma.core.carma.UpdateSubtraction
-import eu.quanticol.carma.core.carma.VariableDeclaration
-import eu.quanticol.carma.core.carma.VariableDeclarationCarmaDouble
-import eu.quanticol.carma.core.carma.VariableDeclarationCarmaIntger
-import eu.quanticol.carma.core.carma.VariableDeclarationEnum
-import eu.quanticol.carma.core.carma.VariableDeclarationRecord
+import eu.quanticol.carma.core.carma.VariableReference
+import eu.quanticol.carma.core.carma.VariableReferenceGlobal
+import eu.quanticol.carma.core.carma.VariableReferenceMy
+import eu.quanticol.carma.core.carma.VariableReferencePure
+import eu.quanticol.carma.core.carma.VariableReferenceReceiver
+import eu.quanticol.carma.core.carma.VariableReferenceSender
+import eu.quanticol.carma.core.carma.VariableReferenceThis
 import eu.quanticol.carma.core.utils.Util
-import java.util.ArrayList
-import java.util.HashSet
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.carma.VariableName
-import eu.quanticol.carma.core.carma.InputActionArguments
-import eu.quanticol.carma.core.carma.VariableType
-import eu.quanticol.carma.core.carma.ComponentBlockForStatement
-import eu.quanticol.carma.core.carma.ComponentLineForStatement
-import eu.quanticol.carma.core.carma.OutputActionArgument
-import eu.quanticol.carma.core.carma.OutputActionArgumentVR
-import eu.quanticol.carma.core.carma.OutputActionArgumentV
-import eu.quanticol.carma.core.carma.ActionName
-import eu.quanticol.carma.core.carma.Action
-import eu.quanticol.carma.core.carma.SpontaneousAction
-import eu.quanticol.carma.core.carma.MultiCast
-import eu.quanticol.carma.core.carma.OutputAction
-import eu.quanticol.carma.core.carma.ComponentArgument
-import eu.quanticol.carma.core.carma.ComponentBlockDefinitionArgumentVariable
-import eu.quanticol.carma.core.carma.ComponentBlockDefinitionArgumentMacro
-import eu.quanticol.carma.core.carma.NCA
-import eu.quanticol.carma.core.carma.NewComponentArgumentPrimitive
-import eu.quanticol.carma.core.carma.NewComponentArgumentMacro
-import eu.quanticol.carma.core.carma.NewComponentArgumentMethod
-import eu.quanticol.carma.core.carma.NewComponentArgumentDeclare
-import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnPrimitive
-import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnDeclare
-import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnMacro
-import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnMethod
-import eu.quanticol.carma.core.carma.NewComponentArgumentSpawnReference
-import eu.quanticol.carma.core.carma.NewComponentArgumentReference
-import eu.quanticol.carma.core.carma.UpdateExpressions
-import eu.quanticol.carma.core.carma.MethodExpressions
-import eu.quanticol.carma.core.carma.BooleanExpressions
-import eu.quanticol.carma.core.carma.EnvironmentExpressions
-import eu.quanticol.carma.core.carma.EnvironmentUpdateExpressions
-import eu.quanticol.carma.core.carma.VariableReference
-import eu.quanticol.carma.core.carma.InputAction
+import eu.quanticol.carma.core.carma.AttribVariableDeclaration
+import eu.quanticol.carma.core.carma.IntgerVariableDeclaration
+import eu.quanticol.carma.core.carma.DoubleVariableDeclaration
+import eu.quanticol.carma.core.carma.StoreDeclaration
 import eu.quanticol.carma.core.utils.LabelUtil
+import eu.quanticol.carma.core.carma.MeasureVariableDeclaration
 
 class BaseType {
 	
-	public var String type = ""
-	public var String set = ""
-	public var String operations = ""
+	public var String type = "null"
+	public var String set = "null"
+	public var String operations = "null"
 	
 	override toString() { type }
 	
@@ -163,9 +150,7 @@ class TypeProvider {
 	@Inject extension LabelUtil
 	
 	public static val booleanType 		= new BaseType() => [ type = "boolean" 		; set="logic"			; operations="logic"]
-	public static val recordType		= new BaseType() => [ type = "record" 		; set="component"		; operations="arith"]
-	public static val recordsType		= new BaseType() => [ type = "records" 		; set="component"		; operations="null"]
-	public static val enumType			= new BaseType() => [ type = "enum" 		; set="component"		; operations="arith"]
+	public static val attribType		= new BaseType() => [ type = "attrib" 		; set="component"		; operations="arith"]
 	public static val compType			= new BaseType() => [ type = "component" 	; set="component"		; operations="arith"]
 	public static val macroType			= new BaseType() => [ type = "macro" 		; set="component"		; operations="null"]
 	public static val integerType		= new BaseType() => [ type = "integer" 		; set="arith"			; operations="arith"]
@@ -183,318 +168,6 @@ class TypeProvider {
 	public static val broadOutType		= new BaseType() => [ type = "broad"		; set="outputAction"	; operations="null"]
 	public static val broadInType		= new BaseType() => [ type = "broad"		; set="inputAction"		; operations="null"]
 	
-	
-	def getType(NCA ca){
-		switch(ca){
-			NewComponentArgumentPrimitive 		: compType	
-			NewComponentArgumentMacro 			: macroType
-			NewComponentArgumentMethod			: compType
-			NewComponentArgumentDeclare			: compType
-			NewComponentArgumentReference		: compType
-			NewComponentArgumentSpawnPrimitive 	: compType 
-			NewComponentArgumentSpawnDeclare	: compType
-			NewComponentArgumentSpawnMacro		: macroType
-			NewComponentArgumentSpawnMethod		: compType
-			NewComponentArgumentSpawnReference	: compType
-		}
-	}
-	
-	def getType(ComponentArgument ca){
-		switch(ca){
-			ComponentBlockDefinitionArgumentVariable:	compType
-			ComponentBlockDefinitionArgumentMacro:		macroType
-		}
-	}
-	
-	def getType(OutputActionArgument oaa){
-		switch(oaa){
-			OutputActionArgumentVR: oaa.ref.getType
-			OutputActionArgumentV:	oaa.value.getType
-		}
-	}
-	
-	def getType(VariableDeclaration vd){
-		switch(vd){
-			VariableDeclarationEnum: 		(vd.assign as EnumAssignment).getType
-			VariableDeclarationRecord:		(vd.assign as RecordDeclarations).getType
-			VariableDeclarationCarmaDouble:	(vd.assign as DoubleAssignment).getType
-			VariableDeclarationCarmaIntger:	(vd.assign as IntegerAssignment).getType
-		}
-	}
-	
-	def getType(EnumAssignment ea){
-		enumType
-	}
-	
-	def getType(RecordDeclarations rd){
-		recordType
-	}
-	
-	def getType(DoubleAssignment da){
-		doubleType
-	}
-	
-	def getType(IntegerAssignment ia){
-		integerType
-	}
-	
-	def getType(PrimitiveType p){
-		switch(p){
-				CarmaDouble:	doubleType
-				CarmaInteger:	integerType
-				CarmaBoolean:	booleanType
-				Range:			integerType
-		}
-	}
-	
-	/**
-	 * @see InputActionArguments
-	 * @see MethodAtomic
-	 * @see PredefinedMethodDeclarationArgument
-	 * @see VariableDeclaration
-	 * @see VariableType
-	 */
-	def BaseType getType(VariableName vn){
-		var output = nullType
-		if(vn.getContainerOfType(InputActionArguments) != null){
-			var ArrayList<String> options = new ArrayList<String>(vn.getTypes(vn.getContainerOfType(InputAction)))
-			if(options.size == 1){
-				if(options.get(0).equals("enum")){
-					output = enumType
-				} else if (options.get(0).equals("record")){
-					output = recordType
-				} else if (options.get(0).equals("double")){
-					output = doubleType
-				} else if (options.get(0).equals("integer")){
-					output = integerType	
-				}
-			}
-		}
-		if(vn.getContainerOfType(MethodAtomicVariable) != null){
-			var ArrayList<String> options = new ArrayList<String>(vn.getTypes(vn.getContainerOfType(MethodAtomicVariable)))
-			if(options.size == 1){
-				if(options.get(0).equals("enum")){
-					output = enumType
-				} else if (options.get(0).equals("record")){
-					output = recordType
-				} else if (options.get(0).equals("double")){
-					output = doubleType
-				} else if (options.get(0).equals("integer")){
-					output = integerType	
-				}
-			}
-		}
-		if(vn.getContainerOfType(PredefinedMethodDeclarationArgument) != null){
-			var ArrayList<String> options = new ArrayList<String>(vn.getTypes(vn.getContainerOfType(PredefinedMethodDeclarationArgument)))
-			if(options.size == 1){
-				if(options.get(0).equals("enum")){
-					output = enumType
-				} else if (options.get(0).equals("record")){
-					output = recordType
-				} else if (options.get(0).equals("double")){
-					output = doubleType
-				} else if (options.get(0).equals("integer")){
-					output = integerType	
-				}
-			}
-		}
-		if(vn.getContainerOfType(VariableDeclaration) != null){
-			output = vn.getContainerOfType(VariableDeclaration).getBaseType
-		}
-		if(vn.getContainerOfType(VariableType) != null){
-			output = vn.getContainerOfType(VariableType).getBaseType
-		}
-		if(vn.getContainerOfType(ComponentBlockForStatement) != null){
-			var ArrayList<String> options = new ArrayList<String>(vn.getTypes(vn.getContainerOfType(ComponentBlockForStatement)))
-			if(options.size == 1){
-				if(options.get(0).equals("enum")){
-					output = enumType
-				} else if (options.get(0).equals("record")){
-					output = recordType
-				} else if (options.get(0).equals("double")){
-					output = doubleType
-				} else if (options.get(0).equals("integer")){
-					output = integerType	
-				}
-			}
-		}
-		if(vn.getContainerOfType(ComponentLineForStatement) != null){
-			var ArrayList<String> options = new ArrayList<String>(vn.getTypes(vn.getContainerOfType(ComponentLineForStatement)))
-			if(options.size == 1){
-				if(options.get(0).equals("enum")){
-					output = enumType
-				} else if (options.get(0).equals("record")){
-					output = recordType
-				} else if (options.get(0).equals("double")){
-					output = doubleType
-				} else if (options.get(0).equals("integer")){
-					output = integerType	
-				}
-			}
-		}
-		return output
-	}
-	
-	def BaseType getBaseType(VariableDeclaration vd){
-			if(vd.type.equals("enum")){
-				enumType
-			} else if (vd.type.equals("record")){
-				recordType
-			} else if (vd.type.equals("double")){
-				doubleType
-			} else if (vd.type.equals("integer")){
-				integerType	
-			} else {
-				nullType
-			}
-	}
-	
-	def BaseType getBaseType(VariableType vt){
-			if(vt.type.equals("enum")){
-				enumType
-			} else if (vt.type.equals("record")){
-				recordType
-			} else if (vt.type.equals("double")){
-				doubleType
-			} else if (vt.type.equals("integer")){
-				integerType	
-			} else {
-				nullType
-			}
-	}
-	
-	def BaseType getType(UpdateExpressions e){
-		switch(e){
-			UpdateSubtraction:				(e as UpdateSubtraction).getType
-			UpdateAddition:					(e as UpdateAddition).getType
-			UpdateMultiplication:			(e as UpdateMultiplication).getType
-			UpdateAtomicPrimitive:			(e.value as PrimitiveType).getType
-			UpdateAtomicRecords:			(e.value as Records).getType
-			UpdateAtomicVariable:			(e.value as VariableReference).getType
-			UpdateAtomicMethodReference:	(e.value as MethodExpression).getType
-			UpdateExpression:				e.expression.type
-		}
-	}
-	
-	def getType(Records rs){
-		recordsType
-	}
-	
-//	def getType(VariableOrRecordReference vorr){
-//		switch(vorr){
-//			OrVariableReference:			(vorr.ref as VRReference).getType
-//			OrRecordReference:				(vorr.ref as VRReference).getType
-//		}
-//	}
-	
-	def getType(VariableReference vr){
-		var outputType = nullType
-		
-		var ArrayList<String> output = new ArrayList<String>(vr.getTypes)
-		if(output.size == 1){
-			if(output.get(0).equals("enum")){
-				outputType = enumType
-			} else if (output.get(0).equals("record")){
-				outputType = recordType
-			} else if (output.get(0).equals("double")){
-				outputType = doubleType
-			} else if (output.get(0).equals("integer")){
-				outputType = integerType	
-			}
-		}
-		return outputType
-		
-	}
-	
-	def BaseType getType(MethodExpressions e){
-		switch(e){
-			MethodSubtraction:							(e as MethodSubtraction).getType
-			MethodAddition:								(e as MethodAddition).getType
-			MethodMultiplication:						(e as MethodMultiplication).getType
-			MethodModulo:								(e as MethodModulo).getType
-			MethodDivision:								(e as MethodDivision).getType
-			MethodAtomicPrimitive:						(e.value as PrimitiveType).getType
-			MethodAtomicRecords:						(e.value as Records).getType
-			MethodAtomicVariable:						integerType
-			MethodAtomicMethodReference:				(e.value as MethodExpression).getType 
-			MethodReferenceMethodDeclaration: 			(e.ref as MethodDeclaration).getType
-			MethodReferencePredefinedMethodDeclaration: (e.ref as PredefinedMethodDeclaration).getType
-			MethodExpression:							e.expression.type
-		}
-	}
-	
-	def BaseType getType(MethodDeclaration md){
-		return md.name.getContainerOfType(MethodDefinition).type.getTypeLabelType
-	}
-	
-	def BaseType getTypeLabelType(TypeLabel tl){
-		switch(tl){
-			DoubleTypeLabel:	doubleType
-			IntegerTypeLabel:	integerType
-			RecordTypeLabel:	recordType
-			EnumTypeLabel:		enumType
-		}
-		
-	}
-	
-	def BaseType getType(PredefinedMethodDeclaration pmd){
-		pmd.functionArguments.getType
-	}
-	
-	def BaseType getType(PredefinedMethodDeclarationArguments pmdas){
-		var HashSet<BaseType> types = new HashSet<BaseType>()
-		for(pmda : pmdas.inputArguments){
-			types.add(pmda.getType)
-		}
-		if(types.size > 1)
-			return nullType
-		else
-			return types.get(0)
-	}
-	
-	def BaseType getType(PredefinedMethodDeclarationArgument pmda){
-		switch(pmda){
-			PredefinedMethodDeclarationArgumentNDR:			integerType
-			PredefinedMethodDeclarationArgumentADR:			(pmda.value as PredefinedMethodNaturalDistributionRule).getType
-			PredefinedMethodDeclarationArgumentPT:			(pmda.value as PrimitiveType).getType
-			PredefinedMethodDeclarationArgumentRecords:		recordType
-			PredefinedMethodDeclarationArgumentVariable:	integerType
-			PredefinedMethodDeclarationArgumentReference:   (pmda.value as MethodDeclaration).getType
-		}
-	}
-	
-	def BaseType getType(PredefinedMethodNaturalDistributionRule pmndr){
-		pmndr.outcome.getType
-	}
-	
-	
-	def BaseType getType(UpdateSubtraction e){
-		var left = e.left.getType
-		var right = e.right.getType
-		if(left.operations.equals("arith") && right.operations.equals("arith"))
-			return integerType
-		else
-			return nullType
-	}
-	
-	def BaseType getType(UpdateAddition e){
-		var left = e.left.getType
-		var right = e.right.getType
-		if(left.operations.equals("arith") && right.operations.equals("arith"))
-			return integerType
-		else
-			return nullType
-	}
-	
-	def BaseType getType(UpdateMultiplication e){
-		var left = e.left.getType
-		var right = e.right.getType
-		if(left.operations.equals("arith") && right.operations.equals("arith"))
-			return integerType
-		else
-			return nullType
-	}
-	
 	def BaseType getType(BooleanExpressions e){
 		switch(e){
 			BooleanOr:						(e as BooleanOr).getType
@@ -508,7 +181,6 @@ class TypeProvider {
 			BooleanDivision:				(e as BooleanDivision).getType
 			BooleanNot:						(e as BooleanNot).getType
 			BooleanAtomicPrimitive:			(e.value as PrimitiveType).getType 			
-			BooleanAtomicRecords:			(e.value as Records).getType			
 			BooleanAtomicVariable:			(e.value as VariableReference).getType 
 			BooleanAtomicMethodReference:	(e.value as MethodExpressions).getType			
 			BooleanAtomicNow:				doubleType
@@ -604,6 +276,191 @@ class TypeProvider {
 		else
 			return nullType
 	}
+	
+	def getType(PrimitiveType p){
+		switch(p){
+				CarmaDouble:	doubleType
+				CarmaInteger:	integerType
+				CarmaBoolean:	booleanType
+				Range:			integerType
+				CarmaProb:		doubleType
+		}
+	}
+	
+	/**
+	 * What is the variable references' type? - All variables inside a record are of type attrib. 
+	 * Otherwise we have to find the declaration or parameter, and check if this is of 
+	 * type attrib/intger/double/record
+	 * 
+	 * Then if I have a VariableReference, I need a function that returns the parameter or declaration? AKA root.
+	 */
+	def getType(VariableReference vr){
+		var outputType = nullType
+		var declarations = vr.declarations
+		
+		//TODO
+		return outputType
+		
+	}
+	
+	def BaseType getType(MethodExpressions e){
+		switch(e){
+			MethodSubtraction:							(e as MethodSubtraction).getType
+			MethodAddition:								(e as MethodAddition).getType
+			MethodMultiplication:						(e as MethodMultiplication).getType
+			MethodModulo:								(e as MethodModulo).getType
+			MethodDivision:								(e as MethodDivision).getType
+			MethodAtomicPrimitive:						(e.value as PrimitiveType).getType
+			MethodAtomicVariable:						integerType
+			MethodAtomicMethodReference:				(e.value as MethodExpression).getType 
+			MethodExpression:							e.expression.type
+		}
+	}
+	
+	def BaseType getType(Parameters p){
+		switch(p){
+			AttribParameter: attribType
+			RecordParameter: p.getBaseType
+			DoubleParameter: doubleType
+			IntgerParameter: integerType
+		}
+	}
+	
+	def BaseType getBaseType(AttribParameter ap){
+		attribType
+	}
+	
+	def BaseType getBaseType(MeasureVariableDeclaration mvd){
+		attribType
+	}
+	
+	def BaseType getBaseType(RecordParameter rp){
+		new BaseType() => [ type = rp.type.disarm  ; set="component"		; operations="arith"]
+	}
+	
+	def BaseType getType(MethodDeclaration d){
+		switch(d){
+			AttribVariableDeclaration: attribType
+			IntgerVariableDeclaration: integerType
+			DoubleVariableDeclaration: doubleType
+			RecordDeclaration: d.getBaseType
+		}
+	}
+	
+	def BaseType getBaseType(AttribVariableDeclaration avd){
+		attribType
+	}
+	
+	def BaseType getBaseType(RecordDeclaration rd){
+		new BaseType() => [ type = rd.type.disarm  ; set="component"		; operations="arith"]
+	}
+	
+	def BaseType getType(StoreDeclaration d){
+		switch(d){
+			AttribVariableDeclaration: attribType
+			RecordDeclaration: d.getBaseType
+		}
+	}
+	
+	def BaseType getType(CompParameters p){
+		switch(p){
+			AttribParameter: attribType
+			RecordParameter: p.getBaseType
+			DoubleParameter: doubleType
+			IntgerParameter: integerType
+		}
+	}
+	
+	def BaseType getType(RecordParameters p){
+		switch(p){
+			AttribParameter: attribType
+			RecordParameter: p.getBaseType
+			DoubleParameter: doubleType
+			IntgerParameter: integerType
+		}
+	}
+	
+	def BaseType getTypeLabelType(Types tl){
+		switch(tl){
+			DoubleTypeLabel: 		doubleType
+			IntegerTypeLabel: 		integerType
+			AttribTypeLabel:		attribType
+			RecordTypeLabel:		tl.getTypeLabelType
+		}
+	}
+	
+	def BaseType getTypeLabelType(RecordTypeLabel rtl){
+		new BaseType() => [ type = rtl.ref.disarm  ; set="component"		; operations="arith"]
+	}
+	
+	
+//////////////////////////here be dragons 
+	
+	def getType(CompArguments ca){
+		switch(ca.value){
+			VariableReference 	: compType	
+			MacroExpressions	: macroType
+			CarmaInteger		: compType
+		}
+	}
+	
+	def getType(OutputActionArgument oaa){
+		switch(oaa){
+			OutputActionArgumentVR: oaa.ref.getType
+			OutputActionArgumentCI:	oaa.value.getType
+		}
+	}
+	
+	def getType(AttribAssignment ea){
+		attribType
+	}
+	
+	def getType(DoubleAssignment da){
+		doubleType
+	}
+	
+	def getType(IntgerAssignment ia){
+		integerType
+	}
+	
+	def BaseType getType(UpdateExpressions e){
+		switch(e){
+			UpdateSubtraction:				(e as UpdateSubtraction).getType
+			UpdateAddition:					(e as UpdateAddition).getType
+			UpdateMultiplication:			(e as UpdateMultiplication).getType
+			UpdateAtomicPrimitive:			(e.value as PrimitiveType).getType
+			UpdateAtomicVariable:			(e.value as VariableReference).getType
+			UpdateAtomicMethodReference:	(e.value as MethodExpression).getType
+			UpdateExpression:				e.expression.type
+		}
+	}
+	
+	def BaseType getType(UpdateSubtraction e){
+		var left = e.left.getType
+		var right = e.right.getType
+		if(left.operations.equals("arith") && right.operations.equals("arith"))
+			return integerType
+		else
+			return nullType
+	}
+	
+	def BaseType getType(UpdateAddition e){
+		var left = e.left.getType
+		var right = e.right.getType
+		if(left.operations.equals("arith") && right.operations.equals("arith"))
+			return integerType
+		else
+			return nullType
+	}
+	
+	def BaseType getType(UpdateMultiplication e){
+		var left = e.left.getType
+		var right = e.right.getType
+		if(left.operations.equals("arith") && right.operations.equals("arith"))
+			return integerType
+		else
+			return nullType
+	}
 
 	def BaseType getType(ProcessExpression e) {
 		switch(e){
@@ -627,7 +484,6 @@ class TypeProvider {
 			EnvironmentModulo:					(e as EnvironmentModulo).getType
 			EnvironmentDivision:				(e as EnvironmentDivision).getType
 			EnvironmentAtomicPrimitive:			(e.value as PrimitiveType).getType 			
-			EnvironmentAtomicRecords:			(e.value as Records).getType			
 			EnvironmentAtomicVariable:			(e.value as VariableReference).getType 
 			EnvironmentAtomicMethodReference:	(e.value as MethodExpression).getType			
 			EnvironmentAtomicNow:				doubleType	
@@ -691,7 +547,6 @@ class TypeProvider {
 			EnvironmentUpdateAddition:				(e as EnvironmentUpdateAddition).getType
 			EnvironmentUpdateMultiplication:		(e as EnvironmentUpdateMultiplication).getType
 			EnvironmentUpdateAtomicPrimitive:		(e.value as PrimitiveType).getType 			
-			EnvironmentUpdateAtomicRecords:			(e.value as Records).getType			
 			EnvironmentUpdateAtomicVariable:		(e.value as VariableReference).getType 
 			EnvironmentUpdateAtomicMethodReference:	(e.value as MethodExpression).getType			
 			EnvironmentUpdateAtomicNow:				doubleType	

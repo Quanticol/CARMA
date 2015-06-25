@@ -182,11 +182,47 @@ import eu.quanticol.carma.core.generator.ExpressionHandler
 import java.util.HashMap
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
+import eu.quanticol.carma.core.carma.RecordClassName
 
 class LabelUtil {
 	
 	@Inject extension Util
 	@Inject extension ExpressionHandler
+	
+	def String disarm(VariableReference vr){
+		switch(vr){
+			VariableReferencePure: 			vr.name.disarm
+			VariableReferenceMy: 			{"my_" 			+ vr.name.disarm}
+			VariableReferenceThis: 			{"this_" 		+ vr.name.disarm}
+			VariableReferenceReceiver:		{"receiver_" 	+ vr.name.disarm}
+			VariableReferenceSender:		{"sender_"		+ vr.name.disarm}
+			RecordReferencePure:			{vr.name.disarm 		+ "_" + vr.record.disarm	}
+			RecordReferenceMy:				{"my" 				+ "_" + vr.name.disarm + "_" + vr.record.disarm	}
+			RecordReferenceThis:			{"this" 			+ "_" + vr.name.disarm + "_" + vr.record.disarm	}
+			RecordReferenceReceiver:		{"receiver" 		+ "_" + vr.name.disarm + "_" + vr.record.disarm	}
+			RecordReferenceSender:			{"sender" 			+ "_" + vr.name.disarm + "_" + vr.record.disarm	}
+			VariableReferenceGlobal:		{"global."			+ vr.name.disarm}
+			RecordReferenceGlobal:			{"global" 			+ "_" + vr.name.disarm + "_" + vr.record.disarm	}
+		}
+	}
+	
+	def String disarm(Name name){
+		switch(name){
+			VariableName: 		name.name
+			RecordName: 		name.name
+			ActionName: 		name.name
+			ProcessName: 		name.name
+			ComponentName: 		name.name
+			MacroName: 			name.name.name
+			MethodName: 		name.name
+			MeasureName: 		name.name
+			SystemName: 		name.name
+			RecordClassName:
+		}
+		
+	}
+	
+	//here be dragons
 	
 	def String flatten(Records records){
 		var output = ""
@@ -475,21 +511,6 @@ class LabelUtil {
 			RecordTypeLabel:	"record"	
 			EnumTypeLabel:		"enum"
 		}
-	}
-	
-	def String getLabel(Name name){
-		switch(name){
-			VariableName: 	name.name
-			RecordName: 	name.name
-			ActionName: 	name.name
-			ProcessName: 	name.name
-			ComponentName: 	name.name
-			MacroName: 		name.name.name
-			MethodName: 	name.name
-			MeasureName: 	name.name
-			SystemName: 	name.name
-		}
-		
 	}
 	
 	def HashMap<String,String>  getNameValueLabel(VariableName name){
@@ -800,30 +821,6 @@ class LabelUtil {
 	
 	def String getLabelForArgs(RecordDeclaration e){
 		e.assign.label
-	}
-	
-//	def String getLabel(VariableOrRecordReference e){
-//		switch(e){
-//			OrVariableReference:	(e.ref as VRReference).label 
-//			OrRecordReference:		(e.ref as VRReference).label 
-//		}
-//	}
-	
-	def String getLabel(VariableReference vr){
-		switch(vr){
-			VariableReferencePure: 			vr.name.label
-			VariableReferenceMy: 			{"my." 			+ vr.name.label}
-			VariableReferenceThis: 			{"this." 		+ vr.name.label}
-			VariableReferenceReceiver:		{"receiver." 	+ vr.name.label}
-			VariableReferenceSender:		{"sender."		+ vr.name.label}
-			RecordReferencePure:			{vr.name.label 		+ "." + vr.record.label	}
-			RecordReferenceMy:				{"my" 				+ "." + vr.name.label + "." + vr.record.label	}
-			RecordReferenceThis:			{"this" 			+ "." + vr.name.label + "." + vr.record.label	}
-			RecordReferenceReceiver:		{"receiver" 		+ "." + vr.name.label + "." + vr.record.label	}
-			RecordReferenceSender:			{"sender" 			+ "." + vr.name.label + "." + vr.record.label	}
-			VariableReferenceGlobal:		{"global."			+ vr.name.label}
-			RecordReferenceGlobal:			{"global" 			+ "." + vr.name.label + "." + vr.record.label	}
-		}
 	}
 	
 	def String convertToJava(VariableReference vr, String assignment){

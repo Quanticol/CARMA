@@ -11,7 +11,6 @@ import eu.quanticol.carma.core.carma.BooleanExpression
 import eu.quanticol.carma.core.carma.CBND
 import eu.quanticol.carma.core.carma.CarmaPackage
 import eu.quanticol.carma.core.carma.ComponentBlockDefinition
-import eu.quanticol.carma.core.carma.ComponentBlockDefinitionArgumentVariable
 import eu.quanticol.carma.core.carma.ComponentBlockForStatement
 import eu.quanticol.carma.core.carma.ComponentLineForStatement
 import eu.quanticol.carma.core.carma.Environment
@@ -21,12 +20,10 @@ import eu.quanticol.carma.core.carma.InputAction
 import eu.quanticol.carma.core.carma.InputActionArguments
 import eu.quanticol.carma.core.carma.MacroExpressionReference
 import eu.quanticol.carma.core.carma.MacroName
-import eu.quanticol.carma.core.carma.MacroType
 import eu.quanticol.carma.core.carma.Measure
 import eu.quanticol.carma.core.carma.MethodDefinition
 import eu.quanticol.carma.core.carma.Methods
 import eu.quanticol.carma.core.carma.Model
-import eu.quanticol.carma.core.carma.NCA
 import eu.quanticol.carma.core.carma.Process
 import eu.quanticol.carma.core.carma.ProcessExpression
 import eu.quanticol.carma.core.carma.ProcessExpressionAction
@@ -38,7 +35,6 @@ import eu.quanticol.carma.core.carma.Range
 import eu.quanticol.carma.core.carma.Rate
 import eu.quanticol.carma.core.carma.RateBlock
 import eu.quanticol.carma.core.carma.RecordDeclaration
-import eu.quanticol.carma.core.carma.RecordDeclarations
 import eu.quanticol.carma.core.carma.RecordReferenceGlobal
 import eu.quanticol.carma.core.carma.RecordReferenceMy
 import eu.quanticol.carma.core.carma.RecordReferencePure
@@ -49,7 +45,6 @@ import eu.quanticol.carma.core.carma.Records
 import eu.quanticol.carma.core.carma.StoreBlock
 import eu.quanticol.carma.core.carma.StoreLine
 import eu.quanticol.carma.core.carma.VariableDeclaration
-import eu.quanticol.carma.core.carma.VariableDeclarationRecord
 import eu.quanticol.carma.core.carma.VariableName
 import eu.quanticol.carma.core.carma.VariableReference
 import eu.quanticol.carma.core.carma.VariableReferenceGlobal
@@ -58,7 +53,6 @@ import eu.quanticol.carma.core.carma.VariableReferencePure
 import eu.quanticol.carma.core.carma.VariableReferenceReceiver
 import eu.quanticol.carma.core.carma.VariableReferenceSender
 import eu.quanticol.carma.core.carma.VariableReferenceThis
-import eu.quanticol.carma.core.carma.VariableType
 import eu.quanticol.carma.core.typing.TypeProvider
 import eu.quanticol.carma.core.utils.LabelUtil
 import eu.quanticol.carma.core.utils.Util
@@ -70,7 +64,6 @@ import static extension org.eclipse.xtext.EcoreUtil2.*
 import eu.quanticol.carma.core.carma.Component
 import eu.quanticol.carma.core.carma.EnvironmentUpdate
 import eu.quanticol.carma.core.carma.Probability
-import eu.quanticol.carma.core.carma.ActionGuard
 import eu.quanticol.carma.core.carma.UpdateBlock
 import eu.quanticol.carma.core.carma.ProbabilityBlock
 
