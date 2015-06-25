@@ -23,7 +23,7 @@ class ComponentDefine {
 			«FOR mer : component.getMacros»
 			c4rm4.addAgent( new CarmaSequentialProcess(c4rm4, 
 			«prefix»«component_name»Process,
-			«prefix»«component_name»Process.getState("state_«mer.name.label»")));
+			«prefix»«component_name»Process.getState("state_«mer.name.disarm»")));
 			«ENDFOR»
 			return c4rm4;
 		}

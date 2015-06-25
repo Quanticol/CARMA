@@ -20,7 +20,7 @@ class Actions {
 	@Inject extension LabelUtil
 	
 	def String getAction(String name, Action action, CarmaVariableManager cvm, ActionManager am){
-		var av = am.get(action.name.label)		
+		var av = am.get(action.name.disarm)		
 		'''
 		«IF(action.type.set.equals("outputAction"))»
 		«name.getActionOutput(av.staticName,

@@ -61,7 +61,7 @@ class Values {
 			}
 			for(ci : arg.eAllOfType(CarmaInteger)){
 				var vr = new VariableReferenceHandler()
-				vrs.put(ci.label,vr)
+				vrs.put(ci.express,vr)
 			}
 		}
 		return vrs

@@ -6,8 +6,8 @@ import java.util.HashMap;
 import eu.quanticol.carma.core.carma.BooleanExpressions;
 import eu.quanticol.carma.core.carma.EnvironmentExpressions;
 import eu.quanticol.carma.core.carma.EnvironmentMacroExpressions;
-import eu.quanticol.carma.core.carma.EnvironmentMeasure;
 import eu.quanticol.carma.core.carma.Measure;
+import eu.quanticol.carma.core.carma.SetComp;
 import eu.quanticol.carma.core.generator.Args;
 
 public class MeasureObject {
@@ -17,14 +17,14 @@ public class MeasureObject {
 	private String environmentMeasureName;
 	private HashMap<String,ArrayList<String>> args;
 	private ArrayList<ArrayList<String>> product;
-	private EnvironmentMeasure em;
+	private SetComp em;
 
 	public MeasureObject(String m, String e, HashMap<String,ArrayList<String>> args, EnvironmentExpressions em) {
 		this.name = m + "_" + e;
 		this.measureName = m;
 		this.environmentMeasureName = e;
 		this.args = args;
-		this.em = (EnvironmentMeasure) em;
+		this.em = (SetComp) em;
 	}
 
 	public String getName() {

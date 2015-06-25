@@ -4,19 +4,17 @@ import eu.quanticol.carma.core.generator.carmavariable.CarmaVariableManager
 import eu.quanticol.carma.core.carma.System
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.carma.VariableDeclaration
 import java.util.ArrayList
 import com.google.inject.Inject
-import eu.quanticol.carma.core.utils.LabelUtil
 import eu.quanticol.carma.core.generator.GeneratorUtils
+import eu.quanticol.carma.core.carma.StoreDeclaration
 
 class DeclareGlobalStore {
 	
-	@Inject extension LabelUtil
 	@Inject extension GeneratorUtils
 	
 	def String setGlobalStore(CarmaVariableManager cvm, System system){
-		var ArrayList<VariableDeclaration> vds = new ArrayList<VariableDeclaration>(system.eAllOfType(VariableDeclaration))
+		var ArrayList<StoreDeclaration> vds = new ArrayList<StoreDeclaration>(system.eAllOfType(StoreDeclaration))
 		var prefix = cvm.definitionsPrefix
 		'''
 		«FOR vd : vds»

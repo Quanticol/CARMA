@@ -13,19 +13,9 @@ Model:
 
 PrimitiveType returns PrimitiveType hidden(ML_COMMENT,SL_COMMENT,WS):
 	CarmaDouble |
-	CarmaProb	|
 	CarmaInteger|
 	CarmaBoolean|
 	Range	
-;
-
-CarmaProb returns PrimitiveType hidden(ML_COMMENT,SL_COMMENT,WS):
-	{CarmaProb} 
-	( 
-		"0" "." right=INT 	|
-		"1"".""0" 			|
-		"1"
-	)
 ;
 
 CarmaDouble returns PrimitiveType hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -49,7 +39,7 @@ Range returns PrimitiveType hidden(ML_COMMENT,SL_COMMENT,WS):
 	{Range} min=INT ".." max=INT
 ;
 
-OutcomeProbability hidden(ML_COMMENT,SL_COMMENT,WS):
+OutcomeProbability returns PrimitiveType hidden(ML_COMMENT,SL_COMMENT,WS):
 	{OutcomeProbability} outcome=(CarmaInteger|VariableReference) ":" probability=CarmaDouble
 ;
 
@@ -81,8 +71,8 @@ RecordParameters hidden(ML_COMMENT,SL_COMMENT,WS):
 
 RecordDefinitionStatementBlock hidden(ML_COMMENT,SL_COMMENT,WS): 
 	"{"
-		  attributes+=AttribVariableDeclaration 
-		  (attributes+=AttribVariableDeclaration)*
+		  attributes+=RecordAttribVariableDeclaration ";"
+		  (attributes+=RecordAttribVariableDeclaration ";")*
 	"}"
 ;
 
@@ -95,6 +85,10 @@ RecordArguments hidden(ML_COMMENT,SL_COMMENT,WS):
 
 RecordArgument hidden(ML_COMMENT,SL_COMMENT,WS): 
 	{RecordArgument} argument=(VariableReference | CarmaInteger)
+;
+
+RecordAsArgument hidden(ML_COMMENT,SL_COMMENT,WS): 
+	"new" instantiate=[RecordClassName|UPPERST] arguments=RecordArguments 
 ;
 
 ////////////////////////////////////////////////////VARIABLES
@@ -140,19 +134,19 @@ RecordClassName returns Name hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 AttribParameter returns AttribParameter hidden(ML_COMMENT,SL_COMMENT,WS):
-	type=ATTRIBLABEL	name=VariableName
+	type=AttribLabel	name=VariableName
 ;
 
 RecordParameter returns RecordParameter hidden(ML_COMMENT,SL_COMMENT,WS):
-	type=[RecordClassName|UPPERST] name=RecordName
+	type=[RecordClassName|UPPERST] name=VariableName
 ;
 
 DoubleParameter returns DoubleParameter hidden(ML_COMMENT,SL_COMMENT,WS):
-	type=DOUBLELABEL	name=VariableName
+	type=DoubleLabel	name=VariableName
 ;
 
 IntgerParameter returns IntgerParameter hidden(ML_COMMENT,SL_COMMENT,WS):
-	type=INTGERLABEL	name=VariableName
+	type=IntgerLabel	name=VariableName
 ;
 
 MacroParameter returns MacroParameter hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -162,11 +156,23 @@ MacroParameter returns MacroParameter hidden(ML_COMMENT,SL_COMMENT,WS):
 
 Types returns Types hidden(ML_COMMENT,SL_COMMENT,WS):
 	(
-		{DoubleTypeLabel} 		type=DOUBLELABEL 	|
-		{IntegerTypeLabel} 		type=INTGERLABEL	|
-		{AttribTypeLabel}		type=ATTRIBLABEL	|
+		{DoubleTypeLabel} 		type=DoubleLabel 	|
+		{IntegerTypeLabel} 		type=IntgerLabel	|
+		{AttribTypeLabel}		type=AttribLabel	|
 		{RecordTypeLabel}		ref=[RecordClassName|UPPERST]
 	)
+;
+
+DoubleLabel hidden(ML_COMMENT,SL_COMMENT,WS):
+	"double"
+;
+
+IntgerLabel hidden(ML_COMMENT,SL_COMMENT,WS):
+	"int"
+;
+
+AttribLabel hidden(ML_COMMENT,SL_COMMENT,WS):
+	"attrib"
 ;
 
 Parameters returns Parameters hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -179,13 +185,7 @@ Parameters returns Parameters hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 PreArguments returns PreArguments hidden(ML_COMMENT,SL_COMMENT,WS):
-		(
-			value=VariableReference	|
-			value=MethodReference	|
-			value=CarmaInteger		|
-			value=CarmaDouble		|
-			value=OutcomeProbability
-		)	
+		value=Expression	
 ;
 
 
@@ -198,21 +198,11 @@ CompParameters returns CompParameters hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 CompArguments returns CompArguments hidden(ML_COMMENT,SL_COMMENT,WS):
-		(
-			value=VariableReference	|
-			value=CarmaInteger		|
-			value=Macro				|
-			value=Range
-		)	
+		value=Expression	
 ;
 
 Arguments returns Arguments hidden(ML_COMMENT,SL_COMMENT,WS):
-		(
-			value=VariableReference	|
-			value=MethodReference	|
-			value=CarmaInteger		|
-			value=CarmaDouble
-		)	
+		value=Expression	
 ;
 
 VariableReference returns VariableReference hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -222,40 +212,48 @@ VariableReference returns VariableReference hidden(ML_COMMENT,SL_COMMENT,WS):
 		{VariableReferenceThis} 	"this" 		"." name=[VariableName|LOWERST] |
 		{VariableReferenceReceiver}	"receiver" 	"." name=[VariableName|LOWERST] |
 		{VariableReferenceSender}	"sender" 	"."	name=[VariableName|LOWERST] |
-		{VariableReferenceGlobal}	"global"	"." name=[VariableName|LOWERST]	|
-		{RecordReferencePure} 						name=[RecordName|LOWERST] 
-		"." record=[VariableName|LOWERST]	|
-		{RecordReferenceMy} 		"my" 		"." name=[RecordName|LOWERST] 
-		"." record=[VariableName|LOWERST]	|
-		{RecordReferenceThis} 		"this" 		"." name=[RecordName|LOWERST] 
-		"." record=[VariableName|LOWERST]	|
-		{RecordReferenceReceiver}	"receiver" 	"." name=[RecordName|LOWERST] 
-		"." record=[VariableName|LOWERST]	|
-		{RecordReferenceSender}		"sender" 	"."	name=[RecordName|LOWERST] 
-		"." record=[VariableName|LOWERST] |
-		{RecordReferenceGlobal}		"global" 	"."	name=[RecordName|LOWERST] 
-		"." record=[VariableName|LOWERST]
+		{VariableReferenceGlobal}	"global"	"." name=[VariableName|LOWERST] |
+		{RecordReferencePure} 						name=[VariableName|LOWERST]
+		"." record=[RecordName|LOWERST]	|
+		{RecordReferenceMy} 		"my" 		"." name=[VariableName|LOWERST]
+		"." record=[RecordName|LOWERST]	|
+		{RecordReferenceThis} 		"this" 		"." name=[VariableName|LOWERST]
+		"." record=[RecordName|LOWERST]	|
+		{RecordReferenceReceiver}	"receiver" 	"." name=[VariableName|LOWERST]
+		"." record=[RecordName|LOWERST]	|
+		{RecordReferenceSender}		"sender" 	"."	name=[VariableName|LOWERST]
+		"." record=[RecordName|LOWERST] |
+		{RecordReferenceGlobal}		"global" 	"."	name=[VariableName|LOWERST]
+		"." record=[RecordName|LOWERST]
 	)
 ;
 
+
 AttribVariableDeclaration returns AttribVariableDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	type=ATTRIBLABEL	name=VariableName	":="	assign=AttribAssignment ";"
+	type=AttribLabel	name=VariableName	":="	assign=Expression 
+;
+
+RecordAttribVariableDeclaration returns RecordAttribVariableDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
+	type=AttribLabel	name=RecordName	":="	assign=Expression
 ;
 
 MeasureVariableDeclaration returns MeasureVariableDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	type=ATTRIBLABEL	name=VariableName	":="	assign=MeasureAssignment ";"
+	type=AttribLabel	name=VariableName	":="	assign=Expression
 ;
 
 IntgerVariableDeclaration returns IntgerVariableDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	type=INTGERLABEL	name=VariableName	":="	assign=IntgerAssignment ";" 
+	type=IntgerLabel	name=VariableName	":="	assign=Expression
 ;
 
 DoubleVariableDeclaration returns DoubleVariableDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	type=DOUBLELABEL	name=VariableName	":="	assign=DoubleAssignment  ";"
+	type=DoubleLabel	name=VariableName	":="	assign=Expression
 ;
 
 RecordDeclaration returns RecordDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	type=[RecordClassName|UPPERST] name=RecordName ":=" NEW instantiate=[RecordClassName|UPPERST] arguments=RecordArguments
+	type=[RecordClassName|UPPERST] name=VariableName ":=" ( 
+		"new" instantiate=[RecordClassName|UPPERST] arguments=RecordArguments |
+		assign=VariableReference
+		)
 ;
 
 MethodDeclaration returns MethodDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -506,7 +504,8 @@ MethodPrimary returns MethodExpressions hidden(ML_COMMENT,SL_COMMENT,WS):
 MethodAtomic returns MethodExpressions hidden(ML_COMMENT,SL_COMMENT,WS):
 	{MethodAtomicPrimitive}			value=PrimitiveType 	|
 	{MethodAtomicVariable}			value=VariableName 		|
-	{MethodAtomicMethodReference}	value=MethodReference
+	{MethodAtomicMethodReference}	value=MethodReference	|
+	{MethodRecordDeclaration}		value=RecordDeclaration
 ;
 
 ////////////////////////////////////////////////////PREDEFINED METHODS	
@@ -625,7 +624,7 @@ ComponentBlockDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
 	
 ComponentBlockNew returns CBND hidden(ML_COMMENT,SL_COMMENT,WS):
 	{ComponentBlockNew}
-	NEW
+	"new"
 	name=[ComponentName|UPPERST] 
 	arguments=ComponentBlockArguments
 	("["population=INT"]")?
@@ -634,7 +633,7 @@ ComponentBlockNew returns CBND hidden(ML_COMMENT,SL_COMMENT,WS):
 
 ComponentBlockSpawn returns CBND hidden(ML_COMMENT,SL_COMMENT,WS):
 	{ComponentBlockSpawn}
-	NEW
+	"new"
 	name=[ComponentName|UPPERST] 
 	arguments=ComponentBlockArguments
 	("["population=INT"]")?
@@ -856,7 +855,7 @@ OutputActionArguments hidden(ML_COMMENT,SL_COMMENT,WS):
 
 OutputActionArgument returns OutputActionArgument hidden(ML_COMMENT,SL_COMMENT,WS):
 	(
-		{OutputActionArgumentVR} 	ref=VariableReference 	|
+		{OutputActionArgumentVR} 		ref=VariableReference 	|
 		{OutputActionArgumentCI}		value=CarmaInteger
 	)
 ;
@@ -915,22 +914,6 @@ UpdateAtomic returns UpdateExpressions hidden(ML_COMMENT,SL_COMMENT,WS):
 	
 	
 ////////////////////////////////////////////////////BOOLEAN EXPRESSION
-
-
-/**
- * Boolean Expression
- * <p>
- * @see Guard
- * @see ActionGuard
- * @see ComponentBlockForStatement
- * @see ComponentLineForStatement
- * @see EnvironmentGuard
- * @see EnvironmentMeasure
- * @see MethodIfStatement
- * @see MethodForStatement
- * <p>
- * @author CDW
- */
 BooleanExpression returns BooleanExpressions hidden(ML_COMMENT,SL_COMMENT,WS):
 	{BooleanExpression} expression=BooleanOr
 ;
@@ -1000,7 +983,82 @@ BooleanAtomic returns BooleanExpressions hidden(ML_COMMENT,SL_COMMENT,WS):
 	{BooleanAtomicPrimitive}			value=PrimitiveType 			|
 	{BooleanAtomicVariable}				value=VariableReference 		|
 	{BooleanAtomicMethodReference}		value=MethodReference			|
-	{BooleanAtomicNow}					value=NOW		
+	{BooleanAtomicNow}					value=Now		
+;
+////////////////////////////////////////////////////EXPRESSIONS
+Expression returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
+	{Expression} expression=Or
+;
+
+Or returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
+	And ({Or.left=current} "||" 
+		right=And
+	)*
+;
+
+And returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
+	Equality ({And.left=current} "&&" 
+		right=Equality
+	)*
+;
+	
+Equality returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
+	Comparison (
+		{Equality.left=current} op=("=="|"!=")
+		right=Comparison
+	)*
+;
+
+Comparison returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
+	Subtraction ({Comparison.left=current} op=(">="|"<="|">"|"<") 
+		right=Subtraction
+	)*
+;
+
+Subtraction returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
+	Addition ({Subtraction.left=current} '-' 
+		right=Addition
+	)*
+;
+
+Addition returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
+	Multiplication ({Addition.left=current} '+' 
+		right=Multiplication
+	)*
+;
+
+Multiplication returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
+	Modulo ({Multiplication.left=current} '*' 
+		right=Modulo
+	)*
+;
+
+Modulo returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS): 
+	Division ({Modulo.left=current} '%' 
+		right=Division
+	)*
+;
+
+Division returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS): 
+	Primary ({Division.left=current} '/' 
+		right=Primary
+	)*
+;
+
+Primary returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
+	'(' Expression ')' | 
+	{Not} "!" expression=Primary |
+	Atomic
+;
+
+Atomic returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
+	{AtomicPrimitive}			value=PrimitiveType 	|
+	{AtomicVariable}			value=VariableReference |
+	{AtomicMethodReference}		value=MethodReference	|
+	{AtomicNow}					value=Now				|
+	{AtomicMeasure}				value=SetComp			|
+	{AtomicMacro}				value=Macro				|
+	{AtomicRecord}				value=RecordAsArgument	
 ;
 ////////////////////////////////////////////////////MEASURES
 
@@ -1158,7 +1216,7 @@ EnvironmentAtomic returns EnvironmentExpressions hidden(ML_COMMENT,SL_COMMENT,WS
 	{EnvironmentAtomicPrimitive}			value=PrimitiveType 			|
 	{EnvironmentAtomicVariable}				value=VariableReference 		|
 	{EnvironmentAtomicMethodReference}		value=MethodReference			|
-	{EnvironmentAtomicNow}					value=NOW						|
+	{EnvironmentAtomicNow}					value=Now						|
 	{EnvironmentAtomicMeasure}				value=SetComp
 ;
 	
@@ -1194,15 +1252,15 @@ EnvironmentUpdateAtomic returns EnvironmentUpdateExpressions hidden(ML_COMMENT,S
 	{EnvironmentUpdateAtomicPrimitive}				value=PrimitiveType 			|
 	{EnvironmentUpdateAtomicVariable}				value=VariableReference 		|
 	{EnvironmentUpdateAtomicMethodReference}		value=MethodReference			|
-	{EnvironmentUpdateAtomicNow}					value=NOW						|
+	{EnvironmentUpdateAtomicNow}					value=Now						|
 	{EnvironmentUpdateAtomicMeasure}				value=SetComp
 ;
 
-terminal NOW:				"now";
-terminal NEW:				"new";
-terminal DOUBLELABEL:		"double";
-terminal INTGERLABEL:		"int";
-terminal ATTRIBLABEL:		"attrib";
+Now hidden(ML_COMMENT,SL_COMMENT,WS):
+	"now"
+;
+
+
 terminal BOOLEANVALUE: 		('true' | 'false');
 terminal LOWERST: 			("a".."z") ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*;
 terminal UPPERST: 			("A".."Z") ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*;

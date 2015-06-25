@@ -7,8 +7,6 @@ import eu.quanticol.carma.core.generator.actions.ActionManager;
 import eu.quanticol.carma.core.generator.carmavariable.CarmaVariableManager;
 import eu.quanticol.carma.core.generator.components.ComponentManager;
 import eu.quanticol.carma.core.carma.EnvironmentExpressions;
-import eu.quanticol.carma.core.carma.Measure;
-import eu.quanticol.carma.core.carma.EnvironmentMeasure;
 
 public class MeasureManager {
 

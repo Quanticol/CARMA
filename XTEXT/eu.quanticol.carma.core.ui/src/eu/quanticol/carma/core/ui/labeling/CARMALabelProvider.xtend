@@ -44,17 +44,17 @@ class CARMALabelProvider extends DefaultEObjectLabelProvider {
 		x.label
 	}
 	
-	def text(MethodDefinition x){
-		x.label 
-	}
+//	def text(MethodDefinition x){
+//		x.disarm
+//	}
 	
 	def text(ComponentStyle x){
 		x.label
 	}
 	
-	def text(ComponentBlockDefinition x){
-		x.label
-	}
+//	def text(ComponentBlockDefinition x){
+//		x.disarm
+//	}
 	
 	def text(MeasureBlock x){
 		x.label
@@ -65,7 +65,7 @@ class CARMALabelProvider extends DefaultEObjectLabelProvider {
 	}
 
 	def text(Name x){
-		x.label
+		x.disarm
 	}
 	
 	def text(BooleanExpression x){

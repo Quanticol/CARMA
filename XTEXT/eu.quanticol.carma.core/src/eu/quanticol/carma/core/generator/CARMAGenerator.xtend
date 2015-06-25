@@ -59,7 +59,7 @@ class CARMAGenerator implements IGenerator {
 		
 		//Systems
 		for(system : systems){
-			fsa.generateFile(URI + "/" + system.label + ".java", system.compileSystem(packageName,
+			fsa.generateFile(URI + "/" + system.disarm + ".java", system.compileSystem(packageName,
 				variableManager,
 				actionManager,
 				componentManager,

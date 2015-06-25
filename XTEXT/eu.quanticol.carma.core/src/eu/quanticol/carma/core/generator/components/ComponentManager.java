@@ -2,8 +2,8 @@ package eu.quanticol.carma.core.generator.components;
 
 import java.util.HashMap;
 
+import eu.quanticol.carma.core.carma.AttribVariableDeclaration;
 import eu.quanticol.carma.core.carma.BooleanExpressions;
-import eu.quanticol.carma.core.carma.ForVariableDeclaration;
 import eu.quanticol.carma.core.carma.MacroExpressionReference;
 import eu.quanticol.carma.core.carma.MethodExpressions;
 import eu.quanticol.carma.core.carma.VariableReference;
@@ -61,7 +61,7 @@ public class ComponentManager {
 	public void loadNew(String name,
 			ArrayList<ArrayList<String>> arguments, 
 			boolean isFor,
-			ForVariableDeclaration fvd,
+			AttribVariableDeclaration fvd,
 			BooleanExpressions bes, 
 			VariableReference vr, 
 			MethodExpressions mes) {

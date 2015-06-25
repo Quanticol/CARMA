@@ -146,7 +146,7 @@ class Updates {
 		var ArrayList<VariableName> vns = new ArrayList<VariableName>(value.eAllOfType(VariableName))
 		'''
 		«FOR vn : vns»
-		int «vn.label» = ((int[]) value)[«vns.indexOf(vn)»];
+		int «vn.disarm» = ((int[]) value)[«vns.indexOf(vn)»];
 		«ENDFOR»
 		'''	
 	}

@@ -2,17 +2,17 @@ package eu.quanticol.carma.core.generator.measures;
 
 import eu.quanticol.carma.core.carma.BooleanExpressions;
 import eu.quanticol.carma.core.carma.EnvironmentExpressions;
-import eu.quanticol.carma.core.carma.EnvironmentMeasure;
 import eu.quanticol.carma.core.carma.EnvironmentMacroExpressions;
+import eu.quanticol.carma.core.carma.SetComp;
 
 public class EnvironmentMeasureObject {
 
 	private String name;
-	private EnvironmentMeasure em;
+	private SetComp em;
 	
 	public EnvironmentMeasureObject(String name, EnvironmentExpressions em) {
 		this.name = name;
-		this.em = (EnvironmentMeasure) em;
+		this.em = (SetComp) em;
 	}
 	
 	public String getName(){

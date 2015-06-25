@@ -117,7 +117,7 @@ class SatisfyBlock {
 		var ArrayList<VariableName> vns = new ArrayList<VariableName>(value.eAllOfType(VariableName))
 		'''
 		«FOR vn : vns»
-		int «vn.label»_i = ((int[]) value)[«vns.indexOf(vn)»];
+		int «vn.disarm»_i = ((int[]) value)[«vns.indexOf(vn)»];
 		«ENDFOR»
 		'''	
 	}

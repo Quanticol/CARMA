@@ -2,8 +2,8 @@ package eu.quanticol.carma.core.generator.components;
 
 import java.util.ArrayList;
 
+import eu.quanticol.carma.core.carma.AttribVariableDeclaration;
 import eu.quanticol.carma.core.carma.BooleanExpressions;
-import eu.quanticol.carma.core.carma.ForVariableDeclaration;
 import eu.quanticol.carma.core.carma.MethodExpressions;
 import eu.quanticol.carma.core.carma.VariableReference;
 
@@ -13,7 +13,7 @@ public class NewComponentGenerator {
 	private ArrayList<ArrayList<String>> arguments;
 	private ArrayList<ArrayList<String>> product;
 	private boolean isFor;
-	private ForVariableDeclaration fvd;
+	private AttribVariableDeclaration fvd;
 	private BooleanExpressions bes;
 	private VariableReference vr;
 	private MethodExpressions mes;
@@ -21,7 +21,7 @@ public class NewComponentGenerator {
 	public NewComponentGenerator(String name,
 			ArrayList<ArrayList<String>> arguments, 
 			boolean isFor,
-			ForVariableDeclaration fvd,
+			AttribVariableDeclaration fvd,
 			BooleanExpressions bes, 
 			VariableReference vr, 
 			MethodExpressions mes) {
@@ -81,7 +81,7 @@ public class NewComponentGenerator {
 		return bes;
 	}
 
-	public ForVariableDeclaration getFvd() {
+	public AttribVariableDeclaration getFvd() {
 		return fvd;
 	}
 

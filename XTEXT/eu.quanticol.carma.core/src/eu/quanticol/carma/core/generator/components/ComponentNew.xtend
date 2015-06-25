@@ -2,12 +2,12 @@ package eu.quanticol.carma.core.generator.components
 
 import com.google.inject.Inject
 import eu.quanticol.carma.core.carma.BooleanExpressions
-import eu.quanticol.carma.core.carma.ForVariableDeclaration
 import eu.quanticol.carma.core.carma.MethodExpressions
 import eu.quanticol.carma.core.carma.VariableReference
 import eu.quanticol.carma.core.generator.ExpressionHandler
 import java.util.ArrayList
 import eu.quanticol.carma.core.utils.LabelUtil
+import eu.quanticol.carma.core.carma.AttribVariableDeclaration
 
 class ComponentNew {
 	
@@ -30,7 +30,7 @@ class ComponentNew {
 	}
 	
 	
-	def String forBlock(ForVariableDeclaration fvd, 
+	def String forBlock(AttribVariableDeclaration fvd, 
 		BooleanExpressions bes, 
 		VariableReference vr, 
 		MethodExpressions mes,
@@ -44,8 +44,8 @@ class ComponentNew {
 		'''
 	}
 	
-	def String declareAsJava(ForVariableDeclaration fvd){
-		return "int " + fvd.name.label + " = " + fvd.assign.label
+	def String declareAsJava(AttribVariableDeclaration fvd){
+		return "int " + fvd.name.disarm + " = " + fvd.assign.express
 	}
 	
 	def String singleDeclaration(String componentName, String args){
