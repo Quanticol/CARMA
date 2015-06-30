@@ -4,75 +4,17 @@
 package eu.quanticol.carma.core.validation
 
 import com.google.inject.Inject
-import eu.quanticol.carma.core.carma.Action
-import eu.quanticol.carma.core.carma.ActionName
-import eu.quanticol.carma.core.carma.ActionStub
 import eu.quanticol.carma.core.carma.BooleanExpression
-import eu.quanticol.carma.core.carma.CBND
-import eu.quanticol.carma.core.carma.CarmaPackage
-import eu.quanticol.carma.core.carma.ComponentBlockDefinition
-import eu.quanticol.carma.core.carma.ComponentBlockForStatement
-import eu.quanticol.carma.core.carma.ComponentLineForStatement
-import eu.quanticol.carma.core.carma.Environment
-import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAState
-import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAllStates
-import eu.quanticol.carma.core.carma.InputAction
-import eu.quanticol.carma.core.carma.InputActionArguments
-import eu.quanticol.carma.core.carma.MacroExpressionReference
-import eu.quanticol.carma.core.carma.MacroName
-import eu.quanticol.carma.core.carma.Measure
-import eu.quanticol.carma.core.carma.MethodDefinition
-import eu.quanticol.carma.core.carma.Methods
-import eu.quanticol.carma.core.carma.Model
-import eu.quanticol.carma.core.carma.Process
-import eu.quanticol.carma.core.carma.ProcessExpression
-import eu.quanticol.carma.core.carma.ProcessExpressionAction
-import eu.quanticol.carma.core.carma.ProcessExpressionGuard
-import eu.quanticol.carma.core.carma.ProcessName
-import eu.quanticol.carma.core.carma.Processes
-import eu.quanticol.carma.core.carma.ProcessesBlock
-import eu.quanticol.carma.core.carma.Range
-import eu.quanticol.carma.core.carma.Rate
-import eu.quanticol.carma.core.carma.RateBlock
-import eu.quanticol.carma.core.carma.RecordDeclaration
-import eu.quanticol.carma.core.carma.RecordReferenceGlobal
-import eu.quanticol.carma.core.carma.RecordReferenceMy
-import eu.quanticol.carma.core.carma.RecordReferencePure
-import eu.quanticol.carma.core.carma.RecordReferenceReceiver
-import eu.quanticol.carma.core.carma.RecordReferenceSender
-import eu.quanticol.carma.core.carma.RecordReferenceThis
-import eu.quanticol.carma.core.carma.Records
-import eu.quanticol.carma.core.carma.StoreBlock
-import eu.quanticol.carma.core.carma.StoreLine
-import eu.quanticol.carma.core.carma.VariableName
-import eu.quanticol.carma.core.carma.VariableReference
-import eu.quanticol.carma.core.carma.VariableReferenceGlobal
-import eu.quanticol.carma.core.carma.VariableReferenceMy
-import eu.quanticol.carma.core.carma.VariableReferencePure
-import eu.quanticol.carma.core.carma.VariableReferenceReceiver
-import eu.quanticol.carma.core.carma.VariableReferenceSender
-import eu.quanticol.carma.core.carma.VariableReferenceThis
+import eu.quanticol.carma.core.carma.ComponentExpression
+import eu.quanticol.carma.core.carma.EnvironmentProbExpression
+import eu.quanticol.carma.core.carma.EnvironmentRateExpression
+import eu.quanticol.carma.core.carma.EnvironmentUpdateExpression
+import eu.quanticol.carma.core.carma.UpdateExpression
 import eu.quanticol.carma.core.typing.TypeProvider
 import eu.quanticol.carma.core.utils.LabelUtil
 import eu.quanticol.carma.core.utils.Util
-import java.util.ArrayList
-import java.util.HashSet
 import org.eclipse.xtext.validation.Check
-
-import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.carma.Component
-import eu.quanticol.carma.core.carma.EnvironmentUpdate
-import eu.quanticol.carma.core.carma.Probability
-import eu.quanticol.carma.core.carma.UpdateBlock
-import eu.quanticol.carma.core.carma.ProbabilityBlock
-
-/**
- * Class
- * <p>
- * ERROR_
- * <p>
- * author <br>
- */
+import eu.quanticol.carma.core.carma.CarmaPackage
 
 class CARMAValidator extends AbstractCARMAValidator {
 	
@@ -80,30 +22,76 @@ class CARMAValidator extends AbstractCARMAValidator {
 	@Inject extension LabelUtil
 	@Inject extension Util
 	
-	public static val ERROR_BooleanExpression_expression_boolean_type = "ERROR: This expression must evaluate to being boolean."
+	//unique names
 	
-	/**
-	 * BooleanExpression
-	 * <p>
-	 * ERROR_BooleanExpression_expression_boolean_type = "ERROR: This expression can only use boolean operators."
-	 * <p>	
-	 * @author 	CDW <br>
-	 */
+	public static val ERROR_Attribute_name_unique = "ERROR: Attributes must have unique names."
+	public static val ERROR_Process_name_unique = "ERROR: Processes must have unique names."
+	public static val ERROR_MethodDefinition_name_unique = "ERROR: Functions must have a unique name."
+	
+	//Expression type check
+	
+	var public static ERROR_BooleanExpression_type 				= "ERROR_BooleanExpression_type"
+	var public static ERROR_UpdateExpression_type 				= "ERROR_UpdateExpression_type"
+	var public static ERROR_EnvironmentProbExpression_type 		= "ERROR_EnvironmentProbExpression_type"
+	var public static ERROR_EnvironmentRateExpression_type 		= "ERROR_EnvironmentRateExpression_type"
+	var public static ERROR_EnvironmentUpdateExpression_type 	= "ERROR_EnvironmentUpdateExpression_type"
+	var public static ERROR_ComponentExpression_type 			= "ERROR_ComponentExpression_type"
+	
 	@Check
-	def check_ERROR_BooleanExpression_expression_boolean_type(BooleanExpression booleanExpression){
-		var boolean test = true
-		var String message = ERROR_BooleanExpression_expression_boolean_type
-		
-		test = booleanExpression.expression.type.toString.equals("boolean")
-		
-		if(!test){
-			error( message ,
-					CarmaPackage::eINSTANCE.booleanExpression_Expression,
-					ERROR_BooleanExpression_expression_boolean_type
-			)
+	def check_ERROR_expression_type(BooleanExpression expression){
+		var test = true
+		var message = "Error: must be of Boolean type."
+		if(test){
+			error(message,CarmaPackage::eINSTANCE.booleanExpression_Expression,ERROR_BooleanExpression_type)
 		}
 	}
 	
+	@Check
+	def check_ERROR_expression_type(UpdateExpression expression){
+		var test = true
+		var message = ""
+		if(test){
+			error(message,CarmaPackage::eINSTANCE.updateExpression_Expression,ERROR_UpdateExpression_type)
+		}
+	}
+	
+	@Check
+	def check_ERROR_expression_type(EnvironmentProbExpression expression){
+		var test = true
+		var message = ""
+		if(test){
+			error(message,CarmaPackage::eINSTANCE.environmentProbExpression_Expression,ERROR_EnvironmentProbExpression_type)
+		}
+	}
+
+	@Check
+	def check_ERROR_expression_type(EnvironmentRateExpression expression){
+		var test = true
+		var message = ""
+		if(test){
+			error(message,CarmaPackage::eINSTANCE.environmentRateExpression_Expression,ERROR_EnvironmentRateExpression_type)
+		}
+	}
+	
+	@Check
+	def check_ERROR_expression_type(EnvironmentUpdateExpression expression){
+		var test = true
+		var message = ""
+		if(test){
+			error(message,CarmaPackage::eINSTANCE.environmentUpdate_Expression,ERROR_EnvironmentUpdateExpression_type)
+		}
+	}
+	
+	@Check
+	def check_ERROR_expression_type(ComponentExpression expression){
+		var test = true
+		var message = ""
+		if(test){
+			error(message,CarmaPackage::eINSTANCE.componentExpression_Expression,ERROR_ComponentExpression_type)
+		}
+	}
+	
+
 //	public static val ERROR_VariableReference_ProcessExpression_type = "ERROR: '"
 //	@Check
 //	def check_ERROR_VariableReference_ProcessExpression_type(VariableReference vr){
