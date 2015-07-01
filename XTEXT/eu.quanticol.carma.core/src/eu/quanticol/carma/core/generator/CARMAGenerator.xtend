@@ -30,45 +30,45 @@ class CARMAGenerator implements IGenerator {
 	
 	override void doGenerate(Resource resource, IFileSystemAccess fsa) {
 		
-		var Model model = resource.allContents.toIterable.filter(Model).get(0)
-		var systems = resource.allContents.toIterable.filter(System)
-		
-		var variableManager = new CarmaVariableManager()
-		variableManager.populateCarmaVariableManager(model)
-		
-		var actionManager = new ActionManager()
-		actionManager.populateActionManager(model)
-		
-		var componentManager = new ComponentManager(actionManager,variableManager)
-		componentManager.populateComponentManager(model)
-		
-		var measureManager = new MeasureManager(actionManager,variableManager,componentManager)
-		measureManager.populateMeasureManager(model)
-		
-		var modelName = model.label
-		var URI = "carma" + "/" + modelName.toLowerCase
-		var packageName = "package carma." + modelName.toLowerCase
-		
-		//Definitions
-		fsa.generateFile(URI + "/" + modelName + "Definition.java",model.compileDefinitions(packageName,
-			variableManager,
-			actionManager,
-			componentManager,
-			measureManager
-		))
-		
-		//Systems
-		for(system : systems){
-			fsa.generateFile(URI + "/" + system.disarm + ".java", system.compileSystem(packageName,
-				variableManager,
-				actionManager,
-				componentManager,
-				measureManager
-			))
-		}
-		
-		//Factory
-		fsa.generateFile(URI + "/" + modelName + "Factory.java",model.compileFactory(packageName))
+//		var Model model = resource.allContents.toIterable.filter(Model).get(0)
+//		var systems = resource.allContents.toIterable.filter(System)
+//		
+//		var variableManager = new CarmaVariableManager()
+//		variableManager.populateCarmaVariableManager(model)
+//		
+//		var actionManager = new ActionManager()
+//		actionManager.populateActionManager(model)
+//		
+//		var componentManager = new ComponentManager(actionManager,variableManager)
+//		componentManager.populateComponentManager(model)
+//		
+//		var measureManager = new MeasureManager(actionManager,variableManager,componentManager)
+//		measureManager.populateMeasureManager(model)
+//		
+//		var modelName = model.label
+//		var URI = "carma" + "/" + modelName.toLowerCase
+//		var packageName = "package carma." + modelName.toLowerCase
+//		
+//		//Definitions
+//		fsa.generateFile(URI + "/" + modelName + "Definition.java",model.compileDefinitions(packageName,
+//			variableManager,
+//			actionManager,
+//			componentManager,
+//			measureManager
+//		))
+//		
+//		//Systems
+//		for(system : systems){
+//			fsa.generateFile(URI + "/" + system.disarm + ".java", system.compileSystem(packageName,
+//				variableManager,
+//				actionManager,
+//				componentManager,
+//				measureManager
+//			))
+//		}
+//		
+//		//Factory
+//		fsa.generateFile(URI + "/" + modelName + "Factory.java",model.compileFactory(packageName))
 		
 	}
 	

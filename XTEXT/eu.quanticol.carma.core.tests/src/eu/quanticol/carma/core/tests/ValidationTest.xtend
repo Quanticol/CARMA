@@ -21,516 +21,170 @@ class ValidationTest {
 	@Inject extension ValidationTestHelper
 	
 	
-	/**
-	 * 		
-	    fun integer Test(integer v){
-			return v + 1;
-		}
-		
-		fun integer Test2(integer v){
-			return v + 1;
-		}
-				
-		component Comp1(){
-			store{
-				enum a := 0;
-				record b := {x := 1, y :=1}; 
-			}
-				
-			behaviour{
-				P = [b == {x := 1, y:= 1}] nothing*<a,b,b>{a := a + 1}.P;
-			}
-			
-			init{
-				P;
-			}
-		}
-		
-		component Comp2(Z){
-			store{
-				enum a := 0;
-				enum e := 0;
-			}
-				
-			behaviour{
-				P =  nothing*(b,c).P;
-			}
-			
-			init{
-				Z;
-			}
-		}
-		
-		Q = Q;
-				
-		system Bleh{
-			collective{
-				new Comp1();
-				new Comp2(P);
-			}
-			environment{
-				store{
-					record loc := {x := 1, y :=1}; 
-				}
-			}
-		}
-	 */
-	
-	
 	@Test
-	def void test_ERROR_ActionStub_reference(){
+	def void test_ERROR_VariableName_unique_type(){
 		'''
-		component Producer(){
+		/**
+		 * The roving function: moves our rovers around the grid, wraps east-west, north-south
+		 */
+		fun Position Roving(Position i){
+		    attrib pos_x := Uniform(i.x + 1,i.x,i.x + 1) % 3;
+		    attrib pos_y := Uniform(i.y - 1,i.y,i.y + 1) % 3;
+		    Position j := new Position(pos_x,pos_y);
+		    return j;
+		}
+		
+		records {
+			record Position(){ 
+				attrib x := 0;
+				attrib y := 2;
+			}
+		}
+		
+		/**
+		 * The Rover component: 'Roves' about the grid sensing and attempting to send data to the above satellites
+		 */
+		component Rover(attrib a, attrib b, attrib c,  Z){
+		
 		    store{
-		        enum product := 0;
+		        attrib data := a;
+		        attrib type := 4;
+		        attrib fail := 2;
+		        Position myPosition := new Position(b,c);
+		
 		    }
 		
 		    behaviour{
-		        Produce = produce*<>{my.product := my.product + 1}.Produce;
+		        Sense     = [my.data > 0] sense*{data := data + 1}.Sense;
+		        Send     = [my.data > 0] send[type == 1]<>{data := data - 1}.Send;
 		    }
 		
 		    init{
-		        Produce;
-		    }
-		
-		}
-		
-		system SimpleMove{
-		
-		    collective{
-		        new Producer();
-		    }
-		
-		    environment{
-		        rate{
-		        //problem here...
-		        [True] ed* := 1;
-		        }
+		        Z;
 		    }
 		}
-		'''.parse.assertError(CarmaPackage::eINSTANCE.actionStub,
-			CARMAValidator::ERROR_ActionStub_reference,
-			CARMAValidator::ERROR_ActionStub_reference)
-	}
-	
-	@Test
-	def void test_ERROR_ActionStub(){
-		'''
-		component Producer(){
+		
+		/**
+		 * The Satellite component: sits in geo-synchronous orbit, if it is not analysing data from a rover, 
+		 * it will do its own sensing. It sends analysed data as packages to earth.
+		 */
+		component Satelite(attrib a, Position d){
+		
 		    store{
-		        enum product := 0;
+		        attrib data := a;
+		        attrib package := 0;
+		        attrib type := 1;
+		        Position myPosition := d;
+		
 		    }
 		
 		    behaviour{
-		        Produce = produce*.Produce;
+		
+		        Analyse = [my.data > 0] analyse*{data := data - 1, package := package + 1}.Transmit
+		        + [my.data == 0] sense*{data := data + 1}.Transmit;
+		
+		        Transmit = transmit*{package := package - 1}.Analyse;
+		
+		        Receive = [my.data >= 0] send[my.data < 10 && z == 1](z){data := data + z}.Receive;
 		    }
 		
 		    init{
-		        Produce;
+		        Analyse|Receive;
 		    }
-		
 		}
 		
-		component ProducerT(){
+		/**
+		 * The beacon component: Deployed when a send fails
+		 */
+		component Beacon(attrib a, attrib b){
+		
 		    store{
-		        enum product := 0;
+		        attrib myPosition := new Position(a,b);
+		        attrib battery := 5;
 		    }
 		
 		    behaviour{
-		        Produce = produce*.Produce;
+		        Signal = [my.battery > 0] signal*{battery := battery - 1}.Signal + [my.battery <= 0] die*.Die;
+		        Die = nil;
 		    }
 		
 		    init{
-		        Produce;
-		    }
-		
-		}
-		
-		system SimpleMove{
-		
-		    collective{
-		        new Producer();
-		        new ProducerT();
-		    }
-		
-		    environment{
-		        rate{
-		        [True] edward* := 1;
-		        }
+		        Signal;
 		    }
 		}
-		'''.parse.assertError(CarmaPackage::eINSTANCE.actionStub,
-			CARMAValidator::ERROR_ActionStub_reference,
-			CARMAValidator::ERROR_ActionStub_reference)
-	}
-	
-	@Test
-	def void test_ERROR_BooleanExpression_expression_boolean_type(){
-		'''
-		fun integer Test(integer v){
-			return v + 1;
+		
+		/**
+		 * Behaviours we might like to provide to more than one component
+		 */
+		abstract {
+		    Rove = rove*{myPosition := Roving(myPosition)}.Wait;
+		    Wait = wait*.Wait;
 		}
 		
-		fun integer Test2(integer v){
-			return v + 1;
-		}
-				
-		component Comp1(){
-			store{
-				enum a := 0;
-				record b := {x := 1, y :=1}; 
-			}
-				
-			behaviour{
-				P = [b + 1] nothing*.P;
-			}
-			
-			init{
-				P;
-			}
+		/**
+		 * Measures block: Count the number of X
+		 */
+		measures{
+		    measure Waiting[ attrib i := 0..2, attrib j := 0..2] = #{ *  | battery == i && myPosition.y == j };
 		}
 		
-		component Comp2(Z){
-			store{
-				enum a := 0;
-				enum e := 0;
-			}
-				
-			behaviour{
-				P =  nothing*.P;
-			}
-			
-			init{
-				Z;
-			}
-		}
 		
-		Q = Q;
-				
-		system Bleh{
-			collective{
-				new Comp1();
-				new Comp2(P);
-			}
-			environment{
-				store{
-					record loc := {x := 1, y :=1}; 
-				}
-			}
-		}
-		'''.parse.assertError(CarmaPackage::eINSTANCE.booleanExpression,
-			CARMAValidator::ERROR_BooleanExpression_expression_boolean_type,
-			CARMAValidator::ERROR_BooleanExpression_expression_boolean_type)
-	}
-	
-	@Test
-	def void test_WARN_ComponentBlockDefinition_unused(){
-		'''
-		component Producer(){
-		    store{
-		        enum product := 0;
-		    }
-		
-		    behaviour{
-		        Produce = produce*{product := product + 1}.Send;
-		        Send = send<1>{product := product - 1}.Produce;
-		    }
-		
-		    init{
-		        Produce;
-		    }
-		
-		}
-		
-		component Consumer(){
-		    store{
-		        enum product := 0;
-		    }
-		
-		    behaviour{
-		        Receive = send(z){product := product + z}.Consume;
-		        Consume = consume*{product := product + 1}.Receive;
-		    }
-		
-		    init{
-		        Produce;
-		    }
-		
-		}
-		
+		/**
+		 * The system block
+		 */
 		system Simple{
 		
+			/**
+			 * Starting with 3 Rovers, and 9 Satellites
+			 */
 		    collective{
-		        new Producer();
+		        new Rover(0,0,0,Rove);
+		        new Rover(1,1,1,Rove);
+		        new Rover(2,2,2,Rove);
+		        new Satelite(1, new Position(1,2));
 		    }
 		
 		    environment{
+		
+		        store{
+		            attrib reports  := 0;
+		            attrib type     := 2;
+		            Position center := new Position(1,1);
+		        }
+		
+		        prob{
+		        	//depending on where the Rover is determines the chance of the satellite receiving the message
+		            [(receiver.myPosition.x - global.center.x < 0) && (receiver.myPosition.y - global.center.y == 0)]	send : 1;
+		            [(receiver.myPosition.x - global.center.x > 1)]	send : 0.75;
+		            [(receiver.myPosition.x - global.center.x < 0)]	send : 0.5;
+		            default : 0.25;
+		        }
+		
 		        rate{
-		        [True] produce* := 1;
+		        	//different terrain effects roving rate
+		        	[(sender.myPosition.x == 0)]	rove* : 6;
+		        	[(sender.myPosition.x == 1)]	rove* : 4;
+		        	[(sender.myPosition.x == 2)]	rove* : 5;
+		        	//more rovers, faster sensing?
+		            [true]	sense* : 1/#{ *  | sender.myPosition.x == myPosition.x && sender.myPosition.y == myPosition.y };
+		            [true]	analyse* : 0.1;
+		            [true]	wait* : 3;
+		            [true]	signal* : 0.5;
+		            [true]	die* : 0.5;
+		        }
+		
+		        update{
+		            [true] send : global.reports := global.reports + 1;
+		            //if the Rover has over 5 data then deploy a beacon. 
+		            [sender.data > 5] sense* : new Beacon(sender.myPosition.x,sender.myPosition.y);
 		        }
 		    }
-		}'''.parse.assertWarning(CarmaPackage::eINSTANCE.componentBlockDefinition,
-			CARMAValidator::WARN_ComponentBlockDefinition_unused,
-			CARMAValidator::WARN_ComponentBlockDefinition_unused)
-	}
-	
-	@Test
-	def void test_ERROR_MacroExpressionReference_noAccess(){
-	'''
-	component Producer(){
-	    store{
-	        enum product := 0;
-	    }
-	
-	    behaviour{
-	        Produce = produce*{product := product + 1}.Produce;
-	        Send = send<>{product := product - 1}.Send;
-	    }
-	
-	    init{
-	        Produce | Send;
-	    }
-	
-	}
-	
-	component Consumer(){
-	    store{
-	        enum product := 0;
-	    }
-	
-	    behaviour{
-	        Receive = send(){product := product + 1}.Receive;
-	        Consume = consume*{product := product - 1}.Consume;
-	    }
-	
-	    init{
-	        Produce | Consume;
-	    }
-	
-	}
-	
-	system Simple{
-	
-	    collective{
-	        new Producer();
-	        new Consumer();
-	    }
-	
-	    environment{
-	        rate{
-	        [True] produce* := 1;
-	        }
-	    }
-	}
-	'''.parse.assertError(CarmaPackage::eINSTANCE.macroExpressionReference,
-			CARMAValidator::ERROR_MacroExpressionReference_noAccess,
-			CARMAValidator::ERROR_MacroExpressionReference_noAccess)
-	}
-	
-	@Test
-	def void test_ERROR_ActionName_type_unique(){
-		'''
-		component Producer(){
-		    store{
-		        enum product := 0;
-		    }
-		
-		    behaviour{
-		       P = move*.Q;
-		       Q = move<>.R;
-		       R = move().P;
-		    }
-		
-		    init{
-		        P;
-		    }
-		
 		}
-		
-		system SimpleMove{
-		
-		    collective{
-		        new Producer();
-		    }
-		
-		    environment{
-		    }
-		}
-		'''.parse.assertError(CarmaPackage::eINSTANCE.actionName,
-			CARMAValidator::ERROR_ActionName_type_unique,
-			CARMAValidator::ERROR_ActionName_type_unique)
+		'''.parse.assertError(CarmaPackage::eINSTANCE.variableName,
+			CARMAValidator::ERROR_VariableName_unique_type,
+			CARMAValidator::ERROR_VariableName_unique_type)
 	}
-	
-	@Test
-	def void test_ERROR_CBND_reference(){
-		'''
-		component Producer(){
-		    store{
-		        enum product := 0;
-		    }
-		
-		    behaviour{
-		        Produce = [my.product > 0] produce*{product := product + 1}.Produce + [my.product == 0] produceDouble*{product := product + 2}.Produce;
-		        Send = [my.product > 0] send*{product := product - 1}.Send;
-		    }
-		
-		    init{
-		        Produce | Send;
-		    }
-		
-		}
-		
-		
-		system Simple{
-		
-		    collective{
-		        new Producer();
-		        //heh? validation rule missing... There can be no declaration without a definition
-		        new Consumer();
-		    }
-		
-		    environment{
-		        rate{
-		        [True] produce* := 1;
-		        [True] produceDouble* := 1;
-		        [True] send* := 1;
-		        }
-		    }
-		}'''.parse.assertError(CarmaPackage::eINSTANCE.CBND,
-			CARMAValidator::ERROR_CBND_reference,
-			CARMAValidator::ERROR_CBND_reference)
-	}
-	
-	@Test
-	def void test_ERROR_CBND_matching(){
-		'''
-		component Producer(){
-		    store{
-		        enum product := 0;
-		    }
-		
-		    behaviour{
-		        Produce = [my.product > 0] produce*{product := product + 1}.Produce + [my.product == 0] produceDouble*{product := product + 2}.Produce;
-		        Send = [my.product > 0] send*{product := product - 1}.Send;
-		    }
-		
-		    init{
-		        Produce | Send;
-		    }
-		
-		}
-		
-		
-		system Simple{
-		
-		    collective{
-		        new Producer(1);
-		        new Producer();
-		    }
-		
-		    environment{
-		        rate{
-		        [True] produce* := 1;
-		        [True] produceDouble* := 1;
-		        [True] send* := 1;
-		        }
-		    }
-		}'''.parse.assertError(CarmaPackage::eINSTANCE.CBND,
-			CARMAValidator::ERROR_CBND_matching,
-			CARMAValidator::ERROR_CBND_matching)
-	}
-	
-	@Test
-	def void test_ERROR_ProcessExpressionGuard_following_action(){
-		'''
-		component Producer(){
-		    store{
-		        enum product := 0;
-		    }
-		
-		    behaviour{
-		        P = [True] P;
-		    }
-		
-		    init{
-		        P;
-		    }
-		
-		}
-		
-		
-		system Simple{
-		
-		    collective{
-		        new Producer();
-		    }
-		
-		    environment{
-		    }
-		}
-		'''.parse.assertError(CarmaPackage::eINSTANCE.processExpressionGuard,
-			CARMAValidator::ERROR_ProcessExpressionGuard_following_action,
-			CARMAValidator::ERROR_ProcessExpressionGuard_following_action)
-		
-	}
-	
-	@Test
-	def void test_ERROR_Rate_Unique(){
-			'''
-	component Producer(enum a, Z){
-	    store{
-	        enum product := a;
-	        record position := {x := 0, y := 1};
-	    }
-	
-	    behaviour{
-	        Produce = [my.product > 0] produce*{product := product + 1}.Produce + [my.product == 0] produceDouble*{product := product + 2}.Produce;
-	        Send = [my.product > 0] send<1>{product := product - 1}.Send;
-	    }
-	
-	    init{
-	        Z;
-	    }
-	}
-	
-	component Consumer(enum a, Z){
-	    
-	    store{
-	        enum product := a;
-	    }
-	
-	    behaviour{
-	        Consume = [my.product > 0] consume*{product := product - 1}.Consume + [my.product > 2] consumeDouble*{product := product - 2}.Consume;
-	        Receive = [my.product > 0] send(z){product := product - z}.Receive;
-	    }
-	
-	    init{
-	        Z;
-	    }
-	}
-	
-	
-	system Simple{
-	
-	    collective{
-	        new Producer(1..6,Produce|Send);
-	        new Consumer(1..6,Consume|Receive);
-	    }
-	
-	    environment{
-	    	
-	        rate{
-	        [True] produce* := 1;
-	        [True] send := 1;
-	        [True] send := 1;
-	        [True] produceDouble* := 1;
-	        }
-	    }
-	}
-	'''.parse.assertError(CarmaPackage::eINSTANCE.rate,
-			CARMAValidator::ERROR_Rate_Unique,
-			CARMAValidator::ERROR_Rate_Unique)
-	}
+
 	
 	
 }

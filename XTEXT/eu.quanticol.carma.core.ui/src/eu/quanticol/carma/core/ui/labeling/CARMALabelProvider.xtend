@@ -31,45 +31,4 @@ class CARMALabelProvider extends DefaultEObjectLabelProvider {
 		super(delegate);
 	}
 	
-	@Inject extension LabelUtil
-	@Inject extension ExpressionHandler
-
-	// Labels and icons can be computed like this:
-	
-	def text(Model x) {
-		x.label
-	}
-	
-	def text(Methods x){
-		x.label
-	}
-	
-//	def text(MethodDefinition x){
-//		x.disarm
-//	}
-	
-	def text(ComponentStyle x){
-		x.label
-	}
-	
-//	def text(ComponentBlockDefinition x){
-//		x.disarm
-//	}
-	
-	def text(MeasureBlock x){
-		x.label
-	}
-	
-	def text(BlockSystem x){
-		x.label
-	}
-
-	def text(Name x){
-		x.disarm
-	}
-	
-	def text(BooleanExpression x){
-		x.disarmExpression
-	}
-	
 }

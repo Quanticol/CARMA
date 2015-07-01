@@ -12,7 +12,7 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Model/records"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Model/components"/>
     </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//PrimitiveType"/>
+    <genClasses ecoreClass="CARMA.ecore#//PrimitiveTypes"/>
     <genClasses ecoreClass="CARMA.ecore#//CarmaExponent">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//CarmaExponent/negative"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//CarmaExponent/exponent"/>
@@ -26,7 +26,7 @@
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//RecordSignature">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordSignature/class"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordSignature/recordDefinitionArguments"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordSignature/recordDefinitionParameters"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//RecordParameters">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordParameters/parameters"/>
@@ -47,27 +47,18 @@
     <genClasses ecoreClass="CARMA.ecore#//Name">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//Name/name"/>
     </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//AttribParameter">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//AttribParameter/type"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AttribParameter/name"/>
-    </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//RecordParameter">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordParameter/type"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordParameter/name"/>
-    </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//DoubleParameter">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//DoubleParameter/type"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//DoubleParameter/name"/>
-    </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//IntgerParameter">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//IntgerParameter/type"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//IntgerParameter/name"/>
+    <genClasses ecoreClass="CARMA.ecore#//Parameter">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Parameter/name"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//MacroParameter">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//MacroParameter/assignee"/>
     </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//Types"/>
-    <genClasses ecoreClass="CARMA.ecore#//Parameters"/>
+    <genClasses ecoreClass="CARMA.ecore#//Types">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Types/type"/>
+    </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//Type"/>
+    <genClasses ecoreClass="CARMA.ecore#//MethodParameters"/>
+    <genClasses ecoreClass="CARMA.ecore#//InputParameters"/>
     <genClasses ecoreClass="CARMA.ecore#//PreArguments">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//PreArguments/value"/>
     </genClasses>
@@ -81,37 +72,11 @@
     <genClasses ecoreClass="CARMA.ecore#//VariableReference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//VariableReference/name"/>
     </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//AttribVariableDeclaration">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//AttribVariableDeclaration/type"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AttribVariableDeclaration/assign"/>
+    <genClasses ecoreClass="CARMA.ecore#//Declaration">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Declaration/type"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Declaration/name"/>
     </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//RecordAttribVariableDeclaration">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//RecordAttribVariableDeclaration/type"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordAttribVariableDeclaration/name"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordAttribVariableDeclaration/assign"/>
-    </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//MeasureVariableDeclaration">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//MeasureVariableDeclaration/type"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//MeasureVariableDeclaration/name"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//MeasureVariableDeclaration/assign"/>
-    </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//IntgerVariableDeclaration">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//IntgerVariableDeclaration/type"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//IntgerVariableDeclaration/assign"/>
-    </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//DoubleVariableDeclaration">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//DoubleVariableDeclaration/type"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//DoubleVariableDeclaration/assign"/>
-    </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//RecordDeclaration">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordDeclaration/type"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordDeclaration/instantiate"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordDeclaration/assign"/>
-    </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//MethodDeclaration">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//MethodDeclaration/name"/>
-    </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//StoreDeclaration"/>
+    <genClasses ecoreClass="CARMA.ecore#//MethodDeclaration"/>
     <genClasses ecoreClass="CARMA.ecore#//UpdateAssignment">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//UpdateAssignment/attribute"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//UpdateAssignment/expression"/>
@@ -313,7 +278,7 @@
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//Measure">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Measure/name"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Measure/parameters"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Measure/ranges"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Measure/measure"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//MeasureVariableDeclarations">
@@ -380,18 +345,30 @@
     <genClasses ecoreClass="CARMA.ecore#//MeasureName"/>
     <genClasses ecoreClass="CARMA.ecore#//SystemName"/>
     <genClasses ecoreClass="CARMA.ecore#//RecordClassName"/>
-    <genClasses ecoreClass="CARMA.ecore#//InputName"/>
-    <genClasses ecoreClass="CARMA.ecore#//DoubleTypeLabel">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//DoubleTypeLabel/type"/>
+    <genClasses ecoreClass="CARMA.ecore#//AttribParameter">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AttribParameter/type"/>
     </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//IntegerTypeLabel">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//IntegerTypeLabel/type"/>
+    <genClasses ecoreClass="CARMA.ecore#//InputParameter"/>
+    <genClasses ecoreClass="CARMA.ecore#//RecordParameter">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordParameter/type"/>
     </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//AttribTypeLabel">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//AttribTypeLabel/type"/>
+    <genClasses ecoreClass="CARMA.ecore#//DoubleParameter">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//DoubleParameter/type"/>
     </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//RecordTypeLabel">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordTypeLabel/ref"/>
+    <genClasses ecoreClass="CARMA.ecore#//IntgerParameter">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//IntgerParameter/type"/>
+    </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//DoubleType">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//DoubleType/name"/>
+    </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//IntgerType">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//IntgerType/name"/>
+    </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//AttribType">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//AttribType/name"/>
+    </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//RecordType">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordType/name"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//VariableReferencePure"/>
     <genClasses ecoreClass="CARMA.ecore#//VariableReferenceMy"/>
@@ -416,6 +393,25 @@
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//RecordReferenceGlobal">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordReferenceGlobal/record"/>
+    </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//AttribVariableDeclaration">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AttribVariableDeclaration/assign"/>
+    </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//RecordAttribVariableDeclaration">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordAttribVariableDeclaration/assign"/>
+    </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//MeasureVariableDeclaration">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//MeasureVariableDeclaration/assign"/>
+    </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//IntgerVariableDeclaration">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//IntgerVariableDeclaration/assign"/>
+    </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//DoubleVariableDeclaration">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//DoubleVariableDeclaration/assign"/>
+    </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//RecordDeclaration">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordDeclaration/instantiate"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordDeclaration/assign"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//MethodReferenceMan">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//MethodReferenceMan/ref"/>

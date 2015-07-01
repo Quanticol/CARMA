@@ -1,128 +1,60 @@
 package eu.quanticol.carma.core.utils
 
-import com.google.inject.Inject
-import eu.quanticol.carma.core.carma.ActionName
-import eu.quanticol.carma.core.carma.ActionStub
-import eu.quanticol.carma.core.carma.AttribTypeLabel
-import eu.quanticol.carma.core.carma.BlockSystem
-import eu.quanticol.carma.core.carma.CarmaBoolean
-import eu.quanticol.carma.core.carma.CarmaDouble
-import eu.quanticol.carma.core.carma.CarmaExponent
-import eu.quanticol.carma.core.carma.CarmaInteger
-import eu.quanticol.carma.core.carma.ComponentName
-import eu.quanticol.carma.core.carma.ComponentStyle
-import eu.quanticol.carma.core.carma.DoubleTypeLabel
-import eu.quanticol.carma.core.carma.EnvironmentGuard
-import eu.quanticol.carma.core.carma.EnvironmentOperation
-import eu.quanticol.carma.core.carma.EnvironmentUpdate
-import eu.quanticol.carma.core.carma.Guard
-import eu.quanticol.carma.core.carma.IntegerTypeLabel
-import eu.quanticol.carma.core.carma.MacroName
-import eu.quanticol.carma.core.carma.MeasureBlock
-import eu.quanticol.carma.core.carma.MeasureName
-import eu.quanticol.carma.core.carma.MethodName
-import eu.quanticol.carma.core.carma.Methods
-import eu.quanticol.carma.core.carma.Model
-import eu.quanticol.carma.core.carma.Name
-import eu.quanticol.carma.core.carma.PrimitiveType
-import eu.quanticol.carma.core.carma.Probability
-import eu.quanticol.carma.core.carma.ProcessName
-import eu.quanticol.carma.core.carma.Range
-import eu.quanticol.carma.core.carma.Rate
-import eu.quanticol.carma.core.carma.RecordClassName
-import eu.quanticol.carma.core.carma.RecordName
-import eu.quanticol.carma.core.carma.RecordReferenceGlobal
-import eu.quanticol.carma.core.carma.RecordReferenceMy
-import eu.quanticol.carma.core.carma.RecordReferencePure
-import eu.quanticol.carma.core.carma.RecordReferenceReceiver
-import eu.quanticol.carma.core.carma.RecordReferenceSender
-import eu.quanticol.carma.core.carma.RecordReferenceThis
-import eu.quanticol.carma.core.carma.RecordTypeLabel
-import eu.quanticol.carma.core.carma.SystemName
-import eu.quanticol.carma.core.carma.Types
-import eu.quanticol.carma.core.carma.VariableName
-import eu.quanticol.carma.core.carma.VariableReference
-import eu.quanticol.carma.core.carma.VariableReferenceGlobal
-import eu.quanticol.carma.core.carma.VariableReferenceMy
-import eu.quanticol.carma.core.carma.VariableReferencePure
-import eu.quanticol.carma.core.carma.VariableReferenceReceiver
-import eu.quanticol.carma.core.carma.VariableReferenceSender
-import eu.quanticol.carma.core.carma.VariableReferenceThis
-import eu.quanticol.carma.core.generator.ExpressionHandler
-
-import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.carma.AttribAssignment
-import eu.quanticol.carma.core.carma.AttribAssignmentCarmaInteger
-import eu.quanticol.carma.core.carma.AttribAssignmentVariableName
-
 class LabelUtil {
 	
-	@Inject extension Util
-	@Inject extension ExpressionHandler
 	
-	def String disarm(VariableReference vr){
-		switch(vr){
-			VariableReferencePure: 			vr.name.disarm
-			VariableReferenceMy: 			{"my_" 			+ vr.name.disarm}
-			VariableReferenceThis: 			{"this_" 		+ vr.name.disarm}
-			VariableReferenceReceiver:		{"receiver_" 	+ vr.name.disarm}
-			VariableReferenceSender:		{"sender_"		+ vr.name.disarm}
-			RecordReferencePure:			{vr.name.disarm 		+ "_" + vr.record.disarm	}
-			RecordReferenceMy:				{"my" 				+ "_" + vr.name.disarm + "_" + vr.record.disarm	}
-			RecordReferenceThis:			{"this" 			+ "_" + vr.name.disarm + "_" + vr.record.disarm	}
-			RecordReferenceReceiver:		{"receiver" 		+ "_" + vr.name.disarm + "_" + vr.record.disarm	}
-			RecordReferenceSender:			{"sender" 			+ "_" + vr.name.disarm + "_" + vr.record.disarm	}
-			VariableReferenceGlobal:		{"global."			+ vr.name.disarm}
-			RecordReferenceGlobal:			{"global" 			+ "_" + vr.name.disarm + "_" + vr.record.disarm	}
-		}
-	}
-	
-	def String disarm(Name name){
-		switch(name){
-			VariableName: 		name.name
-			RecordName: 		name.name
-			ActionName: 		name.name
-			ProcessName: 		name.name
-			ComponentName: 		name.name
-			MacroName: 			name.name.name
-			MethodName: 		name.name
-			MeasureName: 		name.name
-			SystemName: 		name.name
-			RecordClassName:	name.name
-		}
-	}
-	
-	def String express(AttribAssignment aa){
-		switch(aa){
-			AttribAssignmentCarmaInteger: aa.naturalValue.express
-			AttribAssignmentVariableName: aa.ref.disarm
-		}
-	}
-	
-	def String express(PrimitiveType e){
-		switch(e){
-			CarmaDouble:	{
-				var String output = ""
-				output = e.left.toString + "." + e.right.toString
-				if(e.exponent != null)
-					output = output + e.exponent.label
-				return output
-			}
-			CarmaInteger:	""+e.value
-			CarmaBoolean:	e.value
-			Range:			"//" + e.min + "..." + e.max + " LabelUtil.getLabel"
-		}
-	}
-	
-	//here be dragons
-	
+//	def String disarm(VariableReference vr){
+//		switch(vr){
+//			VariableReferencePure: 			vr.name.disarm
+//			VariableReferenceMy: 			{"my_" 			+ vr.name.disarm}
+//			VariableReferenceThis: 			{"this_" 		+ vr.name.disarm}
+//			VariableReferenceReceiver:		{"receiver_" 	+ vr.name.disarm}
+//			VariableReferenceSender:		{"sender_"		+ vr.name.disarm}
+//			RecordReferencePure:			{vr.name.disarm 		+ "_" + vr.record.disarm	}
+//			RecordReferenceMy:				{"my" 				+ "_" + vr.name.disarm + "_" + vr.record.disarm	}
+//			RecordReferenceThis:			{"this" 			+ "_" + vr.name.disarm + "_" + vr.record.disarm	}
+//			RecordReferenceReceiver:		{"receiver" 		+ "_" + vr.name.disarm + "_" + vr.record.disarm	}
+//			RecordReferenceSender:			{"sender" 			+ "_" + vr.name.disarm + "_" + vr.record.disarm	}
+//			VariableReferenceGlobal:		{"global."			+ vr.name.disarm}
+//			RecordReferenceGlobal:			{"global" 			+ "_" + vr.name.disarm + "_" + vr.record.disarm	}
+//		}
+//	}
+//	
+//	def String disarm(Name name){
+//		name.name
+//	}
+//	
+//	def String express(AttribAssignment aa){
+//		switch(aa){
+//			AttribAssignmentCarmaInteger: aa.naturalValue.express
+//			AttribAssignmentVariableName: aa.ref.disarm
+//		}
+//	}
+//	
+//	def String express(PrimitiveType e){
+//		switch(e){
+//			CarmaDouble:	{
+//				var String output = ""
+//				output = e.left.toString + "." + e.right.toString
+//				if(e.exponent != null)
+//					output = output + e.exponent.label
+//				return output
+//			}
+//			CarmaInteger:	""+e.value
+//			CarmaBoolean:	e.value
+//			Range:			"//" + e.min + "..." + e.max + " LabelUtil.getLabel"
+//		}
+//	}
+//	
+//	//here be dragons
+//	
 //	def String flatten(Records records){
 //		var output = ""
 //		for(r : records.eAllOfType(RecordDeclaration))
 //			output = output + r.name.label
 //		return output
 //	}
-	
+//	
 //	def String flatten(NCA nca){
 //		switch(nca){
 //			NewComponentArgumentPrimitive 		: (nca.value as PrimitiveType).getLabel
@@ -138,7 +70,7 @@ class LabelUtil {
 //			NewComponentArgumentSpawnReference	: (nca.value as VariableReference).getLabel
 //		}
 //	}
-	
+//	
 //	def String getLabel(EnvironmentMacroExpressions eme){
 //		switch(eme){
 //			EnvironmentMacroExpressionParallel:				eme.left +"_"+ eme.right
@@ -147,68 +79,68 @@ class LabelUtil {
 //			EnvironmentMacroExpressionComponentAState:		eme.comp.getLabel+"_"+eme.state.getLabel
 //		}
 //	}
-	
-	def String getLabel(Probability eu){
-		return "[" + eu.guard.label + "]" + eu.stub.label
-	}
-	
-	def String getLabel(Rate rate){
-		return "[" + rate.guard.label + "]" + rate.stub.label
-	}
-	
-	def String getLabel(EnvironmentUpdate eu){
-		return "[" + eu.guard.label + "]" + eu.stub.label
-	}
-	
-	def String convertToPredicateName(EnvironmentOperation eo){
-		switch(eo){
-			Probability:		eo.convertToPredicateName
-			Rate:				eo.convertToPredicateName
-			EnvironmentUpdate:  eo.convertToPredicateName
-		}
-	}
-	
-	def String convertToPredicateName(Rate cast){
-		if(cast.stub.isBroadcast)
-		'''get'''+cast.convertToJavaName+'''_BroadcastPredicateRate'''
-		else
-		'''get'''+cast.convertToJavaName+'''_UnicastPredicateRate'''
-	}
-	
-	def String convertToPredicateName(Probability cast){
-		if(cast.stub.isBroadcast)
-		'''get'''+cast.convertToJavaName+'''_BroadcastPredicateProb'''
-		else
-		'''get'''+cast.convertToJavaName+'''_UnicastPredicateProb'''
-	}
-	
-	def String convertToPredicateName(EnvironmentUpdate cast){
-		if(cast.stub.isBroadcast)
-		'''get'''+cast.convertToJavaName+'''_BroadcastPredicateUpdate'''
-		else
-		'''get'''+cast.convertToJavaName+'''_UnicastPredicateUpdate'''
-	}
-	
-	def String convertToJavaName(Probability eu){
-		return "_" + eu.guard.disarmExpression + "_" + eu.stub.disarm
-	}
-	
-	def String convertToJavaName(Rate eu){
-		return "_" + eu.guard.disarmExpression + "_" + eu.stub.disarm
-	}
-	
-	def String convertToJavaName(EnvironmentUpdate eu){
-		return "_" + eu.guard.disarmExpression + "_" + eu.stub.disarm
-	}
-	
-	def String getLabel(EnvironmentGuard eg){
-		eg.booleanExpression.disarmExpression
-	}
-	
-	def String disarmExpression(EnvironmentGuard eg){
-		eg.booleanExpression.disarmExpression
-	}
-	
+//	
+//	def String getLabel(Probability eu){
+//		return "[" + eu.guard.label + "]" + eu.stub.label
+//	}
+//	
+//	def String getLabel(Rate rate){
+//		return "[" + rate.guard.label + "]" + rate.stub.label
+//	}
+//	
+//	def String getLabel(EnvironmentUpdate eu){
+//		return "[" + eu.guard.label + "]" + eu.stub.label
+//	}
+//	
+//	def String convertToPredicateName(EnvironmentOperation eo){
+//		switch(eo){
+//			Probability:		eo.convertToPredicateName
+//			Rate:				eo.convertToPredicateName
+//			EnvironmentUpdate:  eo.convertToPredicateName
+//		}
+//	}
+//	
+//	def String convertToPredicateName(Rate cast){
+//		if(cast.stub.isBroadcast)
+//		'''get'''+cast.convertToJavaName+'''_BroadcastPredicateRate'''
+//		else
+//		'''get'''+cast.convertToJavaName+'''_UnicastPredicateRate'''
+//	}
+//	
+//	def String convertToPredicateName(Probability cast){
+//		if(cast.stub.isBroadcast)
+//		'''get'''+cast.convertToJavaName+'''_BroadcastPredicateProb'''
+//		else
+//		'''get'''+cast.convertToJavaName+'''_UnicastPredicateProb'''
+//	}
+//	
+//	def String convertToPredicateName(EnvironmentUpdate cast){
+//		if(cast.stub.isBroadcast)
+//		'''get'''+cast.convertToJavaName+'''_BroadcastPredicateUpdate'''
+//		else
+//		'''get'''+cast.convertToJavaName+'''_UnicastPredicateUpdate'''
+//	}
+//	
+//	def String convertToJavaName(Probability eu){
+//		return "_" + eu.guard.disarmExpression + "_" + eu.stub.disarm
+//	}
+//	
+//	def String convertToJavaName(Rate eu){
+//		return "_" + eu.guard.disarmExpression + "_" + eu.stub.disarm
+//	}
+//	
+//	def String convertToJavaName(EnvironmentUpdate eu){
+//		return "_" + eu.guard.disarmExpression + "_" + eu.stub.disarm
+//	}
+//	
+//	def String getLabel(EnvironmentGuard eg){
+//		eg.booleanExpression.disarmExpression
+//	}
+//	
+//	def String disarmExpression(EnvironmentGuard eg){
+//		eg.booleanExpression.disarmExpression
+//	}
+//	
 //	def String getNameValue(ComponentAfterThought cat){
 //		cat.name.label + " = " + cat.expression.label
 //	}
@@ -282,15 +214,15 @@ class LabelUtil {
 //			NewComponentArgumentSpawnReference	: (ca.value as VariableReference).getLabel
 //		}
 //	}
-	
+//	
 //	def String getLabel(MacroExpressions e){
 //		switch(e){
 //			MacroExpressionParallel		: {e.left.getLabel + "_" + e.right.getLabel}
 //			MacroExpressionReference 	: e.name.getLabel
 //		}
 //	}
-	
-	
+//	
+//	
 //	def String getLabel(ComponentBlockNewDeclaration dc){
 //		dc.name.label
 //	}
@@ -298,7 +230,7 @@ class LabelUtil {
 //	def String getLabel(ComponentBlockNewDeclarationSpawn dc){
 //		dc.name.label
 //	}
-	
+//	
 //	def String getLabel(UpdateExpressions e){
 //		switch(e){
 //			UpdateSubtraction:							{e.left.label + " - " + e.right.label }
@@ -310,7 +242,7 @@ class LabelUtil {
 //			UpdateExpression:							e.expression.label
 //		}
 //	}
-	
+//	
 //	def String convertToJava(UpdateExpressions e){
 //		switch(e){
 //			UpdateSubtraction:							{e.left.convertToJava + " - " + e.right.convertToJava }
@@ -322,7 +254,7 @@ class LabelUtil {
 //			UpdateExpression:							e.expression.convertToJava
 //		}
 //	}
-	
+//	
 //	def String getLabel(EnvironmentExpressions e){
 //		switch(e){
 //			EnvironmentSubtraction:							{e.left.label + " - " + e.right.label}
@@ -339,7 +271,7 @@ class LabelUtil {
 //			SetComp:										"Measure"+e.hashCode+"_"+e.componentReference.getLabel.toFirstUpper
 //		}
 //	}
-	
+//	
 //	def String convertToJava(EnvironmentExpressions e){
 //		switch(e){
 //			EnvironmentSubtraction:							{e.left.convertToJava + " - " + e.right.convertToJava }
@@ -356,7 +288,7 @@ class LabelUtil {
 //			SetComp:										"1.0; //getMeasure"+e.hashCode+"_"+e.componentReference.getLabel.toFirstUpper+"().measure(t)"
 //		}
 //	}
-	
+//	
 //	def String getLabel(EnvironmentUpdateExpressions e){
 //		switch(e){
 //			EnvironmentUpdateSubtraction:							{e.left.label + " - " + e.right.label }
@@ -370,35 +302,35 @@ class LabelUtil {
 //			EnvironmentUpdateAtomicMeasure:							"getMeasure"+e.hashCode+"()"
 //		}
 //	}
-	
-	def String getLabel(Model model){
-		model.eResource.URI.lastSegment.split("\\.").get(0)
-	}
-	
+//	
+//	def String getLabel(Model model){
+//		model.eResource.URI.lastSegment.split("\\.").get(0)
+//	}
+//	
 //	def String getLabel(System system){
 //		switch(system){
 //			BlockSystem:	system.name.label
 //			LineSystem:		system.name.label
 //		}
 //	}
-	
-	def String getLabel(Methods m){
-		"Functions"
-	}
-	
+//	
+//	def String getLabel(Methods m){
+//		"Functions"
+//	}
+//	
 //	def String getLabel(MethodDefinition md){
 //		"fun" + " " + md.type.label + " " md.name.label + " (" + md.functionArguments.label + " )"
 //	}
-	
-	def String getLabel(Types typeLabel){
-		switch(typeLabel){
-			DoubleTypeLabel: 	"double" 	
-			IntegerTypeLabel: 	"integer"	
-			RecordTypeLabel:	"record"	
-			AttribTypeLabel:	"attrib"
-		}
-	}
-	
+//	
+//	def String getLabel(Types typeLabel){
+//		switch(typeLabel){
+//			DoubleTypeLabel: 	"double" 	
+//			IntegerTypeLabel: 	"integer"	
+//			RecordTypeLabel:	"record"	
+//			AttribTypeLabel:	"attrib"
+//		}
+//	}
+//	
 //	def HashMap<String,String>  getNameValueLabel(VariableName name){
 //		var vd = name.getVariableDeclaration
 //		var output = new HashMap<String,String>()
@@ -411,60 +343,60 @@ class LabelUtil {
 //		}
 //		return output
 //	}
-	
-	def String getLabel(ActionStub actionStub){
-		
-		var output = actionStub.name.name
-		
-		if(actionStub.cast != null){
-			output = output + "*"
-		}
-		
-		return output
-		
-	}
-	
-	
-	def String disarm(ActionStub actionStub){
-		
-		var output = actionStub.name.name
-		
-		if(actionStub.cast != null){
-			output = output + "_BROADCAST_"
-		}
-			
-		return output
-		
-	}
-	
-	def String convertToJavaName(EnvironmentOperation eo){
-		eo.guard.disarmExpression + "_" + eo.stub.getLabelName
-	}
-	
-	def String convertToJavaNameDefinitions(ActionStub actionStub){
-		actionStub.getContainerOfType(EnvironmentOperation).convertToJavaName
-	}
-	
-	def String getLabelName(ActionStub actionStub){
-		
-		var output = actionStub.name.name
-		return output
-		
-	}
-	
-	def String getLabelInOut(ActionStub actionStub){
-		if(actionStub.label.contains("()"))
-			"INTPUT"
-		else
-			"OUTPUT"
-	}
-	
+//	
+//	def String getLabel(ActionStub actionStub){
+//		
+//		var output = actionStub.name.name
+//		
+//		if(actionStub.cast != null){
+//			output = output + "*"
+//		}
+//		
+//		return output
+//		
+//	}
+//	
+//	
+//	def String disarm(ActionStub actionStub){
+//		
+//		var output = actionStub.name.name
+//		
+//		if(actionStub.cast != null){
+//			output = output + "_BROADCAST_"
+//		}
+//			
+//		return output
+//		
+//	}
+//	
+//	def String convertToJavaName(EnvironmentOperation eo){
+//		eo.guard.disarmExpression + "_" + eo.stub.getLabelName
+//	}
+//	
+//	def String convertToJavaNameDefinitions(ActionStub actionStub){
+//		actionStub.getContainerOfType(EnvironmentOperation).convertToJavaName
+//	}
+//	
+//	def String getLabelName(ActionStub actionStub){
+//		
+//		var output = actionStub.name.name
+//		return output
+//		
+//	}
+//	
+//	def String getLabelInOut(ActionStub actionStub){
+//		if(actionStub.label.contains("()"))
+//			"INTPUT"
+//		else
+//			"OUTPUT"
+//	}
+//	
 //	def String getLabelFull(ActionName name){
 //		
 //		var action = name.getContainerOfType(Action)
 //		return action.getLabel
 //	}
-	
+//	
 //	def String getLabel(MethodDefinitionArguments mdas){
 //		var String output = ""
 //		for(mda : mdas.inputArguments)
@@ -485,23 +417,23 @@ class LabelUtil {
 //			VariableTypeCarmaIntger:	"integer" 	+ ":"  	+	vt.name.label
 //		}
 //	}
-	
-	def String getLabel(ComponentStyle cs){
-		"Model"
-	}
-	
+//	
+//	def String getLabel(ComponentStyle cs){
+//		"Model"
+//	}
+//	
 //	def String getLabel(ComponentBlockDefinition cbd){
 //		"Component" + " " + cbd.name.label
 //	}
-	
-	def String getLabel(MeasureBlock m){
-		"Measures"
-	}
-	
-	def String getLabel(BlockSystem bs){
-		"System"
-	}
-	
+//	
+//	def String getLabel(MeasureBlock m){
+//		"Measures"
+//	}
+//	
+//	def String getLabel(BlockSystem bs){
+//		"System"
+//	}
+//	
 //	def getLabel(VariableDeclaration vd){
 //		switch(vd){
 //			VariableDeclarationEnum: 		(vd.assign as EnumAssignment).label
@@ -537,7 +469,7 @@ class LabelUtil {
 //			EnumAssignmentVariableName: 	(ea.ref as VariableReference).convertToJavaName
 //		}
 //	}
-	
+//	
 //	def getLabel(RecordDeclarations rds){
 //		if(rds.ref != null)
 //			rds.ref.label
@@ -551,7 +483,7 @@ class LabelUtil {
 //		else
 //			(rds as Records).convertToJava(assignment) 
 //	}
-	
+//	
 //	def getLabel(DoubleAssignment da){
 //		switch(da){
 //		DoubleAssignmentCarmaDouble: 		da.doubleValue.label	
@@ -559,7 +491,7 @@ class LabelUtil {
 //		DoubleAssignmentVariableName: 		da.reference.label
 //		}
 //	}
-	
+//	
 //	def convertToJava(DoubleAssignment da, String assignment){
 //		switch(da){
 //		DoubleAssignmentCarmaDouble: 		assignment + " = " + da.doubleValue.label	
@@ -567,7 +499,7 @@ class LabelUtil {
 //		DoubleAssignmentVariableName: 		assignment + " = " + da.reference.label
 //		}
 //	}
-	
+//	
 //	def getLabel(IntegerAssignment ia){
 //		switch(ia){
 //		IntegerAssignmentCarmaInteger: 		ia.integerValue.label
@@ -583,52 +515,52 @@ class LabelUtil {
 //		IntegerAssignmentVariableName: 		assignment + " = " + ia.reference.label
 //		}
 //	}
-
-	
-	def String convertToJava(PrimitiveType e, String assignment){
-		switch(e){
-			CarmaDouble:	{
-				var String output = assignment+"= " 
-				output = e.left.toString + "." + e.right.toString
-				if(e.exponent != null)
-					output = output + e.exponent.label
-				return output
-			}
-			CarmaInteger:	assignment+" = "+e.value
-			CarmaBoolean:	assignment+" = "+e.value
-			Range:			assignment+"Min = "+ e.min + ", "+assignment+"Max = " + e.max
-		}
-	}
-	
-	def String convertToJavaName(PrimitiveType e){
-		switch(e){
-			CarmaDouble:	{
-				var String output = ""
-				output = e.left.toString + "_POINT_" + e.right.toString
-				if(e.exponent != null)
-					output = output + e.exponent.convertToJavaName
-				return output
-			}
-			CarmaInteger:	""+e.value
-			CarmaBoolean:	e.value
-			Range:			e.min + "_PPP_" + e.max
-		}
-	}
-	
-	def String getLabel(CarmaExponent ce){
-		var String output = "^"
-		if(ce.negative != null)
-			output = output + ce.negative
-		output = output + ce.exponent
-	}
-	
-	def String convertToJavaName(CarmaExponent ce){
-		var String output = "_HAT_"
-		if(ce.negative != null)
-			output = output + "_NEG_"
-		output = output + "_EXP_"
-	}
-	
+//
+//	
+//	def String convertToJava(PrimitiveType e, String assignment){
+//		switch(e){
+//			CarmaDouble:	{
+//				var String output = assignment+"= " 
+//				output = e.left.toString + "." + e.right.toString
+//				if(e.exponent != null)
+//					output = output + e.exponent.label
+//				return output
+//			}
+//			CarmaInteger:	assignment+" = "+e.value
+//			CarmaBoolean:	assignment+" = "+e.value
+//			Range:			assignment+"Min = "+ e.min + ", "+assignment+"Max = " + e.max
+//		}
+//	}
+//	
+//	def String convertToJavaName(PrimitiveType e){
+//		switch(e){
+//			CarmaDouble:	{
+//				var String output = ""
+//				output = e.left.toString + "_POINT_" + e.right.toString
+//				if(e.exponent != null)
+//					output = output + e.exponent.convertToJavaName
+//				return output
+//			}
+//			CarmaInteger:	""+e.value
+//			CarmaBoolean:	e.value
+//			Range:			e.min + "_PPP_" + e.max
+//		}
+//	}
+//	
+//	def String getLabel(CarmaExponent ce){
+//		var String output = "^"
+//		if(ce.negative != null)
+//			output = output + ce.negative
+//		output = output + ce.exponent
+//	}
+//	
+//	def String convertToJavaName(CarmaExponent ce){
+//		var String output = "_HAT_"
+//		if(ce.negative != null)
+//			output = output + "_NEG_"
+//		output = output + "_EXP_"
+//	}
+//	
 //	def String getLabel(Records e){
 //		var String output = "{"
 //		
@@ -638,7 +570,7 @@ class LabelUtil {
 //		output = output + "}"
 //		return output
 //	}
-	
+//	
 //	def String convertToJava(Records e, String assignment){
 //		var String output = ""
 //		
@@ -651,7 +583,7 @@ class LabelUtil {
 //		output = output + "}"
 //		return output
 //	}
-	
+//	
 //	def String getLabelForArgs(Records e){
 //		var String output = ""
 //		
@@ -668,7 +600,7 @@ class LabelUtil {
 //		return output
 //		
 //	}
-	
+//	
 //	def String convertToJavaName(Records e){
 //		var String output = "_RR_"
 //		
@@ -678,7 +610,7 @@ class LabelUtil {
 //		output = output + "_RR_"
 //		return output
 //	}
-	
+//	
 //	def String convertToJavaName(RecordDeclaration e){
 //		e.name.label + "_ASS_" + e.assign.convertToJavaName
 //	}
@@ -694,7 +626,7 @@ class LabelUtil {
 //	def String getLabelForArgs(RecordDeclaration e){
 //		e.assign.label
 //	}
-	
+//	
 //	def String convertToJava(VariableReference vr, String assignment){
 //		switch(vr){
 //			VariableReferencePure: 			{assignment + " = " + vr.name.label}
@@ -711,7 +643,7 @@ class LabelUtil {
 //			RecordReferenceGlobal:			{assignment + " = " + vr.name.label+"_"+vr.record.label}
 //		}
 //	}
-	
+//	
 //	def String convertToJava(VariableReference vr){
 //		switch(vr){
 //			VariableReferencePure: 			{vr.name.label}
@@ -728,7 +660,7 @@ class LabelUtil {
 //			RecordReferenceGlobal:			{vr.name.label+"_"+vr.record.label}
 //		}
 //	}
-	
+//	
 //	def String convertToJavaInputAction(VariableReference vr){
 //		switch(vr){
 //			VariableReferencePure: 			{vr.name.label+"_i"}
@@ -745,7 +677,7 @@ class LabelUtil {
 //			RecordReferenceGlobal:			{vr.name.label+"_"+vr.record.label}
 //		}
 //	}
-	
+//	
 //	def String convertToJavaOutputAction(VariableReference vr){
 //		switch(vr){
 //			VariableReferencePure: 			{vr.name.label+"_i"}
@@ -762,7 +694,7 @@ class LabelUtil {
 //			RecordReferenceGlobal:			{vr.name.label+"_"+vr.record.label}
 //		}
 //	}
-	
+//	
 //	def String convertToJavaName(VariableReference vr){
 //		switch(vr){
 //			VariableReferencePure: 			vr.name.label
@@ -779,7 +711,7 @@ class LabelUtil {
 //			RecordReferenceGlobal:			{"global" 			+ "_" + vr.name.label 	+ "_" + vr.record.label	}
 //		}
 //	}
-	
+//	
 //	def String getLabelJava(VariableReference vr){
 //		switch(vr){
 //			VariableReferencePure: 			vr.name.label
@@ -794,7 +726,7 @@ class LabelUtil {
 //			RecordReferenceSender:			vr.name.label + "_" + vr.record.label
 //		}
 //	}
-	
+//	
 //	def String getLabel(MethodExpressions e){
 //		switch(e){
 //			MethodSubtraction:							{e.left.label + " - " + e.right.label }
@@ -810,7 +742,7 @@ class LabelUtil {
 //			MethodExpression:							e.expression.label
 //		}
 //	}
-	
+//	
 //	def String convertToJava(MethodExpressions e, String assignment){
 //		switch(e){
 //			MethodSubtraction:							{e.left.convertToJava(assignment) + " - " + e.right.convertToJava(assignment) }
@@ -826,7 +758,7 @@ class LabelUtil {
 //			MethodExpression:							e.expression.convertToJava(assignment)
 //		}
 //	}
-	
+//	
 //	def String convertToJavaName(MethodExpressions e){
 //		switch(e){
 //			MethodSubtraction:							{e.left.convertToJavaName + "_SUB_" + e.right.convertToJavaName }
@@ -842,15 +774,15 @@ class LabelUtil {
 //			MethodExpression:							e.expression.label
 //		}
 //	}
-	
+//	
 //	def String getLabel(MethodDeclaration e){
 //		e.name.label
 //	}
-	
+//	
 //	def String convertToJava(MethodDeclaration e, String assignment){
 //		assignment + " = " + e.name.label
 //	}
-	
+//	
 //	def String getLabel(PredefinedMethodDeclaration e){
 //		switch(e){	
 //			PDFunction:			"PDF()"
@@ -861,7 +793,7 @@ class LabelUtil {
 //			MinFunction:		"Min()"
 //		}
 //	}
-	
+//	
 //	def String convertToJava(PredefinedMethodDeclaration e, String assignment){
 //		switch(e){	
 //			PDFunction:			assignment + "= PDF()"
@@ -872,7 +804,7 @@ class LabelUtil {
 //			MinFunction:		assignment + "= Min()"
 //		}
 //	}
-	
+//	
 //	def String getLabel(ProcessExpression pe){
 //		switch(pe){
 //			ProcessExpressionChoice: 	pe.left.getLabel + " + " + pe.right.getLabel
@@ -882,7 +814,7 @@ class LabelUtil {
 //			ProcessExpressionReference: pe.expression.getLabel
 //		}
 //	}
-	
+//	
 //	/**
 //	 * This labelling function is used to create state names
 //	 */
@@ -895,15 +827,15 @@ class LabelUtil {
 //			ProcessExpressionReference: pe.expression.name
 //		}
 //	}
-	
+//	
 //	def String getLabelAsState(Process p){
 //		p.name.label
 //	}
-	
-	def String getLabel(Guard g){
-		"[" + g.booleanExpression.disarmExpression + "]"
-	}
-	
+//	
+//	def String getLabel(Guard g){
+//		"[" + g.booleanExpression.disarmExpression + "]"
+//	}
+//	
 //	def String getLabel(Action a){
 //		
 //		var multicast 		= a.eAllOfType(MultiCast).size > 0
@@ -917,7 +849,7 @@ class LabelUtil {
 //		return output
 //		
 //	}
-	
+//	
 //	def String getLabelIO(Action a){
 //		
 //		var multicast 		= a.eAllOfType(MultiCast).size > 0
@@ -940,7 +872,7 @@ class LabelUtil {
 //		return output
 //		
 //	}
-	
+//	
 //	def String getLabel(Component c){
 //		if(c.getContainerOfType(ComponentBlockStyle) != null){
 //			(c as ComponentBlockDefinition).name.getLabel

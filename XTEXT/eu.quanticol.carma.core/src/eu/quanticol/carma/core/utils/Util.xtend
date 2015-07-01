@@ -1,376 +1,332 @@
 package eu.quanticol.carma.core.utils
 
 import com.google.inject.Inject
-import eu.quanticol.carma.core.carma.Action
-import eu.quanticol.carma.core.carma.ActionName
-import eu.quanticol.carma.core.carma.ActionStub
-import eu.quanticol.carma.core.carma.CompParameters
-import eu.quanticol.carma.core.carma.Component
-import eu.quanticol.carma.core.carma.ComponentBlockDefinition
-import eu.quanticol.carma.core.carma.ComponentBlockNew
-import eu.quanticol.carma.core.carma.ComponentBlockSpawn
-import eu.quanticol.carma.core.carma.ComponentLineDefinition
-import eu.quanticol.carma.core.carma.ComponentLineDefinitionSpawn
-import eu.quanticol.carma.core.carma.ComponentSignature
-import eu.quanticol.carma.core.carma.ComponentStyle
-import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionAll
-import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAState
-import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionComponentAllStates
-import eu.quanticol.carma.core.carma.EnvironmentMacroExpressionParallel
-import eu.quanticol.carma.core.carma.EnvironmentMacroExpressions
-import eu.quanticol.carma.core.carma.InputAction
-import eu.quanticol.carma.core.carma.LineStyle
-import eu.quanticol.carma.core.carma.MacroExpressionReference
-import eu.quanticol.carma.core.carma.MacroName
-import eu.quanticol.carma.core.carma.MethodDeclaration
-import eu.quanticol.carma.core.carma.Methods
-import eu.quanticol.carma.core.carma.Model
 import eu.quanticol.carma.core.carma.Name
-import eu.quanticol.carma.core.carma.OutputAction
-import eu.quanticol.carma.core.carma.Parameters
-import eu.quanticol.carma.core.carma.Process
-import eu.quanticol.carma.core.carma.ProcessExpressionReference
-import eu.quanticol.carma.core.carma.ProcessName
-import eu.quanticol.carma.core.carma.Processes
-import eu.quanticol.carma.core.carma.ProcessesBlock
-import eu.quanticol.carma.core.carma.RecordName
-import eu.quanticol.carma.core.carma.SpontaneousAction
-import eu.quanticol.carma.core.carma.StoreBlock
-import eu.quanticol.carma.core.carma.StoreDeclaration
-import eu.quanticol.carma.core.carma.StoreLine
-import eu.quanticol.carma.core.carma.VariableName
-import eu.quanticol.carma.core.carma.VariableReference
-import eu.quanticol.carma.core.typing.TypeProvider
-import java.util.ArrayList
-import java.util.HashSet
-import java.util.List
-
-import static extension org.eclipse.xtext.EcoreUtil2.*
 
 class Util {
 	
 	@Inject extension LabelUtil
 	
 	def boolean sameName(Name name1, Name name2){
-		name1.disarm.equals(name2.disarm)
+		name1.name.equals(name2.name)
 	}
 	
-	def Name getName(Component c){
-		return c.eAllOfType(ComponentSignature).get(0).eAllOfType(Name).get(0)
-	}
-	
-	def Name getName(Parameters parameter){
-		return parameter.eAllOfType(Name).get(0)
-	}
-	
-	def Name getName(CompParameters parameter){
-		return parameter.eAllOfType(Name).get(0)
-	}
-	
-	def Name getName(MethodDeclaration md){
-		return md.eAllOfType(Name).get(0)
-	}
-	
-	def Name getName(StoreDeclaration sd){
-		return sd.eAllOfType(Name).get(0)
-	}
-	
-	def Name getRecordName(VariableReference vr){
-		if(vr.eAllOfType(RecordName).size > 0)
-			return vr.eAllOfType(RecordName).get(0)
-		else
-			return null
-	}
-	
-	def Name getVariableName(VariableReference vr){
-		if(vr.eAllOfType(VariableName).size > 0)
-			return vr.eAllOfType(VariableName).get(0)
-		else
-			return null
-	}
-	
-	def Name getRootName(VariableReference vr){
-		if(vr.recordName == null)
-			return vr.variableName
-		else
-			return vr.recordName
-	}
-	
-	def ArrayList<Process> getProcesses(ActionStub stub, boolean output){
-	 	
-		var actions = stub.getContainerOfType(Model).eAllOfType(Action)
-	 	var processes = new ArrayList<Process>()
-	 	
-	 	for(action : actions){
-	 		if(action.name.sameName(stub.name)){
-	 			if(output && action.isOutput)
-	 					processes.add(action.getContainerOfType(Process))
-	 			if(!output && !action.isOutput)
-	 					processes.add(action.getContainerOfType(Process))
-	 		}
-	 	}
-		return processes
-	 	
-	}
-	
-	def boolean isOutput(Action action){
-		action.eAllOfType(OutputAction).size > 0 || action.eAllOfType(SpontaneousAction).size > 0
-	}
-	
-	def void getComponents(EnvironmentMacroExpressions eme, ArrayList<Component> components){
-		switch(eme){
-			EnvironmentMacroExpressionParallel:				{
-				eme.left.getComponents(components)
-				eme.right.getComponents(components)
-				}
-			EnvironmentMacroExpressionAll:					{
-				components.addAll(eme.getContainerOfType(Model).eAllOfType(Component))
-			}
-			EnvironmentMacroExpressionComponentAllStates: {
-				components.add((eme as EnvironmentMacroExpressionComponentAllStates).comp.getContainerOfType(Component))
-			}
-			EnvironmentMacroExpressionComponentAState:	{
-				components.add((eme as EnvironmentMacroExpressionComponentAState).comp.getContainerOfType(Component))
-			}
-		}
-		
-	}
-	
-	def ArrayList<Component> getComponents(Process proc){
-		
-		var output = new ArrayList<Component>
-		
-		if(proc.getContainerOfType(ComponentBlockDefinition) != null){
-			output.add(proc.getContainerOfType(ComponentBlockDefinition))
-		} else {
-			var ArrayList<Process> roots = proc.getRootProcesses
-			for(p2 : roots){
-				var ComponentStyle componentStyle = p2.getContainerOfType(ComponentStyle)
-				if(componentStyle.eAllOfType(LineStyle).size > 0){
-					var lines = componentStyle.eAllOfType(ComponentLineDefinition)
-					for(line : lines){
-						if(line.eAllOfType(MacroExpressionReference).getNames().contains((p2.name as ProcessName).name)){
-							output.add(line)
-						}
-					}
-					var spawns = componentStyle.eAllOfType(ComponentLineDefinitionSpawn)
-					for(line : spawns){
-						if(line.eAllOfType(MacroExpressionReference).getNames().contains((p2.name as ProcessName).name)){
-							output.add(line)
-						}
-					}
-				} else {
-					var news = componentStyle.eAllOfType(ComponentBlockNew)
-					var Component component = null
-					for(n : news){
-						if(n.eAllOfType(MacroExpressionReference).getNames().contains((p2.name as ProcessName).name)){
-							component = n.getComponent
-							output.add(component)
-						}
-					}
-					var spawns = componentStyle.eAllOfType(ComponentBlockSpawn)
-					for(s : spawns){
-						if(s.eAllOfType(MacroExpressionReference).getNames().contains((p2.name as ProcessName).name)){
-							component = s.getComponent
-							output.add(component)
-						}
-					}
-				}
-			}
-		}
-			
-		return output 
-	}
-	
-	def ArrayList<Process> getRootProcesses(Process p1){
-		
-		var ArrayList<Name> names = new ArrayList<Name>();
-		var ArrayList<Process> roots = new ArrayList<Process>();
-		
-		//process is in behaviour block
-		if(p1.getContainerOfType(ComponentBlockDefinition) != null){
-			var component = p1.getContainerOfType(Component)
-			var macros = component.eAllOfType(MacroExpressionReference)
-			for(macro : macros){
-					names.add(macro.name)
-			}
-		//process is not in behaviour block
-		} else {
-			var macros = p1.getContainerOfType(Model).eAllOfType(MacroExpressionReference)
-			for(macro : macros){
-				//ignore component-behaviour blocks, only check new/spawn 
-				if(macro.getContainerOfType(ComponentBlockDefinition) == null)
-						//associated to anything with the process name
-						names.add(macro.name)
-			}
-		}
-		for(Process p2 : p1.maximumFixedPoint(true))
-			for(name : names){
-				if(name.sameName(p2.name))
-					roots.add(p2)
-			}
-		return roots
-	}
-	
-	def ArrayList<String> getNames(List<MacroExpressionReference> macroExpressions){
-		var ArrayList<String> names = new ArrayList<String>()
-		for(macro : macroExpressions){
-			names.add((macro.name as MacroName).name.name)
-		}
-		return names
-	}
-
-	def Component getComponent(ComponentBlockNew cbn){
-		var components = cbn.getContainerOfType(Model).eAllOfType(Component)
-		for(component : components)
-			if(cbn.name.sameName(component.getName))
-				return component
-	}
-	
-	def Component getComponent(ComponentBlockSpawn cbn){
-		var components = cbn.getContainerOfType(Model).eAllOfType(Component)
-		for(component : components)
-			if(cbn.name.sameName(component.getName))
-				return component
-	}
-	
-	def boolean isNameInModel(Model model, Name name){
-		var test = false
-		var names = model.eAllOfType(Name)
-		
-		for(n:names){
-			test = test || n.sameName(name)
-		}
-		
-		return test
-	}
-	
-	def ArrayList<Name> getNames(ProcessesBlock psb){
-		var ArrayList<Name> names = new ArrayList<Name>()
-			if(psb.processes != null){
-				for(p : psb.processes)
-					names.add(p.name)
-			}
-		return names
-	}
-	
-	def ArrayList<Name> getNames(Processes ps){
-		var ArrayList<Name> names = new ArrayList<Name>()
-			if(ps.processes != null){
-				for(p : ps.processes)
-					names.add(p.name)
-			}
-		return names
-	}
-	
-	def ArrayList<Name> getNames(StoreBlock sb){
-		var ArrayList<Name> names = new ArrayList<Name>()
-			if(sb.attributes != null){
-				for(p : sb.attributes)
-					names.add(p.name)
-			}
-		return names
-	}
-	
-	def ArrayList<Name> getNames(StoreLine sl){
-		var ArrayList<Name> names = new ArrayList<Name>()
-			if(sl.attributes != null){
-				for(p : sl.attributes)
-					names.add(p.name)
-			}
-		return names
-	}
-	
-	def ArrayList<Name> getNames(Methods ms){
-		var ArrayList<Name> names = new ArrayList<Name>()
-			if(ms.methods != null){
-				for(p : ms.methods)
-					names.add(p.name)
-			}
-		return names
-	}
-	
-	def ArrayList<OutputAction> getSender(InputAction ia){
-		var ArrayList<OutputAction> output = new ArrayList<OutputAction>()
-		for(oa : ia.getContainerOfType(Model).eAllOfType(OutputAction))
-			if(oa.getContainerOfType(Action).name.sameName(ia.getContainerOfType(Action).name))
-				output.add(oa)
-		return output
-	}
-	
-	def ArrayList<InputAction> getReceiver(OutputAction oa){
-		var ArrayList<InputAction> output = new ArrayList<InputAction>()
-		for(ia : oa.getContainerOfType(Model).eAllOfType(InputAction))
-			if((ia.getContainerOfType(Action).name as ActionName).name.equals((oa.getContainerOfType(Action).name as ActionName).name))
-				output.add(ia)
-		return output
-	}
-	
-	def ArrayList<Process> maximumFixedPoint(Process p1, boolean includeSelf){
-		
-		
-		var HashSet<Process> buffer1 = new HashSet<Process>()
-		var HashSet<Process> buffer2 = new HashSet<Process>()
-		
-		if(includeSelf)
-			buffer1.add(p1)
-		else
-			buffer1.addAll(getReferences(p1))
-		
-		while(buffer1.size > buffer2.size){
-			
-			buffer2.addAll(buffer1)
-			
-			for(Process p2 : buffer2){
-				if(includeSelf)
-					buffer1.addAll(getAllReferences(p2))
-				else
-					buffer1.addAll(getReferences(p2))
-			}
-		}
-		
-		var ArrayList<Process> output = new ArrayList<Process>(buffer1)
-		
-		return output
-		
-	}
-	
-	def HashSet<Process> getAllReferences(Process p1){
-		
-		var HashSet<Process> output = new HashSet<Process>()
-		
-		for(Process p2 : p1.getContainerOfType(ComponentStyle).eAllOfType(Process))
-			for(ProcessExpressionReference pr : p2.eAllOfType(ProcessExpressionReference))
-				if(p1.name.equals(pr.expression.name))
-					output.add(p2)
-		
-		for(ProcessExpressionReference pr : p1.eAllOfType(ProcessExpressionReference))
-			for(Process p2 : p1.getContainerOfType(ComponentStyle).eAllOfType(Process))
-				if(p2.name.equals(pr.expression.name))
-					output.add(p2)
-					
-		return output 
-		
-	}
-	
-	def HashSet<Process> getReferences(Process p1){
-		
-		var HashSet<Process> output = new HashSet<Process>()
-		
-		for(Process p2 : p1.getContainerOfType(ComponentStyle).eAllOfType(Process))
-			for(ProcessExpressionReference pr : p2.eAllOfType(ProcessExpressionReference))
-				if(p1.name.equals(pr.expression.name))
-					output.add(p2)
-							
-		return output 
-		
-	}
-	
-	def boolean isBroadcast(ActionStub actionStub){
-		return actionStub.label.contains("*")
-	}
-
-	
+//	def Name getName(Component c){
+//		return c.eAllOfType(ComponentSignature).get(0).eAllOfType(Name).get(0)
+//	}
+//	
+//	def Name getName(Parameters parameter){
+//		return parameter.eAllOfType(Name).get(0)
+//	}
+//	
+//	def Name getName(CompParameters parameter){
+//		return parameter.eAllOfType(Name).get(0)
+//	}
+//	
+//	def Name getName(MethodDeclaration md){
+//		return md.eAllOfType(Name).get(0)
+//	}
+//	
+//	def Name getName(StoreDeclaration sd){
+//		return sd.eAllOfType(Name).get(0)
+//	}
+//	
+//	def Name getRecordName(VariableReference vr){
+//		if(vr.eAllOfType(RecordName).size > 0)
+//			return vr.eAllOfType(RecordName).get(0)
+//		else
+//			return null
+//	}
+//	
+//	def Name getVariableName(VariableReference vr){
+//		if(vr.eAllOfType(VariableName).size > 0)
+//			return vr.eAllOfType(VariableName).get(0)
+//		else
+//			return null
+//	}
+//	
+//	def Name getRootName(VariableReference vr){
+//		if(vr.recordName == null)
+//			return vr.variableName
+//		else
+//			return vr.recordName
+//	}
+//	
+//	def ArrayList<Process> getProcesses(ActionStub stub, boolean output){
+//	 	
+//		var actions = stub.getContainerOfType(Model).eAllOfType(Action)
+//	 	var processes = new ArrayList<Process>()
+//	 	
+//	 	for(action : actions){
+//	 		if(action.name.sameName(stub.name)){
+//	 			if(output && action.isOutput)
+//	 					processes.add(action.getContainerOfType(Process))
+//	 			if(!output && !action.isOutput)
+//	 					processes.add(action.getContainerOfType(Process))
+//	 		}
+//	 	}
+//		return processes
+//	 	
+//	}
+//	
+//	def boolean isOutput(Action action){
+//		action.eAllOfType(OutputAction).size > 0 || action.eAllOfType(SpontaneousAction).size > 0
+//	}
+//	
+//	def void getComponents(EnvironmentMacroExpressions eme, ArrayList<Component> components){
+//		switch(eme){
+//			EnvironmentMacroExpressionParallel:				{
+//				eme.left.getComponents(components)
+//				eme.right.getComponents(components)
+//				}
+//			EnvironmentMacroExpressionAll:					{
+//				components.addAll(eme.getContainerOfType(Model).eAllOfType(Component))
+//			}
+//			EnvironmentMacroExpressionComponentAllStates: {
+//				components.add((eme as EnvironmentMacroExpressionComponentAllStates).comp.getContainerOfType(Component))
+//			}
+//			EnvironmentMacroExpressionComponentAState:	{
+//				components.add((eme as EnvironmentMacroExpressionComponentAState).comp.getContainerOfType(Component))
+//			}
+//		}
+//		
+//	}
+//	
+//	def ArrayList<Component> getComponents(Process proc){
+//		
+//		var output = new ArrayList<Component>
+//		
+//		if(proc.getContainerOfType(ComponentBlockDefinition) != null){
+//			output.add(proc.getContainerOfType(ComponentBlockDefinition))
+//		} else {
+//			var ArrayList<Process> roots = proc.getRootProcesses
+//			for(p2 : roots){
+//				var ComponentStyle componentStyle = p2.getContainerOfType(ComponentStyle)
+//				if(componentStyle.eAllOfType(LineStyle).size > 0){
+//					var lines = componentStyle.eAllOfType(ComponentLineDefinition)
+//					for(line : lines){
+//						if(line.eAllOfType(MacroExpressionReference).getNames().contains((p2.name as ProcessName).name)){
+//							output.add(line)
+//						}
+//					}
+//					var spawns = componentStyle.eAllOfType(ComponentLineDefinitionSpawn)
+//					for(line : spawns){
+//						if(line.eAllOfType(MacroExpressionReference).getNames().contains((p2.name as ProcessName).name)){
+//							output.add(line)
+//						}
+//					}
+//				} else {
+//					var news = componentStyle.eAllOfType(ComponentBlockNew)
+//					var Component component = null
+//					for(n : news){
+//						if(n.eAllOfType(MacroExpressionReference).getNames().contains((p2.name as ProcessName).name)){
+//							component = n.getComponent
+//							output.add(component)
+//						}
+//					}
+//					var spawns = componentStyle.eAllOfType(ComponentBlockSpawn)
+//					for(s : spawns){
+//						if(s.eAllOfType(MacroExpressionReference).getNames().contains((p2.name as ProcessName).name)){
+//							component = s.getComponent
+//							output.add(component)
+//						}
+//					}
+//				}
+//			}
+//		}
+//			
+//		return output 
+//	}
+//	
+//	def ArrayList<Process> getRootProcesses(Process p1){
+//		
+//		var ArrayList<Name> names = new ArrayList<Name>();
+//		var ArrayList<Process> roots = new ArrayList<Process>();
+//		
+//		//process is in behaviour block
+//		if(p1.getContainerOfType(ComponentBlockDefinition) != null){
+//			var component = p1.getContainerOfType(Component)
+//			var macros = component.eAllOfType(MacroExpressionReference)
+//			for(macro : macros){
+//					names.add(macro.name)
+//			}
+//		//process is not in behaviour block
+//		} else {
+//			var macros = p1.getContainerOfType(Model).eAllOfType(MacroExpressionReference)
+//			for(macro : macros){
+//				//ignore component-behaviour blocks, only check new/spawn 
+//				if(macro.getContainerOfType(ComponentBlockDefinition) == null)
+//						//associated to anything with the process name
+//						names.add(macro.name)
+//			}
+//		}
+//		for(Process p2 : p1.maximumFixedPoint(true))
+//			for(name : names){
+//				if(name.sameName(p2.name))
+//					roots.add(p2)
+//			}
+//		return roots
+//	}
+//	
+//	def ArrayList<String> getNames(List<MacroExpressionReference> macroExpressions){
+//		var ArrayList<String> names = new ArrayList<String>()
+//		for(macro : macroExpressions){
+//			names.add((macro.name as MacroName).name.name)
+//		}
+//		return names
+//	}
+//
+//	def Component getComponent(ComponentBlockNew cbn){
+//		var components = cbn.getContainerOfType(Model).eAllOfType(Component)
+//		for(component : components)
+//			if(cbn.name.sameName(component.getName))
+//				return component
+//	}
+//	
+//	def Component getComponent(ComponentBlockSpawn cbn){
+//		var components = cbn.getContainerOfType(Model).eAllOfType(Component)
+//		for(component : components)
+//			if(cbn.name.sameName(component.getName))
+//				return component
+//	}
+//	
+//	def boolean isNameInModel(Model model, Name name){
+//		var test = false
+//		var names = model.eAllOfType(Name)
+//		
+//		for(n:names){
+//			test = test || n.sameName(name)
+//		}
+//		
+//		return test
+//	}
+//	
+//	def ArrayList<Name> getNames(ProcessesBlock psb){
+//		var ArrayList<Name> names = new ArrayList<Name>()
+//			if(psb.processes != null){
+//				for(p : psb.processes)
+//					names.add(p.name)
+//			}
+//		return names
+//	}
+//	
+//	def ArrayList<Name> getNames(Processes ps){
+//		var ArrayList<Name> names = new ArrayList<Name>()
+//			if(ps.processes != null){
+//				for(p : ps.processes)
+//					names.add(p.name)
+//			}
+//		return names
+//	}
+//	
+//	def ArrayList<Name> getNames(StoreBlock sb){
+//		var ArrayList<Name> names = new ArrayList<Name>()
+//			if(sb.attributes != null){
+//				for(p : sb.attributes)
+//					names.add(p.name)
+//			}
+//		return names
+//	}
+//	
+//	def ArrayList<Name> getNames(StoreLine sl){
+//		var ArrayList<Name> names = new ArrayList<Name>()
+//			if(sl.attributes != null){
+//				for(p : sl.attributes)
+//					names.add(p.name)
+//			}
+//		return names
+//	}
+//	
+//	def ArrayList<Name> getNames(Methods ms){
+//		var ArrayList<Name> names = new ArrayList<Name>()
+//			if(ms.methods != null){
+//				for(p : ms.methods)
+//					names.add(p.name)
+//			}
+//		return names
+//	}
+//	
+//	def ArrayList<OutputAction> getSender(InputAction ia){
+//		var ArrayList<OutputAction> output = new ArrayList<OutputAction>()
+//		for(oa : ia.getContainerOfType(Model).eAllOfType(OutputAction))
+//			if(oa.getContainerOfType(Action).name.sameName(ia.getContainerOfType(Action).name))
+//				output.add(oa)
+//		return output
+//	}
+//	
+//	def ArrayList<InputAction> getReceiver(OutputAction oa){
+//		var ArrayList<InputAction> output = new ArrayList<InputAction>()
+//		for(ia : oa.getContainerOfType(Model).eAllOfType(InputAction))
+//			if((ia.getContainerOfType(Action).name as ActionName).name.equals((oa.getContainerOfType(Action).name as ActionName).name))
+//				output.add(ia)
+//		return output
+//	}
+//	
+//	def ArrayList<Process> maximumFixedPoint(Process p1, boolean includeSelf){
+//		
+//		
+//		var HashSet<Process> buffer1 = new HashSet<Process>()
+//		var HashSet<Process> buffer2 = new HashSet<Process>()
+//		
+//		if(includeSelf)
+//			buffer1.add(p1)
+//		else
+//			buffer1.addAll(getReferences(p1))
+//		
+//		while(buffer1.size > buffer2.size){
+//			
+//			buffer2.addAll(buffer1)
+//			
+//			for(Process p2 : buffer2){
+//				if(includeSelf)
+//					buffer1.addAll(getAllReferences(p2))
+//				else
+//					buffer1.addAll(getReferences(p2))
+//			}
+//		}
+//		
+//		var ArrayList<Process> output = new ArrayList<Process>(buffer1)
+//		
+//		return output
+//		
+//	}
+//	
+//	def HashSet<Process> getAllReferences(Process p1){
+//		
+//		var HashSet<Process> output = new HashSet<Process>()
+//		
+//		for(Process p2 : p1.getContainerOfType(ComponentStyle).eAllOfType(Process))
+//			for(ProcessExpressionReference pr : p2.eAllOfType(ProcessExpressionReference))
+//				if(p1.name.equals(pr.expression.name))
+//					output.add(p2)
+//		
+//		for(ProcessExpressionReference pr : p1.eAllOfType(ProcessExpressionReference))
+//			for(Process p2 : p1.getContainerOfType(ComponentStyle).eAllOfType(Process))
+//				if(p2.name.equals(pr.expression.name))
+//					output.add(p2)
+//					
+//		return output 
+//		
+//	}
+//	
+//	def HashSet<Process> getReferences(Process p1){
+//		
+//		var HashSet<Process> output = new HashSet<Process>()
+//		
+//		for(Process p2 : p1.getContainerOfType(ComponentStyle).eAllOfType(Process))
+//			for(ProcessExpressionReference pr : p2.eAllOfType(ProcessExpressionReference))
+//				if(p1.name.equals(pr.expression.name))
+//					output.add(p2)
+//							
+//		return output 
+//		
+//	}
+//	
+//	def boolean isBroadcast(ActionStub actionStub){
+//		return actionStub.label.contains("*")
+//	}
+//
+//	
 	//////here be dragons
 //	def ArrayList<Action> getActions(ActionStub actionStub){
 //		var output = new ArrayList<Action>()

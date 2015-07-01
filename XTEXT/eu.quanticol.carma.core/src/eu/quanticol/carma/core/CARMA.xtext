@@ -11,14 +11,14 @@ Model:
 
 ////////////////////////////////////////////////////PRIMITIVES
 
-PrimitiveType returns PrimitiveType hidden(ML_COMMENT,SL_COMMENT,WS):
+PrimitiveTypes returns PrimitiveTypes hidden(ML_COMMENT,SL_COMMENT,WS):
 	CarmaDouble |
 	CarmaInteger|
 	CarmaBoolean|
 	Range	
 ;
 
-CarmaDouble returns PrimitiveType hidden(ML_COMMENT,SL_COMMENT,WS):
+CarmaDouble returns PrimitiveTypes hidden(ML_COMMENT,SL_COMMENT,WS):
 	{CarmaDouble} (negative="-")? left=INT "." right=INT (exponent=CarmaExponent)?
 ;
 
@@ -27,19 +27,19 @@ CarmaExponent returns CarmaExponent hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 
-CarmaInteger returns PrimitiveType hidden(ML_COMMENT,SL_COMMENT,WS):
+CarmaInteger returns PrimitiveTypes hidden(ML_COMMENT,SL_COMMENT,WS):
 	{CarmaInteger} (negative="-")? value=INT
 ;
 
-CarmaBoolean returns PrimitiveType hidden(ML_COMMENT,SL_COMMENT,WS):
+CarmaBoolean returns PrimitiveTypes hidden(ML_COMMENT,SL_COMMENT,WS):
 	{CarmaBoolean} value=BOOLEANVALUE
 ;
 
-Range returns PrimitiveType hidden(ML_COMMENT,SL_COMMENT,WS):
+Range returns PrimitiveTypes hidden(ML_COMMENT,SL_COMMENT,WS):
 	{Range} min=INT ".." max=INT
 ;
 
-OutcomeProbability returns PrimitiveType hidden(ML_COMMENT,SL_COMMENT,WS):
+OutcomeProbability returns PrimitiveTypes hidden(ML_COMMENT,SL_COMMENT,WS):
 	{OutcomeProbability} outcome=(CarmaInteger|VariableReference) ":" probability=CarmaDouble
 ;
 
@@ -59,7 +59,7 @@ RecordDefinition returns RecordDefinition hidden(ML_COMMENT,SL_COMMENT,WS):
 
 RecordSignature  returns RecordSignature hidden(ML_COMMENT,SL_COMMENT,WS):
 	"record" class=RecordClassName 
-	recordDefinitionArguments=RecordParameters
+	recordDefinitionParameters=RecordParameters
 ; 
 
 RecordParameters hidden(ML_COMMENT,SL_COMMENT,WS): 
@@ -129,59 +129,67 @@ RecordClassName returns Name hidden(ML_COMMENT,SL_COMMENT,WS):
 	{RecordClassName} name=UPPERST
 ;
 
-InputName returns Name hidden(ML_COMMENT,SL_COMMENT,WS):
-	{InputName} name=LOWERST
+AttribParameter returns Parameter hidden(ML_COMMENT,SL_COMMENT,WS):
+	{AttribParameter} type=AttribType	name=VariableName
 ;
 
-AttribParameter returns AttribParameter hidden(ML_COMMENT,SL_COMMENT,WS):
-	type=AttribLabel	name=VariableName
+InputParameter returns Parameter hidden(ML_COMMENT,SL_COMMENT,WS):
+	{InputParameter} name=VariableName
 ;
 
-RecordParameter returns RecordParameter hidden(ML_COMMENT,SL_COMMENT,WS):
-	type=[RecordClassName|UPPERST] name=VariableName
+RecordParameter returns Parameter hidden(ML_COMMENT,SL_COMMENT,WS):
+	{RecordParameter} type=[RecordClassName|UPPERST] name=VariableName
 ;
 
-DoubleParameter returns DoubleParameter hidden(ML_COMMENT,SL_COMMENT,WS):
-	type=DoubleLabel	name=VariableName
+DoubleParameter returns Parameter hidden(ML_COMMENT,SL_COMMENT,WS):
+	{DoubleParameter} type=DoubleType	name=VariableName
 ;
 
-IntgerParameter returns IntgerParameter hidden(ML_COMMENT,SL_COMMENT,WS):
-	type=IntgerLabel	name=VariableName
+IntgerParameter returns Parameter hidden(ML_COMMENT,SL_COMMENT,WS):
+	{IntgerParameter} type=IntgerType	name=VariableName
 ;
 
-MacroParameter returns MacroParameter hidden(ML_COMMENT,SL_COMMENT,WS):
-	assignee=ProcessName
+MacroParameter hidden(ML_COMMENT,SL_COMMENT,WS):
+	{MacroParameter} assignee=ProcessName
 ; 
 
 
 Types returns Types hidden(ML_COMMENT,SL_COMMENT,WS):
 	(
-		{DoubleTypeLabel} 		type=DoubleLabel 	|
-		{IntegerTypeLabel} 		type=IntgerLabel	|
-		{AttribTypeLabel}		type=AttribLabel	|
-		{RecordTypeLabel}		ref=[RecordClassName|UPPERST]
+		type=DoubleType |
+		type=IntgerType	|
+		type=AttribType	|
+		type=RecordType
 	)
 ;
 
-DoubleLabel hidden(ML_COMMENT,SL_COMMENT,WS):
-	"double"
+DoubleType returns Type hidden(ML_COMMENT,SL_COMMENT,WS):
+	{DoubleType} name="double"
 ;
 
-IntgerLabel hidden(ML_COMMENT,SL_COMMENT,WS):
-	"int"
+IntgerType returns Type hidden(ML_COMMENT,SL_COMMENT,WS):
+	{IntgerType} name="int"
 ;
 
-AttribLabel hidden(ML_COMMENT,SL_COMMENT,WS):
-	"attrib"
+AttribType returns Type hidden(ML_COMMENT,SL_COMMENT,WS):
+	{AttribType} name="attrib"
 ;
 
-Parameters returns Parameters hidden(ML_COMMENT,SL_COMMENT,WS):
+RecordType returns Type hidden(ML_COMMENT,SL_COMMENT,WS):
+	{RecordType} name=[RecordClassName|UPPERST]
+;
+
+MethodParameters returns MethodParameters hidden(ML_COMMENT,SL_COMMENT,WS):
 	(
 		AttribParameter |
 		RecordParameter |
 		DoubleParameter	|
 		IntgerParameter
 	)
+;
+
+InputParameters returns InputParameters hidden(ML_COMMENT,SL_COMMENT,WS):
+		InputParameter 
 ;
 
 PreArguments returns PreArguments hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -229,34 +237,34 @@ VariableReference returns VariableReference hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 
-AttribVariableDeclaration returns AttribVariableDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	type=AttribLabel	name=VariableName	":="	assign=Expression 
+AttribVariableDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
+	{AttribVariableDeclaration} type=AttribType	name=VariableName	":="	assign=Expression 
 ;
 
-RecordAttribVariableDeclaration returns RecordAttribVariableDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	type=AttribLabel	name=RecordName	":="	assign=Expression
+RecordAttribVariableDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
+	{RecordAttribVariableDeclaration} type=AttribType	name=RecordName	":="	assign=Expression
 ;
 
-MeasureVariableDeclaration returns MeasureVariableDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	type=AttribLabel	name=VariableName	":="	assign=Expression
+MeasureVariableDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
+	{MeasureVariableDeclaration} type=AttribType	name=VariableName	":="	assign=Expression
 ;
 
-IntgerVariableDeclaration returns IntgerVariableDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	type=IntgerLabel	name=VariableName	":="	assign=Expression
+IntgerVariableDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
+	{IntgerVariableDeclaration} type=IntgerType	name=VariableName	":="	assign=Expression
 ;
 
-DoubleVariableDeclaration returns DoubleVariableDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	type=DoubleLabel	name=VariableName	":="	assign=Expression
+DoubleVariableDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
+	{DoubleVariableDeclaration} type=DoubleType	name=VariableName	":="	assign=Expression
 ;
 
-RecordDeclaration returns RecordDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	type=[RecordClassName|UPPERST] name=VariableName ":=" ( 
+RecordDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
+	{RecordDeclaration} type=RecordType name=VariableName ":=" ( 
 		instantiate=InstantiateRecord |
 		assign=VariableReference
 		)
 ;
 
-MethodDeclaration returns MethodDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
+MethodDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
 	(
 		AttribVariableDeclaration |
 		IntgerVariableDeclaration |
@@ -265,7 +273,7 @@ MethodDeclaration returns MethodDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
 	)
 ;
 
-StoreDeclaration returns StoreDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
+StoreDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
 	(AttribVariableDeclaration | RecordDeclaration)
 ;
 
@@ -369,7 +377,7 @@ MethodDefinitionParameters hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 MethodDefinitionParameter hidden(ML_COMMENT,SL_COMMENT,WS):
-	parameter=Parameters
+	parameter=MethodParameters
 ;
 	
 MethodBody hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -760,8 +768,8 @@ InputAction returns IO  hidden(ML_COMMENT,SL_COMMENT,WS):
 InputActionParameters hidden(ML_COMMENT,SL_COMMENT,WS):
 	{InputActionParameters}
 	"(" 
-	(parameters+=InputName
-	( "," parameters+=InputName )* )?
+	(parameters+=InputParameters
+	( "," parameters+=InputParameters )* )?
 	")"
 ;
 
@@ -887,13 +895,13 @@ Primary returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 Atomic returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
-	{AtomicPrimitive}			value=PrimitiveType 	|
-	{AtomicVariable}			value=VariableReference |
-	{AtomicMethodReference}		value=MethodReference	|
-	{AtomicNow}					value=Now				|
-	{AtomicMeasure}				value=SetComp			|
-	{AtomicMacro}				value=State				|
-	{AtomicRecord}				value=InstantiateRecord	|
+	{AtomicPrimitive}			value=PrimitiveTypes 		|
+	{AtomicVariable}			value=VariableReference 	|
+	{AtomicMethodReference}		value=MethodReference		|
+	{AtomicNow}					value=Now					|
+	{AtomicMeasure}				value=SetComp				|
+	{AtomicMacro}				value=State					|
+	{AtomicRecord}				value=InstantiateRecord		|
 	{AtomicOutcome}				value=OutcomeProbability
 ;
 ////////////////////////////////////////////////////MEASURES
@@ -906,7 +914,7 @@ MeasureBlock returns MeasureBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 Measure returns Measure hidden(ML_COMMENT,SL_COMMENT,WS):
-	"measure" name=MeasureName parameters=MeasureVariableDeclarations "="  measure=SetComp 
+	"measure" name=MeasureName ranges=MeasureVariableDeclarations "="  measure=SetComp 
 ;
 
 MeasureVariableDeclarations hidden(ML_COMMENT,SL_COMMENT,WS):

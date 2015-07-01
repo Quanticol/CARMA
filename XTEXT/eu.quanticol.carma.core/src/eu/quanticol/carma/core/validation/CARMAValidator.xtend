@@ -11,24 +11,39 @@ import eu.quanticol.carma.core.carma.EnvironmentRateExpression
 import eu.quanticol.carma.core.carma.EnvironmentUpdateExpression
 import eu.quanticol.carma.core.carma.UpdateExpression
 import eu.quanticol.carma.core.typing.TypeProvider
-import eu.quanticol.carma.core.utils.LabelUtil
 import eu.quanticol.carma.core.utils.Util
 import org.eclipse.xtext.validation.Check
+import eu.quanticol.carma.core.carma.Model
 import eu.quanticol.carma.core.carma.CarmaPackage
+import eu.quanticol.carma.core.carma.VariableName
+
+import static extension org.eclipse.xtext.EcoreUtil2.*
 
 class CARMAValidator extends AbstractCARMAValidator {
 	
 	@Inject extension TypeProvider
-	@Inject extension LabelUtil
 	@Inject extension Util
 	
-	//unique names
-	
-	public static val ERROR_Attribute_name_unique = "ERROR: Attributes must have unique names."
-	public static val ERROR_Process_name_unique = "ERROR: Processes must have unique names."
-	public static val ERROR_MethodDefinition_name_unique = "ERROR: Functions must have a unique name."
-	
-	//Expression type check
+	//VariableName - must have same type everywhere
+	public static val ERROR_VariableName_unique_type 	= "ERROR_VariableName_unique_type"
+	@Check
+	def check_ERROR_VariableName_type(VariableName variableName){
+		var test = true
+		var message = "Error: Variable must be of the same type across the whole model."
+		println(message)
+		var type 	= variableName.type
+		var names 	= variableName.getContainerOfType(Model).eAllOfType(VariableName)
+		
+		for(vn : names)
+			if(variableName.sameName(vn)){
+				test = test && type.sameType(vn.type)
+				println(test)
+			}
+				
+		if(test){
+			error(message,CarmaPackage::eINSTANCE.name_Name,ERROR_VariableName_unique_type)
+		}
+	}
 	
 	var public static ERROR_BooleanExpression_type 				= "ERROR_BooleanExpression_type"
 	var public static ERROR_UpdateExpression_type 				= "ERROR_UpdateExpression_type"
@@ -41,7 +56,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 	def check_ERROR_expression_type(BooleanExpression expression){
 		var test = true
 		var message = "Error: must be of Boolean type."
-		if(test){
+		if(!test){
 			error(message,CarmaPackage::eINSTANCE.booleanExpression_Expression,ERROR_BooleanExpression_type)
 		}
 	}
@@ -50,7 +65,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 	def check_ERROR_expression_type(UpdateExpression expression){
 		var test = true
 		var message = ""
-		if(test){
+		if(!test){
 			error(message,CarmaPackage::eINSTANCE.updateExpression_Expression,ERROR_UpdateExpression_type)
 		}
 	}
@@ -59,7 +74,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 	def check_ERROR_expression_type(EnvironmentProbExpression expression){
 		var test = true
 		var message = ""
-		if(test){
+		if(!test){
 			error(message,CarmaPackage::eINSTANCE.environmentProbExpression_Expression,ERROR_EnvironmentProbExpression_type)
 		}
 	}
@@ -68,7 +83,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 	def check_ERROR_expression_type(EnvironmentRateExpression expression){
 		var test = true
 		var message = ""
-		if(test){
+		if(!test){
 			error(message,CarmaPackage::eINSTANCE.environmentRateExpression_Expression,ERROR_EnvironmentRateExpression_type)
 		}
 	}
@@ -77,7 +92,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 	def check_ERROR_expression_type(EnvironmentUpdateExpression expression){
 		var test = true
 		var message = ""
-		if(test){
+		if(!test){
 			error(message,CarmaPackage::eINSTANCE.environmentUpdate_Expression,ERROR_EnvironmentUpdateExpression_type)
 		}
 	}
@@ -86,7 +101,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 	def check_ERROR_expression_type(ComponentExpression expression){
 		var test = true
 		var message = ""
-		if(test){
+		if(!test){
 			error(message,CarmaPackage::eINSTANCE.componentExpression_Expression,ERROR_ComponentExpression_type)
 		}
 	}
