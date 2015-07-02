@@ -43,6 +43,10 @@ OutcomeProbability returns PrimitiveTypes hidden(ML_COMMENT,SL_COMMENT,WS):
 	{OutcomeProbability} outcome=(CarmaInteger|VariableReference) ":" probability=CarmaDouble
 ;
 
+Now returns PrimitiveTypes hidden(ML_COMMENT,SL_COMMENT,WS):
+	{Now} "now"
+;
+
 ////////////////////////////////////////////////////RECORDS
 
 Records returns Records hidden(ML_COMMENT,SL_COMMENT,WS): 
@@ -58,7 +62,7 @@ RecordDefinition returns RecordDefinition hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 RecordSignature  returns RecordSignature hidden(ML_COMMENT,SL_COMMENT,WS):
-	"record" class=RecordClassName 
+	"record" type=RecordTypeName 
 	recordDefinitionParameters=RecordParameters
 ; 
 
@@ -88,7 +92,7 @@ RecordArgument hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 InstantiateRecord hidden(ML_COMMENT,SL_COMMENT,WS): 
-	"new" instantiate=[RecordClassName|UPPERST] arguments=RecordArguments 
+	"new" type=RecordType arguments=RecordArguments 
 ;
 
 ////////////////////////////////////////////////////VARIABLES
@@ -125,8 +129,8 @@ SystemName returns Name hidden(ML_COMMENT,SL_COMMENT,WS):
 	{SystemName} name=UPPERST
 ;
 
-RecordClassName returns Name hidden(ML_COMMENT,SL_COMMENT,WS):
-	{RecordClassName} name=UPPERST
+RecordTypeName returns Name hidden(ML_COMMENT,SL_COMMENT,WS):
+	{RecordTypeName} name=UPPERST
 ;
 
 AttribParameter returns Parameter hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -138,7 +142,7 @@ InputParameter returns Parameter hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 RecordParameter returns Parameter hidden(ML_COMMENT,SL_COMMENT,WS):
-	{RecordParameter} type=[RecordClassName|UPPERST] name=VariableName
+	{RecordParameter} type=RecordType name=VariableName
 ;
 
 DoubleParameter returns Parameter hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -176,7 +180,7 @@ AttribType returns Type hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 RecordType returns Type hidden(ML_COMMENT,SL_COMMENT,WS):
-	{RecordType} name=[RecordClassName|UPPERST]
+	{RecordType} name=[RecordTypeName|UPPERST]
 ;
 
 MethodParameters returns MethodParameters hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -830,7 +834,7 @@ ComponentExpression hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 Expression returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
-	{Expression} expression=Or
+	Or
 ;
 
 Or returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -900,7 +904,7 @@ Atomic returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
 	{AtomicMethodReference}		value=MethodReference		|
 	{AtomicNow}					value=Now					|
 	{AtomicMeasure}				value=SetComp				|
-	{AtomicMacro}				value=State					|
+	{AtomicState}				value=State					|
 	{AtomicRecord}				value=InstantiateRecord		|
 	{AtomicOutcome}				value=OutcomeProbability
 ;
@@ -998,10 +1002,6 @@ ActionStub hidden(ML_COMMENT,SL_COMMENT,WS):
 
 BroadCast:
 	"*"
-;
-
-Now hidden(ML_COMMENT,SL_COMMENT,WS):
-	"now"
 ;
 
 

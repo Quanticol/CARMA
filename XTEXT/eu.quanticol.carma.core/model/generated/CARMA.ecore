@@ -25,8 +25,7 @@
         eType="#//RecordDefinitionStatementBlock" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="RecordSignature">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="class" eType="#//Name"
-        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//Name" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="recordDefinitionParameters"
         eType="#//RecordParameters" containment="true"/>
   </eClassifiers>
@@ -47,7 +46,7 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InstantiateRecord">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="instantiate" eType="#//RecordClassName"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//Type" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="arguments" eType="#//RecordArguments"
         containment="true"/>
   </eClassifiers>
@@ -439,6 +438,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="probability" eType="#//PrimitiveTypes"
         containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Now" eSuperTypes="#//PrimitiveTypes"/>
   <eClassifiers xsi:type="ecore:EClass" name="VariableName" eSuperTypes="#//Name"/>
   <eClassifiers xsi:type="ecore:EClass" name="RecordName" eSuperTypes="#//Name"/>
   <eClassifiers xsi:type="ecore:EClass" name="ActionName" eSuperTypes="#//Name"/>
@@ -447,13 +447,13 @@
   <eClassifiers xsi:type="ecore:EClass" name="MethodName" eSuperTypes="#//Name"/>
   <eClassifiers xsi:type="ecore:EClass" name="MeasureName" eSuperTypes="#//Name"/>
   <eClassifiers xsi:type="ecore:EClass" name="SystemName" eSuperTypes="#//Name"/>
-  <eClassifiers xsi:type="ecore:EClass" name="RecordClassName" eSuperTypes="#//Name"/>
+  <eClassifiers xsi:type="ecore:EClass" name="RecordTypeName" eSuperTypes="#//Name"/>
   <eClassifiers xsi:type="ecore:EClass" name="AttribParameter" eSuperTypes="#//Parameter">
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//Type" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InputParameter" eSuperTypes="#//Parameter"/>
   <eClassifiers xsi:type="ecore:EClass" name="RecordParameter" eSuperTypes="#//Parameter">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//RecordClassName"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//Type" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="DoubleParameter" eSuperTypes="#//Parameter">
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//Type" containment="true"/>
@@ -471,7 +471,7 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="RecordType" eSuperTypes="#//Type">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="name" eType="#//RecordClassName"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="name" eType="#//RecordTypeName"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="VariableReferencePure" eSuperTypes="#//VariableReference"/>
   <eClassifiers xsi:type="ecore:EClass" name="VariableReferenceMy" eSuperTypes="#//VariableReference"/>
@@ -623,10 +623,6 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="outputActionArguments"
         eType="#//OutputActionArguments" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Expression" eSuperTypes="#//Expressions">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="expression" eType="#//Expressions"
-        containment="true"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Or" eSuperTypes="#//Expressions">
     <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//Expressions"
         containment="true"/>
@@ -700,13 +696,14 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AtomicNow" eSuperTypes="#//Expressions">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="#//PrimitiveTypes"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AtomicMeasure" eSuperTypes="#//Expressions">
     <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="#//SetComp"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="AtomicMacro" eSuperTypes="#//Expressions">
+  <eClassifiers xsi:type="ecore:EClass" name="AtomicState" eSuperTypes="#//Expressions">
     <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="#//State"
         containment="true"/>
   </eClassifiers>

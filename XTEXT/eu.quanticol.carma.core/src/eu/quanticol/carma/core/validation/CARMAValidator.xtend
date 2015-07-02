@@ -5,19 +5,30 @@ package eu.quanticol.carma.core.validation
 
 import com.google.inject.Inject
 import eu.quanticol.carma.core.carma.BooleanExpression
+import eu.quanticol.carma.core.carma.CarmaPackage
 import eu.quanticol.carma.core.carma.ComponentExpression
 import eu.quanticol.carma.core.carma.EnvironmentProbExpression
 import eu.quanticol.carma.core.carma.EnvironmentRateExpression
 import eu.quanticol.carma.core.carma.EnvironmentUpdateExpression
+import eu.quanticol.carma.core.carma.MethodExpression
+import eu.quanticol.carma.core.carma.Model
+import eu.quanticol.carma.core.carma.Process
+import eu.quanticol.carma.core.carma.Processes
+import eu.quanticol.carma.core.carma.ProcessesBlock
 import eu.quanticol.carma.core.carma.UpdateExpression
+import eu.quanticol.carma.core.carma.VariableName
 import eu.quanticol.carma.core.typing.TypeProvider
 import eu.quanticol.carma.core.utils.Util
+import java.util.ArrayList
 import org.eclipse.xtext.validation.Check
-import eu.quanticol.carma.core.carma.Model
-import eu.quanticol.carma.core.carma.CarmaPackage
-import eu.quanticol.carma.core.carma.VariableName
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
+import eu.quanticol.carma.core.carma.Name
+import eu.quanticol.carma.core.carma.ProcessName
+import eu.quanticol.carma.core.carma.StoreBlock
+import eu.quanticol.carma.core.carma.MethodDefinition
+import eu.quanticol.carma.core.carma.Methods
+import eu.quanticol.carma.core.carma.MethodName
 
 class CARMAValidator extends AbstractCARMAValidator {
 	
@@ -30,23 +41,22 @@ class CARMAValidator extends AbstractCARMAValidator {
 	def check_ERROR_VariableName_type(VariableName variableName){
 		var test = true
 		var message = "Error: Variable must be of the same type across the whole model."
-		println(message)
 		var type 	= variableName.type
 		var names 	= variableName.getContainerOfType(Model).eAllOfType(VariableName)
 		
 		for(vn : names)
 			if(variableName.sameName(vn)){
 				test = test && type.sameType(vn.type)
-				println(test)
 			}
-				
-		if(test){
+
+		if(!test){
 			error(message,CarmaPackage::eINSTANCE.name_Name,ERROR_VariableName_unique_type)
 		}
 	}
 	
 	var public static ERROR_BooleanExpression_type 				= "ERROR_BooleanExpression_type"
 	var public static ERROR_UpdateExpression_type 				= "ERROR_UpdateExpression_type"
+	var public static ERROR_MethodExpression_type 				= "ERROR_MethodExpression_type"
 	var public static ERROR_EnvironmentProbExpression_type 		= "ERROR_EnvironmentProbExpression_type"
 	var public static ERROR_EnvironmentRateExpression_type 		= "ERROR_EnvironmentRateExpression_type"
 	var public static ERROR_EnvironmentUpdateExpression_type 	= "ERROR_EnvironmentUpdateExpression_type"
@@ -56,6 +66,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 	def check_ERROR_expression_type(BooleanExpression expression){
 		var test = true
 		var message = "Error: must be of Boolean type."
+		test = expression.type.isLogical
 		if(!test){
 			error(message,CarmaPackage::eINSTANCE.booleanExpression_Expression,ERROR_BooleanExpression_type)
 		}
@@ -64,16 +75,29 @@ class CARMAValidator extends AbstractCARMAValidator {
 	@Check
 	def check_ERROR_expression_type(UpdateExpression expression){
 		var test = true
-		var message = ""
+		var message = "Error: this must evaluate to a natural number (attribute assignment)."
+		test = expression.type.isArith
 		if(!test){
 			error(message,CarmaPackage::eINSTANCE.updateExpression_Expression,ERROR_UpdateExpression_type)
 		}
 	}
 	
 	@Check
+	def check_ERROR_expression_type(MethodExpression expression){
+		var test = true
+		var message = "Error: this must evaluate to a number."
+		test = expression.type.isArith
+		//TODO
+		if(!test){
+			error(message,CarmaPackage::eINSTANCE.methodExpression_Expression,ERROR_MethodExpression_type)
+		}
+	}
+	
+	@Check
 	def check_ERROR_expression_type(EnvironmentProbExpression expression){
 		var test = true
-		var message = ""
+		var message = "Error: this must evaluate to a number between 0.0 and 1.0."
+		//TODO
 		if(!test){
 			error(message,CarmaPackage::eINSTANCE.environmentProbExpression_Expression,ERROR_EnvironmentProbExpression_type)
 		}
@@ -82,7 +106,8 @@ class CARMAValidator extends AbstractCARMAValidator {
 	@Check
 	def check_ERROR_expression_type(EnvironmentRateExpression expression){
 		var test = true
-		var message = ""
+		var message = "Error: this must evaluate to a real number (rate assignment)."
+		//TODO
 		if(!test){
 			error(message,CarmaPackage::eINSTANCE.environmentRateExpression_Expression,ERROR_EnvironmentRateExpression_type)
 		}
@@ -91,7 +116,8 @@ class CARMAValidator extends AbstractCARMAValidator {
 	@Check
 	def check_ERROR_expression_type(EnvironmentUpdateExpression expression){
 		var test = true
-		var message = ""
+		var message = "Error: this must evaluate to a natural number (attribute assignment)."
+		//TODO
 		if(!test){
 			error(message,CarmaPackage::eINSTANCE.environmentUpdate_Expression,ERROR_EnvironmentUpdateExpression_type)
 		}
@@ -100,9 +126,91 @@ class CARMAValidator extends AbstractCARMAValidator {
 	@Check
 	def check_ERROR_expression_type(ComponentExpression expression){
 		var test = true
-		var message = ""
+		var message = "Error: this must evaluate to an integer."
+		//TODO
 		if(!test){
 			error(message,CarmaPackage::eINSTANCE.componentExpression_Expression,ERROR_ComponentExpression_type)
+		}
+	}
+	
+	public static val ERROR_Process_name_unique = "ERROR: Processes must have unique names."
+	@Check
+	def check_ERROR_ProcessBlock_name_unique(Process p){
+		var String message = "ERROR: processes must have unique names."
+		
+		var pb = p.getContainerOfType(ProcessesBlock)
+		var pl = p.getContainerOfType(Processes)
+		
+		var ArrayList<String> names = new ArrayList<String>
+		
+		if(pb != null)
+			for(n : pb.eAllOfType(ProcessName))
+				names.add(n.name)
+		if(pl != null)
+			for(n : pl.eAllOfType(ProcessName))
+				names.add(n.name)
+			
+		names.remove(p.name.name)
+		
+		var boolean test = names.contains(p.name.name)
+		
+		if(test){
+			error( message ,
+					CarmaPackage::eINSTANCE.process_Name,
+					ERROR_Process_name_unique
+			)
+		}
+	}
+	
+	public static val ERROR_VariableDeclaration_Store_name_unique = "ERROR: Attributes must have unique names."
+	@Check
+	def check_ERROR_VariableDeclaration_Store_name_unique(VariableName variableName){
+		var String message = "ERROR: Attributes must have unique names."
+		
+		var sb = variableName.getContainerOfType(StoreBlock)
+		//var sl = variableName.getContainerOfType(StoreLine)
+		
+		var ArrayList<String> names = new ArrayList<String>
+		
+		if(sb != null)
+			for(n : sb.eAllOfType(VariableName))
+				names.add(n.name)
+//		else
+//			for(n : sl.eAllOfType(VariableName))
+//				names.add(n.label)
+			
+		names.remove(variableName.name)
+		var boolean test = names.contains(variableName.name)
+		
+		if(test){
+			error( message ,
+					CarmaPackage::eINSTANCE.name_Name,
+					ERROR_VariableDeclaration_Store_name_unique
+			)
+		}
+	}
+	
+	public static val ERROR_MethodDefinition_name_unique = "ERROR: Functions must have a unique name."
+	@Check
+	def check_ERROR_MethodDefinition_name_unique(MethodDefinition md){
+		var String message = "ERROR: Functions must have a unique name."
+		var ms = md.getContainerOfType(Methods)
+		
+		
+		var ArrayList<String> names = new ArrayList<String>
+		
+		for(n : ms.eAllOfType(MethodName))
+			names.add(n.name)
+			
+		names.remove(md.name)
+		
+		var boolean test = names.contains(md.name)
+		
+		if(test){
+			error( message ,
+					CarmaPackage::eINSTANCE.methodDefinition_Name,
+					ERROR_MethodDefinition_name_unique
+			)
 		}
 	}
 	
