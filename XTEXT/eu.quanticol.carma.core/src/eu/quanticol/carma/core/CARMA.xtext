@@ -153,8 +153,8 @@ IntgerParameter returns Parameter hidden(ML_COMMENT,SL_COMMENT,WS):
 	{IntgerParameter} type=IntgerType	name=VariableName
 ;
 
-MacroParameter hidden(ML_COMMENT,SL_COMMENT,WS):
-	{MacroParameter} assignee=ProcessName
+StateParameter hidden(ML_COMMENT,SL_COMMENT,WS):
+	{StateParameter} parameter=ProcessName
 ; 
 
 
@@ -205,7 +205,7 @@ CompParameters returns CompParameters hidden(ML_COMMENT,SL_COMMENT,WS):
 	(
 		AttribParameter |
 		RecordParameter |
-		MacroParameter
+		StateParameter
 	)
 ;
 
@@ -315,7 +315,7 @@ ParallelState returns State hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 ProcessReference returns State hidden(ML_COMMENT,SL_COMMENT,WS):
-	 {ProcessReference} name=ProcessName
+	 {ProcessReference} expression=[ProcessName|UPPERST]
 ;
 
 ////////////////////////////////////////////////////SET COMPREHENSION

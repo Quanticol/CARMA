@@ -50,8 +50,8 @@
     <genClasses ecoreClass="CARMA.ecore#//Parameter">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Parameter/name"/>
     </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//MacroParameter">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//MacroParameter/assignee"/>
+    <genClasses ecoreClass="CARMA.ecore#//StateParameter">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//StateParameter/parameter"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//Types">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Types/type"/>
@@ -425,7 +425,7 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ParallelState/right"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//ProcessReference">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ProcessReference/name"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//ProcessReference/expression"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//ParallelComponentComprehension">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ParallelComponentComprehension/left"/>

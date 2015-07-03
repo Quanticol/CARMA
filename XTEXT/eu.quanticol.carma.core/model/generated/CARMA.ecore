@@ -56,8 +56,8 @@
   <eClassifiers xsi:type="ecore:EClass" name="Parameter" eSuperTypes="#//MethodParameters #//InputParameters #//CompParameters">
     <eStructuralFeatures xsi:type="ecore:EReference" name="name" eType="#//Name" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="MacroParameter" eSuperTypes="#//CompParameters">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="assignee" eType="#//Name"
+  <eClassifiers xsi:type="ecore:EClass" name="StateParameter" eSuperTypes="#//CompParameters">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="parameter" eType="#//Name"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Types">
@@ -538,7 +538,7 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ProcessReference" eSuperTypes="#//State">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="name" eType="#//Name" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="expression" eType="#//ProcessName"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ParallelComponentComprehension" eSuperTypes="#//ComponentComprehension">
     <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//ComponentComprehension"
