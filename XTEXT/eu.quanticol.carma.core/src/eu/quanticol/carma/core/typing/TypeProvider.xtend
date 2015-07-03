@@ -22,12 +22,12 @@ import eu.quanticol.carma.core.carma.Equality
 import eu.quanticol.carma.core.carma.Expressions
 import eu.quanticol.carma.core.carma.InputParameter
 import eu.quanticol.carma.core.carma.IntgerType
-import eu.quanticol.carma.core.carma.MethodCall
-import eu.quanticol.carma.core.carma.MethodDefinition
-import eu.quanticol.carma.core.carma.MethodExpressions
-import eu.quanticol.carma.core.carma.MethodName
-import eu.quanticol.carma.core.carma.MethodReferenceMan
-import eu.quanticol.carma.core.carma.MethodReferencePre
+import eu.quanticol.carma.core.carma.FunctionCall
+import eu.quanticol.carma.core.carma.FunctionDefinition
+import eu.quanticol.carma.core.carma.FunctionExpression
+import eu.quanticol.carma.core.carma.FunctionName
+import eu.quanticol.carma.core.carma.FunctionReferenceMan
+import eu.quanticol.carma.core.carma.FunctionReferencePre
 import eu.quanticol.carma.core.carma.Modulo
 import eu.quanticol.carma.core.carma.Multiplication
 import eu.quanticol.carma.core.carma.Not
@@ -35,17 +35,16 @@ import eu.quanticol.carma.core.carma.Now
 import eu.quanticol.carma.core.carma.Or
 import eu.quanticol.carma.core.carma.OutcomeProbability
 import eu.quanticol.carma.core.carma.Parameter
-import eu.quanticol.carma.core.carma.PreMethodCall
+import eu.quanticol.carma.core.carma.PreFunctionCall
 import eu.quanticol.carma.core.carma.PrimitiveTypes
 import eu.quanticol.carma.core.carma.Range
-import eu.quanticol.carma.core.carma.RecordAttribVariableDeclaration
-import eu.quanticol.carma.core.carma.RecordName
+import eu.quanticol.carma.core.carma.FeildDeclaration
+import eu.quanticol.carma.core.carma.FeildName
 import eu.quanticol.carma.core.carma.RecordReferenceGlobal
 import eu.quanticol.carma.core.carma.RecordReferenceMy
 import eu.quanticol.carma.core.carma.RecordReferencePure
 import eu.quanticol.carma.core.carma.RecordReferenceReceiver
 import eu.quanticol.carma.core.carma.RecordReferenceSender
-import eu.quanticol.carma.core.carma.RecordReferenceThis
 import eu.quanticol.carma.core.carma.RecordType
 import eu.quanticol.carma.core.carma.Subtraction
 import eu.quanticol.carma.core.carma.Type
@@ -56,14 +55,13 @@ import eu.quanticol.carma.core.carma.VariableReferenceMy
 import eu.quanticol.carma.core.carma.VariableReferencePure
 import eu.quanticol.carma.core.carma.VariableReferenceReceiver
 import eu.quanticol.carma.core.carma.VariableReferenceSender
-import eu.quanticol.carma.core.carma.VariableReferenceThis
 import java.util.ArrayList
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import eu.quanticol.carma.core.carma.BooleanExpression
 import java.util.HashMap
 import eu.quanticol.carma.core.carma.UpdateExpression
-import eu.quanticol.carma.core.carma.MethodExpression
+import eu.quanticol.carma.core.carma.Calls
 
 class BaseType {
 	
@@ -170,8 +168,8 @@ class TypeProvider {
 		return toReturn
 	}
 	
-	def BaseType getType(RecordName recordName){
-		var declaration = recordName.getContainerOfType(RecordAttribVariableDeclaration)
+	def BaseType getType(FeildName recordName){
+		var declaration = recordName.getContainerOfType(FeildDeclaration)
 		var ArrayList<Type> types = new ArrayList<Type>()
 		var BaseType toReturn = new BaseType()
 		
@@ -199,16 +197,14 @@ class TypeProvider {
 		switch(variableReference){
 			VariableReferencePure		: variableReference.name.type
 			VariableReferenceMy			: variableReference.name.type
-			VariableReferenceThis		: variableReference.name.type
 			VariableReferenceReceiver	: variableReference.name.type
 			VariableReferenceSender		: variableReference.name.type
 			VariableReferenceGlobal		: variableReference.name.type
-			RecordReferencePure			: variableReference.record.type
-			RecordReferenceMy			: variableReference.record.type
-			RecordReferenceThis			: variableReference.record.type
-			RecordReferenceReceiver		: variableReference.record.type
-			RecordReferenceSender		: variableReference.record.type
-			RecordReferenceGlobal		: variableReference.record.type
+			RecordReferencePure			: variableReference.feild.type
+			RecordReferenceMy			: variableReference.feild.type
+			RecordReferenceReceiver		: variableReference.feild.type
+			RecordReferenceSender		: variableReference.feild.type
+			RecordReferenceGlobal		: variableReference.feild.type
 		}
 	}
 	
@@ -220,7 +216,7 @@ class TypeProvider {
 		expression.expression.type
 	}
 	
-	def BaseType getType(MethodExpression expression){
+	def BaseType getType(FunctionExpression expression){
 		expression.expression.type
 	}
 	
@@ -353,19 +349,19 @@ class TypeProvider {
 		expression.value.type
 	}
 	
-	def BaseType getType(MethodExpressions expression){
+	def BaseType getType(Calls expression){
 		switch(expression){
-			MethodReferenceMan: expression.ref.type
-			MethodReferencePre: expression.ref.type
+			FunctionReferenceMan: expression.ref.type
+			FunctionReferencePre: expression.ref.type
 		}
 	}
 	
-	def BaseType getType(MethodCall expression){
+	def BaseType getType(FunctionCall expression){
 		expression.name.type
 	}
 	
-	def BaseType getType(MethodName methodName){
-		var attribute = methodName.getContainerOfType(MethodDefinition).type
+	def BaseType getType(FunctionName methodName){
+		var attribute = methodName.getContainerOfType(FunctionDefinition).type
 		var ArrayList<Type> types = new ArrayList<Type>()
 		var BaseType toReturn = new BaseType()
 		
@@ -383,7 +379,7 @@ class TypeProvider {
 	/**
 	 * This will need to search for the type of the predefined function
 	 */
-	def BaseType getType(PreMethodCall expression){
+	def BaseType getType(PreFunctionCall expression){
 		//TODO
 		new BaseType()
 	}

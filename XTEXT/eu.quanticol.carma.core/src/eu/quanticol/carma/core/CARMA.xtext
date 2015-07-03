@@ -239,15 +239,15 @@ VariableReference returns VariableReference hidden(ML_COMMENT,SL_COMMENT,WS):
 		{VariableReferenceSender}	"sender" 	"."	name=[VariableName|LOWERST] |
 		{VariableReferenceGlobal}	"global"	"." name=[VariableName|LOWERST] |
 		{RecordReferencePure} 						name=[VariableName|LOWERST]
-		"." record=[FeildName|LOWERST]	|
+		"." feild=[FeildName|LOWERST]	|
 		{RecordReferenceMy} 		"my" 		"." name=[VariableName|LOWERST]
-		"." record=[FeildName|LOWERST]	|
+		"." feild=[FeildName|LOWERST]	|
 		{RecordReferenceReceiver}	"receiver" 	"." name=[VariableName|LOWERST]
-		"." record=[FeildName|LOWERST]	|
+		"." feild=[FeildName|LOWERST]	|
 		{RecordReferenceSender}		"sender" 	"."	name=[VariableName|LOWERST]
-		"." record=[FeildName|LOWERST] |
+		"." feild=[FeildName|LOWERST] |
 		{RecordReferenceGlobal}		"global" 	"."	name=[VariableName|LOWERST]
-		"." record=[FeildName|LOWERST]
+		"." feild=[FeildName|LOWERST]
 	)
 ;
 

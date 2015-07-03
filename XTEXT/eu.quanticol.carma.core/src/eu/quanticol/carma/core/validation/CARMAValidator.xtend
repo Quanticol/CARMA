@@ -10,7 +10,6 @@ import eu.quanticol.carma.core.carma.ComponentExpression
 import eu.quanticol.carma.core.carma.EnvironmentProbExpression
 import eu.quanticol.carma.core.carma.EnvironmentRateExpression
 import eu.quanticol.carma.core.carma.EnvironmentUpdateExpression
-import eu.quanticol.carma.core.carma.MethodExpression
 import eu.quanticol.carma.core.carma.Model
 import eu.quanticol.carma.core.carma.Process
 import eu.quanticol.carma.core.carma.Processes
@@ -23,12 +22,12 @@ import java.util.ArrayList
 import org.eclipse.xtext.validation.Check
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.carma.Name
 import eu.quanticol.carma.core.carma.ProcessName
 import eu.quanticol.carma.core.carma.StoreBlock
-import eu.quanticol.carma.core.carma.MethodDefinition
-import eu.quanticol.carma.core.carma.Methods
-import eu.quanticol.carma.core.carma.MethodName
+import eu.quanticol.carma.core.carma.FunctionExpression
+import eu.quanticol.carma.core.carma.FunctionName
+import eu.quanticol.carma.core.carma.FunctionDefinition
+import eu.quanticol.carma.core.carma.Functions
 
 class CARMAValidator extends AbstractCARMAValidator {
 	
@@ -83,13 +82,13 @@ class CARMAValidator extends AbstractCARMAValidator {
 	}
 	
 	@Check
-	def check_ERROR_expression_type(MethodExpression expression){
+	def check_ERROR_expression_type(FunctionExpression expression){
 		var test = true
 		var message = "Error: this must evaluate to a number."
 		test = expression.type.isArith
 		//TODO
 		if(!test){
-			error(message,CarmaPackage::eINSTANCE.methodExpression_Expression,ERROR_MethodExpression_type)
+			error(message,CarmaPackage::eINSTANCE.functionExpression_Expression,ERROR_MethodExpression_type)
 		}
 	}
 	
@@ -192,14 +191,14 @@ class CARMAValidator extends AbstractCARMAValidator {
 	
 	public static val ERROR_MethodDefinition_name_unique = "ERROR: Functions must have a unique name."
 	@Check
-	def check_ERROR_MethodDefinition_name_unique(MethodDefinition md){
+	def check_ERROR_MethodDefinition_name_unique(FunctionDefinition md){
 		var String message = "ERROR: Functions must have a unique name."
-		var ms = md.getContainerOfType(Methods)
+		var ms = md.getContainerOfType(Functions)
 		
 		
 		var ArrayList<String> names = new ArrayList<String>
 		
-		for(n : ms.eAllOfType(MethodName))
+		for(n : ms.eAllOfType(FunctionName))
 			names.add(n.name)
 			
 		names.remove(md.name)
@@ -208,7 +207,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 		
 		if(test){
 			error( message ,
-					CarmaPackage::eINSTANCE.methodDefinition_Name,
+					CarmaPackage::eINSTANCE.functionDefinition_Name,
 					ERROR_MethodDefinition_name_unique
 			)
 		}

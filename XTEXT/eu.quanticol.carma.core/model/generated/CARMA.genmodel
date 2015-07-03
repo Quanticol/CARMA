@@ -353,19 +353,19 @@
     <genClasses ecoreClass="CARMA.ecore#//VariableReferenceSender"/>
     <genClasses ecoreClass="CARMA.ecore#//VariableReferenceGlobal"/>
     <genClasses ecoreClass="CARMA.ecore#//RecordReferencePure">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordReferencePure/record"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordReferencePure/feild"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//RecordReferenceMy">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordReferenceMy/record"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordReferenceMy/feild"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//RecordReferenceReceiver">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordReferenceReceiver/record"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordReferenceReceiver/feild"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//RecordReferenceSender">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordReferenceSender/record"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordReferenceSender/feild"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//RecordReferenceGlobal">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordReferenceGlobal/record"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//RecordReferenceGlobal/feild"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//AttribVariableDeclaration">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AttribVariableDeclaration/assign"/>
