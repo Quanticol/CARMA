@@ -4,7 +4,7 @@ generate carma "http://www.quanticol.eu/carma/core/CARMA"
 
 
 Model:
-	(methods=Methods)?
+	(functions=Functions)?
 	(records=Records)?
 	components=ComponentStyle
 ;
@@ -66,7 +66,7 @@ RecordSignature  returns RecordSignature hidden(ML_COMMENT,SL_COMMENT,WS):
 	recordDefinitionParameters=RecordParameters
 ; 
 
-RecordParameters hidden(ML_COMMENT,SL_COMMENT,WS): 
+RecordParameters returns Parameters hidden(ML_COMMENT,SL_COMMENT,WS): 
 	{RecordParameters} "("
 	(parameters+=AttribParameter
 	( "," parameters+=AttribParameter )*)?
@@ -75,34 +75,30 @@ RecordParameters hidden(ML_COMMENT,SL_COMMENT,WS):
 
 RecordDefinitionStatementBlock hidden(ML_COMMENT,SL_COMMENT,WS): 
 	"{"
-		  attributes+=RecordAttribVariableDeclaration ";"
-		  (attributes+=RecordAttribVariableDeclaration ";")*
+		  feilds+=FeildDeclaration ";"
+		  (feilds+=FeildDeclaration ";")*
 	"}"
 ;
 
-RecordArguments hidden(ML_COMMENT,SL_COMMENT,WS): 
+RecordArguments returns Arguments hidden(ML_COMMENT,SL_COMMENT,WS): 
 	{RecordArguments} "("
 	(arguments+=RecordArgument
 	( "," arguments+=RecordArgument )*)?
 	")"
 ;
 
-RecordArgument hidden(ML_COMMENT,SL_COMMENT,WS): 
-	{RecordArgument} argument=(VariableReference | CarmaInteger)
-;
-
 InstantiateRecord hidden(ML_COMMENT,SL_COMMENT,WS): 
 	"new" type=RecordType arguments=RecordArguments 
 ;
 
-////////////////////////////////////////////////////VARIABLES
+////////////////////////////////////////////////////NAMES
 
 VariableName returns Name hidden(ML_COMMENT,SL_COMMENT,WS):
 	{VariableName} name=LOWERST
 ;
 
-RecordName returns Name hidden(ML_COMMENT,SL_COMMENT,WS):
-	{RecordName} name=LOWERST
+FeildName returns Name hidden(ML_COMMENT,SL_COMMENT,WS):
+	{FeildName} name=LOWERST
 ;
 
 ActionName returns Name hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -117,8 +113,8 @@ ComponentName returns Name  hidden(ML_COMMENT,SL_COMMENT,WS):
 	{ComponentName} name=UPPERST
 ;
 
-MethodName returns Name  hidden(ML_COMMENT,SL_COMMENT,WS):
-	{MethodName} name=UPPERST
+FunctionName returns Name  hidden(ML_COMMENT,SL_COMMENT,WS):
+	{FunctionName} name=UPPERST
 ;
 
 MeasureName returns Name  hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -132,6 +128,8 @@ SystemName returns Name hidden(ML_COMMENT,SL_COMMENT,WS):
 RecordTypeName returns Name hidden(ML_COMMENT,SL_COMMENT,WS):
 	{RecordTypeName} name=UPPERST
 ;
+
+////////////////////////////////////////////////////PARAMS
 
 AttribParameter returns Parameter hidden(ML_COMMENT,SL_COMMENT,WS):
 	{AttribParameter} type=AttribType	name=VariableName
@@ -157,6 +155,24 @@ StateParameter hidden(ML_COMMENT,SL_COMMENT,WS):
 	{StateParameter} parameter=ProcessName
 ; 
 
+FunctionParameter returns MethodParameter hidden(ML_COMMENT,SL_COMMENT,WS):
+	(
+		AttribParameter |
+		RecordParameter |
+		DoubleParameter	|
+		IntgerParameter
+	)
+;
+
+CompParameter returns CompParameter hidden(ML_COMMENT,SL_COMMENT,WS):
+	(
+		AttribParameter |
+		RecordParameter |
+		StateParameter
+	)
+;
+
+////////////////////////////////////////////////////TYPE
 
 Types returns Types hidden(ML_COMMENT,SL_COMMENT,WS):
 	(
@@ -183,70 +199,66 @@ RecordType returns Type hidden(ML_COMMENT,SL_COMMENT,WS):
 	{RecordType} name=[RecordTypeName|UPPERST]
 ;
 
-MethodParameters returns MethodParameters hidden(ML_COMMENT,SL_COMMENT,WS):
-	(
-		AttribParameter |
-		RecordParameter |
-		DoubleParameter	|
-		IntgerParameter
-	)
-;
+////////////////////////////////////////////////////ARGUMENTS
 
-InputParameters returns InputParameters hidden(ML_COMMENT,SL_COMMENT,WS):
-		InputParameter 
-;
-
-PreArguments returns PreArguments hidden(ML_COMMENT,SL_COMMENT,WS):
+PreArgument returns PreArgument hidden(ML_COMMENT,SL_COMMENT,WS):
 		value=Expression	
 ;
 
-
-CompParameters returns CompParameters hidden(ML_COMMENT,SL_COMMENT,WS):
-	(
-		AttribParameter |
-		RecordParameter |
-		StateParameter
-	)
-;
-
-CompArguments returns CompArguments hidden(ML_COMMENT,SL_COMMENT,WS):
+CompArgument returns CompArgument hidden(ML_COMMENT,SL_COMMENT,WS):
 		value=Expression	
 ;
 
-Arguments returns Arguments hidden(ML_COMMENT,SL_COMMENT,WS):
+FunctionArgument returns MethodArgument hidden(ML_COMMENT,SL_COMMENT,WS):
 		value=Expression	
 ;
+
+OutputActionArgument returns OutputActionArgument hidden(ML_COMMENT,SL_COMMENT,WS):
+	value=
+		(
+			VariableReference 	|	
+			CarmaInteger
+		)
+;
+
+RecordArgument returns RecordArgument hidden(ML_COMMENT,SL_COMMENT,WS): 
+	value=
+		(
+			VariableReference | 
+			CarmaInteger
+		)
+;
+
+////////////////////////////////////////////////////REFERENCE
 
 VariableReference returns VariableReference hidden(ML_COMMENT,SL_COMMENT,WS):
 	(
 		{VariableReferencePure} 					name=[VariableName|LOWERST] |
 		{VariableReferenceMy} 		"my" 		"." name=[VariableName|LOWERST] |
-		{VariableReferenceThis} 	"this" 		"." name=[VariableName|LOWERST] |
 		{VariableReferenceReceiver}	"receiver" 	"." name=[VariableName|LOWERST] |
 		{VariableReferenceSender}	"sender" 	"."	name=[VariableName|LOWERST] |
 		{VariableReferenceGlobal}	"global"	"." name=[VariableName|LOWERST] |
 		{RecordReferencePure} 						name=[VariableName|LOWERST]
-		"." record=[RecordName|LOWERST]	|
+		"." record=[FeildName|LOWERST]	|
 		{RecordReferenceMy} 		"my" 		"." name=[VariableName|LOWERST]
-		"." record=[RecordName|LOWERST]	|
-		{RecordReferenceThis} 		"this" 		"." name=[VariableName|LOWERST]
-		"." record=[RecordName|LOWERST]	|
+		"." record=[FeildName|LOWERST]	|
 		{RecordReferenceReceiver}	"receiver" 	"." name=[VariableName|LOWERST]
-		"." record=[RecordName|LOWERST]	|
+		"." record=[FeildName|LOWERST]	|
 		{RecordReferenceSender}		"sender" 	"."	name=[VariableName|LOWERST]
-		"." record=[RecordName|LOWERST] |
+		"." record=[FeildName|LOWERST] |
 		{RecordReferenceGlobal}		"global" 	"."	name=[VariableName|LOWERST]
-		"." record=[RecordName|LOWERST]
+		"." record=[FeildName|LOWERST]
 	)
 ;
 
+////////////////////////////////////////////////////DECLARATION
 
 AttribVariableDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
 	{AttribVariableDeclaration} type=AttribType	name=VariableName	":="	assign=Expression 
 ;
 
-RecordAttribVariableDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	{RecordAttribVariableDeclaration} type=AttribType	name=RecordName	":="	assign=Expression
+FeildDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
+	{FeildDeclaration} type=AttribType	name=FeildName	":="	assign=Expression
 ;
 
 MeasureVariableDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -268,7 +280,7 @@ RecordDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
 		)
 ;
 
-MethodDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
+FunctionDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
 	(
 		AttribVariableDeclaration |
 		IntgerVariableDeclaration |
@@ -281,12 +293,14 @@ StoreDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
 	(AttribVariableDeclaration | RecordDeclaration)
 ;
 
+////////////////////////////////////////////////////ASSIGNMENT
+
 UpdateAssignment hidden(ML_COMMENT,SL_COMMENT,WS):
 	{UpdateAssignment} attribute=VariableReference ":=" expression=UpdateExpression
 ;
 
-MethodAssignment hidden(ML_COMMENT,SL_COMMENT,WS):
-	{MethodAssignment} attribute=VariableReference ":=" expression=MethodExpression
+FunctionAssignment hidden(ML_COMMENT,SL_COMMENT,WS):
+	{FunctionAssignment} attribute=VariableReference ":=" expression=FunctionExpression
 ;
 
 ComponentAssignment hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -297,14 +311,16 @@ EnvironmentUpdateAssignment hidden(ML_COMMENT,SL_COMMENT,WS):
 	{EnvironmentUpdateAssignment} attribute=VariableReference ":=" expression=EnvironmentUpdateExpression
 ;
 
-MethodReference returns MethodExpressions hidden(ML_COMMENT,SL_COMMENT,WS):
+////////////////////////////////////////////////////CALLS
+
+Calls hidden(ML_COMMENT,SL_COMMENT,WS):
 	(
-		{MethodReferenceMan}	ref=MethodCall |
-		{MethodReferencePre}	ref=PreMethodCall
+		{FunctionReferenceMan}	ref=FunctionCall |
+		{FunctionReferencePre}	ref=PreFunctionCall
 	)
 ;
 
-////////////////////////////////////////////////////MACRO
+////////////////////////////////////////////////////STATE
 
 State returns State hidden(ML_COMMENT,SL_COMMENT,WS):
 	ParallelState
@@ -330,7 +346,7 @@ SetComp hidden(ML_COMMENT,SL_COMMENT,WS):
 	"}"
 ; 
 
-////////////////////////////////////////////////////ComponentComprehension
+////////////////////////////////////////////////////COMPONENT COMPREHENSION
 ComponentComprehension returns ComponentComprehension hidden(ML_COMMENT,SL_COMMENT,WS):
 	ParallelComponentComprehension
 ; 
@@ -359,100 +375,96 @@ BlockSpawn hidden(ML_COMMENT,SL_COMMENT,WS):
 //;
 
 ////////////////////////////////////////////////////FUNCTIONS
-Methods hidden(ML_COMMENT,SL_COMMENT,WS):
-	methods+=MethodDefinition+
+Functions hidden(ML_COMMENT,SL_COMMENT,WS):
+	functions+=FunctionDefinition+
 ;
 
-MethodDefinition hidden(ML_COMMENT,SL_COMMENT,WS):
-	{MethodDefinition}
+FunctionDefinition hidden(ML_COMMENT,SL_COMMENT,WS):
+	{FunctionDefinition}
 	"fun"
 	type=Types
-	name=MethodName
-	methodParameters=MethodDefinitionParameters
-	methodBody=MethodBody
+	name=FunctionName
+	functionParameters=FunctionDefinitionParameters
+	functionBody=FunctionBody
 ;
 	
-MethodDefinitionParameters hidden(ML_COMMENT,SL_COMMENT,WS):
-	{MethodDefinitionParameters}
+FunctionDefinitionParameters returns Parameters hidden(ML_COMMENT,SL_COMMENT,WS):
+	{FunctionDefinitionParameters}
 	"("
-	(parameters+=MethodDefinitionParameter
-	( "," parameters+=MethodDefinitionParameter )*)?
+	(parameters+=FunctionParameter
+	( "," parameters+=FunctionParameter )*)?
 	")"
 ;
-
-MethodDefinitionParameter hidden(ML_COMMENT,SL_COMMENT,WS):
-	parameter=MethodParameters
-;
 	
-MethodBody hidden(ML_COMMENT,SL_COMMENT,WS):
-	{MethodBody} 
+FunctionBody hidden(ML_COMMENT,SL_COMMENT,WS):
+	{FunctionBody} 
 	"{" 
-	statements+=MethodStatement*
-	methodReturn=MethodReturn
+	statements+=FunctionStatement*
+	methodReturn=FunctionReturn
 	"}"
 ;
 	
-MethodStatement hidden(ML_COMMENT,SL_COMMENT,WS):
+FunctionStatement hidden(ML_COMMENT,SL_COMMENT,WS):
 	(
-		MethodDeclaration 			|
-		MethodAssignment		 	|
-		MethodIfStatement 			|
-		MethodForStatement
+		FunctionDeclaration 			|
+		FunctionAssignment		 		|
+		FunctionIfStatement 			|
+		FunctionForStatement
 	)
 	";"
 ;
 
 
-MethodIfStatement hidden(ML_COMMENT,SL_COMMENT,WS):
+FunctionIfStatement hidden(ML_COMMENT,SL_COMMENT,WS):
 	"if" "(" expression=BooleanExpression ")"
-	thenBlock=MethodIfBlock
-	(=>"else" elseBlock=MethodIfBlock)?
+	thenBlock=FunctionIfBlock
+	(=>"else" elseBlock=FunctionIfBlock)?
 ;
 	
 
-MethodIfBlock hidden(ML_COMMENT,SL_COMMENT,WS):
-	statements += MethodStatement |
- '{' statements += MethodStatement+ '}'
+FunctionIfBlock hidden(ML_COMMENT,SL_COMMENT,WS):
+	statements += FunctionStatement |
+ '{' statements += FunctionStatement+ '}'
 ;
 	
 
-MethodForStatement hidden(ML_COMMENT,SL_COMMENT,WS):
-	"for" "(" variable=AttribVariableDeclaration ";" expression=BooleanExpression ";" afterThought=MethodAfterThought")" 
-	MethodForBlock=MethodForBlock
+FunctionForStatement hidden(ML_COMMENT,SL_COMMENT,WS):
+	"for" "(" variable=AttribVariableDeclaration ";" expression=BooleanExpression ";" afterThought=FunctionAfterThought")" 
+	functionForBlock=FunctionForBlock
 ;
 	
 
-MethodAfterThought hidden(ML_COMMENT,SL_COMMENT,WS):
-	{MethodAfterThought}
-	methodAssignment=MethodAssignment
+FunctionAfterThought hidden(ML_COMMENT,SL_COMMENT,WS):
+	{FunctionAfterThought}
+	functionAssignment=FunctionAssignment
 ;
 	
-MethodForBlock hidden(ML_COMMENT,SL_COMMENT,WS):
-	statements += MethodStatement |
+FunctionForBlock hidden(ML_COMMENT,SL_COMMENT,WS):
+	statements += FunctionStatement |
  	'{' 
- 	statements += MethodStatement+ 
+ 	statements += FunctionStatement+ 
  	'}'
 ;	
 
-MethodCall hidden(ML_COMMENT,SL_COMMENT,WS):
-	{MethodCall} name=[MethodName|UPPERST]
-	arguments=MethodCallArguments 
+FunctionCall hidden(ML_COMMENT,SL_COMMENT,WS):
+	{FunctionCall} name=[FunctionName|UPPERST]
+	arguments=FunctionCallArguments 
 ;
 	
-MethodCallArguments hidden(ML_COMMENT,SL_COMMENT,WS):
-	{MethodCallArguments}
+FunctionCallArguments returns Arguments hidden(ML_COMMENT,SL_COMMENT,WS):
+	{FunctionCallArguments}
 	"("
-	(arguments+=Arguments
-	( "," arguments+=Arguments )*)?
+	(arguments+=FunctionArgument
+	( "," arguments+=FunctionArgument )*)?
 	")"
 ;	 
 
-MethodReturn hidden(ML_COMMENT,SL_COMMENT,WS):
-	"return" expression=MethodExpression ";"
+FunctionReturn hidden(ML_COMMENT,SL_COMMENT,WS):
+	"return" expression=FunctionExpression ";"
 ;
 
 ////////////////////////////////////////////////////PREDEFINED METHODS	
-PreMethodCall returns PreMethodCall hidden(ML_COMMENT,SL_COMMENT,WS):
+PreFunctionCall returns PreFunctionCall hidden(ML_COMMENT,SL_COMMENT,WS):
 	(	
 	{PDFunction} 		name="PDF"		| 
 	{UniformFunction} 	name="Uniform"	| 
@@ -461,14 +473,14 @@ PreMethodCall returns PreMethodCall hidden(ML_COMMENT,SL_COMMENT,WS):
 	{MaxFunction}		name="Max"		|
 	{MinFunction}		name="Min"
 	)
-	functionArguments=PredMethodCallArguments 
+	functionArguments=PredFunctionCallArguments 
 ;
 	
-PredMethodCallArguments hidden(ML_COMMENT,SL_COMMENT,WS):
-	{PredMethodCallArguments} 
+PredFunctionCallArguments returns Arguments hidden(ML_COMMENT,SL_COMMENT,WS):
+	{PredFunctionCallArguments} 
 	"("
-	(arguments+=PreArguments
-	( "," arguments+=PreArguments )*)?
+	(arguments+=PreArgument
+	( "," arguments+=PreArgument )*)?
 	")"
 ;
 
@@ -496,11 +508,11 @@ ComponentBlockSignature returns ComponentSignature hidden(ML_COMMENT,SL_COMMENT,
 	componentParameters=ComponentParameters
 ;
 	
-ComponentParameters hidden(ML_COMMENT,SL_COMMENT,WS):
+ComponentParameters returns Parameters hidden(ML_COMMENT,SL_COMMENT,WS):
 	{ComponentParameters}
 	"("
-	(parameters+=CompParameters
-	( "," parameters+=CompParameters )*)?
+	(parameters+=CompParameter
+	( "," parameters+=CompParameter )*)?
 	")"
 ;
 	
@@ -577,11 +589,11 @@ ComponentBlockSpawn returns CBND hidden(ML_COMMENT,SL_COMMENT,WS):
 //	("["population=INT"]")?
 ;
 
-ComponentBlockArguments hidden(ML_COMMENT,SL_COMMENT,WS):
+ComponentBlockArguments returns Arguments hidden(ML_COMMENT,SL_COMMENT,WS):
 	{ComponentBlockArguments}
 	"("
-	(arguments+=CompArguments
-	( "," arguments+=CompArguments )*)?
+	(arguments+=CompArgument
+	( "," arguments+=CompArgument )*)?
 	")"
 ;
 
@@ -769,11 +781,11 @@ InputAction returns IO  hidden(ML_COMMENT,SL_COMMENT,WS):
 	{InputAction}  inputActionArguments=InputActionParameters (update=Update)?
 ;
 
-InputActionParameters hidden(ML_COMMENT,SL_COMMENT,WS):
+InputActionParameters returns Parameters hidden(ML_COMMENT,SL_COMMENT,WS):
 	{InputActionParameters}
 	"(" 
-	(parameters+=InputParameters
-	( "," parameters+=InputParameters )* )?
+	(parameters+=InputParameter
+	( "," parameters+=InputParameter )* )?
 	")"
 ;
 
@@ -781,19 +793,12 @@ OutputAction returns IO hidden(ML_COMMENT,SL_COMMENT,WS):
 	{OutputAction} outputActionArguments=OutputActionArguments (update=Update)?
 ;
 
-OutputActionArguments hidden(ML_COMMENT,SL_COMMENT,WS):
+OutputActionArguments returns Arguments hidden(ML_COMMENT,SL_COMMENT,WS):
 	{OutputActionArguments}
 	"<"
 	(outputArguments+=OutputActionArgument
 	( "," outputArguments+=OutputActionArgument )*)?
 	">"
-;
-
-OutputActionArgument returns OutputActionArgument hidden(ML_COMMENT,SL_COMMENT,WS):
-	(
-		ref=VariableReference 	|	
-		value=CarmaInteger
-	)
 ;
 
 Update hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -813,8 +818,8 @@ UpdateExpression hidden(ML_COMMENT,SL_COMMENT,WS):
 	{UpdateExpression} expression=Expression
 ;
 
-MethodExpression hidden(ML_COMMENT,SL_COMMENT,WS):
-	{MethodExpression} expression=Expression
+FunctionExpression hidden(ML_COMMENT,SL_COMMENT,WS):
+	{FunctionExpression} expression=Expression
 ;
 
 EnvironmentProbExpression hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -901,7 +906,7 @@ Primary returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
 Atomic returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
 	{AtomicPrimitive}			value=PrimitiveTypes 		|
 	{AtomicVariable}			value=VariableReference 	|
-	{AtomicMethodReference}		value=MethodReference		|
+	{AtomicMethodReference}		value=Calls					|
 	{AtomicNow}					value=Now					|
 	{AtomicMeasure}				value=SetComp				|
 	{AtomicState}				value=State					|
