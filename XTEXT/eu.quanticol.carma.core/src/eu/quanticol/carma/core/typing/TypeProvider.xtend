@@ -20,7 +20,6 @@ import eu.quanticol.carma.core.carma.Division
 import eu.quanticol.carma.core.carma.DoubleType
 import eu.quanticol.carma.core.carma.Equality
 import eu.quanticol.carma.core.carma.Expressions
-import eu.quanticol.carma.core.carma.InputParameter
 import eu.quanticol.carma.core.carma.IntgerType
 import eu.quanticol.carma.core.carma.FunctionCall
 import eu.quanticol.carma.core.carma.FunctionDefinition
@@ -62,6 +61,7 @@ import eu.quanticol.carma.core.carma.BooleanExpression
 import java.util.HashMap
 import eu.quanticol.carma.core.carma.UpdateExpression
 import eu.quanticol.carma.core.carma.Calls
+import eu.quanticol.carma.core.carma.InputActionParameter
 
 class BaseType {
 	
@@ -113,6 +113,9 @@ class TypeProvider {
 	public static val outcomeType			=	new BaseType() => [ parent="primitive" 	me="outcome" 		operation="argument" 	set="real"	 ]
 	public static val rangeType				=	new BaseType() => [ parent="primitive" 	me="outcome" 		operation="argument" 	set="integer"]
 	public static val stateType				=	new BaseType() => [ parent="state" 		me="state" 			operation="state" 		set="state"	 ]
+	//TODO
+	//get actual pre defined type
+	public static val predefinedType		=	new BaseType() => [	parent="function"	me="pre"			operation="arith"]
 
 	def BaseType getType(String type){
 		var baseType = new BaseType() => [ parent="record" operation="arith" set="integer"]
@@ -143,7 +146,7 @@ class TypeProvider {
 		
 		//it could be an input action parameter, which doesn't have a "type" attribute
 		if(types.size == 0){
-			parameter = variableName.getContainerOfType(InputParameter)
+			parameter = variableName.getContainerOfType(InputActionParameter)
 			if(parameter != null)
 				toReturn = attribType
 		}
@@ -293,7 +296,7 @@ class TypeProvider {
 	def BaseType getType(Addition expression){
 		var left 	= expression.left.getType
 		var right 	= expression.right.getType
-		if(left.sameType(right) && left.isArith && right.isArith)
+		if(left.isArith && right.isArith)
 			return additionType
 		else
 			return new BaseType()
@@ -302,7 +305,7 @@ class TypeProvider {
 	def BaseType getType(Multiplication expression){
 		var left 	= expression.left.getType
 		var right 	= expression.right.getType
-		if(left.sameType(right) && left.isArith && right.isArith)
+		if(left.isArith && right.isArith)
 			return multiplicationType
 		else
 			return new BaseType()
@@ -311,7 +314,7 @@ class TypeProvider {
 	def BaseType getType(Modulo expression){
 		var left 	= expression.left.getType
 		var right 	= expression.right.getType
-		if(left.sameType(right) && left.isArith && right.isArith)
+		if(left.isArith && right.isArith)
 			return moduloType
 		else
 			return new BaseType()
@@ -320,7 +323,7 @@ class TypeProvider {
 	def BaseType getType(Division expression){
 		var left 	= expression.left.getType
 		var right 	= expression.right.getType
-		if(left.sameType(right) && left.isArith && right.isArith)
+		if(left.isArith && right.isArith)
 			return divisionType
 		else
 			return new BaseType()
@@ -380,8 +383,7 @@ class TypeProvider {
 	 * This will need to search for the type of the predefined function
 	 */
 	def BaseType getType(PreFunctionCall expression){
-		//TODO
-		new BaseType()
+		predefinedType
 	}
 	
 	def BaseType getType(AtomicNow expression){

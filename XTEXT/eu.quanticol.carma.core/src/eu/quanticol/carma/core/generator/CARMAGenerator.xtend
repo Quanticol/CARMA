@@ -3,73 +3,31 @@
  */
 package eu.quanticol.carma.core.generator
 
-import com.google.inject.Inject
-import eu.quanticol.carma.core.carma.Model
-import eu.quanticol.carma.core.carma.System
-import eu.quanticol.carma.core.generator.actions.ActionManager
-import eu.quanticol.carma.core.generator.carmavariable.CarmaVariableManager
-import eu.quanticol.carma.core.generator.components.ComponentManager
-import eu.quanticol.carma.core.generator.measures.MeasureManager
-import eu.quanticol.carma.core.utils.LabelUtil
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.generator.IGenerator
+import eu.quanticol.carma.core.generator.ms.MSCompiler
+import eu.quanticol.carma.core.carma.Model
+import com.google.inject.Inject
+import eu.quanticol.carma.core.utils.LabelUtil
 
-/**
- * Generates code from your model files on save.
- * 
- * see http://www.eclipse.org/Xtext/documentation.html#TutorialCodeGeneration
- */
 class CARMAGenerator implements IGenerator {
 	
 	@Inject extension LabelUtil
-	@Inject extension GenerateDefinitions
-	@Inject extension GenerateFactory
-	@Inject extension GenerateSystems
-	@Inject extension GeneratorUtils
+	@Inject extension MSCompiler
 	
 	override void doGenerate(Resource resource, IFileSystemAccess fsa) {
 		
-//		var Model model = resource.allContents.toIterable.filter(Model).get(0)
-//		var systems = resource.allContents.toIterable.filter(System)
-//		
-//		var variableManager = new CarmaVariableManager()
-//		variableManager.populateCarmaVariableManager(model)
-//		
-//		var actionManager = new ActionManager()
-//		actionManager.populateActionManager(model)
-//		
-//		var componentManager = new ComponentManager(actionManager,variableManager)
-//		componentManager.populateComponentManager(model)
-//		
-//		var measureManager = new MeasureManager(actionManager,variableManager,componentManager)
-//		measureManager.populateMeasureManager(model)
-//		
-//		var modelName = model.label
-//		var URI = "carma" + "/" + modelName.toLowerCase
-//		var packageName = "package carma." + modelName.toLowerCase
-//		
-//		//Definitions
-//		fsa.generateFile(URI + "/" + modelName + "Definition.java",model.compileDefinitions(packageName,
-//			variableManager,
-//			actionManager,
-//			componentManager,
-//			measureManager
-//		))
-//		
-//		//Systems
-//		for(system : systems){
-//			fsa.generateFile(URI + "/" + system.disarm + ".java", system.compileSystem(packageName,
-//				variableManager,
-//				actionManager,
-//				componentManager,
-//				measureManager
-//			))
-//		}
-//		
-//		//Factory
-//		fsa.generateFile(URI + "/" + modelName + "Factory.java",model.compileFactory(packageName))
+		/**
+		 * I imagine here would be some sort of switch, for now we just use the "ms" - michele loreti simulator
+		 */
+		var files = resource.extractJava
 		
+		
+		if(files != null)
+			for(key : files.keySet){
+					fsa.generateFile(key,files.get(key))
+			}
 	}
 	
 }

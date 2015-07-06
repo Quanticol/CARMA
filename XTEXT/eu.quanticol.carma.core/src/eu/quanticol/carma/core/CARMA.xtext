@@ -135,8 +135,8 @@ AttribParameter returns Parameter hidden(ML_COMMENT,SL_COMMENT,WS):
 	{AttribParameter} type=AttribType	name=VariableName
 ;
 
-InputParameter returns Parameter hidden(ML_COMMENT,SL_COMMENT,WS):
-	{InputParameter} name=VariableName
+InputActionParameter returns Parameter hidden(ML_COMMENT,SL_COMMENT,WS):
+	{InputActionParameter} name=VariableName
 ;
 
 RecordParameter returns Parameter hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -152,8 +152,8 @@ IntgerParameter returns Parameter hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 StateParameter hidden(ML_COMMENT,SL_COMMENT,WS):
-	{StateParameter} parameter=ProcessName
-; 
+	{StateParameter} type=StateType name=ProcessName
+;
 
 FunctionParameter returns MethodParameter hidden(ML_COMMENT,SL_COMMENT,WS):
 	(
@@ -199,33 +199,46 @@ RecordType returns Type hidden(ML_COMMENT,SL_COMMENT,WS):
 	{RecordType} name=[RecordTypeName|UPPERST]
 ;
 
+StateType returns Type hidden(ML_COMMENT,SL_COMMENT,WS):
+	{StateType} name="state"
+;
+
+
 ////////////////////////////////////////////////////ARGUMENTS
 
-PreArgument returns PreArgument hidden(ML_COMMENT,SL_COMMENT,WS):
-		value=Expression	
+PreArgument returns Argument hidden(ML_COMMENT,SL_COMMENT,WS):
+		{PreArgument} value=Expression	
 ;
 
-CompArgument returns CompArgument hidden(ML_COMMENT,SL_COMMENT,WS):
-		value=Expression	
+CompArgument returns Argument hidden(ML_COMMENT,SL_COMMENT,WS):
+		{CompArgument} value=
+		(
+			VariableReference 	| 
+			CarmaInteger		|
+			Range				|
+			InstantiateRecord	|
+			State
+		)
 ;
 
-FunctionArgument returns MethodArgument hidden(ML_COMMENT,SL_COMMENT,WS):
-		value=Expression	
+FunctionArgument returns Argument hidden(ML_COMMENT,SL_COMMENT,WS):
+		{FunctionArgument} value=Expression	
 ;
 
-OutputActionArgument returns OutputActionArgument hidden(ML_COMMENT,SL_COMMENT,WS):
-	value=
+OutputActionArgument returns Argument hidden(ML_COMMENT,SL_COMMENT,WS):
+	{OutputActionArgument} value=
 		(
 			VariableReference 	|	
 			CarmaInteger
 		)
 ;
 
-RecordArgument returns RecordArgument hidden(ML_COMMENT,SL_COMMENT,WS): 
-	value=
+RecordArgument returns Argument hidden(ML_COMMENT,SL_COMMENT,WS): 
+	{RecordArgument} value=
 		(
-			VariableReference | 
-			CarmaInteger
+			VariableReference 	| 
+			CarmaInteger		|
+			Range
 		)
 ;
 
@@ -254,29 +267,45 @@ VariableReference returns VariableReference hidden(ML_COMMENT,SL_COMMENT,WS):
 ////////////////////////////////////////////////////DECLARATION
 
 AttribVariableDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	{AttribVariableDeclaration} type=AttribType	name=VariableName	":="	assign=Expression 
+	{AttribVariableDeclaration} type=AttribType	name=VariableName	":="	assign=(
+		VariableReference |
+		CarmaInteger
+	) 
 ;
 
 FeildDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	{FeildDeclaration} type=AttribType	name=FeildName	":="	assign=Expression
+	{FeildDeclaration} type=AttribType	name=FeildName	":="	assign=(
+		VariableReference |
+		CarmaInteger
+	)
 ;
 
 MeasureVariableDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	{MeasureVariableDeclaration} type=AttribType	name=VariableName	":="	assign=Expression
+	{MeasureVariableDeclaration} type=AttribType	name=VariableName	":="	assign=(
+		Range |
+		CarmaInteger
+	)
 ;
 
 IntgerVariableDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	{IntgerVariableDeclaration} type=IntgerType	name=VariableName	":="	assign=Expression
+	{IntgerVariableDeclaration} type=IntgerType	name=VariableName	":="	assign=(
+		VariableReference |
+		CarmaInteger
+	)
 ;
 
 DoubleVariableDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	{DoubleVariableDeclaration} type=DoubleType	name=VariableName	":="	assign=Expression
+	{DoubleVariableDeclaration} type=DoubleType	name=VariableName	":="	assign=(
+		VariableReference |
+		CarmaDouble
+	)
 ;
 
 RecordDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	{RecordDeclaration} type=RecordType name=VariableName ":=" ( 
-		instantiate=InstantiateRecord |
-		assign=VariableReference
+	{RecordDeclaration} type=RecordType name=VariableName ":=" 
+		( 
+			instantiate=InstantiateRecord |
+			assign=VariableReference
 		)
 ;
 
@@ -784,8 +813,8 @@ InputAction returns IO  hidden(ML_COMMENT,SL_COMMENT,WS):
 InputActionParameters returns Parameters hidden(ML_COMMENT,SL_COMMENT,WS):
 	{InputActionParameters}
 	"(" 
-	(parameters+=InputParameter
-	( "," parameters+=InputParameter )* )?
+	(parameters+=InputActionParameter
+	( "," parameters+=InputActionParameter )* )?
 	")"
 ;
 

@@ -34,6 +34,8 @@ class CARMAValidator extends AbstractCARMAValidator {
 	@Inject extension TypeProvider
 	@Inject extension Util
 	
+	//TODO make sure number of RecordArguments matches the number of FeildDeclaration  
+	
 	//VariableName - must have same type everywhere
 	public static val ERROR_VariableName_unique_type 	= "ERROR_VariableName_unique_type"
 	@Check
@@ -174,9 +176,6 @@ class CARMAValidator extends AbstractCARMAValidator {
 		if(sb != null)
 			for(n : sb.eAllOfType(VariableName))
 				names.add(n.name)
-//		else
-//			for(n : sl.eAllOfType(VariableName))
-//				names.add(n.label)
 			
 		names.remove(variableName.name)
 		var boolean test = names.contains(variableName.name)
