@@ -12,4 +12,8 @@ class Attribute {
 		assignment = a
 	}
 	
+	override toString(){
+		name + ":" + type + ":" + assignment
+	}
+	
 }

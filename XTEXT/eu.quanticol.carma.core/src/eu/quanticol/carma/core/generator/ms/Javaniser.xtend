@@ -32,8 +32,10 @@ class Javaniser {
 	}
 	
 	def String javanise(CarmaInteger pt){
-		if(pt.negative != null) "-" + pt.value
-		return "this is a basic string"
+		if(pt.negative != null) 
+			return "-" + pt.value
+		else
+			return ""+pt.value
 	}
 	
 	def String javanise(Range pt){
