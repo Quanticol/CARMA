@@ -23,7 +23,7 @@ CarmaDouble returns PrimitiveTypes hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 CarmaExponent returns CarmaExponent hidden(ML_COMMENT,SL_COMMENT,WS):
-	'^' (negative="-")? exponent=INT
+	 "*" (negative="-")? base=INT '^' exponent=INT
 ;
 
 
@@ -78,13 +78,6 @@ RecordDefinitionStatementBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 		  feilds+=FeildDeclaration ";"
 		  (feilds+=FeildDeclaration ";")*
 	"}"
-;
-
-RecordArguments returns Arguments hidden(ML_COMMENT,SL_COMMENT,WS): 
-	{RecordArguments} "("
-	(arguments+=RecordArgument
-	( "," arguments+=RecordArgument )*)?
-	")"
 ;
 
 InstantiateRecord hidden(ML_COMMENT,SL_COMMENT,WS): 
@@ -155,7 +148,7 @@ StateParameter hidden(ML_COMMENT,SL_COMMENT,WS):
 	{StateParameter} type=StateType name=ProcessName
 ;
 
-FunctionParameter returns MethodParameter hidden(ML_COMMENT,SL_COMMENT,WS):
+FunctionParameter hidden(ML_COMMENT,SL_COMMENT,WS):
 	(
 		AttribParameter |
 		RecordParameter |
@@ -164,7 +157,7 @@ FunctionParameter returns MethodParameter hidden(ML_COMMENT,SL_COMMENT,WS):
 	)
 ;
 
-CompParameter returns CompParameter hidden(ML_COMMENT,SL_COMMENT,WS):
+CompParameter hidden(ML_COMMENT,SL_COMMENT,WS):
 	(
 		AttribParameter |
 		RecordParameter |
@@ -207,7 +200,11 @@ StateType returns Type hidden(ML_COMMENT,SL_COMMENT,WS):
 ////////////////////////////////////////////////////ARGUMENTS
 
 PreArgument returns Argument hidden(ML_COMMENT,SL_COMMENT,WS):
-		{PreArgument} value=Expression	
+		{PreArgument} value=(
+			VariableReference 	| 
+			CarmaInteger		|
+			CarmaDouble
+		)	
 ;
 
 CompArgument returns Argument hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -222,7 +219,11 @@ CompArgument returns Argument hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 FunctionArgument returns Argument hidden(ML_COMMENT,SL_COMMENT,WS):
-		{FunctionArgument} value=Expression	
+		{FunctionArgument} value=(
+			VariableReference 	| 
+			CarmaInteger		|
+			CarmaDouble
+		)
 ;
 
 OutputActionArgument returns Argument hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -240,6 +241,45 @@ RecordArgument returns Argument hidden(ML_COMMENT,SL_COMMENT,WS):
 			CarmaInteger		|
 			Range
 		)
+;
+
+PredFunctionCallArguments returns Arguments hidden(ML_COMMENT,SL_COMMENT,WS):
+	{PredFunctionCallArguments} 
+	"("
+	(arguments+=PreArgument
+	( "," arguments+=PreArgument )*)?
+	")"
+;
+
+ComponentBlockArguments returns Arguments hidden(ML_COMMENT,SL_COMMENT,WS):
+	{ComponentBlockArguments}
+	"("
+	(arguments+=CompArgument
+	( "," arguments+=CompArgument )*)?
+	")"
+;
+
+FunctionCallArguments returns Arguments hidden(ML_COMMENT,SL_COMMENT,WS):
+	{FunctionCallArguments}
+	"("
+	(arguments+=FunctionArgument
+	( "," arguments+=FunctionArgument )*)?
+	")"
+;
+
+OutputActionArguments returns Arguments hidden(ML_COMMENT,SL_COMMENT,WS):
+	{OutputActionArguments}
+	"<"
+	(outputArguments+=OutputActionArgument
+	( "," outputArguments+=OutputActionArgument )*)?
+	">"
+;
+
+RecordArguments returns Arguments hidden(ML_COMMENT,SL_COMMENT,WS): 
+	{RecordArguments} "("
+	(arguments+=RecordArgument
+	( "," arguments+=RecordArgument )*)?
+	")"
 ;
 
 ////////////////////////////////////////////////////REFERENCE
@@ -478,14 +518,6 @@ FunctionForBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 FunctionCall hidden(ML_COMMENT,SL_COMMENT,WS):
 	{FunctionCall} name=[FunctionName|UPPERST]
 	arguments=FunctionCallArguments 
-;
-	
-FunctionCallArguments returns Arguments hidden(ML_COMMENT,SL_COMMENT,WS):
-	{FunctionCallArguments}
-	"("
-	(arguments+=FunctionArgument
-	( "," arguments+=FunctionArgument )*)?
-	")"
 ;	 
 
 FunctionReturn hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -502,16 +534,9 @@ PreFunctionCall returns PreFunctionCall hidden(ML_COMMENT,SL_COMMENT,WS):
 	{MaxFunction}		name="Max"		|
 	{MinFunction}		name="Min"
 	)
-	functionArguments=PredFunctionCallArguments 
+	arguments=PredFunctionCallArguments 
 ;
-	
-PredFunctionCallArguments returns Arguments hidden(ML_COMMENT,SL_COMMENT,WS):
-	{PredFunctionCallArguments} 
-	"("
-	(arguments+=PreArgument
-	( "," arguments+=PreArgument )*)?
-	")"
-;
+
 
 ////////////////////////////////////////////////////COMPONENT
 ComponentStyle returns ComponentStyle hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -616,14 +641,6 @@ ComponentBlockSpawn returns CBND hidden(ML_COMMENT,SL_COMMENT,WS):
 	name=[ComponentName|UPPERST] 
 	arguments=ComponentBlockArguments
 //	("["population=INT"]")?
-;
-
-ComponentBlockArguments returns Arguments hidden(ML_COMMENT,SL_COMMENT,WS):
-	{ComponentBlockArguments}
-	"("
-	(arguments+=CompArgument
-	( "," arguments+=CompArgument )*)?
-	")"
 ;
 
 ComponentBlockForStatement hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -822,14 +839,6 @@ OutputAction returns IO hidden(ML_COMMENT,SL_COMMENT,WS):
 	{OutputAction} outputActionArguments=OutputActionArguments (update=Update)?
 ;
 
-OutputActionArguments returns Arguments hidden(ML_COMMENT,SL_COMMENT,WS):
-	{OutputActionArguments}
-	"<"
-	(outputArguments+=OutputActionArgument
-	( "," outputArguments+=OutputActionArgument )*)?
-	">"
-;
-
 Update hidden(ML_COMMENT,SL_COMMENT,WS):
 	{Update} "{" (updateAssignment+=UpdateAssignment ( "," updateAssignment+=UpdateAssignment)*)? "}"
 ;
@@ -938,10 +947,10 @@ Atomic returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
 	{AtomicMethodReference}		value=Calls					|
 	{AtomicNow}					value=Now					|
 	{AtomicMeasure}				value=SetComp				|
-	{AtomicState}				value=State					|
 	{AtomicRecord}				value=InstantiateRecord		|
 	{AtomicOutcome}				value=OutcomeProbability
 ;
+
 ////////////////////////////////////////////////////MEASURES
 
 MeasureBlock returns MeasureBlock hidden(ML_COMMENT,SL_COMMENT,WS):
