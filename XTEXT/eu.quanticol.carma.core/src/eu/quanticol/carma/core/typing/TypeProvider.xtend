@@ -11,34 +11,42 @@ import eu.quanticol.carma.core.carma.AtomicRecord
 import eu.quanticol.carma.core.carma.AtomicState
 import eu.quanticol.carma.core.carma.AtomicVariable
 import eu.quanticol.carma.core.carma.AttribType
+import eu.quanticol.carma.core.carma.BooleanExpression
+import eu.quanticol.carma.core.carma.Calls
 import eu.quanticol.carma.core.carma.CarmaBoolean
 import eu.quanticol.carma.core.carma.CarmaDouble
 import eu.quanticol.carma.core.carma.CarmaInteger
+import eu.quanticol.carma.core.carma.CeilingFunction
 import eu.quanticol.carma.core.carma.Comparison
 import eu.quanticol.carma.core.carma.Declaration
 import eu.quanticol.carma.core.carma.Division
 import eu.quanticol.carma.core.carma.DoubleType
 import eu.quanticol.carma.core.carma.Equality
 import eu.quanticol.carma.core.carma.Expressions
-import eu.quanticol.carma.core.carma.IntgerType
+import eu.quanticol.carma.core.carma.FeildDeclaration
+import eu.quanticol.carma.core.carma.FeildName
+import eu.quanticol.carma.core.carma.FloorFunction
 import eu.quanticol.carma.core.carma.FunctionCall
 import eu.quanticol.carma.core.carma.FunctionDefinition
 import eu.quanticol.carma.core.carma.FunctionExpression
 import eu.quanticol.carma.core.carma.FunctionName
 import eu.quanticol.carma.core.carma.FunctionReferenceMan
 import eu.quanticol.carma.core.carma.FunctionReferencePre
+import eu.quanticol.carma.core.carma.InputActionParameter
+import eu.quanticol.carma.core.carma.IntgerType
+import eu.quanticol.carma.core.carma.MaxFunction
+import eu.quanticol.carma.core.carma.MinFunction
 import eu.quanticol.carma.core.carma.Modulo
 import eu.quanticol.carma.core.carma.Multiplication
 import eu.quanticol.carma.core.carma.Not
 import eu.quanticol.carma.core.carma.Now
 import eu.quanticol.carma.core.carma.Or
 import eu.quanticol.carma.core.carma.OutcomeProbability
+import eu.quanticol.carma.core.carma.PDFunction
 import eu.quanticol.carma.core.carma.Parameter
 import eu.quanticol.carma.core.carma.PreFunctionCall
 import eu.quanticol.carma.core.carma.PrimitiveTypes
 import eu.quanticol.carma.core.carma.Range
-import eu.quanticol.carma.core.carma.FeildDeclaration
-import eu.quanticol.carma.core.carma.FeildName
 import eu.quanticol.carma.core.carma.RecordReferenceGlobal
 import eu.quanticol.carma.core.carma.RecordReferenceMy
 import eu.quanticol.carma.core.carma.RecordReferencePure
@@ -47,6 +55,8 @@ import eu.quanticol.carma.core.carma.RecordReferenceSender
 import eu.quanticol.carma.core.carma.RecordType
 import eu.quanticol.carma.core.carma.Subtraction
 import eu.quanticol.carma.core.carma.Type
+import eu.quanticol.carma.core.carma.UniformFunction
+import eu.quanticol.carma.core.carma.UpdateExpression
 import eu.quanticol.carma.core.carma.VariableName
 import eu.quanticol.carma.core.carma.VariableReference
 import eu.quanticol.carma.core.carma.VariableReferenceGlobal
@@ -55,13 +65,9 @@ import eu.quanticol.carma.core.carma.VariableReferencePure
 import eu.quanticol.carma.core.carma.VariableReferenceReceiver
 import eu.quanticol.carma.core.carma.VariableReferenceSender
 import java.util.ArrayList
+import java.util.HashMap
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.carma.BooleanExpression
-import java.util.HashMap
-import eu.quanticol.carma.core.carma.UpdateExpression
-import eu.quanticol.carma.core.carma.Calls
-import eu.quanticol.carma.core.carma.InputActionParameter
 
 class BaseType {
 	
@@ -383,7 +389,14 @@ class TypeProvider {
 	 * This will need to search for the type of the predefined function
 	 */
 	def BaseType getType(PreFunctionCall expression){
-		predefinedType
+		switch(expression){
+			PDFunction:			attribType
+			UniformFunction:	attribType
+			CeilingFunction:	attribType
+			FloorFunction:		attribType
+			MaxFunction:		attribType
+			MinFunction:		attribType
+		}
 	}
 	
 	def BaseType getType(AtomicNow expression){

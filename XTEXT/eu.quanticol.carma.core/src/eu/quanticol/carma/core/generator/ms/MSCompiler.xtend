@@ -75,7 +75,6 @@ class MSCompiler implements Compiler {
 		
 		MSCompiler.ATTRIBUTE_DIRECTORY = model.populate()
 		
-		
 		var toReturn = new HashMap<String,String>()
 		
 		
