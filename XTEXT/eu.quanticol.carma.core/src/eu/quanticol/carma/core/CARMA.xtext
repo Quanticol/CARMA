@@ -239,7 +239,7 @@ RecordArgument returns Argument hidden(ML_COMMENT,SL_COMMENT,WS):
 		(
 			VariableReference 	| 
 			CarmaInteger		|
-			Range
+			Range	
 		)
 ;
 
@@ -309,6 +309,12 @@ VariableReference returns VariableReference hidden(ML_COMMENT,SL_COMMENT,WS):
 AttribVariableDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
 	{AttribVariableDeclaration} type=AttribType	name=VariableName	":="	assign=(
 		VariableReference |
+		CarmaInteger
+	) 
+;
+
+ComponentForVariableDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
+	{ComponentForVariableDeclaration} type=AttribType	name=VariableName	":="	assign=(
 		CarmaInteger
 	) 
 ;
@@ -644,7 +650,7 @@ ComponentBlockSpawn returns CBND hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 ComponentBlockForStatement hidden(ML_COMMENT,SL_COMMENT,WS):
-	"for" "(" variable=AttribVariableDeclaration ";" expression=BooleanExpression ";" afterThought=ComponentAfterThought")" 
+	"for" "(" variable=ComponentForVariableDeclaration ";" expression=BooleanExpression ";" afterThought=ComponentAfterThought")" 
 	componentBlockForBlock=ComponentBlockForBlock
 ;
 

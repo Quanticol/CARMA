@@ -8,7 +8,6 @@ import eu.quanticol.carma.core.carma.AtomicNow
 import eu.quanticol.carma.core.carma.AtomicOutcome
 import eu.quanticol.carma.core.carma.AtomicPrimitive
 import eu.quanticol.carma.core.carma.AtomicRecord
-import eu.quanticol.carma.core.carma.AtomicState
 import eu.quanticol.carma.core.carma.AtomicVariable
 import eu.quanticol.carma.core.carma.AttribType
 import eu.quanticol.carma.core.carma.BooleanExpression
@@ -246,7 +245,6 @@ class TypeProvider {
 			AtomicMethodReference	:	(expressions as AtomicMethodReference).getType
 			AtomicNow				:	(expressions as AtomicNow).getType
 			AtomicMeasure			:	(expressions as AtomicMeasure).getType
-			AtomicState				:	(expressions as AtomicState).getType
 			AtomicRecord			:	(expressions as AtomicRecord).getType
 			AtomicOutcome			:	(expressions as AtomicOutcome).getType
 		}
@@ -405,10 +403,6 @@ class TypeProvider {
 	
 	def BaseType getType(AtomicMeasure expression){
 		doubleType
-	}
-	
-	def BaseType getType(AtomicState expression){
-		stateType
 	}
 	
 	def BaseType getType(AtomicRecord expression){

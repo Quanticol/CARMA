@@ -28,6 +28,14 @@ public class CarmaStore {
 		}
 		return null;
 	}
+	
+	public <T> boolean has( String attribute , Class<T> clazz ) {
+		Object o = data.get(attribute);
+		if ((o != null)&&(clazz.isInstance(o))) {
+			return true;
+		}
+		return false;
+	}
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
