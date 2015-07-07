@@ -6,8 +6,8 @@ import org.eclipse.emf.ecore.resource.Resource
 import eu.quanticol.carma.core.generator.Compiler
 import com.google.inject.Inject
 
-import eu.quanticol.carma.core.generator.ms.attributes.Directory
 import eu.quanticol.carma.core.utils.LabelUtil
+import eu.quanticol.carma.core.generator.ms.attributes.AttributeDirectory
 
 class MSCompiler implements Compiler {
 	
@@ -17,7 +17,7 @@ class MSCompiler implements Compiler {
 	public static var ATTRIBUTE_DIRECTORY = null
 	
 	@Inject extension LabelUtil
-	@Inject extension Directory
+	@Inject extension AttributeDirectory
 	
 	/**
 	 * File structures:
@@ -75,7 +75,6 @@ class MSCompiler implements Compiler {
 		
 		MSCompiler.ATTRIBUTE_DIRECTORY = model.populate()
 		
-		println(MSCompiler.ATTRIBUTE_DIRECTORY)
 		
 		var toReturn = new HashMap<String,String>()
 		

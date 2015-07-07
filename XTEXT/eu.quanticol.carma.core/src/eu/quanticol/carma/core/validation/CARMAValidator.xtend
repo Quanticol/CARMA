@@ -35,6 +35,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 	@Inject extension Util
 	
 	//TODO make sure number of RecordArguments matches the number of FeildDeclaration  
+	//TODO Actions must have unique names
 	
 	//VariableName - must have same type everywhere
 	public static val ERROR_VariableName_unique_type 	= "ERROR_VariableName_unique_type"
