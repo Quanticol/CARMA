@@ -200,10 +200,9 @@ ProcessType returns Type hidden(ML_COMMENT,SL_COMMENT,WS):
 ////////////////////////////////////////////////////ARGUMENTS
 
 PreArgument returns Argument hidden(ML_COMMENT,SL_COMMENT,WS):
-		{PreArgument} value=(
-			VariableReference 	| 
-			CarmaInteger		|
-			CarmaDouble
+		{PreArgument} value=
+		(
+			Expression
 		)	
 ;
 
@@ -214,15 +213,14 @@ CompArgument returns Argument hidden(ML_COMMENT,SL_COMMENT,WS):
 			CarmaInteger		|
 			Range				|
 			InstantiateRecord	|
-			ParallelComposition
+			ProcessComposition
 		)
 ;
 
 FunctionArgument returns Argument hidden(ML_COMMENT,SL_COMMENT,WS):
-		{FunctionArgument} value=(
-			VariableReference 	| 
-			CarmaInteger		|
-			CarmaDouble
+		{FunctionArgument} value=
+		(
+			Expression
 		)
 ;
 
@@ -237,9 +235,7 @@ OutputActionArgument returns Argument hidden(ML_COMMENT,SL_COMMENT,WS):
 RecordArgument returns Argument hidden(ML_COMMENT,SL_COMMENT,WS): 
 	{RecordArgument} value=
 		(
-			VariableReference 	| 
-			CarmaInteger		|
-			Range	
+			Expression	
 		)
 ;
 
@@ -307,52 +303,39 @@ VariableReference returns VariableReference hidden(ML_COMMENT,SL_COMMENT,WS):
 ////////////////////////////////////////////////////DECLARATION
 
 AttribVariableDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	{AttribVariableDeclaration} type=AttribType	name=VariableName	":="	assign=(
-		VariableReference |
-		CarmaInteger
-	) 
+	{AttribVariableDeclaration} type=AttribType	name=VariableName	":="	assign=Expression
 ;
 
 ComponentForVariableDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	{ComponentForVariableDeclaration} type=AttribType	name=VariableName	":="	assign=(
+	{ComponentForVariableDeclaration} type=AttribType name=VariableName	":="	assign=(
 		CarmaInteger
 	) 
 ;
 
 FeildDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	{FeildDeclaration} type=AttribType	name=FeildName	":="	assign=(
+	{FeildDeclaration} type=AttribType name=FeildName	":="	assign=(
 		VariableReference |
 		CarmaInteger
 	)
 ;
 
 MeasureVariableDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	{MeasureVariableDeclaration} type=AttribType	name=VariableName	":="	assign=(
+	{MeasureVariableDeclaration} type=AttribType name=VariableName	":="	assign=(
 		Range |
 		CarmaInteger
 	)
 ;
 
 IntgerVariableDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	{IntgerVariableDeclaration} type=IntgerType	name=VariableName	":="	assign=(
-		VariableReference |
-		CarmaInteger
-	)
+	{IntgerVariableDeclaration} type=IntgerType	name=VariableName	":="	assign=Expression
 ;
 
 DoubleVariableDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	{DoubleVariableDeclaration} type=DoubleType	name=VariableName	":="	assign=(
-		VariableReference |
-		CarmaDouble
-	)
+	{DoubleVariableDeclaration} type=DoubleType	name=VariableName	":="	assign=Expression
 ;
 
 RecordDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	{RecordDeclaration} type=RecordType name=VariableName ":=" 
-		( 
-			instantiate=InstantiateRecord |
-			assign=VariableReference
-		)
+	{RecordDeclaration} type=RecordType name=VariableName ":=" assign=Expression
 ;
 
 FunctionDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -370,20 +353,20 @@ StoreDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
 
 ////////////////////////////////////////////////////ASSIGNMENT
 
-UpdateAssignment hidden(ML_COMMENT,SL_COMMENT,WS):
-	{UpdateAssignment} attribute=VariableReference ":=" expression=UpdateExpression
+UpdateAssignment returns Assignment hidden(ML_COMMENT,SL_COMMENT,WS):
+	{UpdateAssignment} reference=VariableReference ":=" expression=UpdateExpression
 ;
 
-FunctionAssignment hidden(ML_COMMENT,SL_COMMENT,WS):
-	{FunctionAssignment} attribute=VariableReference ":=" expression=FunctionExpression
+FunctionAssignment returns Assignment hidden(ML_COMMENT,SL_COMMENT,WS):
+	{FunctionAssignment} reference=VariableReference ":=" expression=FunctionExpression
 ;
 
-ComponentAssignment hidden(ML_COMMENT,SL_COMMENT,WS):
-	{ComponentAssignment} attribute=VariableReference ":=" expression=ComponentExpression
+ComponentAssignment returns Assignment hidden(ML_COMMENT,SL_COMMENT,WS):
+	{ComponentAssignment} reference=VariableReference ":=" expression=ComponentExpression
 ;
 
-EnvironmentUpdateAssignment hidden(ML_COMMENT,SL_COMMENT,WS):
-	{EnvironmentUpdateAssignment} attribute=VariableReference ":=" expression=EnvironmentUpdateExpression
+EnvironmentUpdateAssignment returns Assignment hidden(ML_COMMENT,SL_COMMENT,WS):
+	{EnvironmentUpdateAssignment} reference=VariableReference ":=" expression=EnvironmentUpdateExpression
 ;
 
 ////////////////////////////////////////////////////CALLS
@@ -401,11 +384,11 @@ ProcessComposition returns ProcessComposition hidden(ML_COMMENT,SL_COMMENT,WS):
 	ParallelComposition
 ; 
 	
-ParallelComposition returns State hidden(ML_COMMENT,SL_COMMENT,WS):
+ParallelComposition returns ProcessComposition hidden(ML_COMMENT,SL_COMMENT,WS):
 	ProcessReference ({ParallelComposition.left=current}  "|" right=ProcessReference)*
 ;
 
-ProcessReference returns State hidden(ML_COMMENT,SL_COMMENT,WS):
+ProcessReference returns ProcessComposition hidden(ML_COMMENT,SL_COMMENT,WS):
 	 {ProcessReference} expression=[ProcessName|UPPERST]
 ;
 
@@ -430,10 +413,10 @@ ParallelComponentComprehension returns ComponentComprehension  hidden(ML_COMMENT
 	AtomicComponentComprehension ({ParallelComponentComprehension.left=current}  "&" right=AtomicComponentComprehension)*
 ;
 
-AtomicComponentComprehension returns State  hidden(ML_COMMENT,SL_COMMENT,WS):
+AtomicComponentComprehension returns ComponentComprehension  hidden(ML_COMMENT,SL_COMMENT,WS):
 	 {AllComponents} 		"*" 											|
 	 {AComponentAllStates}	comp=[ComponentName|UPPERST] "[" "*" "]"		|
-	 {AComponentAState}		comp=[ComponentName|UPPERST] "[" state=ParallelComposition "]"
+	 {AComponentAState}		comp=[ComponentName|UPPERST] "[" state=ProcessComposition "]"
 ;
 
 ////////////////////////////////////////////////////SPAWN
@@ -450,7 +433,7 @@ BlockSpawn hidden(ML_COMMENT,SL_COMMENT,WS):
 //;
 
 ////////////////////////////////////////////////////FUNCTIONS
-Functions hidden(ML_COMMENT,SL_COMMENT,WS):
+Functions returns Functions hidden(ML_COMMENT,SL_COMMENT,WS):
 	functions+=FunctionDefinition+
 ;
 
@@ -606,7 +589,7 @@ InitBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 	{InitBlock}
 	"init" 
 	"{" 
-	init=ParallelComposition
+	init=ProcessComposition
 	";"
 	"}"
 ;

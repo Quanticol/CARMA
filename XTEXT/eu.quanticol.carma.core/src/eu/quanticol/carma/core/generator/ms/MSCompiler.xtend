@@ -1,42 +1,49 @@
 package eu.quanticol.carma.core.generator.ms
 
+import com.google.inject.Inject
+import eu.quanticol.carma.core.carma.Functions
 import eu.quanticol.carma.core.carma.Model
+import eu.quanticol.carma.core.generator.Compiler
+import eu.quanticol.carma.core.generator.ms.function.FunctionHandler
+import eu.quanticol.carma.core.utils.LabelUtil
 import java.util.HashMap
 import org.eclipse.emf.ecore.resource.Resource
-import eu.quanticol.carma.core.generator.Compiler
-import com.google.inject.Inject
 
-import eu.quanticol.carma.core.utils.LabelUtil
-import eu.quanticol.carma.core.generator.ms.attributes.AttributeDirectory
+import static extension org.eclipse.xtext.EcoreUtil2.*
+import eu.quanticol.carma.core.carma.Records
+import eu.quanticol.carma.core.generator.ms.record.RecordHandler
 
 class MSCompiler implements Compiler {
 	
-	public static final val DEFINITION = "Definition"
 	public static var PATH = "ms/" 
 	public static var PACK = "ms."
-	public static var ATTRIBUTE_DIRECTORY = null
 	
 	@Inject extension LabelUtil
-	@Inject extension AttributeDirectory
+	@Inject extension FunctionHandler
+	@Inject extension RecordHandler
 	
 	/**
 	 * File structures:
 	 * 
-	 * 	Definition file
-	 * 		Function blocks
-	 * 		Attributes and type enumeration
-	 * 		Action enumeration
-	 *		Component behaviour
+	 * 	System
+	 * 		FunctionHandler
+	 * 			functions
+	 * 		RecordHandler
+	 * 			records
+	 * 		Collective
+	 * 			Constructor
+	 * 				add(getComponent)
+	 * 				global_store declarations
+	 * 			getComponent Methods
+	 * 				arguments
+	 * 				assign attribute values
+	 * 				assign behaviour
+	 * 			behaviours
+	 * 				automatons
+	 * 		measures(environmental)
+	 * 			measures
 	 * 		Measures
-	 * 
-	 * 	System files
-	 * 		Constructor
-	 * 			add(getComponent)
-	 * 			global_store declarations
-	 * 		getComponent Methods
-	 * 			arguments
-	 * 			assign attribute values
-	 * 			assign behaviour
+	 * 			measures
 	 * 		predicates
 	 * 			broadcast-rate
 	 * 			unicast-rate
@@ -72,14 +79,28 @@ class MSCompiler implements Compiler {
 		MSCompiler.PATH = MSCompiler.PATH + modelName.toLowerCase + "/"
 		MSCompiler.PACK = MSCompiler.PACK + modelName.toLowerCase 
 		
+		println(getUniform())
 		
-		MSCompiler.ATTRIBUTE_DIRECTORY = model.populate()
+		for(functions : model.eAllOfType(Functions))
+			println(functions.printFunctions)
+			
+		for(records : model.eAllOfType(Records))
+			println(records.records)
 		
 		var toReturn = new HashMap<String,String>()
 		
 		
 		return toReturn
 		
+	}
+	
+	def String getUniform(){
+		'''
+		public static int uniform(ArrayList<Object> input){
+			RandomGenerator random = new DefaultRandomGenerator();
+			return input.get(random.nextInt(input.size()));
+		}
+		'''
 	}
 
 	

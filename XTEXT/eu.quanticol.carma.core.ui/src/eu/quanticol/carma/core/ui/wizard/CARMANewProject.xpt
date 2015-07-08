@@ -19,16 +19,16 @@ fun Position Roving(Position p){
 }
 
 records {
-	record Position(){ 
-		attrib x := 0;
-		attrib y := 2;
+	record Position(attrib x, attrib y){ 
+		attrib x := x;
+		attrib y := y;
 	}
 }
 
 /**
  * The Rover component: 'Roves' about the grid sensing and attempting to send data to the above satellites
  */
-component Rover(attrib a, attrib b, attrib c,  state Z){
+component Rover(attrib a, attrib b, attrib c,  process Z){
 
     store{
         attrib data := a;
@@ -150,7 +150,7 @@ system Simple{
         	[(sender.myPosition.x == 1)]	rove* : 4;
         	[(sender.myPosition.x == 2)]	rove* : 5;
         	//more rovers, faster sensing?
-            [true]	sense* : 1/#{ *  | sender.myPosition.x == myPosition.x && sender.myPosition.y == myPosition.y };
+            [true]	sense* : #{ *  | sender.myPosition.x == myPosition.x && sender.myPosition.y == myPosition.y }/#{* | true};
             [true]	analyse* : 0.1;
             [true]	wait* : 3;
             [true]	signal* : 0.5;
@@ -164,5 +164,6 @@ system Simple{
         }
     }
 }
+
 «ENDFILE»
 «ENDDEFINE»
