@@ -472,6 +472,10 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="assign" eType="ecore:EClass http://www.eclipse.org/emf/2002/Ecore#//EObject"
         containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ComponentForVariableDeclaration" eSuperTypes="#//Declaration">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="assign" eType="#//PrimitiveTypes"
+        containment="true"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="FeildDeclaration" eSuperTypes="#//Declaration">
     <eStructuralFeatures xsi:type="ecore:EReference" name="assign" eType="ecore:EClass http://www.eclipse.org/emf/2002/Ecore#//EObject"
         containment="true"/>

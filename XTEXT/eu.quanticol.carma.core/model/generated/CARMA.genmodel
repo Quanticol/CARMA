@@ -379,6 +379,9 @@
     <genClasses ecoreClass="CARMA.ecore#//AttribVariableDeclaration">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AttribVariableDeclaration/assign"/>
     </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//ComponentForVariableDeclaration">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ComponentForVariableDeclaration/assign"/>
+    </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//FeildDeclaration">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//FeildDeclaration/assign"/>
     </genClasses>

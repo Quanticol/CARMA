@@ -144,8 +144,8 @@ IntgerParameter returns Parameter hidden(ML_COMMENT,SL_COMMENT,WS):
 	{IntgerParameter} type=IntgerType	name=VariableName
 ;
 
-StateParameter hidden(ML_COMMENT,SL_COMMENT,WS):
-	{StateParameter} type=StateType name=ProcessName
+ProcessParameter hidden(ML_COMMENT,SL_COMMENT,WS):
+	{ProcessParameter} type=ProcessType name=ProcessName
 ;
 
 FunctionParameter hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -161,7 +161,7 @@ CompParameter hidden(ML_COMMENT,SL_COMMENT,WS):
 	(
 		AttribParameter |
 		RecordParameter |
-		StateParameter
+		ProcessParameter
 	)
 ;
 
@@ -192,8 +192,8 @@ RecordType returns Type hidden(ML_COMMENT,SL_COMMENT,WS):
 	{RecordType} name=[RecordTypeName|UPPERST]
 ;
 
-StateType returns Type hidden(ML_COMMENT,SL_COMMENT,WS):
-	{StateType} name="state"
+ProcessType returns Type hidden(ML_COMMENT,SL_COMMENT,WS):
+	{ProcessType} name="process"
 ;
 
 
@@ -214,7 +214,7 @@ CompArgument returns Argument hidden(ML_COMMENT,SL_COMMENT,WS):
 			CarmaInteger		|
 			Range				|
 			InstantiateRecord	|
-			State
+			ParallelComposition
 		)
 ;
 
@@ -397,12 +397,12 @@ Calls hidden(ML_COMMENT,SL_COMMENT,WS):
 
 ////////////////////////////////////////////////////STATE
 
-State returns State hidden(ML_COMMENT,SL_COMMENT,WS):
-	ParallelState
+ProcessComposition returns ProcessComposition hidden(ML_COMMENT,SL_COMMENT,WS):
+	ParallelComposition
 ; 
 	
-ParallelState returns State hidden(ML_COMMENT,SL_COMMENT,WS):
-	ProcessReference ({ParallelState.left=current}  "|" right=ProcessReference)*
+ParallelComposition returns State hidden(ML_COMMENT,SL_COMMENT,WS):
+	ProcessReference ({ParallelComposition.left=current}  "|" right=ProcessReference)*
 ;
 
 ProcessReference returns State hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -433,7 +433,7 @@ ParallelComponentComprehension returns ComponentComprehension  hidden(ML_COMMENT
 AtomicComponentComprehension returns State  hidden(ML_COMMENT,SL_COMMENT,WS):
 	 {AllComponents} 		"*" 											|
 	 {AComponentAllStates}	comp=[ComponentName|UPPERST] "[" "*" "]"		|
-	 {AComponentAState}		comp=[ComponentName|UPPERST] "[" state=State "]"
+	 {AComponentAState}		comp=[ComponentName|UPPERST] "[" state=ParallelComposition "]"
 ;
 
 ////////////////////////////////////////////////////SPAWN
@@ -606,7 +606,7 @@ InitBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 	{InitBlock}
 	"init" 
 	"{" 
-	init=State
+	init=ParallelComposition
 	";"
 	"}"
 ;
