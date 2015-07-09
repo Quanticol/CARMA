@@ -3,7 +3,6 @@ package eu.quanticol.carma.core.generator.ms.function
 import eu.quanticol.carma.core.carma.Addition
 import eu.quanticol.carma.core.carma.And
 import eu.quanticol.carma.core.carma.AtomicMeasure
-import eu.quanticol.carma.core.carma.AtomicMethodReference
 import eu.quanticol.carma.core.carma.AtomicNow
 import eu.quanticol.carma.core.carma.AtomicOutcome
 import eu.quanticol.carma.core.carma.AtomicPrimitive
@@ -81,6 +80,8 @@ import static extension org.eclipse.xtext.EcoreUtil2.*
 import eu.quanticol.carma.core.carma.Type
 import eu.quanticol.carma.core.carma.Types
 import eu.quanticol.carma.core.carma.FunctionReturn
+import eu.quanticol.carma.core.carma.AtomicCalls
+import eu.quanticol.carma.core.carma.AtomicProcessComposition
 
 class FunctionJavaniser {
 	
@@ -127,23 +128,24 @@ class FunctionJavaniser {
 
 	def String javanise(Expressions e) {
 		switch (e) {
-			Or: 					{e.javanise}
-			And:					{e.javanise}
-			Equality: 				{e.javanise}
-			Comparison: 			{e.javanise}
-			Subtraction: 			{e.javanise}
-			Addition: 				{e.javanise}
-			Multiplication: 		{e.javanise}
-			Modulo: 				{e.javanise}
-			Division: 				{e.javanise}
-			Not: 					{e.javanise}
-			AtomicPrimitive: 		{e.javanise}
-			AtomicVariable: 		{e.javanise}
-			AtomicMethodReference: 	{e.javanise}
-			AtomicNow: 				{e.javanise}
-			AtomicMeasure: 			{e.javanise}
-			AtomicRecord: 			{e.javanise}
-			AtomicOutcome: 			{"//eu.quanticol.carma.core.generator.ms.function.javanise.AtomicOutcome"}
+			Or: 						{e.javanise}
+			And:						{e.javanise}
+			Equality: 					{e.javanise}
+			Comparison: 				{e.javanise}
+			Subtraction: 				{e.javanise}
+			Addition: 					{e.javanise}
+			Multiplication: 			{e.javanise}
+			Modulo: 					{e.javanise}
+			Division: 					{e.javanise}
+			Not: 						{e.javanise}
+			AtomicPrimitive: 			{e.javanise}
+			AtomicVariable: 			{e.javanise}
+			AtomicCalls: 				{e.javanise}
+			AtomicNow: 					{e.javanise}
+			AtomicMeasure: 				{e.javanise}
+			AtomicRecord: 				{e.javanise}
+			AtomicOutcome: 				{"//eu.quanticol.carma.core.generator.ms.function.javanise.AtomicOutcome"}
+			AtomicProcessComposition:	{"//eu.quanticol.carma.core.generator.ms.function.javanise.AtomicProcessComposition"}
 		}
 
 	}
@@ -197,7 +199,7 @@ class FunctionJavaniser {
 			CarmaDouble: pts.javanise
 			CarmaInteger: pts.javanise
 			CarmaBoolean: pts.javanise
-			Range: "//eu.quanticol.carma.core.generator.ms.function.javanise.AtomicOutcome"
+			Range: "//eu.quanticol.carma.core.generator.ms.function.javanise.Range"
 		}
 	}
 
@@ -248,7 +250,7 @@ class FunctionJavaniser {
 		}
 	}
 
-	def String javanise(AtomicMethodReference expression) {
+	def String javanise(AtomicCalls expression) {
 		expression.value.javanise
 	}
 

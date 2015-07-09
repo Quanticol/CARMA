@@ -3,7 +3,6 @@ package eu.quanticol.carma.core.typing
 import eu.quanticol.carma.core.carma.Addition
 import eu.quanticol.carma.core.carma.And
 import eu.quanticol.carma.core.carma.AtomicMeasure
-import eu.quanticol.carma.core.carma.AtomicMethodReference
 import eu.quanticol.carma.core.carma.AtomicNow
 import eu.quanticol.carma.core.carma.AtomicOutcome
 import eu.quanticol.carma.core.carma.AtomicPrimitive
@@ -67,6 +66,11 @@ import java.util.ArrayList
 import java.util.HashMap
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
+import eu.quanticol.carma.core.carma.AtomicCalls
+import eu.quanticol.carma.core.carma.Action
+import eu.quanticol.carma.core.carma.SpontaneousAction
+import eu.quanticol.carma.core.carma.MultiCast
+import eu.quanticol.carma.core.carma.OutputAction
 
 class BaseType {
 	
@@ -101,26 +105,31 @@ class BaseType {
 
 class TypeProvider {
 	
-	public static val attribType  			=	new BaseType() => [ parent="primitive"	me="int" 			operation="arith" 		set="natural"]
-	public static val doubleType  			=	new BaseType() => [ parent="primitive"	me="double" 		operation="arith" 		set="real"	 ]
-	public static val intgerType  			=	new BaseType() => [ parent="primitive"	me="int" 			operation="arith" 		set="integer"]
-	public static val booleanType			=	new BaseType() => [ parent="primitive"	me="boolean" 		operation="logical" 	set="boolean"]
-	public static val orType 				=	new BaseType() => [ parent="expression"	me="or" 			operation="logical"	]
-	public static val andType 				=	new BaseType() => [ parent="expression"	me="and" 			operation="logical"	]
-	public static val equalityType 			=	new BaseType() => [ parent="expression"	me="equality" 		operation="logical"	]
-	public static val comparisonType		= 	new BaseType() => [ parent="expression"	me="comparison"		operation="logical"	]
-	public static val subtractionType		= 	new BaseType() => [ parent="expression"	me="subtraction"	operation="arith"	]
-	public static val additionType			= 	new BaseType() => [ parent="expression"	me="addition"		operation="arith"	]
-	public static val multiplicationType	= 	new BaseType() => [ parent="expression"	me="multiplication"	operation="arith"	]
-	public static val moduloType			= 	new BaseType() => [ parent="expression"	me="modulo"			operation="arith"	]
-	public static val divisionType			= 	new BaseType() => [ parent="expression"	me="division"		operation="arith"	]
-	public static val notType				=	new BaseType() => [ parent="expression"	me="not" 			operation="logical"	]
-	public static val outcomeType			=	new BaseType() => [ parent="primitive" 	me="outcome" 		operation="argument" 	set="real"	 ]
-	public static val rangeType				=	new BaseType() => [ parent="primitive" 	me="outcome" 		operation="argument" 	set="integer"]
-	public static val stateType				=	new BaseType() => [ parent="state" 		me="state" 			operation="state" 		set="state"	 ]
+	public static val attribType  			= new BaseType() => [ parent="primitive"	me="int" 			operation="arith" 		set="natural"]
+	public static val doubleType  			= new BaseType() => [ parent="primitive"	me="double" 		operation="arith" 		set="real"	 ]
+	public static val intgerType  			= new BaseType() => [ parent="primitive"	me="int" 			operation="arith" 		set="integer"]
+	public static val booleanType			= new BaseType() => [ parent="primitive"	me="boolean" 		operation="logical" 	set="boolean"]
+	public static val orType 				= new BaseType() => [ parent="expression"	me="or" 			operation="logical"	]
+	public static val andType 				= new BaseType() => [ parent="expression"	me="and" 			operation="logical"	]
+	public static val equalityType 			= new BaseType() => [ parent="expression"	me="equality" 		operation="logical"	]
+	public static val comparisonType		= new BaseType() => [ parent="expression"	me="comparison"		operation="logical"	]
+	public static val subtractionType		= new BaseType() => [ parent="expression"	me="subtraction"	operation="arith"	]
+	public static val additionType			= new BaseType() => [ parent="expression"	me="addition"		operation="arith"	]
+	public static val multiplicationType	= new BaseType() => [ parent="expression"	me="multiplication"	operation="arith"	]
+	public static val moduloType			= new BaseType() => [ parent="expression"	me="modulo"			operation="arith"	]
+	public static val divisionType			= new BaseType() => [ parent="expression"	me="division"		operation="arith"	]
+	public static val notType				= new BaseType() => [ parent="expression"	me="not" 			operation="logical"	]
+	public static val outcomeType			= new BaseType() => [ parent="primitive" 	me="outcome" 		operation="argument" 	set="real"	 ]
+	public static val rangeType				= new BaseType() => [ parent="primitive" 	me="outcome" 		operation="argument" 	set="integer"]
+	public static val stateType				= new BaseType() => [ parent="state" 		me="state" 			operation="state" 		set="state"	 ]
 	//TODO
 	//get actual pre defined type
-	public static val predefinedType		=	new BaseType() => [	parent="function"	me="pre"			operation="arith"]
+	public static val predefinedType		= new BaseType() => [ parent="function"	me="pre"			operation="arith"]
+	public static val spontType				= new BaseType() => [ parent="output" 	me = "broad"		; set="action"	; operation="spont"]
+	public static val uniOutType			= new BaseType() => [ parent="output"	me = "uni"			; set="action"	; operation="uni"]
+	public static val uniInType				= new BaseType() => [ parent="input"	me = "uni"			; set="action"	; operation="uni"]
+	public static val broadOutType			= new BaseType() => [ parent="output"	me = "broad"		; set="action"	; operation="broad"]
+	public static val broadInType			= new BaseType() => [ parent="input" 	me = "broad"		; set="action"	; operation="broad"]	
 
 	def BaseType getType(String type){
 		var baseType = new BaseType() => [ parent="record" operation="arith" set="integer"]
@@ -242,7 +251,7 @@ class TypeProvider {
 			Not						:	(expressions as Not).getType
 			AtomicPrimitive			:	expressions.value.getType
 			AtomicVariable			:	expressions.value.getType
-			AtomicMethodReference	:	(expressions as AtomicMethodReference).getType
+			AtomicCalls	:			(expressions as AtomicCalls).getType
 			AtomicNow				:	(expressions as AtomicNow).getType
 			AtomicMeasure			:	(expressions as AtomicMeasure).getType
 			AtomicRecord			:	(expressions as AtomicRecord).getType
@@ -352,7 +361,7 @@ class TypeProvider {
 		}
 	}
 	
-	def BaseType getType(AtomicMethodReference expression){
+	def BaseType getType(AtomicCalls expression){
 		expression.value.type
 	}
 	
@@ -411,6 +420,22 @@ class TypeProvider {
 	
 	def BaseType getType(AtomicOutcome expression){
 		expression.value.type
+	}
+	
+	def BaseType getType(Action action){
+		if(action.eAllOfType(SpontaneousAction).size > 0){
+			return spontType
+		}else if(action.eAllOfType(MultiCast).size > 0 && !(action.eAllOfType(SpontaneousAction).size > 0)){
+			if(action.eAllOfType(OutputAction).size > 0)
+				return broadOutType
+			else
+				return broadInType
+		} else {
+			if(action.eAllOfType(OutputAction).size > 0)
+				return uniOutType
+			else
+				return uniInType
+		}
 	}
 
 }

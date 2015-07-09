@@ -1,52 +1,24 @@
 package eu.quanticol.carma.core.generator.ms
 
-	/**
-	 * 	System files
-	 * 		Constructor
-	 * 			add(getComponent)
-	 * 			global_store declarations
-	 * 		getComponent Methods
-	 * 			arguments
-	 * 			assign attribute values
-	 * 			assign behaviour
-	 * 		predicates
-	 * 			broadcast-rate
-	 * 			unicast-rate
-	 * 			broadcast-prob
-	 * 			unicast-prob
-	 * 			broadcast-update
-	 * 			unicast-update
-	 * 		evolution rules
-	 * 			broadcast-rate
-	 * 			unicast-rate
-	 * 			broadcast-prob
-	 * 			unicast-prob
-	 * 			broadcast-update
-	 * 			unicast-update
-	 * 		environmental measures
-	 * 		main
-	 * 			Declare environment
-	 * 			declare deadline
-	 * 			SamplingCollection
-	 * 			addToCollection
-	 * 			setSampling
-	 * 			simulate
-	 */
+import java.util.HashMap
+import eu.quanticol.carma.core.carma.Model
+import eu.quanticol.carma.core.carma.System
+import eu.quanticol.carma.core.carma.BlockSystem
+import eu.quanticol.carma.core.generator.ms.collective.CollectiveHandler
+import com.google.inject.Inject
+import eu.quanticol.carma.core.carma.BlockStyle
 
 class MSSystemCompiler {
 	
-	//Constructor part
+	@Inject extension CollectiveHandler
 	
-	//getComponent part
+	public static var SYSTEMNAME = ""
 	
-	//predicate part
-	
-	//evolution rule part
-	
-	//measures
-	
-	//main
-	
-	
+	def void extractSystem(System system, Model model, HashMap<String,String> output){
+		MSSystemCompiler.SYSTEMNAME = (system as BlockSystem).name.name
+		println((system as BlockSystem).collective.constructor((system as BlockSystem).environment.stores))
+		println((model.components as BlockStyle).components)
+		println((model.components as BlockStyle).createProcesses)
+	}
 	
 }

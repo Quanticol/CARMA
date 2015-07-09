@@ -42,14 +42,11 @@
     <genClasses ecoreClass="CARMA.ecore#//Name">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//Name/name"/>
     </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//Parameter"/>
-    <genClasses ecoreClass="CARMA.ecore#//ProcessParameter">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ProcessParameter/type"/>
+    <genClasses ecoreClass="CARMA.ecore#//Parameter">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Parameter/name"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//FunctionParameter"/>
-    <genClasses ecoreClass="CARMA.ecore#//CompParameter">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//CompParameter/name"/>
-    </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//CompParameter"/>
     <genClasses ecoreClass="CARMA.ecore#//Types">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Types/type"/>
     </genClasses>
@@ -306,6 +303,9 @@
     <genClasses ecoreClass="CARMA.ecore#//IntgerParameter">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//IntgerParameter/type"/>
     </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//ProcessParameter">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ProcessParameter/type"/>
+    </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//DoubleType">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//DoubleType/name"/>
     </genClasses>
@@ -530,8 +530,8 @@
     <genClasses ecoreClass="CARMA.ecore#//AtomicVariable">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AtomicVariable/value"/>
     </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//AtomicMethodReference">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AtomicMethodReference/value"/>
+    <genClasses ecoreClass="CARMA.ecore#//AtomicCalls">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AtomicCalls/value"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//AtomicNow">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AtomicNow/value"/>
@@ -544,6 +544,9 @@
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//AtomicOutcome">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AtomicOutcome/value"/>
+    </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//AtomicProcessComposition">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AtomicProcessComposition/value"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//Probability">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Probability/expression"/>

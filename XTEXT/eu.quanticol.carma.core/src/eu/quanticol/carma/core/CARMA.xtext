@@ -144,7 +144,7 @@ IntgerParameter returns Parameter hidden(ML_COMMENT,SL_COMMENT,WS):
 	{IntgerParameter} type=IntgerType	name=VariableName
 ;
 
-ProcessParameter hidden(ML_COMMENT,SL_COMMENT,WS):
+ProcessParameter returns Parameter hidden(ML_COMMENT,SL_COMMENT,WS):
 	{ProcessParameter} type=ProcessType name=ProcessName
 ;
 
@@ -209,11 +209,7 @@ PreArgument returns Argument hidden(ML_COMMENT,SL_COMMENT,WS):
 CompArgument returns Argument hidden(ML_COMMENT,SL_COMMENT,WS):
 		{CompArgument} value=
 		(
-			VariableReference 	| 
-			CarmaInteger		|
-			Range				|
-			InstantiateRecord	|
-			ProcessComposition
+			Expression
 		)
 ;
 
@@ -247,6 +243,7 @@ PredFunctionCallArguments returns Arguments hidden(ML_COMMENT,SL_COMMENT,WS):
 	")"
 ;
 
+//Process, reference, instantiate new record, CarmaInteger, Range
 ComponentBlockArguments returns Arguments hidden(ML_COMMENT,SL_COMMENT,WS):
 	{ComponentBlockArguments}
 	"("
@@ -428,10 +425,6 @@ BlockSpawn hidden(ML_COMMENT,SL_COMMENT,WS):
 	{BlockSpawn} comp+=ComponentBlockSpawn ("," comp+=ComponentBlockSpawn+)*
 ;
 
-//LineSpawn hidden(ML_COMMENT,SL_COMMENT,WS):
-//	{LineSpawn} comp+=ComponentLineDefinitionSpawn ("," comp+=ComponentLineDefinitionSpawn+)*
-//;
-
 ////////////////////////////////////////////////////FUNCTIONS
 Functions returns Functions hidden(ML_COMMENT,SL_COMMENT,WS):
 	functions+=FunctionDefinition+
@@ -534,7 +527,7 @@ ComponentStyle returns ComponentStyle hidden(ML_COMMENT,SL_COMMENT,WS):
 	definitions+=ComponentBlockDefinition+
 	(processes=Processes)?
 	(measures=MeasureBlock)?
-	system=BlockSystem
+	system+=BlockSystem+
 	)
 ;
 	
@@ -642,77 +635,6 @@ ComponentBlockForBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 	component=ComponentBlockNew
 	"}" ";"
 ;
-
-//LineSystem returns System:
-//	{LineSystem}
-//	"system" name=SystemName "{"
-//	collective=LineCollective
-//	processes=Processes
-//	(environment=Environment)?
-//	"}"
-//;
-//
-//LineCollective hidden(ML_COMMENT,SL_COMMENT,WS):
-//	"collective" "{"
-//	components+=ComponentLine+
-//	"}"
-//;
-//
-//
-//ComponentLine returns Component hidden(ML_COMMENT,SL_COMMENT,WS):
-//	(
-//		{ComponentLineForStatement} component=ComponentLineForStatement |
-//		{ComponentLineDefinition} component=ComponentLineDefinition
-//	)
-//;
-//	
-//ComponentLineForStatement hidden(ML_COMMENT,SL_COMMENT,WS):
-//	"for" "(" variable=AttribVariableDeclaration ";" expression=BooleanExpression ";" afterThought=ComponentAfterThought")" 
-//	componentBlockForBlock=ComponentLineForBlock
-//;
-//
-//ComponentLineForBlock hidden(ML_COMMENT,SL_COMMENT,WS):
-//		"{"
-//		component=ComponentLineDefinition
-//		"}" ";"
-//;
-//	
-//ComponentLineDefinition returns Component hidden(ML_COMMENT,SL_COMMENT,WS):
-//	{ComponentLineDefinition}
-//	componentSignature=ComponentLineSignature
-//	("["population=INT"]")?
-//	";"
-//;
-//
-//ComponentLineSignature returns ComponentSignature hidden(ML_COMMENT,SL_COMMENT,WS):
-//	name=ComponentName
-//	"("
-//	init=State
-//	","
-//	"{"
-//	store=StoreLine
-//	"}"
-//	")"
-//;
-//
-//ComponentLineDefinitionSpawn returns Component hidden(ML_COMMENT,SL_COMMENT,WS):
-//	{ComponentLineDefinitionSpawn}
-//	name=ComponentName
-//	"("
-//	init=State
-//	","
-//	"{"
-//	store=StoreLine
-//	"}"
-//	")"
-//	("["population=INT"]")?
-//;
-//	
-//StoreLine hidden(ML_COMMENT,SL_COMMENT,WS):
-//	{StoreLine}
-//	(attributes+=StoreDeclaration
-//	( "," attributes+=StoreDeclaration )*)?
-//;
 	
 ComponentAfterThought hidden(ML_COMMENT,SL_COMMENT,WS):
 	{ComponentAfterThought}
@@ -933,11 +855,12 @@ Primary returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
 Atomic returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
 	{AtomicPrimitive}			value=PrimitiveTypes 		|
 	{AtomicVariable}			value=VariableReference 	|
-	{AtomicMethodReference}		value=Calls					|
+	{AtomicCalls}				value=Calls					|
 	{AtomicNow}					value=Now					|
 	{AtomicMeasure}				value=SetComp				|
 	{AtomicRecord}				value=InstantiateRecord		|
-	{AtomicOutcome}				value=OutcomeProbability
+	{AtomicOutcome}				value=OutcomeProbability	|
+	{AtomicProcessComposition}	value=ProcessComposition
 ;
 
 ////////////////////////////////////////////////////MEASURES

@@ -1,7 +1,7 @@
 package eu.quanticol.carma.core.generator.ms
 
 import com.google.inject.Inject
-import eu.quanticol.carma.core.carma.Functions
+import eu.quanticol.carma.core.carma.System
 import eu.quanticol.carma.core.carma.Model
 import eu.quanticol.carma.core.generator.Compiler
 import eu.quanticol.carma.core.generator.ms.function.FunctionHandler
@@ -10,7 +10,6 @@ import java.util.HashMap
 import org.eclipse.emf.ecore.resource.Resource
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.carma.Records
 import eu.quanticol.carma.core.generator.ms.record.RecordHandler
 
 class MSCompiler implements Compiler {
@@ -21,6 +20,7 @@ class MSCompiler implements Compiler {
 	@Inject extension LabelUtil
 	@Inject extension FunctionHandler
 	@Inject extension RecordHandler
+	@Inject extension MSSystemCompiler
 	
 	/**
 	 * File structures:
@@ -75,32 +75,16 @@ class MSCompiler implements Compiler {
 		
 		var Model model = resource.allContents.toIterable.filter(Model).get(0)
 		var String modelName = model.name
+		var HashMap<String,String> toReturn = new HashMap<String,String>()
 		
 		MSCompiler.PATH = MSCompiler.PATH + modelName.toLowerCase + "/"
 		MSCompiler.PACK = MSCompiler.PACK + modelName.toLowerCase 
 		
-		println(getUniform())
-		
-		for(functions : model.eAllOfType(Functions))
-			println(functions.printFunctions)
-			
-		for(records : model.eAllOfType(Records))
-			println(records.records)
-		
-		var toReturn = new HashMap<String,String>()
-		
+		for(system : model.eAllOfType(System))
+			system.extractSystem(model, toReturn)
 		
 		return toReturn
 		
-	}
-	
-	def String getUniform(){
-		'''
-		public static int uniform(ArrayList<Object> input){
-			RandomGenerator random = new DefaultRandomGenerator();
-			return input.get(random.nextInt(input.size()));
-		}
-		'''
 	}
 
 	

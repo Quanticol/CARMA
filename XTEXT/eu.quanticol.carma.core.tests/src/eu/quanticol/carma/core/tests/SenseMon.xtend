@@ -33,14 +33,19 @@ fun Position Roving(Position p){
     pos_x := p.x + Uniform(-1,0,1) % 3;
     attrib pos_y := 0;
     pos_y := p.y + Uniform(-1,0,1) % 3;
-    Position q := new Position(pos_x,pos_y);
+    for(attrib i := 0; i < 2; i := i + 1 ){
+    	Position q := new Position(pos_x,pos_y);
+    };
+    if(pos_x > 1){
+    	Position q := new Position(pos_x,pos_y);
+    };
     return q;
 }
 
 records {
-	record Position(attrib x, attrib y){ 
-		attrib x := x;
-		attrib y := y;
+	record Position(){ 
+		attrib x := 0;
+		attrib y := 2;
 	}
 }
 
@@ -58,12 +63,12 @@ component Rover(attrib a, attrib b, attrib c,  process Z){
     }
 
     behaviour{
-        Sense     = [my.data > 0] sense*{data := data + 1}.Sense;
-        Send     = [my.data > 0] send[type == 1]<>{data := data - 1}.Send;
+        Sense     = [myPosition.x > 0] sense*{data := data + 1}.Sense;
+        Send     = [my.data > 0] send[type == 1]<1>{data := data - 1}.Send;
     }
 
     init{
-        Z;
+        Sense|Send|Z;
     }
 }
 
@@ -141,10 +146,13 @@ system Simple{
 	 * Starting with 3 Rovers, and 9 Satellites
 	 */
     collective{
-        new Rover(0,0,0,Rove);
+        new Rover(0..2,0,0,Rove);
         new Rover(1,1,1,Rove);
         new Rover(2,2,2,Rove);
         new Satelite(1, new Position(1,2));
+        for(attrib i := 0; i < 2; i := i + 1){
+        	new Beacon(i,0..2);
+        };
     }
 
     environment{
@@ -183,6 +191,7 @@ system Simple{
         }
     }
 }
+
 
 
 
