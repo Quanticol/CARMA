@@ -420,7 +420,7 @@ class CollectiveHandler {
 			«ENDFOR»
 			return output;
 		} else {
-			return Object;
+			return new Object();
 		}
 		'''
 	}

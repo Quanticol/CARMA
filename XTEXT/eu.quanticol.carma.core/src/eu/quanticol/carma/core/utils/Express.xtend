@@ -255,9 +255,7 @@ class Express {
 	}
 
 	def String express(FunctionCall functionCall) {
-		'''
-			«(functionCall.name as Name).name»(«(functionCall.arguments as FunctionCallArguments).express»);
-		'''
+		'''«(functionCall.name as Name).name.toFirstLower»(«(functionCall.arguments as FunctionCallArguments).express»)'''
 	}
 	
 	def String express(FunctionCallArguments arguments){

@@ -263,7 +263,7 @@ class FunctionJavaniser {
 
 	def String javanise(FunctionCall functionCall) {
 		'''
-			«(functionCall.name as Name).name»(«(functionCall.arguments as FunctionCallArguments).javanise»);
+			«(functionCall.name as Name).name.toLowerCase»(«(functionCall.arguments as FunctionCallArguments).javanise»)
 		'''
 	}
 	
