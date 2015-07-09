@@ -6,7 +6,7 @@ class PredefinedFunctions {
 		'''
 		public static int uniform(ArrayList<Object> input){
 			RandomGenerator random = new DefaultRandomGenerator();
-			return input.get(random.nextInt(input.size()));
+			return (int) input.get(random.nextInt(input.size()));
 		}
 		'''
 	}

@@ -93,8 +93,7 @@ component Beacon(attrib a, attrib b){
     }
 
     behaviour{
-        Signal = [my.battery > 0] signal*{battery := battery - 1}.Signal + [my.battery <= 0] die*.Die;
-        Die = nil;
+        Signal = [my.battery > 0] signal*{battery := battery - 1}.Signal + [my.battery <= 0] die*.nil;
     }
 
     init{

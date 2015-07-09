@@ -33,7 +33,7 @@ class FunctionHandler {
 		public static «type» «name» ( «parameters.getParameters» ) {
 			«FOR functionStatement : functionStatements»
 				«IF functionDefinition.isAncestor(functionStatement)»
-				«functionStatement.javanise»
+				«functionStatement.javanise»;
 				«ENDIF»
 			«ENDFOR»
 			«functionReturn.javanise»

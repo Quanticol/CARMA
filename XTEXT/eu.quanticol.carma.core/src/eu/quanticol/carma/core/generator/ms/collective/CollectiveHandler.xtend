@@ -153,7 +153,7 @@ class CollectiveHandler {
 		'''
 		«IF hasBehaviour»
 		ArrayList<String> processes = new ArrayList<String>(Arrays.asList( «states.javanise» ));
-		process.addAll(behaviour);
+		processes.addAll(behaviour);
 		«ELSE»
 		ArrayList<String> processes = new ArrayList<String>(Arrays.asList( «processComposition.javanise» ));
 		«ENDIF»
@@ -187,6 +187,7 @@ class CollectiveHandler {
 			«tree.createActions»
 			«tree.createGuards»
 			«tree.createTransitions»
+			return toReturn;
 		}
 		'''
 	}
@@ -196,7 +197,9 @@ class CollectiveHandler {
 		tree.getStates(states)
 		'''
 		«FOR state : states»
+		«IF !state.equals("null")»
 		CarmaProcessAutomaton.State «state» = toReturn.newState("«state»");
+		«ENDIF»
 		«ENDFOR»
 		'''
 	}
@@ -227,7 +230,7 @@ class CollectiveHandler {
 		
 			
 		'''
-		CarmaOutput «actionName» = new CarmaOutput( "«actionName»", «isBroadcast» ) {
+		CarmaOutput «actionName» = new CarmaOutput( "«actionName»".hashCode(), «isBroadcast» ) {
 			«action.outputActionPredicate»
 			«action.getOutputUpdate»
 			«action.getValues»
@@ -266,10 +269,10 @@ class CollectiveHandler {
 	def String getOutputSatisfyBlock(BooleanExpression bes){
 		var vrs = bes.eAllOfType(VariableReference)
 		'''
-		HashMap<String,Object> my_variables = new HashMap<String,Object>();
-		HashMap<String,Object> their_variables = new HashMap<String,Object>();
+		HashMap<String,Class> my_variables = new HashMap<String,Class>();
+		HashMap<String,Class> their_variables = new HashMap<String,Class>();
 		«FOR vr : vrs»
-		«vr.checkStoreOutput»
+		«vr.checkStoreOutputPredicate»
 		«ENDFOR»
 		boolean hasAttributes = true;
 		if(my_variables != null)
@@ -282,29 +285,31 @@ class CollectiveHandler {
 			}
 		if(hasAttributes){
 			«FOR vr : vrs»
-			«vr.storeOutput»
+			«vr.storeOutputPredicate»
 			«ENDFOR»
 			return «bes.express»;
+		} else {
+			return false;
 		}
 		'''
 	}
 	
-	def String checkStoreOutput(VariableReference vr){
+	def String checkStoreOutputPredicate(VariableReference vr){
 		switch (vr) {
-			VariableReferencePure: 		'''their_variables.put("«vr.name.name»",«vr.type.express»);'''
-			VariableReferenceMy: 		'''my_variables.put("«vr.name.name»",«vr.type.express»);'''
+			VariableReferencePure: 		'''their_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
+			VariableReferenceMy: 		'''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
 			VariableReferenceReceiver: 	"receiver_store."
 			VariableReferenceSender: 	"sender_store."
 			VariableReferenceGlobal: 	"global_store."
-			RecordReferencePure: 		'''their_variables.put("«vr.name.name»",«vr.type.express»);'''
-			RecordReferenceMy: 			'''my_variables.put("«vr.name.name»",«vr.type.express»);'''
+			RecordReferencePure: 		'''their_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
+			RecordReferenceMy: 			'''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
 			RecordReferenceReceiver: 	"receiver_store."
 			RecordReferenceSender: 		"sender_store."
 			RecordReferenceGlobal: 		"global_store."
 		}
 	}
 	
-	def String getStoreOutput(VariableReference vr){
+	def String getStoreOutputPredicate(VariableReference vr){
 		switch (vr) {
 			VariableReferencePure: 		'''«vr.name.type.express» «vr.name.name» = their_variables.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
 			VariableReferenceMy: 		'''«vr.name.type.express» «vr.name.name» = my_variables.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
@@ -327,7 +332,7 @@ class CollectiveHandler {
 				return new CarmaStoreUpdate() {
 					
 					@Override
-					public void update(RandomGenerator r, CarmaStore store) {
+					public void update(RandomGenerator r, CarmaStore my_store) {
 						«action.outputUpdateBlock»
 					}
 				};
@@ -337,6 +342,7 @@ class CollectiveHandler {
 			'''
 			@Override
 			protected CarmaStoreUpdate getUpdate() {
+				return null;
 			}
 			'''
 		}
@@ -351,19 +357,14 @@ class CollectiveHandler {
 				vrs.put(vr.name.name,vr)
 		
 		'''
-		HashMap<String,Object> my_variables = new HashMap<String,Object>();
-		HashMap<String,Object> their_variables = new HashMap<String,Object>();
+		HashMap<String,Class> my_variables = new HashMap<String,Class>();
 		«FOR key : vrs.keySet»
 		«vrs.get(key).checkStoreOutput»
 		«ENDFOR»
 		boolean hasAttributes = true;
 		if(my_variables != null)
 			for(String key : my_variables.keySet()){
-				hasAttributes = my_store.has(key,variables.get(key)) && hasAttributes;
-			}
-		if(their_variables != null)
-			for(String key : their_variables.keySet()){
-				hasAttributes = their_store.has(key,variables.get(key)) && hasAttributes;
+				hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
 			}
 		if(hasAttributes){
 			«FOR key : vrs.keySet»
@@ -377,6 +378,36 @@ class CollectiveHandler {
 			«ENDFOR»
 		}
 		'''
+	}
+	
+	def String checkStoreOutput(VariableReference vr){
+		switch (vr) {
+			VariableReferencePure: 		'''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
+			VariableReferenceMy: 		'''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
+			VariableReferenceReceiver: 	"receiver_store."
+			VariableReferenceSender: 	"sender_store."
+			VariableReferenceGlobal: 	"global_store."
+			RecordReferencePure: 		'''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
+			RecordReferenceMy: 			'''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
+			RecordReferenceReceiver: 	"receiver_store."
+			RecordReferenceSender: 		"sender_store."
+			RecordReferenceGlobal: 		"global_store."
+		}
+	}
+	
+	def String getStoreOutput(VariableReference vr){
+		switch (vr) {
+			VariableReferencePure: 		'''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
+			VariableReferenceMy: 		'''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
+			VariableReferenceReceiver: 	"receiver_store."
+			VariableReferenceSender: 	"sender_store."
+			VariableReferenceGlobal: 	"global_store."
+			RecordReferencePure: 		'''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
+			RecordReferenceMy: 			'''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
+			RecordReferenceReceiver: 	"receiver_store."
+			RecordReferenceSender: 		"sender_store."
+			RecordReferenceGlobal: 		"global_store."
+		}
 	}
 	
 	def String getValues(Action action){
@@ -402,7 +433,7 @@ class CollectiveHandler {
 		var count = 0
 		'''
 		int[] output = new int[«args.size»];
-		HashMap<String,Object> my_variables = new HashMap<String,Object>();
+		HashMap<String,Class> my_variables = new HashMap<String,Class>();
 		«FOR arg : args»
 		«arg.checkStoreOutput»
 		«ENDFOR»
@@ -427,15 +458,15 @@ class CollectiveHandler {
 	
 	def String checkStoreOutput(OutputActionArgument oaa){
 		switch (oaa.value) {
-			VariableReferenceMy: 		'''my_variables.put("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.express»);'''
-			RecordReferenceMy: 			'''my_variables.put("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.express»);'''
+			VariableReferenceMy: 		'''my_variables.put("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
+			RecordReferenceMy: 			'''my_variables.put("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
 		}
 	}
 	
 	def String getStoreOutput(OutputActionArgument oaa){
 		switch (oaa.value) {
-			VariableReferenceMy: 		'''«(oaa.value as VariableReference).name.type.express» «(oaa.value as VariableReference).name.name» = my_variables.get("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).name.type.storeExpress»);'''
-			RecordReferenceMy: 			'''«(oaa.value as VariableReference).name.type.express» «(oaa.value as VariableReference).name.name» = my_variables.get("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).name.type.storeExpress»);'''
+			VariableReferenceMy: 		'''«(oaa.value as VariableReference).name.type.express» «(oaa.value as VariableReference).name.name» = my_store.get("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
+			RecordReferenceMy: 			'''«(oaa.value as VariableReference).name.type.express» «(oaa.value as VariableReference).name.name» = my_store.get("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
 		}
 	}
 	
@@ -443,7 +474,7 @@ class CollectiveHandler {
 		boolean isBroadcast, 
 		Action action){
 		'''
-		CarmaInput «actionName» = new CarmaInput( "«actionName»", «isBroadcast» ) {
+		CarmaInput «actionName» = new CarmaInput( "«actionName»".hashCode(), «isBroadcast» ) {
 			«getInputActionPredicate(action)»
 			«getInputUpdate(action)»
 		};
@@ -454,12 +485,12 @@ class CollectiveHandler {
 		if(action.eAllOfType(ActionGuard).size > 0){
 			'''
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore istore, final Object value) {
+			protected CarmaPredicate getPredicate(CarmaStore my_store, final Object value) {
 				if (value instanceof int[]){
 					return new CarmaPredicate() {
 						@Override
-						public boolean satisfy(CarmaStore ostore) {
-							«getInputSatisfyBlock(action.eAllOfType(ActionGuard).get(0).booleanExpression)»
+						public boolean satisfy(CarmaStore their_store) {
+							«getInputSatisfyBlock(action)»
 						}
 					};
 				}
@@ -469,11 +500,11 @@ class CollectiveHandler {
 		} else {
 			'''
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore istore, final Object value) {
+			protected CarmaPredicate getPredicate(CarmaStore my_store, final Object value) {
 				if (value instanceof int[]){
 					return new CarmaPredicate() {
 						@Override
-						public boolean satisfy(CarmaStore ostore) {
+						public boolean satisfy(CarmaStore their_store) {
 							return true;
 						}
 					};
@@ -484,23 +515,27 @@ class CollectiveHandler {
 		}
 	}
 	
-	def String getInputSatisfyBlock(BooleanExpression bes){
+	def String getInputSatisfyBlock(Action action){
+		var BooleanExpression bes = action.eAllOfType(ActionGuard).get(0).booleanExpression
 		var vrs = bes.eAllOfType(VariableReference)
 		'''
-		HashMap<String,Object> my_variables = new HashMap<String,Object>();
+		HashMap<String,Class> my_variables = new HashMap<String,Class>();
 		«FOR vr : vrs»
 		«vr.checkStoreInput»
 		«ENDFOR»
+		«setupInputArguments(action.eAllOfType(InputActionParameters).get(0))»
 		boolean hasAttributes = true;
 		if(my_variables != null)
 			for(String key : my_variables.keySet()){
-				hasAttributes = my_store.has(key,variables.get(key)) && hasAttributes;
+				hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
 			}
 		if(hasAttributes){
 			«FOR vr : vrs»
 			«vr.storeInput»
 			«ENDFOR»
 			return «bes.express»;
+		} else {
+			return false;
 		}
 		'''
 	}
@@ -508,12 +543,12 @@ class CollectiveHandler {
 	def String checkStoreInput(VariableReference vr){
 		switch (vr) {
 			VariableReferencePure: 		''''''
-			VariableReferenceMy: 		'''my_variables.put("«vr.name.name»",«vr.type.express»);'''
+			VariableReferenceMy: 		'''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
 			VariableReferenceReceiver: 	"receiver_store."
 			VariableReferenceSender: 	"sender_store."
 			VariableReferenceGlobal: 	"global_store."
 			RecordReferencePure: 		''''''
-			RecordReferenceMy: 			'''my_variables.put("«vr.name.name»",«vr.type.express»);'''
+			RecordReferenceMy: 			'''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
 			RecordReferenceReceiver: 	"receiver_store."
 			RecordReferenceSender: 		"sender_store."
 			RecordReferenceGlobal: 		"global_store."
@@ -522,13 +557,23 @@ class CollectiveHandler {
 	
 	def String getStoreInput(VariableReference vr){
 		switch (vr) {
-			VariableReferencePure: 		''''''
-			VariableReferenceMy: 		'''«vr.name.type.express» «vr.name.name» = my_variables.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
+			VariableReferencePure: 		{
+			if(vr.getContainerOfType(InputActionParameters) != null)
+				'''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
+			else 
+				''''''
+			}
+			VariableReferenceMy: 		'''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
 			VariableReferenceReceiver: 	"receiver_store."
 			VariableReferenceSender: 	"sender_store."
 			VariableReferenceGlobal: 	"global_store."
-			RecordReferencePure: 		''''''
-			RecordReferenceMy: 			'''«vr.name.type.express» «vr.name.name» = my_variables.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
+			RecordReferencePure: 		{
+			if(vr.getContainerOfType(InputActionParameters) != null)
+				'''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
+			else 
+				''''''
+			}
+			RecordReferenceMy: 			'''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
 			RecordReferenceReceiver: 	"receiver_store."
 			RecordReferenceSender: 		"sender_store."
 			RecordReferenceGlobal: 		"global_store."
@@ -560,7 +605,7 @@ class CollectiveHandler {
 				return new CarmaStoreUpdate() {
 					@Override
 					public void update(RandomGenerator r, CarmaStore my_store) {
-						
+						return null;
 					};
 				
 				};
@@ -577,7 +622,7 @@ class CollectiveHandler {
 			for(vr : updateAssignment.eAllOfType(VariableReference))
 				vrs.put(vr.name.name,vr)
 		'''
-		HashMap<String,Object> my_variables = new HashMap<String,Object>();
+		HashMap<String,Class> my_variables = new HashMap<String,Class>();
 		«FOR key : vrs.keySet»
 		«vrs.get(key).checkStoreInput»
 		«ENDFOR»
@@ -585,13 +630,14 @@ class CollectiveHandler {
 		boolean hasAttributes = true;
 		if(my_variables != null)
 			for(String key : my_variables.keySet()){
-				hasAttributes = my_store.has(key,variables.get(key)) && hasAttributes;
+				hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
 			}
 		if(hasAttributes){
 			«FOR key : vrs.keySet»
 			«vrs.get(key).storeInput»
 			«ENDFOR»
 			«FOR updateAssignment : updateAssignments»
+				«updateAssignment.reference.type.express» «updateAssignment.reference.name.name» = my_store.get("«updateAssignment.reference.name.name»",«updateAssignment.reference.type.storeExpress»);
 				«updateAssignment.reference.name.name» = «updateAssignment.expression.express»;
 			«ENDFOR»
 			«FOR updateAssignment : updateAssignments»
@@ -634,9 +680,9 @@ class CollectiveHandler {
 	def String getGuardSatisfyBlock(BooleanExpression bes){
 		var vrs = bes.eAllOfType(VariableReference)
 		'''
-		HashMap<String,Object> variables = new HashMap<String,Object>();
+		HashMap<String,Class> variables = new HashMap<String,Class>();
 		«FOR vr : vrs»
-		variables.put("«vr.name.name»",«vr.type.express»);
+		variables.put("«vr.name.name»",«vr.type.storeExpress»);
 		«ENDFOR»
 		boolean hasAttributes = true;
 		if(variables != null)
@@ -648,6 +694,8 @@ class CollectiveHandler {
 			«vr.name.type.express» «vr.name.name» = store.get("«vr.name.name»",«vr.name.type.storeExpress»);
 			«ENDFOR»
 			return «bes.express»;
+		} else {
+			return false;
 		}
 		'''
 	}

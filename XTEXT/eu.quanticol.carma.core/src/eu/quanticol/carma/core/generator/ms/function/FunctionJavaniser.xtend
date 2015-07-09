@@ -368,12 +368,12 @@ class FunctionJavaniser {
 		'''«(recordDeclaration.type as Type).javanise» «recordDeclaration.name.name» = «recordDeclaration.assign.javanise»'''
 	}
 	
-	def String javanise(FunctionStatement functionStatement){		
+	def String javanise(FunctionStatement functionStatement){	
 		switch(functionStatement){
-			FunctionDeclaration	: functionStatement.javanise + ";"
-			FunctionAssignment	: functionStatement.javanise + ";"
-			FunctionIfStatement : functionStatement.javanise + ";"
-			FunctionForStatement: functionStatement.javanise + ";"
+			FunctionDeclaration	: functionStatement.javanise 
+			FunctionAssignment	: functionStatement.javanise 
+			FunctionIfStatement : functionStatement.javanise 
+			FunctionForStatement: functionStatement.javanise 
 		}
 	}
 	
@@ -385,14 +385,14 @@ class FunctionJavaniser {
 		var toReturn = 
 '''if («functionIfStatement.expression.javanise») {
 	«FOR functionStatement : functionIfStatement.thenBlock.statements»
-	«functionStatement.javanise»
+	«functionStatement.javanise»;
 	«ENDFOR»
 }'''
 		if(functionIfStatement.elseBlock != null){
 			toReturn = toReturn + 
 '''else {
 	«FOR functionStatement : functionIfStatement.elseBlock.statements»
-	«functionStatement.javanise»
+	«functionStatement.javanise»;
 	«ENDFOR»
 }
 '''
@@ -403,7 +403,7 @@ class FunctionJavaniser {
 	def String javanise(FunctionForStatement functionForStatement){
 '''for( «functionForStatement.variable.javanise » ; «functionForStatement.expression.javanise » ; «functionForStatement.afterThought.functionAssignment.javanise» ){
 	«FOR functionStatement : functionForStatement.functionForBlock.statements»
-	«functionStatement.javanise»
+	«functionStatement.javanise»;
 	«ENDFOR»		
 }'''
 	}
