@@ -157,7 +157,7 @@ class CollectiveHandler {
 		«ELSE»
 		ArrayList<String> processes = new ArrayList<String>(Arrays.asList( «processComposition.javanise» ));
 		«ENDIF»
-		for(int i = 0; i < processes; i++){
+		for(int i = 0; i < processes.size(); i++){
 			c4rm4.addAgent( new CarmaSequentialProcess(c4rm4,create«componentName.toFirstUpper»Process(),create«componentName.toFirstUpper»Process().getState("state_"+processes.get(i))));
 		}
 		'''		
@@ -383,14 +383,14 @@ class CollectiveHandler {
 		if(action.eAllOfType(OutputActionArguments).size > 0){
 			'''
 			@Override
-			protected Object getValue(CarmaStore store) {
+			protected Object getValue(CarmaStore my_store) {
 				«action.eAllOfType(OutputActionArguments).get(0).defineValueBlock»
 			}
 			'''
 		} else {
 			'''
 			@Override
-			protected Object getValue(CarmaStore store) {
+			protected Object getValue(CarmaStore my_store) {
 				return new Object();
 			}
 			'''
@@ -487,23 +487,52 @@ class CollectiveHandler {
 	def String getInputSatisfyBlock(BooleanExpression bes){
 		var vrs = bes.eAllOfType(VariableReference)
 		'''
-		HashMap<String,Object> variables = new HashMap<String,Object>();
+		HashMap<String,Object> my_variables = new HashMap<String,Object>();
 		«FOR vr : vrs»
-		variables.put("«vr.name.name»",«vr.type.express»);
+		«vr.checkStoreInput»
 		«ENDFOR»
 		boolean hasAttributes = true;
-		if(variables != null)
-			for(String key : variables.keySet()){
-				hasAttributes = store.has(key,variables.get(key)) && hasAttributes;
+		if(my_variables != null)
+			for(String key : my_variables.keySet()){
+				hasAttributes = my_store.has(key,variables.get(key)) && hasAttributes;
 			}
 		if(hasAttributes){
 			«FOR vr : vrs»
-			«vr.name.type.express» «vr.name.name» = store.get("«vr.name.name»",«vr.name.type.storeExpress»);
+			«vr.storeInput»
 			«ENDFOR»
 			return «bes.express»;
 		}
 		'''
-		
+	}
+	
+	def String checkStoreInput(VariableReference vr){
+		switch (vr) {
+			VariableReferencePure: 		''''''
+			VariableReferenceMy: 		'''my_variables.put("«vr.name.name»",«vr.type.express»);'''
+			VariableReferenceReceiver: 	"receiver_store."
+			VariableReferenceSender: 	"sender_store."
+			VariableReferenceGlobal: 	"global_store."
+			RecordReferencePure: 		''''''
+			RecordReferenceMy: 			'''my_variables.put("«vr.name.name»",«vr.type.express»);'''
+			RecordReferenceReceiver: 	"receiver_store."
+			RecordReferenceSender: 		"sender_store."
+			RecordReferenceGlobal: 		"global_store."
+		}
+	}
+	
+	def String getStoreInput(VariableReference vr){
+		switch (vr) {
+			VariableReferencePure: 		''''''
+			VariableReferenceMy: 		'''«vr.name.type.express» «vr.name.name» = my_variables.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
+			VariableReferenceReceiver: 	"receiver_store."
+			VariableReferenceSender: 	"sender_store."
+			VariableReferenceGlobal: 	"global_store."
+			RecordReferencePure: 		''''''
+			RecordReferenceMy: 			'''«vr.name.type.express» «vr.name.name» = my_variables.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
+			RecordReferenceReceiver: 	"receiver_store."
+			RecordReferenceSender: 		"sender_store."
+			RecordReferenceGlobal: 		"global_store."
+		}
 	}
 	
 	def String getInputUpdate(Action action){
@@ -514,7 +543,7 @@ class CollectiveHandler {
 				
 				return new CarmaStoreUpdate() {
 					@Override
-					public void update(RandomGenerator r, CarmaStore store) {
+					public void update(RandomGenerator r, CarmaStore my_store) {
 						if (value instanceof int[]){
 							«action.inputUpdateBlock»
 						};
@@ -530,7 +559,7 @@ class CollectiveHandler {
 				
 				return new CarmaStoreUpdate() {
 					@Override
-					public void update(RandomGenerator r, CarmaStore store) {
+					public void update(RandomGenerator r, CarmaStore my_store) {
 						
 					};
 				
@@ -541,7 +570,34 @@ class CollectiveHandler {
 	}
 	
 	def String inputUpdateBlock(Action action){
+		var update = action.eAllOfType(Update).get(0)
+		var updateAssignments = update.eAllOfType(UpdateAssignment)
+		var vrs = new HashMap<String,VariableReference>()
+		for(updateAssignment : updateAssignments)
+			for(vr : updateAssignment.eAllOfType(VariableReference))
+				vrs.put(vr.name.name,vr)
 		'''
+		HashMap<String,Object> my_variables = new HashMap<String,Object>();
+		«FOR key : vrs.keySet»
+		«vrs.get(key).checkStoreInput»
+		«ENDFOR»
+		«setupInputArguments(action.eAllOfType(InputActionParameters).get(0))»
+		boolean hasAttributes = true;
+		if(my_variables != null)
+			for(String key : my_variables.keySet()){
+				hasAttributes = my_store.has(key,variables.get(key)) && hasAttributes;
+			}
+		if(hasAttributes){
+			«FOR key : vrs.keySet»
+			«vrs.get(key).storeInput»
+			«ENDFOR»
+			«FOR updateAssignment : updateAssignments»
+				«updateAssignment.reference.name.name» = «updateAssignment.expression.express»;
+			«ENDFOR»
+			«FOR updateAssignment : updateAssignments»
+				my_store.set("«updateAssignment.reference.name.name»",«updateAssignment.reference.name.name»);
+			«ENDFOR»
+		}
 		'''
 	}
 	
