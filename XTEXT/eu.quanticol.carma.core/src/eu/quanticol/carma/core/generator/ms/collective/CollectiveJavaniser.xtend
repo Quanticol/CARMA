@@ -81,8 +81,19 @@ import eu.quanticol.carma.core.carma.ParallelComposition
 import eu.quanticol.carma.core.carma.ProcessReference
 import eu.quanticol.carma.core.typing.BaseType
 import eu.quanticol.carma.core.carma.OutputActionArgument
+import eu.quanticol.carma.core.carma.Action
 
 class CollectiveJavaniser {
+	
+	def int actionName(Action action){
+		var toReturn = 10 * 13
+		
+		for(var i = 0 ; i < action.name.name.length; i++){
+			toReturn = toReturn + action.name.name.charAt(i) * 13
+		}
+		
+		return toReturn
+	}
 	
 	def ArrayList<ArrayList<String>> product(ComponentBlockArguments arguments){
 			var ArrayList<CompArgument> args = new ArrayList<CompArgument>(arguments.eAllOfType(CompArgument))

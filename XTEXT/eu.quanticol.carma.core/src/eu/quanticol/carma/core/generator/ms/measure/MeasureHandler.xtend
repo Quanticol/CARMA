@@ -126,8 +126,8 @@ class MeasureHandler {
 	
 	def String getStorePredicate(VariableReference vr){
 		switch (vr) {
-			VariableReferenceMy: 		'''«vr.name.type.express» «vr.name.name» = my_variables.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
-			RecordReferenceMy: 			'''«vr.name.type.express» «vr.name.name» = my_variables.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
+			VariableReferenceMy: 		'''«vr.name.type.express» «vr.name.name» = store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
+			RecordReferenceMy: 			'''«vr.name.type.express» «vr.name.name» = store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
 		}
 	}
 	

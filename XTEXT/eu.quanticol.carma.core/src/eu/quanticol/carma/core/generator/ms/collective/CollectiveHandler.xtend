@@ -230,7 +230,7 @@ class CollectiveHandler {
 		
 			
 		'''
-		CarmaOutput «actionName» = new CarmaOutput( "«actionName»".hashCode(), «isBroadcast» ) {
+		CarmaOutput «actionName» = new CarmaOutput( «action.actionName», «isBroadcast» ) {
 			«action.outputActionPredicate»
 			«action.getOutputUpdate»
 			«action.getValues»
@@ -268,24 +268,28 @@ class CollectiveHandler {
 	
 	def String getOutputSatisfyBlock(BooleanExpression bes){
 		var vrs = bes.eAllOfType(VariableReference)
+		var vrsh = new HashMap<String,VariableReference>()
+		for(vr : vrs){
+			vrsh.put(vr.name.name, vr)
+		}
 		'''
 		HashMap<String,Class> my_variables = new HashMap<String,Class>();
 		HashMap<String,Class> their_variables = new HashMap<String,Class>();
-		«FOR vr : vrs»
-		«vr.checkStoreOutputPredicate»
+		«FOR key : vrsh.keySet»
+		«vrsh.get(key).checkStoreOutputPredicate»
 		«ENDFOR»
 		boolean hasAttributes = true;
 		if(my_variables != null)
 			for(String key : my_variables.keySet()){
-				hasAttributes = my_store.has(key,variables.get(key)) && hasAttributes;
+				hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
 			}
 		if(their_variables != null)
 			for(String key : their_variables.keySet()){
-				hasAttributes = their_store.has(key,variables.get(key)) && hasAttributes;
+				hasAttributes = their_store.has(key,their_variables.get(key)) && hasAttributes;
 			}
 		if(hasAttributes){
-			«FOR vr : vrs»
-			«vr.storeOutputPredicate»
+			«FOR key : vrsh.keySet»
+			«vrsh.get(key).storeOutputPredicate»
 			«ENDFOR»
 			return «bes.express»;
 		} else {
@@ -311,13 +315,13 @@ class CollectiveHandler {
 	
 	def String getStoreOutputPredicate(VariableReference vr){
 		switch (vr) {
-			VariableReferencePure: 		'''«vr.name.type.express» «vr.name.name» = their_variables.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
-			VariableReferenceMy: 		'''«vr.name.type.express» «vr.name.name» = my_variables.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
+			VariableReferencePure: 		'''«vr.name.type.express» «vr.name.name» = their_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
+			VariableReferenceMy: 		'''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
 			VariableReferenceReceiver: 	"receiver_store."
 			VariableReferenceSender: 	"sender_store."
 			VariableReferenceGlobal: 	"global_store."
-			RecordReferencePure: 		'''«vr.name.type.express» «vr.name.name» = their_variables.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
-			RecordReferenceMy: 			'''«vr.name.type.express» «vr.name.name» = my_variables.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
+			RecordReferencePure: 		'''«vr.name.type.express» «vr.name.name» = their_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
+			RecordReferenceMy: 			'''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
 			RecordReferenceReceiver: 	"receiver_store."
 			RecordReferenceSender: 		"sender_store."
 			RecordReferenceGlobal: 		"global_store."
@@ -474,7 +478,7 @@ class CollectiveHandler {
 		boolean isBroadcast, 
 		Action action){
 		'''
-		CarmaInput «actionName» = new CarmaInput( "«actionName»".hashCode(), «isBroadcast» ) {
+		CarmaInput «actionName» = new CarmaInput( «action.actionName», «isBroadcast» ) {
 			«getInputActionPredicate(action)»
 			«getInputUpdate(action)»
 		};

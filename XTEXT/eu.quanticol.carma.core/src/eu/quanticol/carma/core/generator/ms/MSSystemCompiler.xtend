@@ -56,41 +56,7 @@ class MSSystemCompiler {
 				«(model.components as BlockStyle).components»
 				«(model.components as BlockStyle).createProcesses»
 				«new ArrayList<SetComp>(model.eAllOfType(SetComp)).getMeasures»
-			
-				@Override
-				public double broadcastProbability(CarmaStore sender, CarmaStore receiver,
-						int action) {
-					// TODO Auto-generated method stub
-					return 0;
-				}
-				@Override
-				public double unicastProbability(CarmaStore sender, CarmaStore receiver,
-						int action) {
-					// TODO Auto-generated method stub
-					return 0;
-				}
-				@Override
-				public double broadcastRate(CarmaStore sender, int action) {
-					// TODO Auto-generated method stub
-					return 0;
-				}
-				@Override
-				public double unicastRate(CarmaStore sender, int action) {
-					// TODO Auto-generated method stub
-					return 0;
-				}
-				@Override
-				public void broadcastUpdate(RandomGenerator random, CarmaStore sender,
-						int action, Object value) {
-					// TODO Auto-generated method stub
-					
-				}
-				@Override
-				public void unicastUpdate(RandomGenerator random, CarmaStore sender,
-						CarmaStore receiver, int action, Object value) {
-					// TODO Auto-generated method stub
-					
-				}
+				«system.getEnvironment(model)»
 				«model.getMain(system)»
 			}
 			'''
