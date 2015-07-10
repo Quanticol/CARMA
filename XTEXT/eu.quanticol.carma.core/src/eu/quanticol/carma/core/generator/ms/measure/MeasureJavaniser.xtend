@@ -1,5 +1,6 @@
-package eu.quanticol.carma.core.utils
+package eu.quanticol.carma.core.generator.ms.measure
 
+import com.google.inject.Inject
 import eu.quanticol.carma.core.carma.Addition
 import eu.quanticol.carma.core.carma.And
 import eu.quanticol.carma.core.carma.AtomicCalls
@@ -40,10 +41,13 @@ import eu.quanticol.carma.core.carma.Name
 import eu.quanticol.carma.core.carma.Not
 import eu.quanticol.carma.core.carma.Or
 import eu.quanticol.carma.core.carma.PDFunction
+import eu.quanticol.carma.core.carma.ParallelComposition
 import eu.quanticol.carma.core.carma.PreArgument
 import eu.quanticol.carma.core.carma.PreFunctionCall
 import eu.quanticol.carma.core.carma.PredFunctionCallArguments
 import eu.quanticol.carma.core.carma.PrimitiveTypes
+import eu.quanticol.carma.core.carma.ProcessComposition
+import eu.quanticol.carma.core.carma.ProcessReference
 import eu.quanticol.carma.core.carma.Range
 import eu.quanticol.carma.core.carma.RecordArgument
 import eu.quanticol.carma.core.carma.RecordArguments
@@ -58,7 +62,7 @@ import eu.quanticol.carma.core.carma.Subtraction
 import eu.quanticol.carma.core.carma.Type
 import eu.quanticol.carma.core.carma.Types
 import eu.quanticol.carma.core.carma.UniformFunction
-import eu.quanticol.carma.core.carma.VariableName
+import eu.quanticol.carma.core.carma.UpdateExpression
 import eu.quanticol.carma.core.carma.VariableReference
 import eu.quanticol.carma.core.carma.VariableReferenceGlobal
 import eu.quanticol.carma.core.carma.VariableReferenceMy
@@ -66,14 +70,129 @@ import eu.quanticol.carma.core.carma.VariableReferencePure
 import eu.quanticol.carma.core.carma.VariableReferenceReceiver
 import eu.quanticol.carma.core.carma.VariableReferenceSender
 import eu.quanticol.carma.core.typing.BaseType
+import eu.quanticol.carma.core.typing.TypeProvider
 import java.util.ArrayList
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import com.google.inject.Inject
-import eu.quanticol.carma.core.typing.TypeProvider
-import eu.quanticol.carma.core.carma.UpdateExpression
 
-class Express {
+class MeasureJavaniser {
+	
+	@Inject extension TypeProvider
+	
+	def String javanise(SetComp setComp){
+		(Math.abs(setComp.hashCode*setComp.hashCode)+"").substring(0,3)
+	}
+	
+	def String javanise(BaseType bt){
+		if(bt.me.equals("int")){
+			'''int'''
+		} else if (bt.me.equals("boolean")) {
+			'''boolean'''
+		} else {
+			'''«bt.me»'''
+		}
+	}
+	
+	def String disarm(VariableReference vr) {
+		switch (vr) {
+			VariableReferencePure: 		"input_"	+vr.name.name
+			VariableReferenceMy: 		"my_"		+vr.name.name
+			VariableReferenceReceiver: 	"receiver_"	+vr.name.name
+			VariableReferenceSender: 	"sender_"	+vr.name.name
+			VariableReferenceGlobal: 	"global_"	+vr.name.name
+			RecordReferencePure: 		"input_"	+vr.name.name + "_" + vr.feild.name
+			RecordReferenceMy: 			"my_"		+vr.name.name + "_" + vr.feild.name
+			RecordReferenceReceiver: 	"receiver_"	+vr.name.name + "_" + vr.feild.name
+			RecordReferenceSender: 		"sender_"	+vr.name.name + "_" + vr.feild.name
+			RecordReferenceGlobal: 		"global_"	+vr.name.name + "_" + vr.feild.name
+		}
+	}
+	
+	def ArrayList<VariableReference> clean(ArrayList<VariableReference> dirty){
+		var ArrayList<VariableReference> toReturn = new ArrayList<VariableReference>()
+		for(vr : dirty)
+			switch (vr) {
+				VariableReferencePure: 		toReturn.add(vr)
+				VariableReferenceReceiver: 	toReturn.add(vr)
+				VariableReferenceSender: 	toReturn.add(vr)
+				VariableReferenceGlobal: 	toReturn.add(vr)
+				RecordReferencePure: 		toReturn.add(vr)
+				RecordReferenceReceiver: 	toReturn.add(vr)
+				RecordReferenceSender: 		toReturn.add(vr)
+				RecordReferenceGlobal: 		toReturn.add(vr)
+			}
+		return toReturn
+	}
+	
+	def String disarm(PrimitiveTypes pts) {
+		switch (pts) {
+			CarmaDouble: 	"double_"+(Math.abs(pts.hashCode*pts.hashCode)+"").substring(0,4)
+			CarmaInteger: 	"integer_"+(Math.abs(pts.hashCode*pts.hashCode)+"").substring(0,4)
+			CarmaBoolean: 	"boolean_"+(Math.abs(pts.hashCode*pts.hashCode)+"").substring(0,4)
+			Range: 			"//eu.quanticol.carma.core.generator.ms.measure.disarm.Range"
+		}
+	}
+	
+	def ArrayList<VariableReference> reverseClean(ArrayList<VariableReference> dirty){
+		var ArrayList<VariableReference> toReturn = new ArrayList<VariableReference>()
+		for(vr : dirty)
+			switch (vr) {
+				VariableReferenceMy: 		toReturn.add(vr)
+				RecordReferenceMy: 			toReturn.add(vr)
+			}
+		return toReturn
+	}
+	
+	
+	def String disarmIn(BooleanExpression be){
+		var vrs = new ArrayList<VariableReference>(be.eAllOfType(VariableReference))
+		vrs = vrs.clean
+		var String toReturn = ""
+		if(vrs.size > 0){
+			toReturn = '''«vrs.get(0).type.javanise» «vrs.get(0).disarm»'''
+			for(var i = 1; i < vrs.size; i++){
+				toReturn = '''«toReturn», «vrs.get(i).type.javanise» «vrs.get(i).disarm»'''
+			}
+		}
+		var primitives = be.eAllOfType(PrimitiveTypes)
+		if(primitives.size > 0){
+			if(toReturn.length > 0)
+				toReturn = '''«toReturn», «primitives.get(0).type.javanise» «primitives.get(0).disarm»'''
+			else 
+				toReturn = '''«primitives.get(0).type.javanise» «primitives.get(0).disarm»'''
+			for(var i = 1; i < vrs.size; i++){
+				toReturn = '''«toReturn», «primitives.get(i).type.javanise» «primitives.get(i).disarm»'''
+			}
+		}
+		return toReturn
+	}
+	
+	def String disarmOut(BooleanExpression be){
+		var vrs = new ArrayList<VariableReference>(be.eAllOfType(VariableReference))
+		vrs = vrs.clean
+		var String toReturn = ""
+		if(vrs.size > 0){
+			toReturn = '''«vrs.get(0).disarm»'''
+			for(var i = 1; i < vrs.size; i++){
+				toReturn = '''«toReturn»,«vrs.get(i).disarm»'''
+			}
+		}
+		var primitives = be.eAllOfType(PrimitiveTypes)
+		if(primitives.size > 0){
+			toReturn = '''«primitives.get(0).disarm»'''
+			for(var i = 1; i < vrs.size; i++){
+				toReturn = '''«toReturn», «primitives.get(i).disarm»'''
+			}
+		}
+		return toReturn
+	}
+	
+	def String javanise(ProcessComposition processComposition){
+		switch(processComposition){
+			ParallelComposition	: 	'''«processComposition.left.javanise», «processComposition.right.javanise»'''
+			ProcessReference	:	'''«processComposition.expression.name»'''
+		}
+	}
 	
 	def String storeExpress(BaseType bt){
 		if(bt.me.equals("int")){
@@ -186,12 +305,7 @@ class Express {
 	}
 
 	def String express(PrimitiveTypes pts) {
-		switch (pts) {
-			CarmaDouble: pts.express
-			CarmaInteger: pts.express
-			CarmaBoolean: pts.express
-			Range: "//eu.quanticol.carma.core.generator.ms.function.express.Range"
-		}
+		pts.disarm
 	}
 
 	def String express(CarmaDouble pt) {
@@ -228,16 +342,16 @@ class Express {
 
 	def String express(VariableReference vr) {
 		switch (vr) {
-			VariableReferencePure: 		vr.name.name
+			VariableReferencePure: 		vr.disarm
 			VariableReferenceMy: 		vr.name.name
-			VariableReferenceReceiver: 	vr.name.name
-			VariableReferenceSender: 	vr.name.name
-			VariableReferenceGlobal: 	vr.name.name
-			RecordReferencePure: 		vr.name.name + "." + vr.feild.name
+			VariableReferenceReceiver: 	vr.disarm
+			VariableReferenceSender: 	vr.disarm
+			VariableReferenceGlobal: 	vr.disarm
+			RecordReferencePure: 		vr.disarm
 			RecordReferenceMy: 			vr.name.name + "." + vr.feild.name
-			RecordReferenceReceiver: 	vr.name.name + "." + vr.feild.name
-			RecordReferenceSender: 		vr.name.name + "." + vr.feild.name
-			RecordReferenceGlobal: 		vr.name.name + "." + vr.feild.name
+			RecordReferenceReceiver: 	vr.disarm
+			RecordReferenceSender: 		vr.disarm
+			RecordReferenceGlobal: 		vr.disarm
 		}
 	}
 
@@ -330,6 +444,5 @@ class Express {
 	
 	def String express(RecordArgument argument){
 		argument.value.express
-	}	
-
+	}
 }

@@ -1,14 +1,21 @@
 package eu.quanticol.carma.core.generator.ms
 
-import java.util.HashMap
-import eu.quanticol.carma.core.carma.Model
-import eu.quanticol.carma.core.carma.System
-import eu.quanticol.carma.core.carma.BlockSystem
-import eu.quanticol.carma.core.generator.ms.collective.CollectiveHandler
 import com.google.inject.Inject
 import eu.quanticol.carma.core.carma.BlockStyle
+import eu.quanticol.carma.core.carma.BlockSystem
+import eu.quanticol.carma.core.carma.Model
+import eu.quanticol.carma.core.carma.SetComp
+import eu.quanticol.carma.core.carma.System
+import eu.quanticol.carma.core.generator.ms.collective.CollectiveHandler
+import eu.quanticol.carma.core.generator.ms.environment.EnvironmentHandler
 import eu.quanticol.carma.core.generator.ms.function.FunctionHandler
+import eu.quanticol.carma.core.generator.ms.main.MainHandler
+import eu.quanticol.carma.core.generator.ms.measure.MeasureHandler
 import eu.quanticol.carma.core.generator.ms.record.RecordHandler
+import java.util.ArrayList
+import java.util.HashMap
+
+import static extension org.eclipse.xtext.EcoreUtil2.*
 
 class MSSystemCompiler {
 	
@@ -17,7 +24,9 @@ class MSSystemCompiler {
 	@Inject extension RecordHandler
 	@Inject extension CollectiveHandler
 	@Inject extension PredefinedFunctions
-	
+	@Inject extension MeasureHandler
+	@Inject extension EnvironmentHandler
+	@Inject extension MainHandler
 	
 	public static var SYSTEMNAME = ""
 	
@@ -46,6 +55,7 @@ class MSSystemCompiler {
 				«(system as BlockSystem).collective.constructor((system as BlockSystem).environment.stores)»
 				«(model.components as BlockStyle).components»
 				«(model.components as BlockStyle).createProcesses»
+				«new ArrayList<SetComp>(model.eAllOfType(SetComp)).getMeasures»
 			
 				@Override
 				public double broadcastProbability(CarmaStore sender, CarmaStore receiver,
@@ -81,6 +91,7 @@ class MSSystemCompiler {
 					// TODO Auto-generated method stub
 					
 				}
+				«model.getMain(system)»
 			}
 			'''
 		output.put(MSSystemCompiler.SYSTEMNAME+".java",toReturn)

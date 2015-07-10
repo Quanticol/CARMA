@@ -319,7 +319,7 @@ class FunctionJavaniser {
 	}
 	
 	def String javanise(SetComp setComp){
-		((setComp.hashCode*setComp.hashCode)*1000 + "").substring(0,3)
+		(Math.abs(setComp.hashCode*setComp.hashCode)+"").substring(0,3)
 	}
 	
 	def String javanise(AtomicRecord expression){
@@ -411,52 +411,4 @@ class FunctionJavaniser {
 	def String javanise(FunctionReturn functionReturn){
 		'''return «functionReturn.expression.javanise»; '''
 	}
-
-	
-//	def String javanise(Arguments arguments) {
-//		switch(arguments){
-//			PredFunctionCallArguments	:	{arguments.javanise}
-//			ComponentBlockArguments		:	{arguments.javanise}
-//			FunctionCallArguments		:	{arguments.javanise}
-//			OutputActionArguments		:	{arguments.javanise}
-//			RecordArguments				:	{arguments.javanise}
-//		}
-//	}
-//	def String javanise(ComponentBlockArguments arguments){
-//			var ArrayList<CompArgument> args = new ArrayList<CompArgument>(arguments.eAllOfType(CompArgument))
-//			var toReturn = ""
-//			if(args.size > 0){
-//				toReturn = toReturn + args.get(0).javanise
-//				for(var i = 1; i < args.size; i++){
-//					toReturn = toReturn + ", " + args.get(i).javanise
-//				}
-//			}
-//			return toReturn
-//	}
-//	def String javanise(CompArgument argument){
-//		switch(argument.value){
-//			VariableReference	: 	{(argument.value as VariableReference).javanise}
-//			CarmaInteger		: 	{(argument.value as CarmaInteger).javanise}	
-//			Range				: 	{(argument.value as Range).javanise}	
-//			InstantiateRecord	:	{(argument.value as InstantiateRecord).arguments.javanise}
-//		}
-//	}
-//	def String javanise(OutputActionArguments arguments){
-//			var ArrayList<OutputActionArgument> args = new ArrayList<OutputActionArgument>(arguments.eAllOfType(OutputActionArgument))
-//			var toReturn = ""
-//			if(args.size > 0){
-//				toReturn = toReturn + args.get(0).javanise
-//				for(var i = 1; i < args.size; i++){
-//					toReturn = toReturn + ", " + args.get(i).javanise
-//				}
-//			}
-//			return toReturn
-//	}
-//	
-//	def String javanise(OutputActionArgument argument){
-//		switch(argument.value){
-//			VariableReference	: 	{(argument.value as VariableReference).javanise}
-//			CarmaInteger		: 	{(argument.value as CarmaInteger).javanise}	
-//		}
-//	}
 }

@@ -132,7 +132,7 @@ abstract {
  * Measures block: Count the number of X
  */
 measures{
-    measure Waiting[ attrib i := 0..2, attrib j := 0..2] = #{ *  | battery == i && myPosition.y == j };
+    measure Waiting[ attrib i := 0..2, attrib j := 0..2] = #{ *  | my.battery == i && my.myPosition.y == j };
 }
 
 
@@ -176,7 +176,7 @@ system Simple{
         	[(sender.myPosition.x == 1)]	rove* : 4;
         	[(sender.myPosition.x == 2)]	rove* : 5;
         	//more rovers, faster sensing?
-            [true]	sense* : #{ *  | sender.myPosition.x == myPosition.x && sender.myPosition.y == myPosition.y }/#{* | true};
+            [true]	sense* : #{ *  | 1 == my.myPosition.x && sender.myPosition.y == my.myPosition.y }/#{Satelite[Send] | true};
             [true]	analyse* : 0.1;
             [true]	wait* : 3;
             [true]	signal* : 0.5;

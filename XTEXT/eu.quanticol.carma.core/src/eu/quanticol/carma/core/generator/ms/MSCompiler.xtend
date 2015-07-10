@@ -21,6 +21,7 @@ class MSCompiler implements Compiler {
 	@Inject extension FunctionHandler
 	@Inject extension RecordHandler
 	@Inject extension MSSystemCompiler
+	@Inject extension MSFactoryCompiler
 	
 	/**
 	 * File structures:
@@ -80,8 +81,13 @@ class MSCompiler implements Compiler {
 		MSCompiler.PATH = MSCompiler.PATH + modelName.toLowerCase + "/"
 		MSCompiler.PACK = MSCompiler.PACK + modelName.toLowerCase 
 		
-		for(system : model.eAllOfType(System))
+		for(system : model.eAllOfType(System)){
 			system.extractSystem(model, toReturn)
+			system.extractFactory(model, toReturn)
+		}
+		
+		
+		
 		
 		return toReturn
 		
