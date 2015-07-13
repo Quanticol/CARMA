@@ -362,11 +362,11 @@ class MeasureJavaniser {
 		var primitives = be.eAllOfType(PrimitiveTypes)
 		if(primitives.size > 0){
 			if(toReturn.length > 0)
-				toReturn = '''«toReturn», «primitives.get(0).type.javanise» «primitives.get(0).disarm»'''
+				toReturn = '''«toReturn», final «primitives.get(0).type.javanise» «primitives.get(0).disarm»'''
 			else 
-				toReturn = '''«primitives.get(0).type.javanise» «primitives.get(0).disarm»'''
+				toReturn = '''final «primitives.get(0).type.javanise» «primitives.get(0).disarm»'''
 			for(var i = 1; i < primitives.size; i++){
-				toReturn = '''«toReturn», «primitives.get(i).type.javanise» «primitives.get(i).disarm»'''
+				toReturn = '''«toReturn», final «primitives.get(i).type.javanise» «primitives.get(i).disarm»'''
 			}
 		}
 		return toReturn
