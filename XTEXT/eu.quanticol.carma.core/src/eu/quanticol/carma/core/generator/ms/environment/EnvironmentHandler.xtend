@@ -478,10 +478,17 @@ class EnvironmentHandler {
 		@Override
 		public void broadcastUpdate(RandomGenerator random, CarmaStore sender_store,
 				int action, Object value) {
-			«FOR probability : updates»
-			if(action == «probability.stub.name.getContainerOfType(Action).actionName»
-			&& get«probability.javanise»Predicate(sender_store).satisfy(null)){
-				«probability.getBroadValue»
+			«FOR update : updates»
+			if(action == «update.stub.name.getContainerOfType(Action).actionName»
+			&& get«update.javanise»Predicate(sender_store).satisfy(null)){
+				HashMap<String,Class> sender_variables = new HashMap<String,Class>();
+				HashMap<String,Class> global_variables = new HashMap<String,Class>();
+				«IF update.eAllOfType(EnvironmentUpdateAssignment).size > 0»
+				«update.getBroadValue»
+				«ENDIF»
+				«IF update.eAllOfType(Spawn).size > 0»
+				«update.getBroadSpawns»
+				«ENDIF»
 			}
 			«ENDFOR»
 		}		
@@ -496,6 +503,9 @@ class EnvironmentHandler {
 			«FOR update : updates»
 			if(action == «update.stub.name.getContainerOfType(Action).actionName»
 			&& get«update.javanise»Predicate(sender_store).satisfy(receiver_store)){
+				HashMap<String,Class> receiver_variables = new HashMap<String,Class>();
+				HashMap<String,Class> sender_variables = new HashMap<String,Class>();
+				HashMap<String,Class> global_variables = new HashMap<String,Class>();
 				«IF update.eAllOfType(EnvironmentUpdateAssignment).size > 0»
 				«update.getValue»
 				«ENDIF»
@@ -515,9 +525,6 @@ class EnvironmentHandler {
 			for(vr : updateAssignment.eAllOfType(VariableReference))
 				vrs.put(vr.prefix + vr.name.name, vr)
 		'''
-		HashMap<String,Class> receiver_variables = new HashMap<String,Class>();
-		HashMap<String,Class> sender_variables = new HashMap<String,Class>();
-		HashMap<String,Class> global_variables = new HashMap<String,Class>();
 		«FOR key : vrs.keySet»
 		«vrs.get(key).checkStorePredicate»
 		«ENDFOR»
@@ -555,9 +562,6 @@ class EnvironmentHandler {
 			for(vr : updateAssignment.eAllOfType(VariableReference))
 				vrs.put(vr.prefix + vr.name.name, vr)
 		'''
-		HashMap<String,Class> receiver_variables = new HashMap<String,Class>();
-		HashMap<String,Class> sender_variables = new HashMap<String,Class>();
-		HashMap<String,Class> global_variables = new HashMap<String,Class>();
 		«FOR key : vrs.keySet»
 		«vrs.get(key).checkStorePredicate»
 		«ENDFOR»
@@ -619,13 +623,10 @@ class EnvironmentHandler {
 	
 	def String getSpawns(EnvironmentUpdate update){
 
-		var spawns = update.eAllOfType(Spawn)
 		'''
 			«FOR declaration : update.spawn.spawn.comp»
 			«declaration.addComponent»
 			«ENDFOR»
-		}
-		
 		'''		
 	}
 	
@@ -644,9 +645,6 @@ class EnvironmentHandler {
 		for(vr : (componentBlockDeclaration.arguments as ComponentBlockArguments).eAllOfType(VariableReference))
 			vrs.put(vr.prefix + vr.name.name, vr)
 		'''
-		HashMap<String,Class> receiver_variables = new HashMap<String,Class>();
-		HashMap<String,Class> sender_variables = new HashMap<String,Class>();
-		HashMap<String,Class> global_variables = new HashMap<String,Class>();
 		«FOR key : vrs.keySet»
 		«vrs.get(key).checkStorePredicate»
 		«ENDFOR»
@@ -670,7 +668,55 @@ class EnvironmentHandler {
 			«FOR args : products»
 			addComponent(get«name.toFirstUpper»(«args.asArguments»));
 			«ENDFOR»
+		}
 		'''
+	}
+	
+	def String addBroadComponent(CBND componentBlockDeclaration){
+		switch(componentBlockDeclaration){
+			ComponentBlockSpawn:			addBroadComponent(componentBlockDeclaration)
+		}
+	}
+	
+
+	def String addBroadComponent(ComponentBlockSpawn componentBlockDeclaration){
+		var products = new ArrayList<ArrayList<String>>()
+		(componentBlockDeclaration.arguments as ComponentBlockArguments).product.cartesianProduct(products)
+		var name = (componentBlockDeclaration as ComponentBlockSpawn).name.name
+		var vrs = new HashMap<String,VariableReference>()
+		for(vr : (componentBlockDeclaration.arguments as ComponentBlockArguments).eAllOfType(VariableReference))
+			vrs.put(vr.prefix + vr.name.name, vr)
+		'''
+		«FOR key : vrs.keySet»
+		«vrs.get(key).checkStorePredicate»
+		«ENDFOR»
+		boolean hasAttributes = true;
+		if(sender_variables != null)
+			for(String key : sender_variables.keySet()){
+				hasAttributes = sender_store.has(key,sender_variables.get(key)) && hasAttributes;
+			}
+		if(global_variables != null)
+			for(String key : global_variables.keySet()){
+				hasAttributes = global_store.has(key,global_variables.get(key)) && hasAttributes;
+			}
+		if(hasAttributes){
+			«FOR key : vrs.keySet»
+			«vrs.get(key).getStore»
+			«ENDFOR»			
+			«FOR args : products»
+			addComponent(get«name.toFirstUpper»(«args.asArguments»));
+			«ENDFOR»
+		}
+		'''
+	}
+	
+	def String getBroadSpawns(EnvironmentUpdate update){
+
+		'''
+			«FOR declaration : update.spawn.spawn.comp»
+			«declaration.addBroadComponent»
+			«ENDFOR»
+		'''		
 	}
 	
 	def String asArguments(ArrayList<String> args){

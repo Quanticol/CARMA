@@ -188,7 +188,7 @@ class MeasureJavaniser {
 	}
 
 	def String express(Addition e) {
-		'''(«e.left.express» - «e.right.express»)'''
+		'''(«e.left.express» + «e.right.express»)'''
 	}
 
 	def String express(Multiplication e) {

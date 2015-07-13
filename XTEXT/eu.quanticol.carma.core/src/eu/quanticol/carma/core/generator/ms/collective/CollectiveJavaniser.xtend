@@ -223,7 +223,7 @@ class CollectiveJavaniser {
 	}
 
 	def String javanise(Addition e) {
-		'''(«e.left.javanise» - «e.right.javanise»)'''
+		'''(«e.left.javanise» + «e.right.javanise»)'''
 	}
 
 	def String javanise(Multiplication e) {
@@ -565,7 +565,7 @@ class CollectiveJavaniser {
 	}
 
 	def String express(Addition e) {
-		'''(«e.left.express» - «e.right.express»)'''
+		'''(«e.left.express» + «e.right.express»)'''
 	}
 
 	def String express(Multiplication e) {

@@ -174,7 +174,7 @@ class FunctionJavaniser {
 	}
 
 	def String javanise(Addition e) {
-		'''(«e.left.javanise» - «e.right.javanise»)'''
+		'''(«e.left.javanise» + «e.right.javanise»)'''
 	}
 
 	def String javanise(Multiplication e) {
