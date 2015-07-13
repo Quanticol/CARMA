@@ -124,7 +124,7 @@ class TypeProvider {
 	public static val stateType				= new BaseType() => [ parent="state" 		me="state" 			operation="state" 		set="state"	 ]
 	//TODO
 	//get actual pre defined type
-	public static val predefinedType		= new BaseType() => [ parent="function"	me="pre"			operation="arith"]
+	public static val predefinedType		= new BaseType() => [ parent="function"	me = "pre"			operation="arith"]
 	public static val spontType				= new BaseType() => [ parent="output" 	me = "broad"		; set="action"	; operation="spont"]
 	public static val uniOutType			= new BaseType() => [ parent="output"	me = "uni"			; set="action"	; operation="uni"]
 	public static val uniInType				= new BaseType() => [ parent="input"	me = "uni"			; set="action"	; operation="uni"]

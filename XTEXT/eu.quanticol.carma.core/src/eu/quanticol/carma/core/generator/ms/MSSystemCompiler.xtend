@@ -36,7 +36,6 @@ class MSSystemCompiler {
 			'''
 			import org.apache.commons.math3.random.RandomGenerator;
 			import org.cmg.ml.sam.sim.SimulationEnvironment;
-			import org.cmg.ml.sam.sim.sampling.*;
 			import eu.quanticol.carma.simulator.*;
 			import java.util.ArrayList;
 			import java.util.Arrays;

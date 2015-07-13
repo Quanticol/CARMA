@@ -38,7 +38,6 @@ import eu.quanticol.carma.core.carma.VariableReferenceReceiver
 import eu.quanticol.carma.core.carma.VariableReferenceSender
 import eu.quanticol.carma.core.generator.ms.MSSystemCompiler
 import eu.quanticol.carma.core.typing.TypeProvider
-import eu.quanticol.carma.core.utils.Express
 import eu.quanticol.carma.core.utils.Tree
 import eu.quanticol.carma.core.utils.Util
 import java.util.ArrayList
@@ -54,7 +53,6 @@ class CollectiveHandler {
 	@Inject extension CollectiveJavaniser
 	@Inject extension Util
 	@Inject extension TypeProvider
-	@Inject extension Express
 	
 	def String constructor(BlockCollective collective, GlobalStoreBlock globalStoreBlock){
 		var declarations = collective.declarations
@@ -444,14 +442,14 @@ class CollectiveHandler {
 		boolean hasAttributes = true;
 		if(my_variables != null)
 			for(String key : my_variables.keySet()){
-				hasAttributes = my_store.has(key,variables.get(key)) && hasAttributes;
+				hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
 			}
 		if(hasAttributes){
 			«FOR arg : args»
 				«arg.storeOutput»
 			«ENDFOR»
 			«FOR arg : args»
-				output[«count++»] = «arg.javanise»
+				output[«count++»] = «arg.javanise»;
 			«ENDFOR»
 			return output;
 		} else {

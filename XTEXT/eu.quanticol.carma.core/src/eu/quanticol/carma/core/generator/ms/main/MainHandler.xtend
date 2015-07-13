@@ -3,15 +3,24 @@ package eu.quanticol.carma.core.generator.ms.main
 import com.google.inject.Inject
 import eu.quanticol.carma.core.carma.BlockStyle
 import eu.quanticol.carma.core.carma.BlockSystem
+import eu.quanticol.carma.core.carma.CarmaBoolean
+import eu.quanticol.carma.core.carma.CarmaDouble
+import eu.quanticol.carma.core.carma.CarmaInteger
 import eu.quanticol.carma.core.carma.Measure
 import eu.quanticol.carma.core.carma.MeasureBlock
+import eu.quanticol.carma.core.carma.MeasureVariableDeclarations
 import eu.quanticol.carma.core.carma.Model
+import eu.quanticol.carma.core.carma.PrimitiveTypes
+import eu.quanticol.carma.core.carma.Range
 import eu.quanticol.carma.core.carma.System
 import eu.quanticol.carma.core.generator.ms.measure.MeasureJavaniser
+import java.util.ArrayList
+import eu.quanticol.carma.core.carma.MeasureVariableDeclaration
 
 class MainHandler {
 	
 	@Inject extension MeasureJavaniser
+	@Inject extension MainJavaniser
 	
 	def String getMain(Model model, System system){
 		var measureBlock = (model.components as BlockStyle).measures
@@ -22,16 +31,15 @@ class MainHandler {
 			);
 		
 			int deadline = 50; 
-			ArrayList<String> inputs = new ArrayList<String>();
 			SamplingCollection<CarmaSystem> sc = new SamplingCollection<CarmaSystem>();
-			
-			
+
 			«measureBlock.printMeasures»
 			
 			system.setSampling(sc);
 			system.simulate(100,50);
 			for(int i = 0; i < sc.size(); i++){
-				((StatisticSampling<CarmaSystem>) sc.get(i)).printName(System.out); if(inputs.size() > i){System.out.println(" with '" + inputs.get(i)+"' as arguments.");}
+				((StatisticSampling<CarmaSystem>) sc.get(i)).printName(System.out);
+				System.out.println();
 				((StatisticSampling<CarmaSystem>) sc.get(i)).printTimeSeries(System.out);
 			}
 		}
@@ -39,19 +47,47 @@ class MainHandler {
 	}
 	
 	def String printMeasures(MeasureBlock measureBlock){
-		
 		'''
 		«FOR measure : measureBlock.measures»
-		sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, getMeasure«measure.measure.javanise»(«measure.getArguments»)));
-		inputs.add("0,0");
+		«measure.printMeasure»
 		«ENDFOR»
 		'''
-		
 	}
 	
-	def String getArguments(Measure measure){
-		
+	def String printMeasure(Measure measure){
+		var products = new ArrayList<ArrayList<String>>()
+		(measure.ranges as MeasureVariableDeclarations).product.cartesianProduct(products)
+		'''
+		«measure.declare»
+		«FOR product : products»
+		«FOR arg : measure.ranges.asArguments(product,measure)»
+		«arg»
+		«ENDFOR»
+		«measure.addSamplingFunction»
+		«ENDFOR»
+		'''
 	}
 	
 	
+
+	def String addSamplingFunction(Measure measure){
+		'''sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, getMeasure«(Math.abs(measure.measure.hashCode*measure.measure.hashCode)+"").substring(0,3)»("«measure.name.name»",«measure.measure.predicate.disarmOut»)));'''	
+	}
+	
+	def String declare(Measure measure){
+		'''
+		«measure.measure.predicate.declare»
+		'''
+	}
+	
+	def ArrayList<String> asArguments(MeasureVariableDeclarations measureVariableDeclarations, ArrayList<String> args, Measure measure){
+		var ArrayList<String> toReturn = new ArrayList<String>()
+		var ArrayList<String> check = measure.measure.predicate.list
+		for(var i = 0; i < args.size; i++){
+			if(check.contains("input_"+(measureVariableDeclarations.variables.get(i) as MeasureVariableDeclaration).name.name))
+				toReturn.add('''input_«(measureVariableDeclarations.variables.get(i) as MeasureVariableDeclaration).name.name» = «args.get(i)»;''')
+		}
+		return toReturn
+	}
+
 }

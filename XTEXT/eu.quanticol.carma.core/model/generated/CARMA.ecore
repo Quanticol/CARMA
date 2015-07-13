@@ -79,7 +79,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentComprehension"/>
   <eClassifiers xsi:type="ecore:EClass" name="Spawn">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="Spawn" eType="#//BlockSpawn"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="spawn" eType="#//BlockSpawn"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="BlockSpawn">

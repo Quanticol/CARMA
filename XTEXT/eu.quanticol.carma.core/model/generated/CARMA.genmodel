@@ -72,7 +72,7 @@
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//ComponentComprehension"/>
     <genClasses ecoreClass="CARMA.ecore#//Spawn">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Spawn/Spawn"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Spawn/spawn"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//BlockSpawn">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//BlockSpawn/comp"/>

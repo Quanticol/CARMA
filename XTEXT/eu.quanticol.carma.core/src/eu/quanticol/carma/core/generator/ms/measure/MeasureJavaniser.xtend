@@ -48,7 +48,6 @@ import eu.quanticol.carma.core.carma.PredFunctionCallArguments
 import eu.quanticol.carma.core.carma.PrimitiveTypes
 import eu.quanticol.carma.core.carma.ProcessComposition
 import eu.quanticol.carma.core.carma.ProcessReference
-import eu.quanticol.carma.core.carma.Range
 import eu.quanticol.carma.core.carma.RecordArgument
 import eu.quanticol.carma.core.carma.RecordArguments
 import eu.quanticol.carma.core.carma.RecordReferenceGlobal
@@ -69,6 +68,7 @@ import eu.quanticol.carma.core.carma.VariableReferenceMy
 import eu.quanticol.carma.core.carma.VariableReferencePure
 import eu.quanticol.carma.core.carma.VariableReferenceReceiver
 import eu.quanticol.carma.core.carma.VariableReferenceSender
+import eu.quanticol.carma.core.generator.ms.SharedJavaniser
 import eu.quanticol.carma.core.typing.BaseType
 import eu.quanticol.carma.core.typing.TypeProvider
 import java.util.ArrayList
@@ -78,6 +78,7 @@ import static extension org.eclipse.xtext.EcoreUtil2.*
 class MeasureJavaniser {
 	
 	@Inject extension TypeProvider
+	@Inject extension SharedJavaniser
 	
 	def String javanise(SetComp setComp){
 		(Math.abs(setComp.hashCode*setComp.hashCode)+"").substring(0,3)
@@ -91,100 +92,6 @@ class MeasureJavaniser {
 		} else {
 			'''«bt.me»'''
 		}
-	}
-	
-	def String disarm(VariableReference vr) {
-		switch (vr) {
-			VariableReferencePure: 		"input_"	+vr.name.name
-			VariableReferenceMy: 		"my_"		+vr.name.name
-			VariableReferenceReceiver: 	"receiver_"	+vr.name.name
-			VariableReferenceSender: 	"sender_"	+vr.name.name
-			VariableReferenceGlobal: 	"global_"	+vr.name.name
-			RecordReferencePure: 		"input_"	+vr.name.name + "_" + vr.feild.name
-			RecordReferenceMy: 			"my_"		+vr.name.name + "_" + vr.feild.name
-			RecordReferenceReceiver: 	"receiver_"	+vr.name.name + "_" + vr.feild.name
-			RecordReferenceSender: 		"sender_"	+vr.name.name + "_" + vr.feild.name
-			RecordReferenceGlobal: 		"global_"	+vr.name.name + "_" + vr.feild.name
-		}
-	}
-	
-	def ArrayList<VariableReference> clean(ArrayList<VariableReference> dirty){
-		var ArrayList<VariableReference> toReturn = new ArrayList<VariableReference>()
-		for(vr : dirty)
-			switch (vr) {
-				VariableReferencePure: 		toReturn.add(vr)
-				VariableReferenceReceiver: 	toReturn.add(vr)
-				VariableReferenceSender: 	toReturn.add(vr)
-				VariableReferenceGlobal: 	toReturn.add(vr)
-				RecordReferencePure: 		toReturn.add(vr)
-				RecordReferenceReceiver: 	toReturn.add(vr)
-				RecordReferenceSender: 		toReturn.add(vr)
-				RecordReferenceGlobal: 		toReturn.add(vr)
-			}
-		return toReturn
-	}
-	
-	def String disarm(PrimitiveTypes pts) {
-		switch (pts) {
-			CarmaDouble: 	"double_"+(Math.abs(pts.hashCode*pts.hashCode)+"").substring(0,4)
-			CarmaInteger: 	"integer_"+(Math.abs(pts.hashCode*pts.hashCode)+"").substring(0,4)
-			CarmaBoolean: 	"boolean_"+(Math.abs(pts.hashCode*pts.hashCode)+"").substring(0,4)
-			Range: 			"//eu.quanticol.carma.core.generator.ms.measure.disarm.Range"
-		}
-	}
-	
-	def ArrayList<VariableReference> reverseClean(ArrayList<VariableReference> dirty){
-		var ArrayList<VariableReference> toReturn = new ArrayList<VariableReference>()
-		for(vr : dirty)
-			switch (vr) {
-				VariableReferenceMy: 		toReturn.add(vr)
-				RecordReferenceMy: 			toReturn.add(vr)
-			}
-		return toReturn
-	}
-	
-	
-	def String disarmIn(BooleanExpression be){
-		var vrs = new ArrayList<VariableReference>(be.eAllOfType(VariableReference))
-		vrs = vrs.clean
-		var String toReturn = ""
-		if(vrs.size > 0){
-			toReturn = '''«vrs.get(0).type.javanise» «vrs.get(0).disarm»'''
-			for(var i = 1; i < vrs.size; i++){
-				toReturn = '''«toReturn», «vrs.get(i).type.javanise» «vrs.get(i).disarm»'''
-			}
-		}
-		var primitives = be.eAllOfType(PrimitiveTypes)
-		if(primitives.size > 0){
-			if(toReturn.length > 0)
-				toReturn = '''«toReturn», «primitives.get(0).type.javanise» «primitives.get(0).disarm»'''
-			else 
-				toReturn = '''«primitives.get(0).type.javanise» «primitives.get(0).disarm»'''
-			for(var i = 1; i < vrs.size; i++){
-				toReturn = '''«toReturn», «primitives.get(i).type.javanise» «primitives.get(i).disarm»'''
-			}
-		}
-		return toReturn
-	}
-	
-	def String disarmOut(BooleanExpression be){
-		var vrs = new ArrayList<VariableReference>(be.eAllOfType(VariableReference))
-		vrs = vrs.clean
-		var String toReturn = ""
-		if(vrs.size > 0){
-			toReturn = '''«vrs.get(0).disarm»'''
-			for(var i = 1; i < vrs.size; i++){
-				toReturn = '''«toReturn»,«vrs.get(i).disarm»'''
-			}
-		}
-		var primitives = be.eAllOfType(PrimitiveTypes)
-		if(primitives.size > 0){
-			toReturn = '''«primitives.get(0).disarm»'''
-			for(var i = 1; i < vrs.size; i++){
-				toReturn = '''«toReturn», «primitives.get(i).disarm»'''
-			}
-		}
-		return toReturn
 	}
 	
 	def String javanise(ProcessComposition processComposition){
@@ -342,16 +249,16 @@ class MeasureJavaniser {
 
 	def String express(VariableReference vr) {
 		switch (vr) {
-			VariableReferencePure: 		vr.disarm
+			VariableReferencePure: 		vr.disarm(false)
 			VariableReferenceMy: 		vr.name.name
-			VariableReferenceReceiver: 	vr.disarm
-			VariableReferenceSender: 	vr.disarm
-			VariableReferenceGlobal: 	vr.disarm
-			RecordReferencePure: 		vr.disarm
+			VariableReferenceReceiver: 	vr.disarm(false)
+			VariableReferenceSender: 	vr.disarm(false)
+			VariableReferenceGlobal: 	vr.disarm(false)
+			RecordReferencePure: 		vr.disarm(false)
 			RecordReferenceMy: 			vr.name.name + "." + vr.feild.name
-			RecordReferenceReceiver: 	vr.disarm
-			RecordReferenceSender: 		vr.disarm
-			RecordReferenceGlobal: 		vr.disarm
+			RecordReferenceReceiver: 	vr.disarm(false)
+			RecordReferenceSender: 		vr.disarm(false)
+			RecordReferenceGlobal: 		vr.disarm(false)
 		}
 	}
 
@@ -418,11 +325,7 @@ class MeasureJavaniser {
 	}
 	
 	def String express(AtomicMeasure expression){
-		'''getMeasure«expression.value.express»().measure(this)'''
-	}
-	
-	def String express(SetComp setComp){
-		((setComp.hashCode*setComp.hashCode)*1000 + "").substring(0,3)
+		'''«expression.value.expressMeasure(false)»'''
 	}
 	
 	def String express(AtomicRecord expression){
@@ -444,5 +347,54 @@ class MeasureJavaniser {
 	
 	def String express(RecordArgument argument){
 		argument.value.express
+	}
+	
+	def String disarmParameters(BooleanExpression be){
+		var vrs = new ArrayList<VariableReference>(be.eAllOfType(VariableReference))
+		vrs = vrs.clean
+		var String toReturn = ""
+		if(vrs.size > 0){
+			toReturn = '''«vrs.get(0).type.javanise» «vrs.get(0).disarm(false)»'''
+			for(var i = 1; i < vrs.size; i++){
+				toReturn = '''«toReturn», «vrs.get(i).type.javanise» «vrs.get(i).disarm(false)»'''
+			}
+		}
+		var primitives = be.eAllOfType(PrimitiveTypes)
+		if(primitives.size > 0){
+			if(toReturn.length > 0)
+				toReturn = '''«toReturn», «primitives.get(0).type.javanise» «primitives.get(0).disarm»'''
+			else 
+				toReturn = '''«primitives.get(0).type.javanise» «primitives.get(0).disarm»'''
+			for(var i = 1; i < primitives.size; i++){
+				toReturn = '''«toReturn», «primitives.get(i).type.javanise» «primitives.get(i).disarm»'''
+			}
+		}
+		return toReturn
+	}
+	
+	def String disarmOut(BooleanExpression bes){
+		bes.disarmArgumentsShared(false)
+	}
+	
+	def String disarmString(BooleanExpression bes){
+		bes.disarmArgumentsSharedString(false)
+	}
+	
+	def String declare(BooleanExpression bes){
+		bes.declareArguments
+	}
+	
+	def ArrayList<String> list(BooleanExpression bes){
+		bes.listArguments
+	}
+	
+	def ArrayList<VariableReference> reverseClean(ArrayList<VariableReference> dirty){
+		var ArrayList<VariableReference> toReturn = new ArrayList<VariableReference>()
+		for(vr : dirty)
+			switch (vr) {
+				VariableReferenceMy: 		toReturn.add(vr)
+				RecordReferenceMy: 			toReturn.add(vr)
+			}
+		return toReturn
 	}
 }

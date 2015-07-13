@@ -21,6 +21,7 @@ import eu.quanticol.carma.core.carma.VariableReference
 import eu.quanticol.carma.core.carma.VariableReferenceMy
 import eu.quanticol.carma.core.carma.RecordReferenceMy
 import eu.quanticol.carma.core.typing.TypeProvider
+import eu.quanticol.carma.core.carma.Measure
 
 class MeasureHandler {
 	
@@ -44,12 +45,21 @@ class MeasureHandler {
 	 * my. should be the store of the Component under evaluation IE found in the predicate, and compared against the input arguments
 	 */
 	def String getMeasureFunction(SetComp setcomp){
+		var String name = ""
+		if(setcomp.getContainerOfType(Measure) != null){
+			name = setcomp.getContainerOfType(Measure).name.name
+		}
 		'''
-		public static Measure<CarmaSystem> getMeasure«setcomp.javanise»(«setcomp.predicate.disarmIn»){
+		public static Measure<CarmaSystem> getMeasure«setcomp.javanise»(String name, «setcomp.predicate.disarmParameters»){
 			
 			return new Measure<CarmaSystem>(){
 			
 				ComponentPredicate predicate = getMeasure«setcomp.javanise»_predicate_Predicate(«setcomp.predicate.disarmOut»);
+				String myName = setName(name+«setcomp.javanise»,«setcomp.predicate.disarmOut»);
+				
+				public String setName(String name, «setcomp.predicate.disarmParameters»){
+					return ""+name+" : "+«setcomp.predicate.disarmString»;
+				}
 			
 				@Override
 				public double measure(CarmaSystem t){
@@ -59,7 +69,7 @@ class MeasureHandler {
 			
 				@Override
 				public String getName() {
-					return "Measure «setcomp.javanise» with «setcomp.predicate.disarmIn»";
+					return myName;
 				}
 			};
 		}
@@ -68,7 +78,7 @@ class MeasureHandler {
 	
 	def String getMeasurePredicatePredicate(SetComp setcomp){
 		'''
-		protected static CarmaPredicate getPredicate«setcomp.javanise»(«setcomp.predicate.disarmIn») {
+		protected static CarmaPredicate getPredicate«setcomp.javanise»(«setcomp.predicate.disarmParameters») {
 			return new CarmaPredicate() {
 				@Override
 				public boolean satisfy(CarmaStore store) {
@@ -77,7 +87,7 @@ class MeasureHandler {
 			};
 		}
 		
-		public static ComponentPredicate getMeasure«setcomp.javanise»_predicate_Predicate(«setcomp.predicate.disarmIn»){
+		public static ComponentPredicate getMeasure«setcomp.javanise»_predicate_Predicate(«setcomp.predicate.disarmParameters»){
 			return new ComponentPredicate() {
 				
 				@Override
@@ -119,8 +129,8 @@ class MeasureHandler {
 	
 	def String checkStorePredicate(VariableReference vr){
 		switch (vr) {
-			VariableReferenceMy: 		'''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
-			RecordReferenceMy: 			'''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
+			VariableReferenceMy: 		'''my_variables.put("«vr.name.name»",«vr.name.type.storeExpress»);'''
+			RecordReferenceMy: 			'''my_variables.put("«vr.name.name»",«vr.name.type.storeExpress»);'''
 		}
 	}
 	
@@ -152,7 +162,7 @@ class MeasureHandler {
 		if(componentState.keySet.size > 0){
 			output = output + '''
 			( 
-			(((CarmaSequentialProcess) p).automaton() ==  «componentState.keySet.get(0)») && (
+			(((CarmaSequentialProcess) p).automaton().getName().equals(«componentState.keySet.get(0)».getName())) && (
 			'''
 			for(state : componentState.get(componentState.keySet.get(0))){
 				output = output + '''
@@ -166,7 +176,7 @@ class MeasureHandler {
 			for(var int i = 1; i < componentState.keySet.size; i++){
 				output = output + '''
 				||( 
-				(((CarmaSequentialProcess) p).automaton() ==  «componentState.keySet.get(i)») && (
+				(((CarmaSequentialProcess) p).automaton().getName().equals(«componentState.keySet.get(i)».getName())) && (
 				'''
 				for(state : componentState.get(componentState.keySet.get(i))){
 					output = output + '''

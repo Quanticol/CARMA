@@ -1,11 +1,14 @@
 package eu.quanticol.carma.core.generator.ms.function
 
+import com.google.inject.Inject
 import eu.quanticol.carma.core.carma.Addition
 import eu.quanticol.carma.core.carma.And
+import eu.quanticol.carma.core.carma.AtomicCalls
 import eu.quanticol.carma.core.carma.AtomicMeasure
 import eu.quanticol.carma.core.carma.AtomicNow
 import eu.quanticol.carma.core.carma.AtomicOutcome
 import eu.quanticol.carma.core.carma.AtomicPrimitive
+import eu.quanticol.carma.core.carma.AtomicProcessComposition
 import eu.quanticol.carma.core.carma.AtomicRecord
 import eu.quanticol.carma.core.carma.AtomicVariable
 import eu.quanticol.carma.core.carma.AttribParameter
@@ -36,6 +39,7 @@ import eu.quanticol.carma.core.carma.FunctionForStatement
 import eu.quanticol.carma.core.carma.FunctionIfStatement
 import eu.quanticol.carma.core.carma.FunctionReferenceMan
 import eu.quanticol.carma.core.carma.FunctionReferencePre
+import eu.quanticol.carma.core.carma.FunctionReturn
 import eu.quanticol.carma.core.carma.FunctionStatement
 import eu.quanticol.carma.core.carma.InstantiateRecord
 import eu.quanticol.carma.core.carma.IntgerParameter
@@ -65,8 +69,9 @@ import eu.quanticol.carma.core.carma.RecordReferencePure
 import eu.quanticol.carma.core.carma.RecordReferenceReceiver
 import eu.quanticol.carma.core.carma.RecordReferenceSender
 import eu.quanticol.carma.core.carma.RecordType
-import eu.quanticol.carma.core.carma.SetComp
 import eu.quanticol.carma.core.carma.Subtraction
+import eu.quanticol.carma.core.carma.Type
+import eu.quanticol.carma.core.carma.Types
 import eu.quanticol.carma.core.carma.UniformFunction
 import eu.quanticol.carma.core.carma.VariableReference
 import eu.quanticol.carma.core.carma.VariableReferenceGlobal
@@ -74,16 +79,14 @@ import eu.quanticol.carma.core.carma.VariableReferenceMy
 import eu.quanticol.carma.core.carma.VariableReferencePure
 import eu.quanticol.carma.core.carma.VariableReferenceReceiver
 import eu.quanticol.carma.core.carma.VariableReferenceSender
+import eu.quanticol.carma.core.generator.ms.SharedJavaniser
 import java.util.ArrayList
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.carma.Type
-import eu.quanticol.carma.core.carma.Types
-import eu.quanticol.carma.core.carma.FunctionReturn
-import eu.quanticol.carma.core.carma.AtomicCalls
-import eu.quanticol.carma.core.carma.AtomicProcessComposition
 
 class FunctionJavaniser {
+	
+	@Inject extension SharedJavaniser
 	
 	def String javanise(Types types){
 		types.type.javanise
@@ -315,11 +318,7 @@ class FunctionJavaniser {
 	}
 	
 	def String javanise(AtomicMeasure expression){
-		'''getMeasure«expression.value.javanise»().measure(this)'''
-	}
-	
-	def String javanise(SetComp setComp){
-		(Math.abs(setComp.hashCode*setComp.hashCode)+"").substring(0,3)
+		'''«expression.value.expressMeasure(true)»'''
 	}
 	
 	def String javanise(AtomicRecord expression){
@@ -411,4 +410,6 @@ class FunctionJavaniser {
 	def String javanise(FunctionReturn functionReturn){
 		'''return «functionReturn.expression.javanise»; '''
 	}
+
+
 }

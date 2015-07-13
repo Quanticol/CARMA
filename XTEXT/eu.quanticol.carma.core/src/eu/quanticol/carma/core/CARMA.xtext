@@ -418,7 +418,7 @@ AtomicComponentComprehension returns ComponentComprehension  hidden(ML_COMMENT,S
 
 ////////////////////////////////////////////////////SPAWN
 Spawn hidden(ML_COMMENT,SL_COMMENT,WS):
-	{Spawn} Spawn=BlockSpawn
+	{Spawn} spawn=BlockSpawn
 ;
 
 BlockSpawn hidden(ML_COMMENT,SL_COMMENT,WS):
