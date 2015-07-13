@@ -354,9 +354,9 @@ class MeasureJavaniser {
 		vrs = vrs.clean
 		var String toReturn = ""
 		if(vrs.size > 0){
-			toReturn = '''«vrs.get(0).type.javanise» «vrs.get(0).disarm(false)»'''
+			toReturn = '''final «vrs.get(0).type.javanise» «vrs.get(0).disarm(false)»'''
 			for(var i = 1; i < vrs.size; i++){
-				toReturn = '''«toReturn», «vrs.get(i).type.javanise» «vrs.get(i).disarm(false)»'''
+				toReturn = '''«toReturn», final «vrs.get(i).type.javanise» «vrs.get(i).disarm(false)»'''
 			}
 		}
 		var primitives = be.eAllOfType(PrimitiveTypes)

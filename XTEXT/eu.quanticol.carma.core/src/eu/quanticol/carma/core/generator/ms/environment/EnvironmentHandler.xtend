@@ -94,7 +94,7 @@ class EnvironmentHandler {
 	
 	def String getProbabilityPredicates(Probability probability){
 		'''
-		public static CarmaPredicate get«probability.javanise»Predicate(CarmaStore sender_store){
+		public static CarmaPredicate get«probability.javanise»Predicate(final CarmaStore sender_store){
 			return new CarmaPredicate() {
 				@Override
 				public boolean satisfy(CarmaStore receiver_store) {
@@ -424,7 +424,7 @@ class EnvironmentHandler {
 	
 	def String getUpdatePredicates(EnvironmentUpdate update){
 		'''
-		public static CarmaPredicate get«update.javanise»Predicate(CarmaStore sender_store){
+		public static CarmaPredicate get«update.javanise»Predicate(final CarmaStore sender_store){
 			return new CarmaPredicate() {
 				@Override
 				public boolean satisfy(CarmaStore receiver_store) {

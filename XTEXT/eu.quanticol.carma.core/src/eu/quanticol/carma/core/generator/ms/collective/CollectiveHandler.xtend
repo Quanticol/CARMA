@@ -240,7 +240,7 @@ class CollectiveHandler {
 		if(action.eAllOfType(ActionGuard).size > 0){
 			'''
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore their_store) {
+			protected CarmaPredicate getPredicate(final CarmaStore their_store) {
 				return new CarmaPredicate() {
 					@Override
 					public boolean satisfy(CarmaStore my_store) {
@@ -252,7 +252,7 @@ class CollectiveHandler {
 		} else {
 			'''
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore their_store) {
+			protected CarmaPredicate getPredicate(final CarmaStore their_store) {
 				return new CarmaPredicate() {
 					@Override
 					public boolean satisfy(CarmaStore my_store) {
@@ -487,7 +487,7 @@ class CollectiveHandler {
 		if(action.eAllOfType(ActionGuard).size > 0){
 			'''
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore my_store, final Object value) {
+			protected CarmaPredicate getPredicate(final CarmaStore my_store, final Object value) {
 				if (value instanceof int[]){
 					return new CarmaPredicate() {
 						@Override
@@ -502,7 +502,7 @@ class CollectiveHandler {
 		} else {
 			'''
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore my_store, final Object value) {
+			protected CarmaPredicate getPredicate(final CarmaStore my_store, final Object value) {
 				if (value instanceof int[]){
 					return new CarmaPredicate() {
 						@Override

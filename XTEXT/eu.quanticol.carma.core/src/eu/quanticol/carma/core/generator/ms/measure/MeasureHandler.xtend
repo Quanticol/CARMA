@@ -50,7 +50,7 @@ class MeasureHandler {
 			name = setcomp.getContainerOfType(Measure).name.name
 		}
 		'''
-		public static Measure<CarmaSystem> getMeasure«setcomp.javanise»(String name, «setcomp.predicate.disarmParameters»){
+		public static Measure<CarmaSystem> getMeasure«setcomp.javanise»(final String name, «setcomp.predicate.disarmParameters»){
 			
 			return new Measure<CarmaSystem>(){
 			
