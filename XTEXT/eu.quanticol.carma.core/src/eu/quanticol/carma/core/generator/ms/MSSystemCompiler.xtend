@@ -51,7 +51,11 @@ class MSSystemCompiler {
 				
 				«model.functions.printFunctions»
 				«model.records.records»
+				«IF (system as BlockSystem).environment != null»
 				«(system as BlockSystem).collective.constructor((system as BlockSystem).environment.stores)»
+				«ELSE»
+				«(system as BlockSystem).collective.constructor(null)»
+				«ENDIF»
 				«(model.components as BlockStyle).components»
 				«(model.components as BlockStyle).createProcesses»
 				«new ArrayList<SetComp>(model.eAllOfType(SetComp)).getMeasures»

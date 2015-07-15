@@ -49,667 +49,705 @@ import eu.quanticol.carma.core.carma.UpdateAssignment
 import eu.quanticol.carma.core.carma.OutputActionArgument
 
 class CollectiveHandler {
-	
+
 	@Inject extension CollectiveJavaniser
 	@Inject extension Util
 	@Inject extension TypeProvider
-	
-	def String constructor(BlockCollective collective, GlobalStoreBlock globalStoreBlock){
+
+	def String constructor(BlockCollective collective, GlobalStoreBlock globalStoreBlock) {
 		var declarations = collective.declarations
-		var attributes = globalStoreBlock.attributes
 		'''
-		public «MSSystemCompiler.SYSTEMNAME»(){
-			«FOR declaration : declarations»
-			«declaration.addComponent»
-			«ENDFOR»
-			«FOR attribute : attributes»
-			«attribute.addGlobalStores»
-			«ENDFOR»
-		}
+			public «MSSystemCompiler.SYSTEMNAME»(){
+				«FOR declaration : declarations»
+					«declaration.addComponent»
+				«ENDFOR»
+				«IF globalStoreBlock != null»
+					«FOR attribute : globalStoreBlock.attributes»
+					«attribute.addGlobalStores»
+					«ENDFOR»
+				«ENDIF»
+			}
 		'''
 	}
-	
-	def String addComponent(ComponentBlockDeclaration componentBlockDeclaration){
-		switch(componentBlockDeclaration){
-			ComponentBlockNew:			addComponent(componentBlockDeclaration)
-			ComponentBlockForStatement:	addComponent(componentBlockDeclaration)
+
+	def String addComponent(ComponentBlockDeclaration componentBlockDeclaration) {
+		switch (componentBlockDeclaration) {
+			ComponentBlockNew: addComponent(componentBlockDeclaration)
+			ComponentBlockForStatement: addComponent(componentBlockDeclaration)
 		}
 	}
-	
-	def String addComponent(ComponentBlockNew componentBlockDeclaration){
+
+	def String addComponent(ComponentBlockNew componentBlockDeclaration) {
 		var products = new ArrayList<ArrayList<String>>()
 		(componentBlockDeclaration.arguments as ComponentBlockArguments).product.cartesianProduct(products)
 		var name = (componentBlockDeclaration as ComponentBlockNew).name.name
 		'''
-		«FOR args : products»
-		addComponent(get«name.toFirstUpper»(«args.asArguments»));
-		«ENDFOR»
+			«IF products.size > 0»
+			«FOR args : products»
+				addComponent(get«name.toFirstUpper»(«args.asArguments»));
+			«ENDFOR»
+			«ELSE»
+				addComponent(get«name.toFirstUpper»());
+			«ENDIF»
 		'''
 	}
-	
-	def String asArguments(ArrayList<String> args){
+
+	def String asArguments(ArrayList<String> args) {
 		var String toReturn = ""
-		if(args.size > 0){
+		if (args.size > 0) {
 			toReturn = args.get(0)
-			for(var i = 1; i < args.size; i++)
+			for (var i = 1; i < args.size; i++)
 				toReturn = toReturn + ", " + args.get(i)
 		}
 		return toReturn
 	}
-	
-	def String addComponent(ComponentBlockForStatement componentBlockDeclaration){
-'''for(«(componentBlockDeclaration.variable as ComponentForVariableDeclaration).javanise » ; «componentBlockDeclaration.expression.javanise » ; «(componentBlockDeclaration.afterThought.componentAssignment as ComponentAssignment).javanise»){
+
+	def String addComponent(ComponentBlockForStatement componentBlockDeclaration) {
+		'''for(«(componentBlockDeclaration.variable as ComponentForVariableDeclaration).javanise» ; «componentBlockDeclaration.expression.javanise» ; «(componentBlockDeclaration.afterThought.componentAssignment as ComponentAssignment).javanise»){
 	«componentBlockDeclaration.componentBlockForBlock.component.addComponent»			
 }'''
 	}
-	
-	def String addGlobalStores(Declaration storeDeclaration){
+
+	def String addGlobalStores(Declaration storeDeclaration) {
 		'''global_store.set(«storeDeclaration.setStore»);'''
 	}
 
-	def String getComponents(BlockStyle blockStyle){
+	def String getComponents(BlockStyle blockStyle) {
 		'''
-		«FOR definition : blockStyle.definitions»
-		«(definition as ComponentBlockDefinition).getComponent»
-		«ENDFOR»
+			«FOR definition : blockStyle.definitions»
+				«(definition as ComponentBlockDefinition).getComponent»
+			«ENDFOR»
 		'''
 	}
 
-	def String getComponent(ComponentBlockDefinition componentBlockDefinition){
+	def String getComponent(ComponentBlockDefinition componentBlockDefinition) {
 		var String componentName = componentBlockDefinition.componentSignature.name.name
-		var ArrayList<Parameter> parameters = new ArrayList<Parameter>(componentBlockDefinition.componentSignature.componentParameters.eAllOfType(Parameter))
-		var boolean hasBehaviour = componentBlockDefinition.componentSignature.componentParameters.eAllOfType(ProcessParameter).size > 0
+		var ArrayList<Parameter> parameters = new ArrayList<Parameter>(
+			componentBlockDefinition.componentSignature.componentParameters.eAllOfType(Parameter))
+		var boolean hasBehaviour = componentBlockDefinition.componentSignature.componentParameters.eAllOfType(
+			ProcessParameter).size > 0
 		var String behaviour = ""
-		if(hasBehaviour){
-			behaviour = componentBlockDefinition.componentSignature.componentParameters.eAllOfType(ProcessParameter).get(0).name.name
+		if (hasBehaviour) {
+			behaviour = componentBlockDefinition.componentSignature.componentParameters.eAllOfType(ProcessParameter).
+				get(0).name.name
 		}
 		var attributes = componentBlockDefinition.componentBlock.store.attributes
 		'''
-		private CarmaComponent get«componentName»( «parameters.getParameters» ){
-			CarmaComponent c4rm4 = new CarmaComponent();
-			«FOR attribute : attributes»
-			«attribute.setStores»
-			«ENDFOR»
-			«setBehaviour(behaviour, componentBlockDefinition.componentBlock.initBlock.init, componentName)»
-			return c4rm4;
-		}
-		
+			private CarmaComponent get«componentName»( «parameters.getParameters» ){
+				CarmaComponent c4rm4 = new CarmaComponent();
+				«FOR attribute : attributes»
+					«attribute.setStores»
+				«ENDFOR»
+				«setBehaviour(behaviour, componentBlockDefinition.componentBlock.initBlock.init, componentName)»
+				return c4rm4;
+			}
+			
 		'''
 	}
-	
-	def String setStores(Declaration storeDeclaration){
+
+	def String setStores(Declaration storeDeclaration) {
 		'''c4rm4.set(«storeDeclaration.setStore»);'''
 	}
-	
-	def String setBehaviour(String behaviour, ProcessComposition processComposition, String componentName){
+
+	def String setBehaviour(String behaviour, ProcessComposition processComposition, String componentName) {
 		var ArrayList<String> states = new ArrayList<String>()
 		processComposition.array(states)
 		var boolean hasBehaviour = states.contains(behaviour)
-		if(hasBehaviour){
+		if (hasBehaviour) {
 			states.remove(behaviour)
 		}
 		'''
-		«IF hasBehaviour»
-		ArrayList<String> processes = new ArrayList<String>(Arrays.asList( «states.javanise» ));
-		processes.addAll(behaviour);
-		«ELSE»
-		ArrayList<String> processes = new ArrayList<String>(Arrays.asList( «processComposition.javanise» ));
-		«ENDIF»
-		for(int i = 0; i < processes.size(); i++){
-			c4rm4.addAgent( new CarmaSequentialProcess(c4rm4,create«componentName.toFirstUpper»Process(),create«componentName.toFirstUpper»Process().getState("state_"+processes.get(i))));
-		}
-		'''		
+			«IF hasBehaviour»
+				ArrayList<String> processes = new ArrayList<String>(Arrays.asList( «states.javanise» ));
+				processes.addAll(behaviour);
+			«ELSE»
+				ArrayList<String> processes = new ArrayList<String>(Arrays.asList( «processComposition.javanise» ));
+			«ENDIF»
+			for(int i = 0; i < processes.size(); i++){
+				c4rm4.addAgent( new CarmaSequentialProcess(c4rm4,create«componentName.toFirstUpper»Process(),create«componentName.toFirstUpper»Process().getState("state_"+processes.get(i))));
+			}
+		'''
 	}
-	
-	def String createProcesses(BlockStyle blockStyle){
+
+	def String createProcesses(BlockStyle blockStyle) {
 		var Processes processes = blockStyle.processes
 		var cbnds = blockStyle.eAllOfType(CBND)
 		var HashSet<String> toReturn = new HashSet<String>()
-		for(cbnd : cbnds)
+		for (cbnd : cbnds)
 			toReturn.add(cbnd.createProcess(processes))
 		'''
-		«FOR item : toReturn»
-		«item»
-		«ENDFOR»
+			«FOR item : toReturn»
+				«item»
+			«ENDFOR»
 		'''
 	}
-	
-	def String createProcess(CBND declaration, Processes processes){
+
+	def String createProcess(CBND declaration, Processes processes) {
 		var String componentName = declaration.name.name
 		var Component component = declaration.name.getContainerOfType(Component)
 		var Tree tree = declaration.getTree
 		'''
-		private static CarmaProcessAutomaton create«componentName»Process() {
-			CarmaProcessAutomaton toReturn = new CarmaProcessAutomaton("«componentName»");
-			«tree.createStates»
-			«tree.createActions»
-			«tree.createGuards»
-			«tree.createTransitions»
-			return toReturn;
-		}
+			private static CarmaProcessAutomaton create«componentName»Process() {
+				CarmaProcessAutomaton toReturn = new CarmaProcessAutomaton("«componentName»");
+				«tree.createStates»
+				«tree.createActions»
+				«tree.createGuards»
+				«tree.createTransitions»
+				return toReturn;
+			}
 		'''
 	}
-	
-	def String createStates(Tree tree){
+
+	def String createStates(Tree tree) {
 		var HashSet<String> states = new HashSet<String>();
 		tree.getStates(states)
 		'''
-		«FOR state : states»
-		«IF !state.equals("null")»
-		CarmaProcessAutomaton.State «state» = toReturn.newState("«state»");
-		«ENDIF»
-		«ENDFOR»
+			«FOR state : states»
+				«IF !state.equals("null")»
+					CarmaProcessAutomaton.State «state» = toReturn.newState("«state»");
+				«ENDIF»
+			«ENDFOR»
 		'''
 	}
-	
-	def String createActions(Tree tree){
-		var HashMap<String,Action> actions = new HashMap<String,Action>()
+
+	def String createActions(Tree tree) {
+		var HashMap<String, Action> actions = new HashMap<String, Action>()
 		tree.getActions(actions)
 		'''
-		«FOR key : actions.keySet»
-		«key.getAction(actions.get(key))»
-		«ENDFOR»
-		'''
-	}
-	
-	def String getAction(String name, Action action){
-		'''
-		«IF(action.type.parent.equals("output"))»
-		«name.getActionOutput(action.type.me.equals("broad"),action)»
-		«ELSE»
-		«name.getActionInput(action.type.me.equals("broad"),action)»
-		«ENDIF»
-		'''
-	}
-	
-	def String getActionOutput(String actionName, 
-		boolean isBroadcast, 
-		Action action){
-		
-			
-		'''
-		CarmaOutput «actionName» = new CarmaOutput( «action.actionName», «isBroadcast» ) {
-			«action.outputActionPredicate»
-			«action.getOutputUpdate»
-			«action.getValues»
-		};
-		'''
-	}
-	
-	def String getOutputActionPredicate(Action action){
-		if(action.eAllOfType(ActionGuard).size > 0){
-			'''
-			@Override
-			protected CarmaPredicate getPredicate(final CarmaStore their_store) {
-				return new CarmaPredicate() {
-					@Override
-					public boolean satisfy(CarmaStore my_store) {
-						«getOutputSatisfyBlock(action.eAllOfType(ActionGuard).get(0).booleanExpression)»
-					}
-				};
-			}
-			'''	
-		} else {
-			'''
-			@Override
-			protected CarmaPredicate getPredicate(final CarmaStore their_store) {
-				return new CarmaPredicate() {
-					@Override
-					public boolean satisfy(CarmaStore my_store) {
-						return true;
-					}
-				};
-			}
-			'''	
-		}
-	}
-	
-	def String getOutputSatisfyBlock(BooleanExpression bes){
-		var vrs = bes.eAllOfType(VariableReference)
-		var vrsh = new HashMap<String,VariableReference>()
-		for(vr : vrs){
-			vrsh.put(vr.name.name, vr)
-		}
-		'''
-		HashMap<String,Class> my_variables = new HashMap<String,Class>();
-		HashMap<String,Class> their_variables = new HashMap<String,Class>();
-		«FOR key : vrsh.keySet»
-		«vrsh.get(key).checkStoreOutputPredicate»
-		«ENDFOR»
-		boolean hasAttributes = true;
-		if(my_variables != null)
-			for(String key : my_variables.keySet()){
-				hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
-			}
-		if(their_variables != null)
-			for(String key : their_variables.keySet()){
-				hasAttributes = their_store.has(key,their_variables.get(key)) && hasAttributes;
-			}
-		if(hasAttributes){
-			«FOR key : vrsh.keySet»
-			«vrsh.get(key).storeOutputPredicate»
+			«FOR key : actions.keySet»
+				«key.getAction(actions.get(key))»
 			«ENDFOR»
-			return «bes.express»;
-		} else {
-			return false;
-		}
 		'''
 	}
-	
-	def String checkStoreOutputPredicate(VariableReference vr){
-		switch (vr) {
-			VariableReferencePure: 		'''their_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
-			VariableReferenceMy: 		'''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
-			VariableReferenceReceiver: 	"receiver_store."
-			VariableReferenceSender: 	"sender_store."
-			VariableReferenceGlobal: 	"global_store."
-			RecordReferencePure: 		'''their_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
-			RecordReferenceMy: 			'''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
-			RecordReferenceReceiver: 	"receiver_store."
-			RecordReferenceSender: 		"sender_store."
-			RecordReferenceGlobal: 		"global_store."
-		}
-	}
-	
-	def String getStoreOutputPredicate(VariableReference vr){
-		switch (vr) {
-			VariableReferencePure: 		'''«vr.name.type.express» «vr.name.name» = their_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
-			VariableReferenceMy: 		'''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
-			VariableReferenceReceiver: 	"receiver_store."
-			VariableReferenceSender: 	"sender_store."
-			VariableReferenceGlobal: 	"global_store."
-			RecordReferencePure: 		'''«vr.name.type.express» «vr.name.name» = their_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
-			RecordReferenceMy: 			'''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
-			RecordReferenceReceiver: 	"receiver_store."
-			RecordReferenceSender: 		"sender_store."
-			RecordReferenceGlobal: 		"global_store."
-		}
-	}
-	
-	def String getOutputUpdate(Action action){
-		if(action.eAllOfType(Update).size > 0){
-			'''
-			@Override
-			protected CarmaStoreUpdate getUpdate() {
-				return new CarmaStoreUpdate() {
-					
-					@Override
-					public void update(RandomGenerator r, CarmaStore my_store) {
-						«action.outputUpdateBlock»
-					}
-				};
-			}
-			'''
-		} else {
-			'''
-			@Override
-			protected CarmaStoreUpdate getUpdate() {
-				return null;
-			}
-			'''
-		}
-	}
-	
-	def String outputUpdateBlock(Action action){
-		var update = action.eAllOfType(Update).get(0)
-		var updateAssignments = update.eAllOfType(UpdateAssignment)
-		var vrs = new HashMap<String,VariableReference>()
-		for(updateAssignment : updateAssignments)
-			for(vr : updateAssignment.eAllOfType(VariableReference))
-				vrs.put(vr.name.name,vr)
-		
+
+	def String getAction(String name, Action action) {
 		'''
-		HashMap<String,Class> my_variables = new HashMap<String,Class>();
-		«FOR key : vrs.keySet»
-		«vrs.get(key).checkStoreOutput»
-		«ENDFOR»
-		boolean hasAttributes = true;
-		if(my_variables != null)
-			for(String key : my_variables.keySet()){
-				hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
-			}
-		if(hasAttributes){
-			«FOR key : vrs.keySet»
-			«vrs.get(key).storeOutput»
-			«ENDFOR»
-			«FOR updateAssignment : updateAssignments»
-				«updateAssignment.reference.name.name» = «updateAssignment.expression.express»;
-			«ENDFOR»
-			«FOR updateAssignment : updateAssignments»
-				my_store.set("«updateAssignment.reference.name.name»",«updateAssignment.reference.name.name»);
-			«ENDFOR»
-		}
+			«IF (action.type.parent.equals("output"))»
+				«name.getActionOutput(action.type.me.equals("broad"),action)»
+			«ELSE»
+				«name.getActionInput(action.type.me.equals("broad"),action)»
+			«ENDIF»
 		'''
 	}
-	
-	def String checkStoreOutput(VariableReference vr){
-		switch (vr) {
-			VariableReferencePure: 		'''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
-			VariableReferenceMy: 		'''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
-			VariableReferenceReceiver: 	"receiver_store."
-			VariableReferenceSender: 	"sender_store."
-			VariableReferenceGlobal: 	"global_store."
-			RecordReferencePure: 		'''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
-			RecordReferenceMy: 			'''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
-			RecordReferenceReceiver: 	"receiver_store."
-			RecordReferenceSender: 		"sender_store."
-			RecordReferenceGlobal: 		"global_store."
-		}
-	}
-	
-	def String getStoreOutput(VariableReference vr){
-		switch (vr) {
-			VariableReferencePure: 		'''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
-			VariableReferenceMy: 		'''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
-			VariableReferenceReceiver: 	"receiver_store."
-			VariableReferenceSender: 	"sender_store."
-			VariableReferenceGlobal: 	"global_store."
-			RecordReferencePure: 		'''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
-			RecordReferenceMy: 			'''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
-			RecordReferenceReceiver: 	"receiver_store."
-			RecordReferenceSender: 		"sender_store."
-			RecordReferenceGlobal: 		"global_store."
-		}
-	}
-	
-	def String getValues(Action action){
-		if(action.eAllOfType(OutputActionArguments).size > 0){
-			'''
-			@Override
-			protected Object getValue(CarmaStore my_store) {
-				«action.eAllOfType(OutputActionArguments).get(0).defineValueBlock»
-			}
-			'''
-		} else {
-			'''
-			@Override
-			protected Object getValue(CarmaStore my_store) {
-				return new Object();
-			}
-			'''
-		}
-	}
-	
-	def String defineValueBlock(OutputActionArguments arguments){
-		var ArrayList<OutputActionArgument> args = new ArrayList<OutputActionArgument>(arguments.eAllOfType(OutputActionArgument))
-		var count = 0
+
+	def String getActionOutput(String actionName, boolean isBroadcast, Action action) {
+
 		'''
-		int[] output = new int[«args.size»];
-		HashMap<String,Class> my_variables = new HashMap<String,Class>();
-		«FOR arg : args»
-		«arg.checkStoreOutput»
-		«ENDFOR»
-		boolean hasAttributes = true;
-		if(my_variables != null)
-			for(String key : my_variables.keySet()){
-				hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
-			}
-		if(hasAttributes){
-			«FOR arg : args»
-				«arg.storeOutput»
-			«ENDFOR»
-			«FOR arg : args»
-				output[«count++»] = «arg.javanise»;
-			«ENDFOR»
-			return output;
-		} else {
-			return new Object();
-		}
+			CarmaOutput «actionName» = new CarmaOutput( «action.actionName», «isBroadcast» ) {
+				«action.outputActionPredicate»
+				«action.getOutputUpdate»
+				«action.getValues»
+			};
 		'''
 	}
-	
-	def String checkStoreOutput(OutputActionArgument oaa){
-		switch (oaa.value) {
-			VariableReferenceMy: 		'''my_variables.put("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
-			RecordReferenceMy: 			'''my_variables.put("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
-		}
-	}
-	
-	def String getStoreOutput(OutputActionArgument oaa){
-		switch (oaa.value) {
-			VariableReferenceMy: 		'''«(oaa.value as VariableReference).name.type.express» «(oaa.value as VariableReference).name.name» = my_store.get("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
-			RecordReferenceMy: 			'''«(oaa.value as VariableReference).name.type.express» «(oaa.value as VariableReference).name.name» = my_store.get("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
-		}
-	}
-	
-	def String getActionInput(String actionName, 
-		boolean isBroadcast, 
-		Action action){
-		'''
-		CarmaInput «actionName» = new CarmaInput( «action.actionName», «isBroadcast» ) {
-			«getInputActionPredicate(action)»
-			«getInputUpdate(action)»
-		};
-		'''
-	}
-	
-	def String getInputActionPredicate(Action action){
-		if(action.eAllOfType(ActionGuard).size > 0){
+
+	def String getOutputActionPredicate(Action action) {
+		if (action.eAllOfType(ActionGuard).size > 0) {
 			'''
-			@Override
-			protected CarmaPredicate getPredicate(final CarmaStore my_store, final Object value) {
-				if (value instanceof int[]){
+				@Override
+				protected CarmaPredicate getPredicate(final CarmaStore their_store) {
 					return new CarmaPredicate() {
 						@Override
-						public boolean satisfy(CarmaStore their_store) {
-							«getInputSatisfyBlock(action)»
+						public boolean satisfy(CarmaStore my_store) {
+							«getOutputSatisfyBlock(action.eAllOfType(ActionGuard).get(0).booleanExpression)»
 						}
 					};
 				}
-				return null;
-			}
 			'''
 		} else {
 			'''
-			@Override
-			protected CarmaPredicate getPredicate(final CarmaStore my_store, final Object value) {
-				if (value instanceof int[]){
+				@Override
+				protected CarmaPredicate getPredicate(final CarmaStore their_store) {
 					return new CarmaPredicate() {
 						@Override
-						public boolean satisfy(CarmaStore their_store) {
+						public boolean satisfy(CarmaStore my_store) {
 							return true;
 						}
 					};
 				}
-				return null;
-			}
 			'''
 		}
 	}
-	
-	def String getInputSatisfyBlock(Action action){
+
+	def String getOutputSatisfyBlock(BooleanExpression bes) {
+		var vrs = bes.eAllOfType(VariableReference)
+		var vrsh = new HashMap<String, VariableReference>()
+		for (vr : vrs) {
+			vrsh.put(vr.name.name, vr)
+		}
+		'''
+			HashMap<String,Class> my_variables = new HashMap<String,Class>();
+			HashMap<String,Class> their_variables = new HashMap<String,Class>();
+			«FOR key : vrsh.keySet»
+				«vrsh.get(key).checkStoreOutputPredicate»
+			«ENDFOR»
+			boolean hasAttributes = true;
+			if(my_variables != null)
+				for(String key : my_variables.keySet()){
+					hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
+				}
+			if(their_variables != null)
+				for(String key : their_variables.keySet()){
+					hasAttributes = their_store.has(key,their_variables.get(key)) && hasAttributes;
+				}
+			if(hasAttributes){
+				«FOR key : vrsh.keySet»
+					«vrsh.get(key).storeOutputPredicate»
+				«ENDFOR»
+				return «bes.express»;
+			} else {
+				return false;
+			}
+		'''
+	}
+
+	def String checkStoreOutputPredicate(VariableReference vr) {
+		switch (vr) {
+			VariableReferencePure: '''their_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
+			VariableReferenceMy: '''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
+			VariableReferenceReceiver:
+				"receiver_store."
+			VariableReferenceSender:
+				"sender_store."
+			VariableReferenceGlobal:
+				"global_store."
+			RecordReferencePure: '''their_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
+			RecordReferenceMy: '''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
+			RecordReferenceReceiver:
+				"receiver_store."
+			RecordReferenceSender:
+				"sender_store."
+			RecordReferenceGlobal:
+				"global_store."
+		}
+	}
+
+	def String getStoreOutputPredicate(VariableReference vr) {
+		switch (vr) {
+			VariableReferencePure: '''«vr.name.type.express» «vr.name.name» = their_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
+			VariableReferenceMy: '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
+			VariableReferenceReceiver:
+				"receiver_store."
+			VariableReferenceSender:
+				"sender_store."
+			VariableReferenceGlobal:
+				"global_store."
+			RecordReferencePure: '''«vr.name.type.express» «vr.name.name» = their_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
+			RecordReferenceMy: '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
+			RecordReferenceReceiver:
+				"receiver_store."
+			RecordReferenceSender:
+				"sender_store."
+			RecordReferenceGlobal:
+				"global_store."
+		}
+	}
+
+	def String getOutputUpdate(Action action) {
+		if (action.eAllOfType(Update).size > 0) {
+			'''
+				@Override
+				protected CarmaStoreUpdate getUpdate() {
+					return new CarmaStoreUpdate() {
+						
+						@Override
+						public void update(RandomGenerator r, CarmaStore my_store) {
+							«action.outputUpdateBlock»
+						}
+					};
+				}
+			'''
+		} else {
+			'''
+				@Override
+				protected CarmaStoreUpdate getUpdate() {
+					return null;
+				}
+			'''
+		}
+	}
+
+	def String outputUpdateBlock(Action action) {
+		var update = action.eAllOfType(Update).get(0)
+		var updateAssignments = update.eAllOfType(UpdateAssignment)
+		var vrs = new HashMap<String, VariableReference>()
+		for (updateAssignment : updateAssignments)
+			for (vr : updateAssignment.eAllOfType(VariableReference))
+				vrs.put(vr.name.name, vr)
+
+		'''
+			HashMap<String,Class> my_variables = new HashMap<String,Class>();
+			«FOR key : vrs.keySet»
+				«vrs.get(key).checkStoreOutput»
+			«ENDFOR»
+			boolean hasAttributes = true;
+			if(my_variables != null)
+				for(String key : my_variables.keySet()){
+					hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
+				}
+			if(hasAttributes){
+				«FOR key : vrs.keySet»
+					«vrs.get(key).storeOutput»
+				«ENDFOR»
+				«FOR updateAssignment : updateAssignments»
+					«updateAssignment.reference.name.name» = «updateAssignment.expression.express»;
+				«ENDFOR»
+				«FOR updateAssignment : updateAssignments»
+					my_store.set("«updateAssignment.reference.name.name»",«updateAssignment.reference.name.name»);
+				«ENDFOR»
+			}
+		'''
+	}
+
+	def String checkStoreOutput(VariableReference vr) {
+		switch (vr) {
+			VariableReferencePure: '''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
+			VariableReferenceMy: '''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
+			VariableReferenceReceiver:
+				"receiver_store."
+			VariableReferenceSender:
+				"sender_store."
+			VariableReferenceGlobal:
+				"global_store."
+			RecordReferencePure: '''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
+			RecordReferenceMy: '''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
+			RecordReferenceReceiver:
+				"receiver_store."
+			RecordReferenceSender:
+				"sender_store."
+			RecordReferenceGlobal:
+				"global_store."
+		}
+	}
+
+	def String getStoreOutput(VariableReference vr) {
+		switch (vr) {
+			VariableReferencePure: '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
+			VariableReferenceMy: '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
+			VariableReferenceReceiver:
+				"receiver_store."
+			VariableReferenceSender:
+				"sender_store."
+			VariableReferenceGlobal:
+				"global_store."
+			RecordReferencePure: '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
+			RecordReferenceMy: '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
+			RecordReferenceReceiver:
+				"receiver_store."
+			RecordReferenceSender:
+				"sender_store."
+			RecordReferenceGlobal:
+				"global_store."
+		}
+	}
+
+	def String getValues(Action action) {
+		if (action.eAllOfType(OutputActionArguments).size > 0) {
+			'''
+				@Override
+				protected Object getValue(CarmaStore my_store) {
+					«action.eAllOfType(OutputActionArguments).get(0).defineValueBlock»
+				}
+			'''
+		} else {
+			'''
+				@Override
+				protected Object getValue(CarmaStore my_store) {
+					return new Object();
+				}
+			'''
+		}
+	}
+
+	def String defineValueBlock(OutputActionArguments arguments) {
+		var ArrayList<OutputActionArgument> args = new ArrayList<OutputActionArgument>(
+			arguments.eAllOfType(OutputActionArgument))
+		var count = 0
+		'''
+			int[] output = new int[«args.size»];
+			HashMap<String,Class> my_variables = new HashMap<String,Class>();
+			«FOR arg : args»
+				«arg.checkStoreOutput»
+			«ENDFOR»
+			boolean hasAttributes = true;
+			if(my_variables != null)
+				for(String key : my_variables.keySet()){
+					hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
+				}
+			if(hasAttributes){
+				«FOR arg : args»
+					«arg.storeOutput»
+				«ENDFOR»
+				«FOR arg : args»
+					output[«count++»] = «arg.javanise»;
+				«ENDFOR»
+				return output;
+			} else {
+				return new Object();
+			}
+		'''
+	}
+
+	def String checkStoreOutput(OutputActionArgument oaa) {
+		switch (oaa.value) {
+			VariableReferenceMy: '''my_variables.put("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
+			RecordReferenceMy: '''my_variables.put("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
+		}
+	}
+
+	def String getStoreOutput(OutputActionArgument oaa) {
+		switch (oaa.value) {
+			VariableReferenceMy: '''«(oaa.value as VariableReference).name.type.express» «(oaa.value as VariableReference).name.name» = my_store.get("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
+			RecordReferenceMy: '''«(oaa.value as VariableReference).name.type.express» «(oaa.value as VariableReference).name.name» = my_store.get("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
+		}
+	}
+
+	def String getActionInput(String actionName, boolean isBroadcast, Action action) {
+		'''
+			CarmaInput «actionName» = new CarmaInput( «action.actionName», «isBroadcast» ) {
+				«getInputActionPredicate(action)»
+				«getInputUpdate(action)»
+			};
+		'''
+	}
+
+	def String getInputActionPredicate(Action action) {
+		if (action.eAllOfType(ActionGuard).size > 0) {
+			'''
+				@Override
+				protected CarmaPredicate getPredicate(final CarmaStore my_store, final Object value) {
+					if (value instanceof int[]){
+						return new CarmaPredicate() {
+							@Override
+							public boolean satisfy(CarmaStore their_store) {
+								«getInputSatisfyBlock(action)»
+							}
+						};
+					}
+					return null;
+				}
+			'''
+		} else {
+			'''
+				@Override
+				protected CarmaPredicate getPredicate(final CarmaStore my_store, final Object value) {
+					if (value instanceof int[]){
+						return new CarmaPredicate() {
+							@Override
+							public boolean satisfy(CarmaStore their_store) {
+								return true;
+							}
+						};
+					}
+					return null;
+				}
+			'''
+		}
+	}
+
+	def String getInputSatisfyBlock(Action action) {
 		var BooleanExpression bes = action.eAllOfType(ActionGuard).get(0).booleanExpression
 		var vrs = bes.eAllOfType(VariableReference)
 		'''
-		HashMap<String,Class> my_variables = new HashMap<String,Class>();
-		«FOR vr : vrs»
-		«vr.checkStoreInput»
-		«ENDFOR»
-		«setupInputArguments(action.eAllOfType(InputActionParameters).get(0))»
-		boolean hasAttributes = true;
-		if(my_variables != null)
-			for(String key : my_variables.keySet()){
-				hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
-			}
-		if(hasAttributes){
+			HashMap<String,Class> my_variables = new HashMap<String,Class>();
 			«FOR vr : vrs»
-			«vr.storeInput»
+				«vr.checkStoreInput»
 			«ENDFOR»
-			return «bes.express»;
-		} else {
-			return false;
-		}
+			«setupInputArguments(action.eAllOfType(InputActionParameters).get(0))»
+			boolean hasAttributes = true;
+			if(my_variables != null)
+				for(String key : my_variables.keySet()){
+					hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
+				}
+			if(hasAttributes){
+				«FOR vr : vrs»
+					«vr.storeInput»
+				«ENDFOR»
+				return «bes.express»;
+			} else {
+				return false;
+			}
 		'''
 	}
-	
-	def String checkStoreInput(VariableReference vr){
+
+	def String checkStoreInput(VariableReference vr) {
 		switch (vr) {
-			VariableReferencePure: 		''''''
-			VariableReferenceMy: 		'''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
-			VariableReferenceReceiver: 	"receiver_store."
-			VariableReferenceSender: 	"sender_store."
-			VariableReferenceGlobal: 	"global_store."
-			RecordReferencePure: 		''''''
-			RecordReferenceMy: 			'''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
-			RecordReferenceReceiver: 	"receiver_store."
-			RecordReferenceSender: 		"sender_store."
-			RecordReferenceGlobal: 		"global_store."
+			VariableReferencePure: ''''''
+			VariableReferenceMy: '''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
+			VariableReferenceReceiver:
+				"receiver_store."
+			VariableReferenceSender:
+				"sender_store."
+			VariableReferenceGlobal:
+				"global_store."
+			RecordReferencePure: ''''''
+			RecordReferenceMy: '''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
+			RecordReferenceReceiver:
+				"receiver_store."
+			RecordReferenceSender:
+				"sender_store."
+			RecordReferenceGlobal:
+				"global_store."
 		}
 	}
-	
-	def String getStoreInput(VariableReference vr){
+
+	def String getStoreInput(VariableReference vr) {
 		switch (vr) {
-			VariableReferencePure: 		{
-			if(vr.getContainerOfType(InputActionParameters) != null)
-				'''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
-			else 
-				''''''
+			VariableReferencePure: {
+				if (vr.getContainerOfType(InputActionParameters) !=
+					null
+				) '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);''' else ''''''
 			}
-			VariableReferenceMy: 		'''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
-			VariableReferenceReceiver: 	"receiver_store."
-			VariableReferenceSender: 	"sender_store."
-			VariableReferenceGlobal: 	"global_store."
-			RecordReferencePure: 		{
-			if(vr.getContainerOfType(InputActionParameters) != null)
-				'''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
-			else 
-				''''''
+			VariableReferenceMy: '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
+			VariableReferenceReceiver:
+				"receiver_store."
+			VariableReferenceSender:
+				"sender_store."
+			VariableReferenceGlobal:
+				"global_store."
+			RecordReferencePure: {
+				if (vr.getContainerOfType(InputActionParameters) !=
+					null
+				) '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);''' else ''''''
 			}
-			RecordReferenceMy: 			'''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
-			RecordReferenceReceiver: 	"receiver_store."
-			RecordReferenceSender: 		"sender_store."
-			RecordReferenceGlobal: 		"global_store."
+			RecordReferenceMy: '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
+			RecordReferenceReceiver:
+				"receiver_store."
+			RecordReferenceSender:
+				"sender_store."
+			RecordReferenceGlobal:
+				"global_store."
 		}
 	}
-	
-	def String getInputUpdate(Action action){
-		if(action.eAllOfType(Update).size > 0){
+
+	def String getInputUpdate(Action action) {
+		if (action.eAllOfType(Update).size > 0) {
 			'''
-			@Override
-			protected CarmaStoreUpdate getUpdate(final Object value) {
-				
-				return new CarmaStoreUpdate() {
-					@Override
-					public void update(RandomGenerator r, CarmaStore my_store) {
-						if (value instanceof int[]){
-							«action.inputUpdateBlock»
+				@Override
+				protected CarmaStoreUpdate getUpdate(final Object value) {
+					
+					return new CarmaStoreUpdate() {
+						@Override
+						public void update(RandomGenerator r, CarmaStore my_store) {
+							if (value instanceof int[]){
+								«action.inputUpdateBlock»
+							};
 						};
+					
 					};
-				
 				};
-			};
 			'''
 		} else {
 			'''
-			@Override
-			protected CarmaStoreUpdate getUpdate(final Object value) {
-				
-				return new CarmaStoreUpdate() {
-					@Override
-					public void update(RandomGenerator r, CarmaStore my_store) {
-						return null;
+				@Override
+				protected CarmaStoreUpdate getUpdate(final Object value) {
+					
+					return new CarmaStoreUpdate() {
+						@Override
+						public void update(RandomGenerator r, CarmaStore my_store) {
+							return null;
+						};
+					
 					};
-				
 				};
-			};
 			'''
 		}
 	}
-	
-	def String inputUpdateBlock(Action action){
+
+	def String inputUpdateBlock(Action action) {
 		var update = action.eAllOfType(Update).get(0)
 		var updateAssignments = update.eAllOfType(UpdateAssignment)
-		var vrs = new HashMap<String,VariableReference>()
-		for(updateAssignment : updateAssignments)
-			for(vr : updateAssignment.eAllOfType(VariableReference))
-				vrs.put(vr.name.name,vr)
+		var vrs = new HashMap<String, VariableReference>()
+		for (updateAssignment : updateAssignments)
+			for (vr : updateAssignment.eAllOfType(VariableReference))
+				vrs.put(vr.name.name, vr)
 		'''
-		HashMap<String,Class> my_variables = new HashMap<String,Class>();
-		«FOR key : vrs.keySet»
-		«vrs.get(key).checkStoreInput»
-		«ENDFOR»
-		«setupInputArguments(action.eAllOfType(InputActionParameters).get(0))»
-		boolean hasAttributes = true;
-		if(my_variables != null)
-			for(String key : my_variables.keySet()){
-				hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
-			}
-		if(hasAttributes){
+			HashMap<String,Class> my_variables = new HashMap<String,Class>();
 			«FOR key : vrs.keySet»
-			«vrs.get(key).storeInput»
+				«vrs.get(key).checkStoreInput»
 			«ENDFOR»
-			«FOR updateAssignment : updateAssignments»
-				«updateAssignment.reference.type.express» «updateAssignment.reference.name.name» = my_store.get("«updateAssignment.reference.name.name»",«updateAssignment.reference.type.storeExpress»);
-				«updateAssignment.reference.name.name» = «updateAssignment.expression.express»;
-			«ENDFOR»
-			«FOR updateAssignment : updateAssignments»
-				my_store.set("«updateAssignment.reference.name.name»",«updateAssignment.reference.name.name»);
-			«ENDFOR»
-		}
+			«setupInputArguments(action.eAllOfType(InputActionParameters).get(0))»
+			boolean hasAttributes = true;
+			if(my_variables != null)
+				for(String key : my_variables.keySet()){
+					hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
+				}
+			if(hasAttributes){
+				«FOR key : vrs.keySet»
+					«vrs.get(key).storeInput»
+				«ENDFOR»
+				«FOR updateAssignment : updateAssignments»
+					«updateAssignment.reference.type.express» «updateAssignment.reference.name.name» = my_store.get("«updateAssignment.reference.name.name»",«updateAssignment.reference.type.storeExpress»);
+					«updateAssignment.reference.name.name» = «updateAssignment.expression.express»;
+				«ENDFOR»
+				«FOR updateAssignment : updateAssignments»
+					my_store.set("«updateAssignment.reference.name.name»",«updateAssignment.reference.name.name»);
+				«ENDFOR»
+			}
 		'''
 	}
-	
-	def String setupInputArguments(InputActionParameters parameters){
+
+	def String setupInputArguments(InputActionParameters parameters) {
 		var ArrayList<VariableName> vns = new ArrayList<VariableName>(parameters.eAllOfType(VariableName))
 		'''
-		«FOR vn : vns»
-		int «vn.name» = ((int[]) value)[«vns.indexOf(vn)»];
-		«ENDFOR»
-		'''	
+			«FOR vn : vns»
+				int «vn.name» = ((int[]) value)[«vns.indexOf(vn)»];
+			«ENDFOR»
+		'''
 	}
-	
-	def String createGuards(Tree tree){
-		var HashMap<String,BooleanExpression> guardExpressions = new HashMap<String,BooleanExpression>();
+
+	def String createGuards(Tree tree) {
+		var HashMap<String, BooleanExpression> guardExpressions = new HashMap<String, BooleanExpression>();
 		tree.getGuards(guardExpressions);
 		'''
-		«FOR key : guardExpressions.keySet»
-		«key.getGuardPredicate(guardExpressions.get(key))»
-		«ENDFOR»
+			«FOR key : guardExpressions.keySet»
+				«key.getGuardPredicate(guardExpressions.get(key))»
+			«ENDFOR»
 		'''
 	}
-	
-	def String getGuardPredicate(String name, BooleanExpression bes){
+
+	def String getGuardPredicate(String name, BooleanExpression bes) {
 		'''
-		CarmaPredicate «name» = new CarmaPredicate() {
-			@Override
-			public boolean satisfy(CarmaStore store) {
-				«bes.getGuardSatisfyBlock»
-			}
-		};
+			CarmaPredicate «name» = new CarmaPredicate() {
+				@Override
+				public boolean satisfy(CarmaStore store) {
+					«bes.getGuardSatisfyBlock»
+				}
+			};
 		'''
 	}
-	
-	def String getGuardSatisfyBlock(BooleanExpression bes){
+
+	def String getGuardSatisfyBlock(BooleanExpression bes) {
 		var vrs = bes.eAllOfType(VariableReference)
 		'''
-		HashMap<String,Class> variables = new HashMap<String,Class>();
-		«FOR vr : vrs»
-		variables.put("«vr.name.name»",«vr.type.storeExpress»);
-		«ENDFOR»
-		boolean hasAttributes = true;
-		if(variables != null)
-			for(String key : variables.keySet()){
-				hasAttributes = store.has(key,variables.get(key)) && hasAttributes;
-			}
-		if(hasAttributes){
+			HashMap<String,Class> variables = new HashMap<String,Class>();
 			«FOR vr : vrs»
-			«vr.name.type.express» «vr.name.name» = store.get("«vr.name.name»",«vr.name.type.storeExpress»);
+				variables.put("«vr.name.name»",«vr.type.storeExpress»);
 			«ENDFOR»
-			return «bes.express»;
-		} else {
-			return false;
-		}
+			boolean hasAttributes = true;
+			if(variables != null)
+				for(String key : variables.keySet()){
+					hasAttributes = store.has(key,variables.get(key)) && hasAttributes;
+				}
+			if(hasAttributes){
+				«FOR vr : vrs»
+					«vr.name.type.express» «vr.name.name» = store.get("«vr.name.name»",«vr.name.type.storeExpress»);
+				«ENDFOR»
+				return «bes.express»;
+			} else {
+				return false;
+			}
 		'''
 	}
-	
-	def String createTransitions(Tree tree){
+
+	def String createTransitions(Tree tree) {
 		var ArrayList<String> transitions = new ArrayList<String>()
 		tree.getTransitions(transitions)
 		'''
-		«FOR transition : transitions»
-		«transition»
-		«ENDFOR»
+			«FOR transition : transitions»
+				«transition»
+			«ENDFOR»
 		'''
 	}
-	
+
 }

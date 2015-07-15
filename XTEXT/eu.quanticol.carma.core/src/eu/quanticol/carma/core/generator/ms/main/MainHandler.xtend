@@ -48,9 +48,11 @@ class MainHandler {
 	
 	def String printMeasures(MeasureBlock measureBlock){
 		'''
+		«IF measureBlock != null»
 		«FOR measure : measureBlock.measures»
 		«measure.printMeasure»
 		«ENDFOR»
+		«ENDIF»
 		'''
 	}
 	

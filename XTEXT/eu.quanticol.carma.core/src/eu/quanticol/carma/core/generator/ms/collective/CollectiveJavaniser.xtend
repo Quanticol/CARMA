@@ -401,14 +401,14 @@ class CollectiveJavaniser {
 			}
 			out.clear();
 			out.addAll(exit);
-		} else {
+		} else if (in.size == 1) {
 			var ArrayList<String> head = in.remove(0);
 			for(String item : head){
 				var ArrayList<String> tail = new ArrayList<String>();
 				tail.add(item);
 				out.add(tail);
 			}
-		}
+		} 
 	}
 	
 	def String javanise(ComponentForVariableDeclaration componentForVariableDeclaration){

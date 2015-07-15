@@ -63,6 +63,38 @@ class EnvironmentHandler {
 		«updateBlock.updatePredicates»
 		«getBroadcastUpdate(updateBrocast)»
 		«getUnicastUpdate(updateUnicast)»
+		«ELSE»
+		@Override
+		public double broadcastProbability(CarmaStore sender, CarmaStore receiver, int action) {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+		@Override
+		public double unicastProbability(CarmaStore sender, CarmaStore receiver, int action) {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+		@Override
+		public double broadcastRate(CarmaStore sender, int action) {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+		@Override
+		public double unicastRate(CarmaStore sender, int action) {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+		@Override
+		public void broadcastUpdate(RandomGenerator random, CarmaStore sender, int action, Object value) {
+			// TODO Auto-generated method stub
+			
+		}
+		@Override
+		public void unicastUpdate(RandomGenerator random, CarmaStore sender, CarmaStore receiver, int action,
+				Object value) {
+			// TODO Auto-generated method stub
+			
+		}
 		«ENDIF»
 		'''
 	}
