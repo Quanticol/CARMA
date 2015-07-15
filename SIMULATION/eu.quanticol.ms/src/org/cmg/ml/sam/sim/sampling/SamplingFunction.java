@@ -12,6 +12,8 @@
  *******************************************************************************/
 package org.cmg.ml.sam.sim.sampling;
 
+import java.util.LinkedList;
+
 /**
  * @author loreti
  *
@@ -24,4 +26,5 @@ public interface SamplingFunction<S> {
 
 	public void start();
 
+	public LinkedList<SimulationTimeSeries> getSimulationTimeSeries();
 }

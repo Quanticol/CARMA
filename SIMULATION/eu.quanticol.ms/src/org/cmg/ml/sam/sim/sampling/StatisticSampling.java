@@ -13,6 +13,7 @@
 package org.cmg.ml.sam.sim.sampling;
 
 import java.io.PrintStream;
+import java.util.LinkedList;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
@@ -44,6 +45,7 @@ public class StatisticSampling<S> implements SamplingFunction<S> {
 
 	@Override
 	public void sample(double time, S context) {
+		//FIXME: One sample is lost!!!!!
 		this.last_measure = measure.measure(context);
 		if ((time >= this.next_time) && (this.current_index < this.data.length)) {
 			recordMeasure(time);
@@ -88,6 +90,14 @@ public class StatisticSampling<S> implements SamplingFunction<S> {
 	
 	public void printlnName(PrintStream out){
 		out.println(this.measure.getName());
+	}
+
+	@Override
+	public LinkedList<SimulationTimeSeries> getSimulationTimeSeries() {
+		SimulationTimeSeries stt = new SimulationTimeSeries(measure.getName(), dt, data);
+		LinkedList<SimulationTimeSeries> toReturn = new LinkedList<>();
+		toReturn.add(stt);
+		return toReturn;
 	}
 
 }

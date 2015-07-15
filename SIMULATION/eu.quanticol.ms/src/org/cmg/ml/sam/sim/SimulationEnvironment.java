@@ -13,7 +13,6 @@
 package org.cmg.ml.sam.sim;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 import org.apache.commons.math3.random.RandomGenerator;
 import org.cmg.ml.sam.sim.sampling.SamplingFunction;

@@ -12,6 +12,8 @@
  *******************************************************************************/
 package org.cmg.ml.sam.sim.sampling;
 
+import java.util.LinkedList;
+
 /**
  * @author loreti
  *
@@ -41,6 +43,11 @@ public class SamplingLog<S> implements SamplingFunction<S> {
 	@Override
 	public void start() {
 		this.last_time = 0.0;
+	}
+
+	@Override
+	public LinkedList<SimulationTimeSeries> getSimulationTimeSeries() {
+		return new LinkedList<>();
 	}
 
 }
