@@ -7,7 +7,6 @@ import eu.quanticol.carma.core.carma.BlockCollective
 import eu.quanticol.carma.core.carma.BlockStyle
 import eu.quanticol.carma.core.carma.BooleanExpression
 import eu.quanticol.carma.core.carma.CBND
-import eu.quanticol.carma.core.carma.Component
 import eu.quanticol.carma.core.carma.ComponentAssignment
 import eu.quanticol.carma.core.carma.ComponentBlockArguments
 import eu.quanticol.carma.core.carma.ComponentBlockDeclaration
@@ -184,7 +183,6 @@ class CollectiveHandler {
 
 	def String createProcess(CBND declaration, Processes processes) {
 		var String componentName = declaration.name.name
-		var Component component = declaration.name.getContainerOfType(Component)
 		var Tree tree = declaration.getTree
 		'''
 			private static CarmaProcessAutomaton create«componentName»Process() {
