@@ -36,5 +36,5 @@ Export-Package: eu.quanticol.carma.core,
  eu.quanticol.carma.core.services,
  eu.quanticol.carma.core.utils,
  eu.quanticol.carma.core.validation
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 
