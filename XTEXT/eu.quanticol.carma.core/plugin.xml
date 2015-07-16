@@ -6,7 +6,7 @@
   <extension point="org.eclipse.emf.ecore.generated_package">
     <package 
        uri = "http://www.quanticol.eu/carma/core/CARMA" 
-       class = "eu.quanticol.carma.core.cARMA.CARMAPackage"
+       class = "eu.quanticol.carma.core.carma.CarmaPackage"
        genModel = "model/generated/CARMA.genmodel" /> 
 	
   </extension>
