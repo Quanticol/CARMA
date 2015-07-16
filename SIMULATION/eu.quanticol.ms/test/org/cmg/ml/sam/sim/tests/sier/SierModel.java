@@ -24,58 +24,6 @@ import org.cmg.ml.sam.sim.sampling.StatisticSampling;
  *
  */
 public class SierModel extends AgentBasedModel<SeirState> {
-	
-	public final static Measure<SierModel> mS = new Measure<SierModel>() {
-
-		@Override
-		public double measure(SierModel t) {
-			return t.getData().getInS();
-		}
-
-		@Override
-		public String getName() {
-			return "S";
-		}
-	};
-
-	public final static Measure<SierModel> mE = new Measure<SierModel>() {
-
-		@Override
-		public double measure(SierModel t) {
-			return t.getData().getInE();
-		}
-
-		@Override
-		public String getName() {
-			return "E";
-		}
-	};
-	
-	public final static Measure<SierModel> mI = new Measure<SierModel>() {
-
-		@Override
-		public double measure(SierModel t) {
-			return t.getData().getInI();
-		}
-
-		@Override
-		public String getName() {
-			return "I";
-		}
-	};
-
-	public final static Measure<SierModel> mR = new Measure<SierModel>() {
-
-		@Override
-		public double measure(SierModel t) {
-			return t.getData().getInR();
-		}
-
-		@Override
-		public String getName() {
-			return "R";
-		}
-	};
 
 
 	public SierModel(int sSize, int iSize, int eSize, int rSize) {
@@ -96,11 +44,12 @@ public class SierModel extends AgentBasedModel<SeirState> {
 
 
 	public static void main( String[] argv) {		
-		StatisticSampling<SierModel> sS = new StatisticSampling<SierModel>(1000, 0.1, mS);
-		StatisticSampling<SierModel> sE = new StatisticSampling<SierModel>(1000, 0.1, mE);
-		StatisticSampling<SierModel> sI = new StatisticSampling<SierModel>(1000, 0.1, mI);
-		StatisticSampling<SierModel> sR = new StatisticSampling<SierModel>(1000, 0.1, mR);
-		SimulationEnvironment<SierModel> simEnv = new SimulationEnvironment<SierModel>(new SeirSimulationFactory(100,0,1,0));
+		SeirSimulationFactory factory = new SeirSimulationFactory(100,0,1,0);
+		StatisticSampling<SierModel> sS = new StatisticSampling<SierModel>(1000, 0.1, factory.getMeasure("mS"));
+		StatisticSampling<SierModel> sE = new StatisticSampling<SierModel>(1000, 0.1, factory.getMeasure("mS"));
+		StatisticSampling<SierModel> sI = new StatisticSampling<SierModel>(1000, 0.1, factory.getMeasure("mS"));
+		StatisticSampling<SierModel> sR = new StatisticSampling<SierModel>(1000, 0.1, factory.getMeasure("mS"));
+		SimulationEnvironment<SierModel> simEnv = new SimulationEnvironment<SierModel>(factory);
 		simEnv.setSampling(new SamplingCollection<SierModel>(sS,sI,sE,sR));
 		simEnv.simulate(100,100.0);
 		sE.printTimeSeries(System.out);

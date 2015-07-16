@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 import org.cmg.ml.sam.sim.Agent;
 import org.cmg.ml.sam.sim.SimulationFactory;
+import org.cmg.ml.sam.sim.sampling.Measure;
 
 import eu.quanticol.carma.simulator.CarmaSystem;
 
@@ -27,6 +28,13 @@ public class GroupiesAndCelebritiesFactory implements SimulationFactory<CarmaSys
 	@Override
 	public CarmaSystem getModel() {
 		return new GroupiesAndCelebrities( groupies , celebrities );
+	}
+
+	@Override
+	public Measure<CarmaSystem> getMeasure(String name) {
+		// TODO Auto-generated method stub
+		//FIXME!!!!
+		return null;
 	}
 	
 //	@Override

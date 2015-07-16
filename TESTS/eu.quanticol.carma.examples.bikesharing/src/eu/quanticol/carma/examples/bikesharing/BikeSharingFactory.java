@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 import org.cmg.ml.sam.sim.Agent;
 import org.cmg.ml.sam.sim.SimulationFactory;
+import org.cmg.ml.sam.sim.sampling.Measure;
 
 import eu.quanticol.carma.simulator.CarmaSystem;
 
@@ -33,6 +34,13 @@ public class BikeSharingFactory implements SimulationFactory<CarmaSystem> {
 	@Override
 	public CarmaSystem getModel() {
 		return new BikeSharing( bikers , pedestrians , parking_stations , bikes , slots );
+	}
+
+	@Override
+	public Measure<CarmaSystem> getMeasure(String name) {
+		// TODO Auto-generated method stub
+		//FIXME!!!!
+		return null;
 	}
 	
 //	@Override
