@@ -217,11 +217,11 @@ class TypeProvider {
 			VariableReferenceReceiver	: variableReference.name.type
 			VariableReferenceSender		: variableReference.name.type
 			VariableReferenceGlobal		: variableReference.name.type
-			RecordReferencePure			: variableReference.feild.type
-			RecordReferenceMy			: variableReference.feild.type
-			RecordReferenceReceiver		: variableReference.feild.type
-			RecordReferenceSender		: variableReference.feild.type
-			RecordReferenceGlobal		: variableReference.feild.type
+			RecordReferencePure			: variableReference.name.type
+			RecordReferenceMy			: variableReference.name.type
+			RecordReferenceReceiver		: variableReference.name.type
+			RecordReferenceSender		: variableReference.name.type
+			RecordReferenceGlobal		: variableReference.name.type
 		}
 	}
 	

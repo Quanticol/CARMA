@@ -31,11 +31,12 @@ import eu.quanticol.carma.core.carma.EnvironmentUpdateAssignment
 import eu.quanticol.carma.core.carma.ComponentBlockSpawn
 import eu.quanticol.carma.core.carma.CBND
 import eu.quanticol.carma.core.carma.ComponentBlockArguments
+import eu.quanticol.carma.core.generator.ms.SharedJavaniser
 
 class EnvironmentHandler {
 	
 	@Inject extension TypeProvider
-	@Inject extension EnvironmentJavaniser
+	@Inject extension SharedJavaniser
 		
 	def String getEnvironment(System system, Model model){
 		'''

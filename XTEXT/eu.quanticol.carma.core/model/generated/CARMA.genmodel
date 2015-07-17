@@ -469,9 +469,8 @@
     <genClasses ecoreClass="CARMA.ecore#//ProcessExpressionReference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//ProcessExpressionReference/expression"/>
     </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//ProcessExpressionLeaf">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//ProcessExpressionLeaf/expression"/>
-    </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//ProcessExpressionNil"/>
+    <genClasses ecoreClass="CARMA.ecore#//ProcessExpressionKill"/>
     <genClasses ecoreClass="CARMA.ecore#//MultiCast">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//MultiCast/spont"/>
     </genClasses>

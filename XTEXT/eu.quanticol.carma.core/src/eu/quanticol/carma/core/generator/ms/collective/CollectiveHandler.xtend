@@ -3,6 +3,9 @@ package eu.quanticol.carma.core.generator.ms.collective
 import com.google.inject.Inject
 import eu.quanticol.carma.core.carma.Action
 import eu.quanticol.carma.core.carma.ActionGuard
+import eu.quanticol.carma.core.carma.AttribParameter
+import eu.quanticol.carma.core.carma.AttribType
+import eu.quanticol.carma.core.carma.AttribVariableDeclaration
 import eu.quanticol.carma.core.carma.BlockCollective
 import eu.quanticol.carma.core.carma.BlockStyle
 import eu.quanticol.carma.core.carma.BooleanExpression
@@ -15,19 +18,29 @@ import eu.quanticol.carma.core.carma.ComponentBlockForStatement
 import eu.quanticol.carma.core.carma.ComponentBlockNew
 import eu.quanticol.carma.core.carma.ComponentForVariableDeclaration
 import eu.quanticol.carma.core.carma.Declaration
+import eu.quanticol.carma.core.carma.DoubleParameter
+import eu.quanticol.carma.core.carma.DoubleType
 import eu.quanticol.carma.core.carma.GlobalStoreBlock
 import eu.quanticol.carma.core.carma.InputActionParameters
+import eu.quanticol.carma.core.carma.IntgerParameter
+import eu.quanticol.carma.core.carma.IntgerType
+import eu.quanticol.carma.core.carma.OutputActionArgument
 import eu.quanticol.carma.core.carma.OutputActionArguments
 import eu.quanticol.carma.core.carma.Parameter
 import eu.quanticol.carma.core.carma.ProcessComposition
 import eu.quanticol.carma.core.carma.ProcessParameter
 import eu.quanticol.carma.core.carma.Processes
+import eu.quanticol.carma.core.carma.RecordDeclaration
+import eu.quanticol.carma.core.carma.RecordParameter
 import eu.quanticol.carma.core.carma.RecordReferenceGlobal
 import eu.quanticol.carma.core.carma.RecordReferenceMy
 import eu.quanticol.carma.core.carma.RecordReferencePure
 import eu.quanticol.carma.core.carma.RecordReferenceReceiver
 import eu.quanticol.carma.core.carma.RecordReferenceSender
+import eu.quanticol.carma.core.carma.RecordType
+import eu.quanticol.carma.core.carma.Type
 import eu.quanticol.carma.core.carma.Update
+import eu.quanticol.carma.core.carma.UpdateAssignment
 import eu.quanticol.carma.core.carma.VariableName
 import eu.quanticol.carma.core.carma.VariableReference
 import eu.quanticol.carma.core.carma.VariableReferenceGlobal
@@ -36,6 +49,7 @@ import eu.quanticol.carma.core.carma.VariableReferencePure
 import eu.quanticol.carma.core.carma.VariableReferenceReceiver
 import eu.quanticol.carma.core.carma.VariableReferenceSender
 import eu.quanticol.carma.core.generator.ms.MSSystemCompiler
+import eu.quanticol.carma.core.generator.ms.SharedJavaniser
 import eu.quanticol.carma.core.typing.TypeProvider
 import eu.quanticol.carma.core.utils.Tree
 import eu.quanticol.carma.core.utils.Util
@@ -44,12 +58,10 @@ import java.util.HashMap
 import java.util.HashSet
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.carma.UpdateAssignment
-import eu.quanticol.carma.core.carma.OutputActionArgument
 
 class CollectiveHandler {
 
-	@Inject extension CollectiveJavaniser
+	@Inject extension SharedJavaniser
 	@Inject extension Util
 	@Inject extension TypeProvider
 
@@ -102,9 +114,13 @@ class CollectiveHandler {
 	}
 
 	def String addComponent(ComponentBlockForStatement componentBlockDeclaration) {
-		'''for(«(componentBlockDeclaration.variable as ComponentForVariableDeclaration).javanise» ; «componentBlockDeclaration.expression.javanise» ; «(componentBlockDeclaration.afterThought.componentAssignment as ComponentAssignment).javanise»){
+		'''for(«(componentBlockDeclaration.variable as ComponentForVariableDeclaration).cjavanise» ; «componentBlockDeclaration.expression.express» ; «(componentBlockDeclaration.afterThought.componentAssignment as ComponentAssignment).javanise»){
 	«componentBlockDeclaration.componentBlockForBlock.component.addComponent»			
 }'''
+	}
+	
+	def String cjavanise(ComponentForVariableDeclaration componentForVariableDeclaration){
+		'''«(componentForVariableDeclaration.type as Type).javanise» attrib_«componentForVariableDeclaration.name.name» = «componentForVariableDeclaration.assign.express»'''
 	}
 
 	def String addGlobalStores(Declaration storeDeclaration) {
@@ -132,20 +148,56 @@ class CollectiveHandler {
 		}
 		var attributes = componentBlockDefinition.componentBlock.store.attributes
 		'''
-			private CarmaComponent get«componentName»( «parameters.getParameters» ){
-				CarmaComponent c4rm4 = new CarmaComponent();
+			private CarmaComponent get«componentName»( «parameters.getCParameters» ){
+				CarmaComponent component_«componentName» = new CarmaComponent();
 				«FOR attribute : attributes»
-					«attribute.setStores»
+					«attribute.setStores(componentName)»
 				«ENDFOR»
 				«setBehaviour(behaviour, componentBlockDefinition.componentBlock.initBlock.init, componentName)»
-				return c4rm4;
+				return component_«componentName»;
 			}
 			
 		'''
 	}
 
-	def String setStores(Declaration storeDeclaration) {
-		'''c4rm4.set(«storeDeclaration.setStore»);'''
+	def  String getCParameters(ArrayList<Parameter> parameters){
+		var String toReturn = ""
+		if(parameters.size > 0){
+			toReturn = parameters.get(0).getCParameter
+			for(var i = 1; i < parameters.size; i++){
+				toReturn = toReturn + ", " + parameters.get(i).getCParameter
+			}
+		}
+		return toReturn
+	}
+	
+	def  String getCParameter(Parameter parameter){
+		switch(parameter){
+			AttribParameter: '''«(parameter.type as AttribType).javanise» attrib_«parameter.name.name»'''
+			RecordParameter: '''«(parameter.type as RecordType).javanise» attrib_«parameter.name.name»'''
+			DoubleParameter: '''«(parameter.type as DoubleType).javanise» attrib_«parameter.name.name»'''
+			IntgerParameter: '''«(parameter.type as IntgerType).javanise» attrib_«parameter.name.name»'''
+			ProcessParameter: '''ArrayList<String> behaviour'''
+		}
+	}
+
+	def String setStores(Declaration storeDeclaration, String name) {
+		'''component_«name».set(«storeDeclaration.setStore»);'''
+	}
+	
+	def String setStore(Declaration declaration){
+		switch(declaration){
+			AttribVariableDeclaration	: declaration.setStore
+			RecordDeclaration			: declaration.setStore
+		}
+	}
+	
+	def  String setStore(AttribVariableDeclaration attribVariableDeclaration){
+		'''"«attribVariableDeclaration.name.name»", «attribVariableDeclaration.assign.javanise»'''
+	}
+	
+	def  String setStore(RecordDeclaration recordDeclaration){
+		'''"«recordDeclaration.name.name»", «recordDeclaration.assign.javanise»'''
 	}
 
 	def String setBehaviour(String behaviour, ProcessComposition processComposition, String componentName) {
@@ -163,7 +215,7 @@ class CollectiveHandler {
 				ArrayList<String> processes = new ArrayList<String>(Arrays.asList( «processComposition.javanise» ));
 			«ENDIF»
 			for(int i = 0; i < processes.size(); i++){
-				c4rm4.addAgent( new CarmaSequentialProcess(c4rm4,create«componentName.toFirstUpper»Process(),create«componentName.toFirstUpper»Process().getState("state_"+processes.get(i))));
+				component_«componentName».addAgent( new CarmaSequentialProcess(component_«componentName»,create«componentName.toFirstUpper»Process(),create«componentName.toFirstUpper»Process().getState("state_"+processes.get(i))));
 			}
 		'''
 	}
@@ -322,16 +374,16 @@ class CollectiveHandler {
 
 	def String getStoreOutputPredicate(VariableReference vr) {
 		switch (vr) {
-			VariableReferencePure: '''«vr.name.type.express» «vr.name.name» = their_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
-			VariableReferenceMy: '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
+			VariableReferencePure: '''«vr.name.type.express» attrib_«vr.name.name» = their_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
+			VariableReferenceMy: '''«vr.name.type.express» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
 			VariableReferenceReceiver:
 				"receiver_store."
 			VariableReferenceSender:
 				"sender_store."
 			VariableReferenceGlobal:
 				"global_store."
-			RecordReferencePure: '''«vr.name.type.express» «vr.name.name» = their_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
-			RecordReferenceMy: '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
+			RecordReferencePure: '''«vr.name.type.express» attrib_«vr.name.name» = their_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
+			RecordReferenceMy: '''«vr.name.type.express» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
 			RecordReferenceReceiver:
 				"receiver_store."
 			RecordReferenceSender:
@@ -388,10 +440,10 @@ class CollectiveHandler {
 					«vrs.get(key).storeOutput»
 				«ENDFOR»
 				«FOR updateAssignment : updateAssignments»
-					«updateAssignment.reference.name.name» = «updateAssignment.expression.express»;
+					attrib_«updateAssignment.reference.name.name» = «updateAssignment.expression.express»;
 				«ENDFOR»
 				«FOR updateAssignment : updateAssignments»
-					my_store.set("«updateAssignment.reference.name.name»",«updateAssignment.reference.name.name»);
+					my_store.set("«updateAssignment.reference.name.name»",attrib_«updateAssignment.reference.name.name»);
 				«ENDFOR»
 			}
 		'''
@@ -420,16 +472,16 @@ class CollectiveHandler {
 
 	def String getStoreOutput(VariableReference vr) {
 		switch (vr) {
-			VariableReferencePure: '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
-			VariableReferenceMy: '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
+			VariableReferencePure: '''«vr.name.type.express» attrib_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
+			VariableReferenceMy: '''«vr.name.type.express» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
 			VariableReferenceReceiver:
 				"receiver_store."
 			VariableReferenceSender:
 				"sender_store."
 			VariableReferenceGlobal:
 				"global_store."
-			RecordReferencePure: '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
-			RecordReferenceMy: '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
+			RecordReferencePure: '''«vr.name.type.express» attrib_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
+			RecordReferenceMy: '''«vr.name.type.express» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
 			RecordReferenceReceiver:
 				"receiver_store."
 			RecordReferenceSender:
@@ -594,9 +646,9 @@ class CollectiveHandler {
 			VariableReferencePure: {
 				if (vr.getContainerOfType(InputActionParameters) !=
 					null
-				) '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);''' else ''''''
+				) '''«vr.name.type.express» attrib_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);''' else ''''''
 			}
-			VariableReferenceMy: '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
+			VariableReferenceMy: '''«vr.name.type.express» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
 			VariableReferenceReceiver:
 				"receiver_store."
 			VariableReferenceSender:
@@ -606,9 +658,9 @@ class CollectiveHandler {
 			RecordReferencePure: {
 				if (vr.getContainerOfType(InputActionParameters) !=
 					null
-				) '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);''' else ''''''
+				) '''«vr.name.type.express» attrib_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);''' else ''''''
 			}
-			RecordReferenceMy: '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
+			RecordReferenceMy: '''«vr.name.type.express» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
 			RecordReferenceReceiver:
 				"receiver_store."
 			RecordReferenceSender:
@@ -675,11 +727,11 @@ class CollectiveHandler {
 					«vrs.get(key).storeInput»
 				«ENDFOR»
 				«FOR updateAssignment : updateAssignments»
-					«updateAssignment.reference.type.express» «updateAssignment.reference.name.name» = my_store.get("«updateAssignment.reference.name.name»",«updateAssignment.reference.type.storeExpress»);
-					«updateAssignment.reference.name.name» = «updateAssignment.expression.express»;
+					«updateAssignment.reference.type.express» attrib_«updateAssignment.reference.name.name» = my_store.get("«updateAssignment.reference.name.name»",«updateAssignment.reference.type.storeExpress»);
+					attrib_«updateAssignment.reference.name.name» = «updateAssignment.expression.express»;
 				«ENDFOR»
 				«FOR updateAssignment : updateAssignments»
-					my_store.set("«updateAssignment.reference.name.name»",«updateAssignment.reference.name.name»);
+					my_store.set("«updateAssignment.reference.name.name»",attrib_«updateAssignment.reference.name.name»);
 				«ENDFOR»
 			}
 		'''
@@ -689,7 +741,7 @@ class CollectiveHandler {
 		var ArrayList<VariableName> vns = new ArrayList<VariableName>(parameters.eAllOfType(VariableName))
 		'''
 			«FOR vn : vns»
-				int «vn.name» = ((int[]) value)[«vns.indexOf(vn)»];
+				int attrib_«vn.name» = ((int[]) value)[«vns.indexOf(vn)»];
 			«ENDFOR»
 		'''
 	}
@@ -708,7 +760,7 @@ class CollectiveHandler {
 		'''
 			CarmaPredicate «name» = new CarmaPredicate() {
 				@Override
-				public boolean satisfy(CarmaStore store) {
+				public boolean satisfy(CarmaStore my_store) {
 					«bes.getGuardSatisfyBlock»
 				}
 			};
@@ -716,20 +768,23 @@ class CollectiveHandler {
 	}
 
 	def String getGuardSatisfyBlock(BooleanExpression bes) {
-		var vrs = bes.eAllOfType(VariableReference)
+		var vrs = newHashMap()
+		for (vr : bes.eAllOfType(VariableReference)) {
+			vrs.put(vr.name.name, vr)
+		}
 		'''
-			HashMap<String,Class> variables = new HashMap<String,Class>();
-			«FOR vr : vrs»
-				variables.put("«vr.name.name»",«vr.type.storeExpress»);
+			HashMap<String,Class> my_variables = new HashMap<String,Class>();
+			«FOR key : vrs.keySet»
+				«vrs.get(key).checkStoreOutput»
 			«ENDFOR»
 			boolean hasAttributes = true;
-			if(variables != null)
-				for(String key : variables.keySet()){
-					hasAttributes = store.has(key,variables.get(key)) && hasAttributes;
+			if(my_variables != null)
+				for(String key : my_variables.keySet()){
+					hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
 				}
 			if(hasAttributes){
-				«FOR vr : vrs»
-					«vr.name.type.express» «vr.name.name» = store.get("«vr.name.name»",«vr.name.type.storeExpress»);
+				«FOR key : vrs.keySet»
+					«vrs.get(key).storeOutput»
 				«ENDFOR»
 				return «bes.express»;
 			} else {

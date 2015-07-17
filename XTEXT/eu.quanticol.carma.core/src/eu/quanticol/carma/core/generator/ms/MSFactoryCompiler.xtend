@@ -18,6 +18,7 @@ class MSFactoryCompiler {
 		var toReturn = 
 		'''
 		import org.cmg.ml.sam.sim.*;
+		import org.cmg.ml.sam.sim.sampling.Measure;
 		import eu.quanticol.carma.simulator.*;
 		public class «(system as BlockSystem).name.name»ModelFactory implements SimulationFactory<CarmaSystem> {
 		
@@ -28,6 +29,12 @@ class MSFactoryCompiler {
 			@Override
 			public CarmaSystem getModel() {
 				return new «(system as BlockSystem).name.name»();
+			}
+			
+			@Override
+			public Measure<CarmaSystem> getMeasure(String name) {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		
 		}

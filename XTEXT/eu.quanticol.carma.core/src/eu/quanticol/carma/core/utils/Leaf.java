@@ -7,8 +7,8 @@ import java.util.HashSet;
 import eu.quanticol.carma.core.carma.Action;
 import eu.quanticol.carma.core.carma.ActionName;
 import eu.quanticol.carma.core.carma.BooleanExpression;
-import eu.quanticol.carma.core.carma.KillProcessExpression;
-import eu.quanticol.carma.core.carma.NilProcessExpression;
+import eu.quanticol.carma.core.carma.ProcessExpressionKill;
+import eu.quanticol.carma.core.carma.ProcessExpressionNil;
 import eu.quanticol.carma.core.carma.Process;
 import eu.quanticol.carma.core.carma.ProcessExpression;
 import eu.quanticol.carma.core.carma.ProcessExpressionAction;
@@ -144,18 +144,18 @@ public class Leaf {
 		        state = state + "Choice_" + this.getState(left) + "_" + this.getState(right);
 			}
 		}
-		if(!matched){
-			if (pe instanceof NilProcessExpression) {
+		if(!matched) 
+			if (pe instanceof ProcessExpressionNil) {
 				matched=true;
-				ProcessExpression expression = ((NilProcessExpression)pe);
+				ProcessExpression expression = ((ProcessExpressionNil)pe);
 				state = "null";
 			}
-			if (pe instanceof KillProcessExpression) {
+		if(!matched)
+			if (pe instanceof ProcessExpressionKill) {
 				matched=true;
-				ProcessExpression expression = ((KillProcessExpression)pe);
+				ProcessExpression expression = ((ProcessExpressionKill)pe);
 				state = "null";
 			}
-		}
 		if(!matched){
 			if (pe instanceof ProcessExpressionGuard) {
 				matched=true;
@@ -196,7 +196,7 @@ public class Leaf {
 			}
 		}
 		if(!matched){
-			if ((this.me instanceof NilProcessExpression)||(this.me instanceof KillProcessExpression)) {
+			if ((this.me instanceof ProcessExpressionNil)||(this.me instanceof ProcessExpressionKill)) {
 //				System.out.println("leaf");
 				matched=true;
 				this.children = null;

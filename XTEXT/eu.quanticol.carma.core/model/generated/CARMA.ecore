@@ -590,9 +590,8 @@
   <eClassifiers xsi:type="ecore:EClass" name="ProcessExpressionReference" eSuperTypes="#//ProcessExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="expression" eType="#//ProcessName"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ProcessExpressionLeaf" eSuperTypes="#//ProcessExpression">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="expression" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ProcessExpressionNil" eSuperTypes="#//ProcessExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ProcessExpressionKill" eSuperTypes="#//ProcessExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="MultiCast" eSuperTypes="#//Cast">
     <eStructuralFeatures xsi:type="ecore:EReference" name="spont" eType="#//SpontaneousAction"
         containment="true"/>

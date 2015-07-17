@@ -16,11 +16,11 @@ import eu.quanticol.carma.core.carma.System
 import eu.quanticol.carma.core.generator.ms.measure.MeasureJavaniser
 import java.util.ArrayList
 import eu.quanticol.carma.core.carma.MeasureVariableDeclaration
+import eu.quanticol.carma.core.generator.ms.SharedJavaniser
 
 class MainHandler {
 	
-	@Inject extension MeasureJavaniser
-	@Inject extension MainJavaniser
+	@Inject extension SharedJavaniser
 	
 	def String getMain(Model model, System system){
 		var measureBlock = (model.components as BlockStyle).measures
@@ -86,8 +86,8 @@ class MainHandler {
 		var ArrayList<String> toReturn = new ArrayList<String>()
 		var ArrayList<String> check = measure.measure.predicate.list
 		for(var i = 0; i < args.size; i++){
-			if(check.contains("input_"+(measureVariableDeclarations.variables.get(i) as MeasureVariableDeclaration).name.name))
-				toReturn.add('''input_«(measureVariableDeclarations.variables.get(i) as MeasureVariableDeclaration).name.name» = «args.get(i)»;''')
+			if(check.contains("attrib_"+(measureVariableDeclarations.variables.get(i) as MeasureVariableDeclaration).name.name))
+				toReturn.add('''attrib_«(measureVariableDeclarations.variables.get(i) as MeasureVariableDeclaration).name.name» = «args.get(i)»;''')
 		}
 		return toReturn
 	}

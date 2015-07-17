@@ -691,8 +691,8 @@ ProcessExpressionReference returns ProcessExpression hidden(ML_COMMENT,SL_COMMEN
 
 ProcessExpressionLeaf returns ProcessExpression hidden(ML_COMMENT,SL_COMMENT,WS):
 //	{ProcessExpressionLeaf} (expression="nil" |	expression="kill")
-	{NilProcessExpression} "nil"
-	| {KillProcessExpression} "kill"
+	{ProcessExpressionNil} "nil"
+	| {ProcessExpressionKill} "kill"
 ;
 
 Guard hidden(ML_COMMENT,SL_COMMENT,WS):

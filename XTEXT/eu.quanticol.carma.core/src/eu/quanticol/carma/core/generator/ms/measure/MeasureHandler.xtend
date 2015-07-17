@@ -22,12 +22,13 @@ import eu.quanticol.carma.core.carma.VariableReferenceMy
 import eu.quanticol.carma.core.carma.RecordReferenceMy
 import eu.quanticol.carma.core.typing.TypeProvider
 import eu.quanticol.carma.core.carma.Measure
+import eu.quanticol.carma.core.generator.ms.SharedJavaniser
 
 class MeasureHandler {
 	
 	@Inject extension Util
-	@Inject extension MeasureJavaniser
 	@Inject extension TypeProvider
+	@Inject extension SharedJavaniser
 		
 	def String getMeasures(ArrayList<SetComp> setcomps){
 		'''
@@ -136,8 +137,8 @@ class MeasureHandler {
 	
 	def String getStorePredicate(VariableReference vr){
 		switch (vr) {
-			VariableReferenceMy: 		'''«vr.name.type.express» «vr.name.name» = store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
-			RecordReferenceMy: 			'''«vr.name.type.express» «vr.name.name» = store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
+			VariableReferenceMy: 		'''«vr.name.type.express» my_«vr.name.name» = store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
+			RecordReferenceMy: 			'''«vr.name.type.express» my_«vr.name.name» = store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
 		}
 	}
 	
