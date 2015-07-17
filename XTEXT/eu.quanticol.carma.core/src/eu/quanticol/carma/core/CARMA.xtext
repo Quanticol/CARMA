@@ -514,7 +514,9 @@ PreFunctionCall returns PreFunctionCall hidden(ML_COMMENT,SL_COMMENT,WS):
 	{CeilingFunction} 	name="Ceiling"	|
 	{FloorFunction} 	name="Floor"	|
 	{MaxFunction}		name="Max"		|
-	{MinFunction}		name="Min"
+	{MinFunction}		name="Min"		|
+	{PowFunction}		name="Pow"		|
+	{AbsFunction}		name="Abs"
 	)
 	arguments=PredFunctionCallArguments 
 ;
@@ -737,7 +739,7 @@ SpontaneousAction hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 InputAction returns IO  hidden(ML_COMMENT,SL_COMMENT,WS):
-	{InputAction}  inputActionArguments=InputActionParameters (update=Update)?
+	{InputAction}  inputActionParameters=InputActionParameters (update=Update)?
 ;
 
 InputActionParameters returns Parameters hidden(ML_COMMENT,SL_COMMENT,WS):

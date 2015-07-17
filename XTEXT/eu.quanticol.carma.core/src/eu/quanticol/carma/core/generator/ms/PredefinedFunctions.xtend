@@ -4,9 +4,25 @@ class PredefinedFunctions {
 	
 	def String getUniform(){
 		'''
-		public static int uniform(ArrayList<Object> input){
+		public Double uniform(ArrayList<Double> input){
 			RandomGenerator random = new DefaultRandomGenerator();
-			return (int) input.get(random.nextInt(input.size()));
+			return (Double) input.get(random.nextInt(input.size()));
+		}
+		'''
+	}
+	
+	def String getPow(){
+		'''
+		public Double pow(ArrayList<Double> input){
+			return Math.pow(input.get(0),input.get(1));
+		}
+		'''
+	}
+	
+	def String getPoAbs(){
+		'''
+		public Double abs(ArrayList<Double> input){
+			return Math.abs(input.get(0));
 		}
 		'''
 	}

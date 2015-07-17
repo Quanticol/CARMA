@@ -27,9 +27,9 @@ class RecordJavaniser {
 	
 	def String javanise(Type type){
 		switch(type){
-			DoubleType: "double"
-			IntgerType: "int"
-			AttribType: "int"
+			DoubleType: "Double"
+			IntgerType: "Double"
+			AttribType: "Double"
 			RecordType: type.name.name
 		}
 	}

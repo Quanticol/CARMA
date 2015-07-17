@@ -540,15 +540,19 @@ class CollectiveHandler {
 
 	def String checkStoreOutput(OutputActionArgument oaa) {
 		switch (oaa.value) {
-			VariableReferenceMy: '''my_variables.put("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
-			RecordReferenceMy: '''my_variables.put("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
+			VariableReferencePure: 	'''my_variables.put("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
+			VariableReferenceMy: 	'''my_variables.put("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
+			RecordReferencePure:	'''my_variables.put("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
+			RecordReferenceMy: 		'''my_variables.put("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
 		}
 	}
 
 	def String getStoreOutput(OutputActionArgument oaa) {
 		switch (oaa.value) {
-			VariableReferenceMy: '''«(oaa.value as VariableReference).name.type.express» «(oaa.value as VariableReference).name.name» = my_store.get("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
-			RecordReferenceMy: '''«(oaa.value as VariableReference).name.type.express» «(oaa.value as VariableReference).name.name» = my_store.get("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
+			VariableReferencePure: '''«(oaa.value as VariableReference).name.type.express» attrib_«(oaa.value as VariableReference).name.name» = my_store.get("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
+			VariableReferenceMy: '''«(oaa.value as VariableReference).name.type.express» my_«(oaa.value as VariableReference).name.name» = my_store.get("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
+			RecordReferencePure: '''«(oaa.value as VariableReference).name.type.express» attrib_«(oaa.value as VariableReference).name.name» = my_store.get("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
+			RecordReferenceMy: '''«(oaa.value as VariableReference).name.type.express» my_«(oaa.value as VariableReference).name.name» = my_store.get("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
 		}
 	}
 

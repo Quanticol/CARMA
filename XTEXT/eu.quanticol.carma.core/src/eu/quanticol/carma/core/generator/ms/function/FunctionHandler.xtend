@@ -1,7 +1,11 @@
 package eu.quanticol.carma.core.generator.ms.function
 
 import com.google.inject.Inject
+import eu.quanticol.carma.core.carma.AttribParameter
+import eu.quanticol.carma.core.carma.AttribType
 import eu.quanticol.carma.core.carma.AttribVariableDeclaration
+import eu.quanticol.carma.core.carma.DoubleParameter
+import eu.quanticol.carma.core.carma.DoubleType
 import eu.quanticol.carma.core.carma.DoubleVariableDeclaration
 import eu.quanticol.carma.core.carma.FunctionAssignment
 import eu.quanticol.carma.core.carma.FunctionDeclaration
@@ -11,9 +15,14 @@ import eu.quanticol.carma.core.carma.FunctionIfStatement
 import eu.quanticol.carma.core.carma.FunctionReturn
 import eu.quanticol.carma.core.carma.FunctionStatement
 import eu.quanticol.carma.core.carma.Functions
+import eu.quanticol.carma.core.carma.IntgerParameter
+import eu.quanticol.carma.core.carma.IntgerType
 import eu.quanticol.carma.core.carma.IntgerVariableDeclaration
 import eu.quanticol.carma.core.carma.Parameter
+import eu.quanticol.carma.core.carma.ProcessParameter
 import eu.quanticol.carma.core.carma.RecordDeclaration
+import eu.quanticol.carma.core.carma.RecordParameter
+import eu.quanticol.carma.core.carma.RecordType
 import eu.quanticol.carma.core.carma.Type
 import eu.quanticol.carma.core.generator.ms.SharedJavaniser
 import java.util.ArrayList
@@ -95,9 +104,9 @@ class FunctionHandler {
 	def dispatch String fjavanise(FunctionIfStatement functionIfStatement){
 		var toReturn = 
 		'''
-		if («functionIfStatement.expression.javanise») {
+		if («functionIfStatement.expression.express») {
 			«FOR functionStatement : functionIfStatement.thenBlock.statements»
-			«functionStatement.javanise»;
+			«functionStatement.fjavanise»;
 			«ENDFOR»
 		}'''
 		if(functionIfStatement.elseBlock != null){
@@ -105,7 +114,7 @@ class FunctionHandler {
 		'''
 		else {
 			«FOR functionStatement : functionIfStatement.elseBlock.statements»
-			«functionStatement.javanise»;
+			«functionStatement.fjavanise»;
 			«ENDFOR»
 		}
 		'''
@@ -117,13 +126,34 @@ class FunctionHandler {
 		'''
 		for( «functionForStatement.variable.javanise » ; «functionForStatement.expression.javanise » ; «functionForStatement.afterThought.functionAssignment.javanise» ){
 			«FOR functionStatement : functionForStatement.functionForBlock.statements»
-			«functionStatement.javanise»;
+			«functionStatement.fjavanise»;
 			«ENDFOR»		
 		}'''
 	}
 	
 	def dispatch String fjavanise(FunctionReturn functionReturn){
 		'''return «functionReturn.expression.express»; '''
+	}
+	
+	def  String getParameters(ArrayList<Parameter> parameters){
+		var String toReturn = ""
+		if(parameters.size > 0){
+			toReturn = parameters.get(0).getParameter
+			for(var i = 1; i < parameters.size; i++){
+				toReturn = toReturn + ", " + parameters.get(i).getParameter
+			}
+		}
+		return toReturn
+	}
+	
+	def  String getParameter(Parameter parameter){
+		switch(parameter){
+			AttribParameter: '''«(parameter.type as AttribType).javanise» attrib_«parameter.name.name»'''
+			RecordParameter: '''«(parameter.type as RecordType).javanise» attrib_«parameter.name.name»'''
+			DoubleParameter: '''«(parameter.type as DoubleType).javanise» attrib_«parameter.name.name»'''
+			IntgerParameter: '''«(parameter.type as IntgerType).javanise» attrib_«parameter.name.name»'''
+			ProcessParameter: '''ArrayList<String> behaviour'''
+		}
 	}
 	
 

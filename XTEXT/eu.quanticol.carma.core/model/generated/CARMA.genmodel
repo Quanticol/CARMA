@@ -436,6 +436,8 @@
     <genClasses ecoreClass="CARMA.ecore#//FloorFunction"/>
     <genClasses ecoreClass="CARMA.ecore#//MaxFunction"/>
     <genClasses ecoreClass="CARMA.ecore#//MinFunction"/>
+    <genClasses ecoreClass="CARMA.ecore#//PowFunction"/>
+    <genClasses ecoreClass="CARMA.ecore#//AbsFunction"/>
     <genClasses ecoreClass="CARMA.ecore#//BlockStyle">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//BlockStyle/definitions"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//BlockStyle/processes"/>
@@ -476,7 +478,7 @@
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//UniCast"/>
     <genClasses ecoreClass="CARMA.ecore#//InputAction">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//InputAction/inputActionArguments"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//InputAction/inputActionParameters"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//InputActionParameters"/>
     <genClasses ecoreClass="CARMA.ecore#//OutputAction">

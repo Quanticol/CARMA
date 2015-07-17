@@ -1,6 +1,7 @@
 package eu.quanticol.carma.core.generator.ms
 
 import com.google.inject.Inject
+import eu.quanticol.carma.core.carma.AbsFunction
 import eu.quanticol.carma.core.carma.Action
 import eu.quanticol.carma.core.carma.Addition
 import eu.quanticol.carma.core.carma.And
@@ -12,9 +13,7 @@ import eu.quanticol.carma.core.carma.AtomicPrimitive
 import eu.quanticol.carma.core.carma.AtomicProcessComposition
 import eu.quanticol.carma.core.carma.AtomicRecord
 import eu.quanticol.carma.core.carma.AtomicVariable
-import eu.quanticol.carma.core.carma.AttribParameter
 import eu.quanticol.carma.core.carma.AttribType
-import eu.quanticol.carma.core.carma.AttribVariableDeclaration
 import eu.quanticol.carma.core.carma.BooleanExpression
 import eu.quanticol.carma.core.carma.Calls
 import eu.quanticol.carma.core.carma.CarmaBoolean
@@ -24,12 +23,11 @@ import eu.quanticol.carma.core.carma.CarmaInteger
 import eu.quanticol.carma.core.carma.CeilingFunction
 import eu.quanticol.carma.core.carma.CompArgument
 import eu.quanticol.carma.core.carma.Comparison
+import eu.quanticol.carma.core.carma.ComponentAssignment
 import eu.quanticol.carma.core.carma.ComponentBlockArguments
-import eu.quanticol.carma.core.carma.Declaration
+import eu.quanticol.carma.core.carma.ComponentExpression
 import eu.quanticol.carma.core.carma.Division
-import eu.quanticol.carma.core.carma.DoubleParameter
 import eu.quanticol.carma.core.carma.DoubleType
-import eu.quanticol.carma.core.carma.DoubleVariableDeclaration
 import eu.quanticol.carma.core.carma.EnvironmentProbExpression
 import eu.quanticol.carma.core.carma.EnvironmentRateExpression
 import eu.quanticol.carma.core.carma.EnvironmentUpdate
@@ -38,21 +36,13 @@ import eu.quanticol.carma.core.carma.Equality
 import eu.quanticol.carma.core.carma.Expressions
 import eu.quanticol.carma.core.carma.FloorFunction
 import eu.quanticol.carma.core.carma.FunctionArgument
-import eu.quanticol.carma.core.carma.FunctionAssignment
 import eu.quanticol.carma.core.carma.FunctionCall
 import eu.quanticol.carma.core.carma.FunctionCallArguments
-import eu.quanticol.carma.core.carma.FunctionDeclaration
 import eu.quanticol.carma.core.carma.FunctionExpression
-import eu.quanticol.carma.core.carma.FunctionForStatement
-import eu.quanticol.carma.core.carma.FunctionIfStatement
 import eu.quanticol.carma.core.carma.FunctionReferenceMan
 import eu.quanticol.carma.core.carma.FunctionReferencePre
-import eu.quanticol.carma.core.carma.FunctionReturn
-import eu.quanticol.carma.core.carma.FunctionStatement
 import eu.quanticol.carma.core.carma.InstantiateRecord
-import eu.quanticol.carma.core.carma.IntgerParameter
 import eu.quanticol.carma.core.carma.IntgerType
-import eu.quanticol.carma.core.carma.IntgerVariableDeclaration
 import eu.quanticol.carma.core.carma.MaxFunction
 import eu.quanticol.carma.core.carma.MeasureVariableDeclaration
 import eu.quanticol.carma.core.carma.MeasureVariableDeclarations
@@ -65,7 +55,7 @@ import eu.quanticol.carma.core.carma.Or
 import eu.quanticol.carma.core.carma.OutputActionArgument
 import eu.quanticol.carma.core.carma.PDFunction
 import eu.quanticol.carma.core.carma.ParallelComposition
-import eu.quanticol.carma.core.carma.Parameter
+import eu.quanticol.carma.core.carma.PowFunction
 import eu.quanticol.carma.core.carma.PreArgument
 import eu.quanticol.carma.core.carma.PreFunctionCall
 import eu.quanticol.carma.core.carma.PredFunctionCallArguments
@@ -77,8 +67,6 @@ import eu.quanticol.carma.core.carma.Range
 import eu.quanticol.carma.core.carma.Rate
 import eu.quanticol.carma.core.carma.RecordArgument
 import eu.quanticol.carma.core.carma.RecordArguments
-import eu.quanticol.carma.core.carma.RecordDeclaration
-import eu.quanticol.carma.core.carma.RecordParameter
 import eu.quanticol.carma.core.carma.RecordReferenceGlobal
 import eu.quanticol.carma.core.carma.RecordReferenceMy
 import eu.quanticol.carma.core.carma.RecordReferencePure
@@ -102,10 +90,6 @@ import eu.quanticol.carma.core.typing.TypeProvider
 import java.util.ArrayList
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.carma.ComponentForVariableDeclaration
-import eu.quanticol.carma.core.carma.ComponentAssignment
-import eu.quanticol.carma.core.carma.ProcessParameter
-import eu.quanticol.carma.core.carma.ComponentExpression
 
 class SharedJavaniser {
 	
@@ -318,12 +302,12 @@ class SharedJavaniser {
 		vrs = vrs.clean
 		var String toReturn = ""
 		if(vrs.size > 0){
-			toReturn = '''int «vrs.get(0).disarm(true)»;'''
+			toReturn = '''Double «vrs.get(0).disarm(true)»;'''
 			for(var i = 1; i < vrs.size; i++){
 				toReturn = 
 				'''
 				«toReturn»
-				int «vrs.get(i).disarm(true)»;'''
+				Double «vrs.get(i).disarm(true)»;'''
 							}
 						}
 						var primitives = be.eAllOfType(PrimitiveTypes)
@@ -390,9 +374,9 @@ class SharedJavaniser {
 	def  String declare(PrimitiveTypes pts) {
 		switch (pts) {
 			CarmaDouble: 	"Double double_"+(Math.abs(pts.hashCode*pts.hashCode)+"").substring(0,4)+"="+pts.javanise
-			CarmaInteger: 	"Integer integer_"+(Math.abs(pts.hashCode*pts.hashCode)+"").substring(0,4)+"="+pts.javanise
+			CarmaInteger: 	"Double integer_"+(Math.abs(pts.hashCode*pts.hashCode)+"").substring(0,4)+"="+pts.javanise
 			CarmaBoolean: 	"boolean boolean_"+(Math.abs(pts.hashCode*pts.hashCode)+"").substring(0,4)+"="+pts.javanise
-			Range: 			"Integer integer_"+(Math.abs(pts.hashCode*pts.hashCode)+"").substring(0,4)+"="+pts.javanise
+			Range: 			"Double integer_"+(Math.abs(pts.hashCode*pts.hashCode)+"").substring(0,4)+"="+pts.javanise
 		}
 	}
 	
@@ -458,27 +442,6 @@ class SharedJavaniser {
 		return toReturn
 	}
 	
-	def  String getParameters(ArrayList<Parameter> parameters){
-		var String toReturn = ""
-		if(parameters.size > 0){
-			toReturn = parameters.get(0).getParameter
-			for(var i = 1; i < parameters.size; i++){
-				toReturn = toReturn + ", " + parameters.get(i).getParameter
-			}
-		}
-		return toReturn
-	}
-	
-	def  String getParameter(Parameter parameter){
-		switch(parameter){
-			AttribParameter: '''«(parameter.type as AttribType).javanise» «parameter.name.name»'''
-			RecordParameter: '''«(parameter.type as RecordType).javanise» «parameter.name.name»'''
-			DoubleParameter: '''«(parameter.type as DoubleType).javanise» «parameter.name.name»'''
-			IntgerParameter: '''«(parameter.type as IntgerType).javanise» «parameter.name.name»'''
-			ProcessParameter: '''ArrayList<String> behaviour'''
-		}
-	}
-	
 	//SHARED JAVANISE
 	def dispatch String javanise(ArrayList<String> behaviours){
 		var String toReturn = ""
@@ -509,7 +472,7 @@ class SharedJavaniser {
 	}
 	def dispatch String javanise(BaseType bt){
 		if(bt.me.equals("int")){
-			'''Integer'''
+			'''Double'''
 		}else if(bt.me.equals("double")){
 			'''Double'''
 		}else if(bt.me.equals("boolean")){
@@ -528,8 +491,8 @@ class SharedJavaniser {
 	def dispatch String javanise(Type type){
 		switch(type){
 			DoubleType: "Double"
-			IntgerType: "Integer"
-			AttribType: "Integer"
+			IntgerType: "Double"
+			AttribType: "Double"
 			RecordType: type.name.name
 		}
 	}
@@ -712,13 +675,15 @@ class SharedJavaniser {
 			CeilingFunction:	{'''ceil(«(preFunctionCall.arguments as PredFunctionCallArguments).javanise»)'''}
 			FloorFunction:		{'''floor(«(preFunctionCall.arguments as PredFunctionCallArguments).javanise»)'''}
 			MaxFunction:		{'''max(«(preFunctionCall.arguments as PredFunctionCallArguments).javanise»)'''}
-			MinFunction:		{'''min(«(preFunctionCall.arguments as PredFunctionCallArguments).javanise»)'''}		
+			MinFunction:		{'''min(«(preFunctionCall.arguments as PredFunctionCallArguments).javanise»)'''}
+			PowFunction:		{'''pow(«(preFunctionCall.arguments as PredFunctionCallArguments).javanise»)'''}
+			AbsFunction:		{'''abs(«(preFunctionCall.arguments as PredFunctionCallArguments).javanise»)'''}
 		}
 	}
 	
 	def dispatch String javanise(PredFunctionCallArguments arguments){
 			var ArrayList<PreArgument> args = new ArrayList<PreArgument>(arguments.eAllOfType(PreArgument))
-			var toReturn = '''new ArrayList<Object>(Arrays.asList('''
+			var toReturn = '''new ArrayList<Double>(Arrays.asList('''
 			if(args.size > 0){
 				toReturn = toReturn + '''«args.get(0).javanise»'''
 				for(var i = 1; i < args.size; i++){
@@ -815,9 +780,9 @@ class SharedJavaniser {
 	
 	def dispatch String express(Type type){
 		switch(type){
-			DoubleType: "double"
-			IntgerType: "int"
-			AttribType: "int"
+			DoubleType: "Double"
+			IntgerType: "Double"
+			AttribType: "Double"
 			RecordType: type.name.name
 		}
 	}
@@ -897,7 +862,7 @@ class SharedJavaniser {
 			CarmaDouble: pts.express
 			CarmaInteger: pts.express
 			CarmaBoolean: pts.express
-			Range: "//eu.quanticol.carma.core.generator.ms.function.express.Range"
+			Range: pts.express
 		}
 	}
 
@@ -1037,7 +1002,7 @@ class SharedJavaniser {
 	
 	def String storeExpress(BaseType bt){
 		if(bt.me.equals("int")){
-			'''Integer.class'''
+			'''Double.class'''
 		} else {
 			'''«bt.me».class'''
 		}
@@ -1045,7 +1010,7 @@ class SharedJavaniser {
 	
 	def dispatch String express(BaseType bt){
 		if(bt.me.equals("int")){
-			'''int'''
+			'''Double'''
 		} else {
 			'''«bt.me»'''
 		}

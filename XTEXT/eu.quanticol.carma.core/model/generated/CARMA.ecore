@@ -543,6 +543,8 @@
   <eClassifiers xsi:type="ecore:EClass" name="FloorFunction" eSuperTypes="#//PreFunctionCall"/>
   <eClassifiers xsi:type="ecore:EClass" name="MaxFunction" eSuperTypes="#//PreFunctionCall"/>
   <eClassifiers xsi:type="ecore:EClass" name="MinFunction" eSuperTypes="#//PreFunctionCall"/>
+  <eClassifiers xsi:type="ecore:EClass" name="PowFunction" eSuperTypes="#//PreFunctionCall"/>
+  <eClassifiers xsi:type="ecore:EClass" name="AbsFunction" eSuperTypes="#//PreFunctionCall"/>
   <eClassifiers xsi:type="ecore:EClass" name="BlockStyle" eSuperTypes="#//ComponentStyle">
     <eStructuralFeatures xsi:type="ecore:EReference" name="definitions" upperBound="-1"
         eType="#//Component" containment="true"/>
@@ -598,8 +600,8 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="UniCast" eSuperTypes="#//Cast"/>
   <eClassifiers xsi:type="ecore:EClass" name="InputAction" eSuperTypes="#//IO">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="inputActionArguments" eType="#//Parameters"
-        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="inputActionParameters"
+        eType="#//Parameters" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InputActionParameters" eSuperTypes="#//Parameters"/>
   <eClassifiers xsi:type="ecore:EClass" name="OutputAction" eSuperTypes="#//IO">
