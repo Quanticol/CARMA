@@ -52,7 +52,7 @@ Now returns PrimitiveTypes hidden(ML_COMMENT,SL_COMMENT,WS):
 Records returns Records hidden(ML_COMMENT,SL_COMMENT,WS): 
 	"records""{"
 	recordDefinitions+=RecordDefinition
-	("," recordDefinitions+=RecordDefinition)*
+	(recordDefinitions+=RecordDefinition+)*
 	"}"
 ;
 
