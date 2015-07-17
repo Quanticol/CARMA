@@ -12,6 +12,8 @@
  *******************************************************************************/
 package org.cmg.ml.sam.sim;
 
+import org.cmg.ml.sam.sim.sampling.Measure;
+
 
 /**
  * @author loreti
@@ -21,4 +23,6 @@ public interface SimulationFactory<S extends ModelI> {
 
 	public S getModel();
 
+	public Measure<S> getMeasure( String name );
+	
 }

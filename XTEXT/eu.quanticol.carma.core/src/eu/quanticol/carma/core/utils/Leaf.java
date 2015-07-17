@@ -7,12 +7,13 @@ import java.util.HashSet;
 import eu.quanticol.carma.core.carma.Action;
 import eu.quanticol.carma.core.carma.ActionName;
 import eu.quanticol.carma.core.carma.BooleanExpression;
+import eu.quanticol.carma.core.carma.KillProcessExpression;
+import eu.quanticol.carma.core.carma.NilProcessExpression;
 import eu.quanticol.carma.core.carma.Process;
 import eu.quanticol.carma.core.carma.ProcessExpression;
 import eu.quanticol.carma.core.carma.ProcessExpressionAction;
 import eu.quanticol.carma.core.carma.ProcessExpressionChoice;
 import eu.quanticol.carma.core.carma.ProcessExpressionGuard;
-import eu.quanticol.carma.core.carma.ProcessExpressionLeaf;
 import eu.quanticol.carma.core.carma.ProcessExpressionReference;
 import eu.quanticol.carma.core.carma.ProcessName;
 
@@ -144,9 +145,14 @@ public class Leaf {
 			}
 		}
 		if(!matched){
-			if (pe instanceof ProcessExpressionLeaf) {
+			if (pe instanceof NilProcessExpression) {
 				matched=true;
-				ProcessExpression expression = ((ProcessExpressionLeaf)pe);
+				ProcessExpression expression = ((NilProcessExpression)pe);
+				state = "null";
+			}
+			if (pe instanceof KillProcessExpression) {
+				matched=true;
+				ProcessExpression expression = ((KillProcessExpression)pe);
 				state = "null";
 			}
 		}
@@ -190,7 +196,7 @@ public class Leaf {
 			}
 		}
 		if(!matched){
-			if (this.me instanceof ProcessExpressionLeaf) {
+			if ((this.me instanceof NilProcessExpression)||(this.me instanceof KillProcessExpression)) {
 //				System.out.println("leaf");
 				matched=true;
 				this.children = null;
