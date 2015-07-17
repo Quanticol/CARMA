@@ -48,6 +48,8 @@ class MSSystemCompiler {
 			public class «MSSystemCompiler.SYSTEMNAME» extends CarmaSystem {
 				
 				«getUniform»
+				«getPow»
+				«getAbs»
 				
 				«model.functions.printFunctions»
 				«model.records.records»

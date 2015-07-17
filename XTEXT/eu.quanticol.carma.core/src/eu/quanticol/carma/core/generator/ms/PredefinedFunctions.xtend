@@ -19,7 +19,7 @@ class PredefinedFunctions {
 		'''
 	}
 	
-	def String getPoAbs(){
+	def String getAbs(){
 		'''
 		public Double abs(ArrayList<Double> input){
 			return Math.abs(input.get(0));

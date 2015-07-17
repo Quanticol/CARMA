@@ -951,7 +951,9 @@ class SharedJavaniser {
 			CeilingFunction:	{'''ceil(«(preFunctionCall.arguments as PredFunctionCallArguments).express»)'''}
 			FloorFunction:		{'''floor(«(preFunctionCall.arguments as PredFunctionCallArguments).express»)'''}
 			MaxFunction:		{'''max(«(preFunctionCall.arguments as PredFunctionCallArguments).express»)'''}
-			MinFunction:		{'''min(«(preFunctionCall.arguments as PredFunctionCallArguments).express»)'''}		
+			MinFunction:		{'''min(«(preFunctionCall.arguments as PredFunctionCallArguments).express»)'''}	
+			PowFunction:		{'''pow(«(preFunctionCall.arguments as PredFunctionCallArguments).express»)'''}
+			AbsFunction:		{'''abs(«(preFunctionCall.arguments as PredFunctionCallArguments).express»)'''}	
 		}
 	}
 	
