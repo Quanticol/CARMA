@@ -8,10 +8,11 @@ import java.util.ArrayList
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import eu.quanticol.carma.core.carma.AttribParameter
 import eu.quanticol.carma.core.carma.FeildDeclaration
+import eu.quanticol.carma.core.generator.ms.SharedJavaniser
 
 class RecordHandler {
 	
-	@Inject extension RecordJavaniser
+	@Inject extension SharedJavaniser
 	
 	def String getRecords(Records records){
 		'''
@@ -25,7 +26,7 @@ class RecordHandler {
 		var name = recordDefinition.recordSignature.type.name
 		var ArrayList<AttribParameter> parameters = new ArrayList<AttribParameter>(recordDefinition.eAllOfType(AttribParameter))
 		'''
-		public static class «name» {
+		public class «name» {
 			
 			«FOR feild : recordDefinition.recordDefinitionStatementBlock.feilds»
 			«(feild as FeildDeclaration).declare»

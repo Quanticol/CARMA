@@ -51,7 +51,7 @@ class MeasureHandler {
 			name = setcomp.getContainerOfType(Measure).name.name
 		}
 		'''
-		public static Measure<CarmaSystem> getMeasure«setcomp.javanise»(final String name, «setcomp.predicate.disarmParameters»){
+		public Measure<CarmaSystem> getMeasure«setcomp.javanise»(final String name, «setcomp.predicate.disarmParameters»){
 			
 			return new Measure<CarmaSystem>(){
 			
@@ -79,7 +79,7 @@ class MeasureHandler {
 	
 	def String getMeasurePredicatePredicate(SetComp setcomp){
 		'''
-		protected static CarmaPredicate getPredicate«setcomp.javanise»(«setcomp.predicate.disarmParameters») {
+		protected CarmaPredicate getPredicate«setcomp.javanise»(«setcomp.predicate.disarmParameters») {
 			return new CarmaPredicate() {
 				@Override
 				public boolean satisfy(CarmaStore store) {
@@ -88,7 +88,7 @@ class MeasureHandler {
 			};
 		}
 		
-		public static ComponentPredicate getMeasure«setcomp.javanise»_predicate_Predicate(«setcomp.predicate.disarmParameters»){
+		public ComponentPredicate getMeasure«setcomp.javanise»_predicate_Predicate(«setcomp.predicate.disarmParameters»){
 			return new ComponentPredicate() {
 				
 				@Override
@@ -121,7 +121,7 @@ class MeasureHandler {
 			«FOR key : vrsh.keySet»
 			«vrsh.get(key).storePredicate»
 			«ENDFOR»
-			return «setcomp.predicate.express»;
+			return «setcomp.predicate.javanise»;
 		} else {
 			return false;
 		}
@@ -130,21 +130,21 @@ class MeasureHandler {
 	
 	def String checkStorePredicate(VariableReference vr){
 		switch (vr) {
-			VariableReferenceMy: 		'''my_variables.put("«vr.name.name»",«vr.name.type.storeExpress»);'''
-			RecordReferenceMy: 			'''my_variables.put("«vr.name.name»",«vr.name.type.storeExpress»);'''
+			VariableReferenceMy: 		'''my_variables.put("«vr.name.name»",«vr.name.type.classJavanise»);'''
+			RecordReferenceMy: 			'''my_variables.put("«vr.name.name»",«vr.name.type.classJavanise»);'''
 		}
 	}
 	
 	def String getStorePredicate(VariableReference vr){
 		switch (vr) {
-			VariableReferenceMy: 		'''«vr.name.type.express» my_«vr.name.name» = store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
-			RecordReferenceMy: 			'''«vr.name.type.express» my_«vr.name.name» = store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
+			VariableReferenceMy: 		'''«vr.name.type.javanise» my_«vr.name.name» = store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
+			RecordReferenceMy: 			'''«vr.name.type.javanise» my_«vr.name.name» = store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
 		}
 	}
 	
 	def String getMeasureVariablePredicate(SetComp setcomp){
 		'''
-		public static CarmaProcessPredicate getMeasure«setcomp.javanise»_Variable_Predicate(){
+		public CarmaProcessPredicate getMeasure«setcomp.javanise»_Variable_Predicate(){
 			return new CarmaProcessPredicate() {
 				
 				@Override

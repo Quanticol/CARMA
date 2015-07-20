@@ -437,5 +437,5 @@ class TypeProvider {
 				return uniInType
 		}
 	}
-
+	
 }

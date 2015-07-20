@@ -127,7 +127,7 @@ class EnvironmentHandler {
 	
 	def String getProbabilityPredicates(Probability probability){
 		'''
-		public static CarmaPredicate get«probability.javanise»Predicate(final CarmaStore sender_store){
+		public CarmaPredicate get«probability.javanise»Predicate(final CarmaStore sender_store){
 			return new CarmaPredicate() {
 				@Override
 				public boolean satisfy(CarmaStore receiver_store) {
@@ -148,7 +148,7 @@ class EnvironmentHandler {
 		public double broadcastProbability(CarmaStore sender_store, CarmaStore receiver_store,
 				int action) {
 			«FOR probability : probabilities»
-			if(action == «probability.stub.name.getContainerOfType(Action).actionName»
+			if(action == «probability.stub.name.getContainerOfType(Action).name.name.hashCode»
 			&& get«probability.javanise»Predicate(sender_store).satisfy(receiver_store){
 				«probability.getValue»
 			}
@@ -170,7 +170,7 @@ class EnvironmentHandler {
 		public double unicastProbability(CarmaStore sender_store, CarmaStore receiver_store,
 				int action) {
 			«FOR probability : probabilities»
-			if(action == «probability.stub.name.getContainerOfType(Action).actionName»
+			if(action == «probability.stub.name.getContainerOfType(Action).name.name.hashCode»
 			&& get«probability.javanise»Predicate(sender_store).satisfy(receiver_store)){
 				«probability.getValue»
 			}
@@ -210,7 +210,7 @@ class EnvironmentHandler {
 			«FOR key : vrsh.keySet»
 			«vrsh.get(key).getStore»
 			«ENDFOR»
-			return «bes.express»;
+			return «bes.javanise»;
 		} else {
 			return false;
 		}
@@ -219,12 +219,12 @@ class EnvironmentHandler {
 	
 	def String checkStorePredicate(VariableReference vr){
 		switch (vr) {
-			VariableReferenceReceiver: 	'''receiver_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
-			VariableReferenceSender: 	'''sender_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
-			VariableReferenceGlobal: 	'''global_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
-			RecordReferenceReceiver: 	'''receiver_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
-			RecordReferenceSender: 		'''sender_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
-			RecordReferenceGlobal: 		'''global_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
+			VariableReferenceReceiver: 	'''receiver_variables.put("«vr.name.name»",«vr.type.classJavanise»);'''
+			VariableReferenceSender: 	'''sender_variables.put("«vr.name.name»",«vr.type.classJavanise»);'''
+			VariableReferenceGlobal: 	'''global_variables.put("«vr.name.name»",«vr.type.classJavanise»);'''
+			RecordReferenceReceiver: 	'''receiver_variables.put("«vr.name.name»",«vr.type.classJavanise»);'''
+			RecordReferenceSender: 		'''sender_variables.put("«vr.name.name»",«vr.type.classJavanise»);'''
+			RecordReferenceGlobal: 		'''global_variables.put("«vr.name.name»",«vr.type.classJavanise»);'''
 		}
 	}
 	
@@ -262,19 +262,19 @@ class EnvironmentHandler {
 			«IF epe.eAllOfType(SetComp).size > 0»
 			«epe.declarePrimitiveTypes»
 			«ENDIF»
-			return «epe.express»;
+			return «epe.javanise»;
 		}
 		'''
 	}
 	
 	def String getStore(VariableReference vr){
 		switch (vr) {
-			VariableReferenceReceiver: 	'''«vr.name.type.express» receiver_«vr.name.name» = receiver_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
-			VariableReferenceSender: 	'''«vr.name.type.express» sender_«vr.name.name» = sender_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
-			VariableReferenceGlobal: 	'''«vr.name.type.express» global_«vr.name.name» = global_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
-			RecordReferenceReceiver: 	'''«vr.name.type.express» receiver_«vr.name.name» = receiver_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
-			RecordReferenceSender: 		'''«vr.name.type.express» sender_«vr.name.name» = sender_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
-			RecordReferenceGlobal: 		'''«vr.name.type.express» global_«vr.name.name» = global_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
+			VariableReferenceReceiver: 	'''«vr.name.type.javanise» receiver_«vr.name.name» = receiver_store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
+			VariableReferenceSender: 	'''«vr.name.type.javanise» sender_«vr.name.name» = sender_store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
+			VariableReferenceGlobal: 	'''«vr.name.type.javanise» global_«vr.name.name» = global_store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
+			RecordReferenceReceiver: 	'''«vr.name.type.javanise» receiver_«vr.name.name» = receiver_store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
+			RecordReferenceSender: 		'''«vr.name.type.javanise» sender_«vr.name.name» = sender_store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
+			RecordReferenceGlobal: 		'''«vr.name.type.javanise» global_«vr.name.name» = global_store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
 		}
 	}
 	
@@ -305,7 +305,7 @@ class EnvironmentHandler {
 	
 	def String getRatePredicates(Rate rate){
 		'''
-		public static CarmaPredicate get«rate.javanise»Predicate(){
+		public CarmaPredicate get«rate.javanise»Predicate(){
 			return new CarmaPredicate() {
 				@Override
 				public boolean satisfy(CarmaStore sender_store) {
@@ -341,7 +341,7 @@ class EnvironmentHandler {
 			«FOR key : vrsh.keySet»
 			«vrsh.get(key).getStore»
 			«ENDFOR»
-			return «bes.express»;
+			return «bes.javanise»;
 		} else {
 			return false;
 		}
@@ -357,7 +357,7 @@ class EnvironmentHandler {
 		@Override
 		public double broadcastRate(CarmaStore sender_store, int action){
 			«FOR rate : rates»
-			if(action == «rate.stub.name.getContainerOfType(Action).actionName»
+			if(action == «rate.stub.name.getContainerOfType(Action).name.name.hashCode»
 			&& get«rate.javanise»Predicate().satisfy(sender_store)){
 				«rate.getValue»
 			}
@@ -376,7 +376,7 @@ class EnvironmentHandler {
 		@Override
 		public double unicastRate(CarmaStore sender_store, int action){
 			«FOR rate : rates»
-			if(action == «rate.stub.name.getContainerOfType(Action).actionName»
+			if(action == «rate.stub.name.getContainerOfType(Action).name.name.hashCode»
 			&& get«rate.javanise»Predicate().satisfy(sender_store)){
 				«rate.getValue»
 			}
@@ -414,7 +414,7 @@ class EnvironmentHandler {
 			«IF epe.eAllOfType(SetComp).size > 0»
 			«epe.declarePrimitiveTypes»
 			«ENDIF»
-			return «epe.express»;
+			return «epe.javanise»;
 		}
 		'''
 	}
@@ -457,7 +457,7 @@ class EnvironmentHandler {
 	
 	def String getUpdatePredicates(EnvironmentUpdate update){
 		'''
-		public static CarmaPredicate get«update.javanise»Predicate(final CarmaStore sender_store){
+		public CarmaPredicate get«update.javanise»Predicate(final CarmaStore sender_store){
 			return new CarmaPredicate() {
 				@Override
 				public boolean satisfy(CarmaStore receiver_store) {
@@ -498,7 +498,7 @@ class EnvironmentHandler {
 			«FOR key : vrsh.keySet»
 			«vrsh.get(key).getStore»
 			«ENDFOR»
-			return «bes.express»;
+			return «bes.javanise»;
 		} else {
 			return false;
 		}
@@ -512,7 +512,7 @@ class EnvironmentHandler {
 		public void broadcastUpdate(RandomGenerator random, CarmaStore sender_store,
 				int action, Object value) {
 			«FOR update : updates»
-			if(action == «update.stub.name.getContainerOfType(Action).actionName»
+			if(action == «update.stub.name.getContainerOfType(Action).name.name.hashCode»
 			&& get«update.javanise»Predicate(sender_store).satisfy(null)){
 				HashMap<String,Class> sender_variables = new HashMap<String,Class>();
 				HashMap<String,Class> global_variables = new HashMap<String,Class>();
@@ -534,7 +534,7 @@ class EnvironmentHandler {
 		public void unicastUpdate(RandomGenerator random, CarmaStore sender_store,
 				CarmaStore receiver_store, int action, Object value) {
 			«FOR update : updates»
-			if(action == «update.stub.name.getContainerOfType(Action).actionName»
+			if(action == «update.stub.name.getContainerOfType(Action).name.name.hashCode»
 			&& get«update.javanise»Predicate(sender_store).satisfy(receiver_store)){
 				HashMap<String,Class> receiver_variables = new HashMap<String,Class>();
 				HashMap<String,Class> sender_variables = new HashMap<String,Class>();
@@ -633,12 +633,12 @@ class EnvironmentHandler {
 		var vr = eua.reference
 		var expression = eua.expression
 		switch (eua.reference) {
-			VariableReferenceReceiver: 	'''receiver_«vr.name.name» = «expression.express»;'''
-			VariableReferenceSender: 	'''sender_«vr.name.name» = «expression.express»;'''
-			VariableReferenceGlobal: 	'''global_«vr.name.name» = «expression.express»;'''
-			RecordReferenceReceiver: 	'''receiver_«vr.name.name» = «expression.express»;'''
-			RecordReferenceSender: 		'''sender_«vr.name.name» = «expression.express»;'''
-			RecordReferenceGlobal: 		'''global_«vr.name.name» = «expression.express»;'''
+			VariableReferenceReceiver: 	'''receiver_«vr.name.name» = «expression.javanise»;'''
+			VariableReferenceSender: 	'''sender_«vr.name.name» = «expression.javanise»;'''
+			VariableReferenceGlobal: 	'''global_«vr.name.name» = «expression.javanise»;'''
+			RecordReferenceReceiver: 	'''receiver_«vr.name.name» = «expression.javanise»;'''
+			RecordReferenceSender: 		'''sender_«vr.name.name» = «expression.javanise»;'''
+			RecordReferenceGlobal: 		'''global_«vr.name.name» = «expression.javanise»;'''
 		}
 	}
 	

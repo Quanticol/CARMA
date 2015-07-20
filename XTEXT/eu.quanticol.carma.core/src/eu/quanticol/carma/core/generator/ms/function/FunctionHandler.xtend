@@ -29,10 +29,12 @@ import java.util.ArrayList
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 import static extension org.eclipse.xtext.EcoreUtil2.*
+import eu.quanticol.carma.core.typing.TypeProvider
 
 class FunctionHandler {
 	
 	@Inject extension SharedJavaniser
+	@Inject extension TypeProvider
 	
 	def String printFunctions(Functions functions){
 		'''
@@ -44,13 +46,13 @@ class FunctionHandler {
 	
 	def String getFunction(FunctionDefinition functionDefinition){
 		
-		var String type = functionDefinition.type.javanise
+		var String type = functionDefinition.type.type.type.javanise
 		var String name = functionDefinition.name.name.toFirstLower
 		var ArrayList<Parameter> parameters = new ArrayList<Parameter>(functionDefinition.eAllOfType(Parameter))
 		var ArrayList<FunctionStatement> functionStatements = new ArrayList<FunctionStatement>(functionDefinition.functionBody.statements)
 		var FunctionReturn functionReturn = functionDefinition.eAllOfType(FunctionReturn).get(0)
 		'''
-		public static «type» «name» ( «parameters.getParameters» ) {
+		public «type» «name» ( «parameters.getParameters» ) {
 			«FOR functionStatement : functionStatements»
 				«IF functionDefinition.isAncestor(functionStatement)»
 				«functionStatement.fjavanise»;
@@ -82,29 +84,29 @@ class FunctionHandler {
 	
 	//ALWAYS attrib_
 	def dispatch String fjavanise(AttribVariableDeclaration attribDeclaration){
-		'''«(attribDeclaration.type as Type).javanise» attrib_«attribDeclaration.name.name» = «attribDeclaration.assign.javanise»'''
+		'''«(attribDeclaration.type as Type).type.javanise» attrib_«attribDeclaration.name.name» = «attribDeclaration.assign.javanise»'''
 	}
 	
 	def dispatch String fjavanise(IntgerVariableDeclaration intgerDeclaration){
-		'''«(intgerDeclaration.type as Type).javanise» attrib_«intgerDeclaration.name.name» = «intgerDeclaration.assign.javanise»'''
+		'''«(intgerDeclaration.type as Type).type.javanise» attrib_«intgerDeclaration.name.name» = «intgerDeclaration.assign.javanise»'''
 	}
 	
 	def dispatch String fjavanise(DoubleVariableDeclaration doubleDeclaration){
-		'''«(doubleDeclaration.type as Type).javanise» attrib_«doubleDeclaration.name.name» = «doubleDeclaration.assign.javanise»'''
+		'''«(doubleDeclaration.type as Type).type.javanise» attrib_«doubleDeclaration.name.name» = «doubleDeclaration.assign.javanise»'''
 	}
 	
 	def dispatch String fjavanise(RecordDeclaration recordDeclaration){
-		'''«(recordDeclaration.type as Type).javanise» attrib_«recordDeclaration.name.name» = «recordDeclaration.assign.javanise»'''
+		'''«(recordDeclaration.type as Type).type.javanise» attrib_«recordDeclaration.name.name» = «recordDeclaration.assign.javanise»'''
 	}
 	
 	def dispatch String fjavanise(FunctionAssignment functionAssignment){
-		'''«functionAssignment.reference.javanise» = «functionAssignment.expression.express»'''
+		'''«functionAssignment.reference.javanise» = «functionAssignment.expression.javanise»'''
 	}
 	
 	def dispatch String fjavanise(FunctionIfStatement functionIfStatement){
 		var toReturn = 
 		'''
-		if («functionIfStatement.expression.express») {
+		if («functionIfStatement.expression.javanise») {
 			«FOR functionStatement : functionIfStatement.thenBlock.statements»
 			«functionStatement.fjavanise»;
 			«ENDFOR»
@@ -132,7 +134,7 @@ class FunctionHandler {
 	}
 	
 	def dispatch String fjavanise(FunctionReturn functionReturn){
-		'''return «functionReturn.expression.express»; '''
+		'''return «functionReturn.expression.javanise»; '''
 	}
 	
 	def  String getParameters(ArrayList<Parameter> parameters){
@@ -148,10 +150,10 @@ class FunctionHandler {
 	
 	def  String getParameter(Parameter parameter){
 		switch(parameter){
-			AttribParameter: '''«(parameter.type as AttribType).javanise» attrib_«parameter.name.name»'''
-			RecordParameter: '''«(parameter.type as RecordType).javanise» attrib_«parameter.name.name»'''
-			DoubleParameter: '''«(parameter.type as DoubleType).javanise» attrib_«parameter.name.name»'''
-			IntgerParameter: '''«(parameter.type as IntgerType).javanise» attrib_«parameter.name.name»'''
+			AttribParameter: '''«(parameter.type as AttribType).type.javanise» attrib_«parameter.name.name»'''
+			RecordParameter: '''«(parameter.type as RecordType).type.javanise» attrib_«parameter.name.name»'''
+			DoubleParameter: '''«(parameter.type as DoubleType).type.javanise» attrib_«parameter.name.name»'''
+			IntgerParameter: '''«(parameter.type as IntgerType).type.javanise» attrib_«parameter.name.name»'''
 			ProcessParameter: '''ArrayList<String> behaviour'''
 		}
 	}

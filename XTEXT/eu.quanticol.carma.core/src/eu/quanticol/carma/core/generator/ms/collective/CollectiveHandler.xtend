@@ -114,13 +114,14 @@ class CollectiveHandler {
 	}
 
 	def String addComponent(ComponentBlockForStatement componentBlockDeclaration) {
-		'''for(«(componentBlockDeclaration.variable as ComponentForVariableDeclaration).cjavanise» ; «componentBlockDeclaration.expression.express» ; «(componentBlockDeclaration.afterThought.componentAssignment as ComponentAssignment).javanise»){
-	«componentBlockDeclaration.componentBlockForBlock.component.addComponent»			
-}'''
+		'''
+		for(«(componentBlockDeclaration.variable as ComponentForVariableDeclaration).cjavanise» ; «componentBlockDeclaration.expression.javanise» ; «(componentBlockDeclaration.afterThought.componentAssignment as ComponentAssignment).javanise»){
+		«componentBlockDeclaration.componentBlockForBlock.component.addComponent»			
+		}'''
 	}
 	
 	def String cjavanise(ComponentForVariableDeclaration componentForVariableDeclaration){
-		'''«(componentForVariableDeclaration.type as Type).javanise» attrib_«componentForVariableDeclaration.name.name» = «componentForVariableDeclaration.assign.express»'''
+		'''«(componentForVariableDeclaration.type as Type).type.javanise» attrib_«componentForVariableDeclaration.name.name» = «componentForVariableDeclaration.assign.javanise»'''
 	}
 
 	def String addGlobalStores(Declaration storeDeclaration) {
@@ -151,7 +152,7 @@ class CollectiveHandler {
 			private CarmaComponent get«componentName»( «parameters.getCParameters» ){
 				CarmaComponent component_«componentName» = new CarmaComponent();
 				«FOR attribute : attributes»
-					«attribute.setStores(componentName)»
+					«attribute.setStore(componentName)»
 				«ENDFOR»
 				«setBehaviour(behaviour, componentBlockDefinition.componentBlock.initBlock.init, componentName)»
 				return component_«componentName»;
@@ -173,15 +174,15 @@ class CollectiveHandler {
 	
 	def  String getCParameter(Parameter parameter){
 		switch(parameter){
-			AttribParameter: '''«(parameter.type as AttribType).javanise» attrib_«parameter.name.name»'''
-			RecordParameter: '''«(parameter.type as RecordType).javanise» attrib_«parameter.name.name»'''
-			DoubleParameter: '''«(parameter.type as DoubleType).javanise» attrib_«parameter.name.name»'''
-			IntgerParameter: '''«(parameter.type as IntgerType).javanise» attrib_«parameter.name.name»'''
+			AttribParameter: '''«(parameter.type as AttribType).type.javanise» attrib_«parameter.name.name»'''
+			RecordParameter: '''«(parameter.type as RecordType).type.javanise» attrib_«parameter.name.name»'''
+			DoubleParameter: '''«(parameter.type as DoubleType).type.javanise» attrib_«parameter.name.name»'''
+			IntgerParameter: '''«(parameter.type as IntgerType).type.javanise» attrib_«parameter.name.name»'''
 			ProcessParameter: '''ArrayList<String> behaviour'''
 		}
 	}
 
-	def String setStores(Declaration storeDeclaration, String name) {
+	def String setStore(Declaration storeDeclaration, String name) {
 		'''component_«name».set(«storeDeclaration.setStore»);'''
 	}
 	
@@ -237,7 +238,7 @@ class CollectiveHandler {
 		var String componentName = declaration.name.name
 		var Tree tree = declaration.getTree
 		'''
-			private static CarmaProcessAutomaton create«componentName»Process() {
+			private CarmaProcessAutomaton create«componentName»Process() {
 				CarmaProcessAutomaton toReturn = new CarmaProcessAutomaton("«componentName»");
 				«tree.createStates»
 				«tree.createActions»
@@ -283,7 +284,7 @@ class CollectiveHandler {
 	def String getActionOutput(String actionName, boolean isBroadcast, Action action) {
 
 		'''
-			CarmaOutput «actionName» = new CarmaOutput( «action.actionName», «isBroadcast» ) {
+			CarmaOutput «actionName» = new CarmaOutput( «action.name.name.hashCode», «isBroadcast» ) {
 				«action.outputActionPredicate»
 				«action.getOutputUpdate»
 				«action.getValues»
@@ -344,7 +345,7 @@ class CollectiveHandler {
 				«FOR key : vrsh.keySet»
 					«vrsh.get(key).storeOutputPredicate»
 				«ENDFOR»
-				return «bes.express»;
+				return «bes.javanise»;
 			} else {
 				return false;
 			}
@@ -353,16 +354,16 @@ class CollectiveHandler {
 
 	def String checkStoreOutputPredicate(VariableReference vr) {
 		switch (vr) {
-			VariableReferencePure: '''their_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
-			VariableReferenceMy: '''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
+			VariableReferencePure: '''their_variables.put("«vr.name.name»",«vr.type.classJavanise»);'''
+			VariableReferenceMy: '''my_variables.put("«vr.name.name»",«vr.type.classJavanise»);'''
 			VariableReferenceReceiver:
 				"receiver_store."
 			VariableReferenceSender:
 				"sender_store."
 			VariableReferenceGlobal:
 				"global_store."
-			RecordReferencePure: '''their_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
-			RecordReferenceMy: '''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
+			RecordReferencePure: '''their_variables.put("«vr.name.name»",«vr.type.classJavanise»);'''
+			RecordReferenceMy: '''my_variables.put("«vr.name.name»",«vr.type.classJavanise»);'''
 			RecordReferenceReceiver:
 				"receiver_store."
 			RecordReferenceSender:
@@ -374,16 +375,16 @@ class CollectiveHandler {
 
 	def String getStoreOutputPredicate(VariableReference vr) {
 		switch (vr) {
-			VariableReferencePure: '''«vr.name.type.express» attrib_«vr.name.name» = their_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
-			VariableReferenceMy: '''«vr.name.type.express» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
+			VariableReferencePure: '''«vr.name.type.javanise» attrib_«vr.name.name» = their_store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
+			VariableReferenceMy: '''«vr.name.type.javanise» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
 			VariableReferenceReceiver:
 				"receiver_store."
 			VariableReferenceSender:
 				"sender_store."
 			VariableReferenceGlobal:
 				"global_store."
-			RecordReferencePure: '''«vr.name.type.express» attrib_«vr.name.name» = their_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
-			RecordReferenceMy: '''«vr.name.type.express» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.name.type.storeExpress»);'''
+			RecordReferencePure: '''«vr.name.type.javanise» attrib_«vr.name.name» = their_store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
+			RecordReferenceMy: '''«vr.name.type.javanise» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
 			RecordReferenceReceiver:
 				"receiver_store."
 			RecordReferenceSender:
@@ -440,7 +441,7 @@ class CollectiveHandler {
 					«vrs.get(key).storeOutput»
 				«ENDFOR»
 				«FOR updateAssignment : updateAssignments»
-					attrib_«updateAssignment.reference.name.name» = «updateAssignment.expression.express»;
+					attrib_«updateAssignment.reference.name.name» = «updateAssignment.expression.javanise»;
 				«ENDFOR»
 				«FOR updateAssignment : updateAssignments»
 					my_store.set("«updateAssignment.reference.name.name»",attrib_«updateAssignment.reference.name.name»);
@@ -451,16 +452,16 @@ class CollectiveHandler {
 
 	def String checkStoreOutput(VariableReference vr) {
 		switch (vr) {
-			VariableReferencePure: '''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
-			VariableReferenceMy: '''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
+			VariableReferencePure: '''my_variables.put("«vr.name.name»",«vr.type.classJavanise»);'''
+			VariableReferenceMy: '''my_variables.put("«vr.name.name»",«vr.type.classJavanise»);'''
 			VariableReferenceReceiver:
 				"receiver_store."
 			VariableReferenceSender:
 				"sender_store."
 			VariableReferenceGlobal:
 				"global_store."
-			RecordReferencePure: '''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
-			RecordReferenceMy: '''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
+			RecordReferencePure: '''my_variables.put("«vr.name.name»",«vr.type.classJavanise»);'''
+			RecordReferenceMy: '''my_variables.put("«vr.name.name»",«vr.type.classJavanise»);'''
 			RecordReferenceReceiver:
 				"receiver_store."
 			RecordReferenceSender:
@@ -472,16 +473,16 @@ class CollectiveHandler {
 
 	def String getStoreOutput(VariableReference vr) {
 		switch (vr) {
-			VariableReferencePure: '''«vr.name.type.express» attrib_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
-			VariableReferenceMy: '''«vr.name.type.express» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
+			VariableReferencePure: '''«vr.name.type.javanise» attrib_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.classJavanise»);'''
+			VariableReferenceMy: '''«vr.name.type.javanise» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.classJavanise»);'''
 			VariableReferenceReceiver:
 				"receiver_store."
 			VariableReferenceSender:
 				"sender_store."
 			VariableReferenceGlobal:
 				"global_store."
-			RecordReferencePure: '''«vr.name.type.express» attrib_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
-			RecordReferenceMy: '''«vr.name.type.express» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
+			RecordReferencePure: '''«vr.name.type.javanise» attrib_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.classJavanise»);'''
+			RecordReferenceMy: '''«vr.name.type.javanise» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.classJavanise»);'''
 			RecordReferenceReceiver:
 				"receiver_store."
 			RecordReferenceSender:
@@ -514,7 +515,7 @@ class CollectiveHandler {
 			arguments.eAllOfType(OutputActionArgument))
 		var count = 0
 		'''
-			int[] output = new int[«args.size»];
+			double[] output = new double[«args.size»];
 			HashMap<String,Class> my_variables = new HashMap<String,Class>();
 			«FOR arg : args»
 				«arg.checkStoreOutput»
@@ -540,25 +541,25 @@ class CollectiveHandler {
 
 	def String checkStoreOutput(OutputActionArgument oaa) {
 		switch (oaa.value) {
-			VariableReferencePure: 	'''my_variables.put("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
-			VariableReferenceMy: 	'''my_variables.put("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
-			RecordReferencePure:	'''my_variables.put("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
-			RecordReferenceMy: 		'''my_variables.put("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
+			VariableReferencePure: 	'''my_variables.put("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.classJavanise»);'''
+			VariableReferenceMy: 	'''my_variables.put("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.classJavanise»);'''
+			RecordReferencePure:	'''my_variables.put("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.classJavanise»);'''
+			RecordReferenceMy: 		'''my_variables.put("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.classJavanise»);'''
 		}
 	}
 
 	def String getStoreOutput(OutputActionArgument oaa) {
 		switch (oaa.value) {
-			VariableReferencePure: '''«(oaa.value as VariableReference).name.type.express» attrib_«(oaa.value as VariableReference).name.name» = my_store.get("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
-			VariableReferenceMy: '''«(oaa.value as VariableReference).name.type.express» my_«(oaa.value as VariableReference).name.name» = my_store.get("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
-			RecordReferencePure: '''«(oaa.value as VariableReference).name.type.express» attrib_«(oaa.value as VariableReference).name.name» = my_store.get("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
-			RecordReferenceMy: '''«(oaa.value as VariableReference).name.type.express» my_«(oaa.value as VariableReference).name.name» = my_store.get("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.storeExpress»);'''
+			VariableReferencePure: '''«(oaa.value as VariableReference).name.type.javanise» attrib_«(oaa.value as VariableReference).name.name» = my_store.get("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.classJavanise»);'''
+			VariableReferenceMy: '''«(oaa.value as VariableReference).name.type.javanise» my_«(oaa.value as VariableReference).name.name» = my_store.get("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.classJavanise»);'''
+			RecordReferencePure: '''«(oaa.value as VariableReference).name.type.javanise» attrib_«(oaa.value as VariableReference).name.name» = my_store.get("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.classJavanise»);'''
+			RecordReferenceMy: '''«(oaa.value as VariableReference).name.type.javanise» my_«(oaa.value as VariableReference).name.name» = my_store.get("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.classJavanise»);'''
 		}
 	}
 
 	def String getActionInput(String actionName, boolean isBroadcast, Action action) {
 		'''
-			CarmaInput «actionName» = new CarmaInput( «action.actionName», «isBroadcast» ) {
+			CarmaInput «actionName» = new CarmaInput( «action.name.name.hashCode», «isBroadcast» ) {
 				«getInputActionPredicate(action)»
 				«getInputUpdate(action)»
 			};
@@ -570,7 +571,7 @@ class CollectiveHandler {
 			'''
 				@Override
 				protected CarmaPredicate getPredicate(final CarmaStore my_store, final Object value) {
-					if (value instanceof int[]){
+					if (value instanceof double[]){
 						return new CarmaPredicate() {
 							@Override
 							public boolean satisfy(CarmaStore their_store) {
@@ -585,7 +586,7 @@ class CollectiveHandler {
 			'''
 				@Override
 				protected CarmaPredicate getPredicate(final CarmaStore my_store, final Object value) {
-					if (value instanceof int[]){
+					if (value instanceof double[]){
 						return new CarmaPredicate() {
 							@Override
 							public boolean satisfy(CarmaStore their_store) {
@@ -617,7 +618,7 @@ class CollectiveHandler {
 				«FOR vr : vrs»
 					«vr.storeInput»
 				«ENDFOR»
-				return «bes.express»;
+				return «bes.javanise»;
 			} else {
 				return false;
 			}
@@ -627,7 +628,7 @@ class CollectiveHandler {
 	def String checkStoreInput(VariableReference vr) {
 		switch (vr) {
 			VariableReferencePure: ''''''
-			VariableReferenceMy: '''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
+			VariableReferenceMy: '''my_variables.put("«vr.name.name»",«vr.type.classJavanise»);'''
 			VariableReferenceReceiver:
 				"receiver_store."
 			VariableReferenceSender:
@@ -635,7 +636,7 @@ class CollectiveHandler {
 			VariableReferenceGlobal:
 				"global_store."
 			RecordReferencePure: ''''''
-			RecordReferenceMy: '''my_variables.put("«vr.name.name»",«vr.type.storeExpress»);'''
+			RecordReferenceMy: '''my_variables.put("«vr.name.name»",«vr.type.classJavanise»);'''
 			RecordReferenceReceiver:
 				"receiver_store."
 			RecordReferenceSender:
@@ -650,9 +651,9 @@ class CollectiveHandler {
 			VariableReferencePure: {
 				if (vr.getContainerOfType(InputActionParameters) !=
 					null
-				) '''«vr.name.type.express» attrib_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);''' else ''''''
+				) '''«vr.name.type.javanise» attrib_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.classJavanise»);''' else ''''''
 			}
-			VariableReferenceMy: '''«vr.name.type.express» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
+			VariableReferenceMy: '''«vr.name.type.javanise» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.classJavanise»);'''
 			VariableReferenceReceiver:
 				"receiver_store."
 			VariableReferenceSender:
@@ -662,9 +663,9 @@ class CollectiveHandler {
 			RecordReferencePure: {
 				if (vr.getContainerOfType(InputActionParameters) !=
 					null
-				) '''«vr.name.type.express» attrib_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);''' else ''''''
+				) '''«vr.name.type.javanise» attrib_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.classJavanise»);''' else ''''''
 			}
-			RecordReferenceMy: '''«vr.name.type.express» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
+			RecordReferenceMy: '''«vr.name.type.javanise» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.classJavanise»);'''
 			RecordReferenceReceiver:
 				"receiver_store."
 			RecordReferenceSender:
@@ -683,7 +684,7 @@ class CollectiveHandler {
 					return new CarmaStoreUpdate() {
 						@Override
 						public void update(RandomGenerator r, CarmaStore my_store) {
-							if (value instanceof int[]){
+							if (value instanceof double[]){
 								«action.inputUpdateBlock»
 							};
 						};
@@ -731,8 +732,8 @@ class CollectiveHandler {
 					«vrs.get(key).storeInput»
 				«ENDFOR»
 				«FOR updateAssignment : updateAssignments»
-					«updateAssignment.reference.type.express» attrib_«updateAssignment.reference.name.name» = my_store.get("«updateAssignment.reference.name.name»",«updateAssignment.reference.type.storeExpress»);
-					attrib_«updateAssignment.reference.name.name» = «updateAssignment.expression.express»;
+					«updateAssignment.reference.type.javanise» attrib_«updateAssignment.reference.name.name» = my_store.get("«updateAssignment.reference.name.name»",«updateAssignment.reference.type.classJavanise»);
+					attrib_«updateAssignment.reference.name.name» = «updateAssignment.expression.javanise»;
 				«ENDFOR»
 				«FOR updateAssignment : updateAssignments»
 					my_store.set("«updateAssignment.reference.name.name»",attrib_«updateAssignment.reference.name.name»);
@@ -745,7 +746,7 @@ class CollectiveHandler {
 		var ArrayList<VariableName> vns = new ArrayList<VariableName>(parameters.eAllOfType(VariableName))
 		'''
 			«FOR vn : vns»
-				int attrib_«vn.name» = ((int[]) value)[«vns.indexOf(vn)»];
+				double attrib_«vn.name» = ((double[]) value)[«vns.indexOf(vn)»];
 			«ENDFOR»
 		'''
 	}
@@ -790,7 +791,7 @@ class CollectiveHandler {
 				«FOR key : vrs.keySet»
 					«vrs.get(key).storeOutput»
 				«ENDFOR»
-				return «bes.express»;
+				return «bes.javanise»;
 			} else {
 				return false;
 			}

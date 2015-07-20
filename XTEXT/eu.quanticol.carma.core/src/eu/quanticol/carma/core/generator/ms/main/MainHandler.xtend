@@ -32,8 +32,10 @@ class MainHandler {
 		
 			int deadline = 50; 
 			SamplingCollection<CarmaSystem> sc = new SamplingCollection<CarmaSystem>();
-
-			«measureBlock.printMeasures»
+			
+			«(system as BlockSystem).name.name» «(system as BlockSystem).name.name.toFirstLower» = new «(system as BlockSystem).name.name»();
+			
+			«measureBlock.printMeasures(system)»
 			
 			system.setSampling(sc);
 			system.simulate(100,50);
@@ -46,17 +48,17 @@ class MainHandler {
 		'''
 	}
 	
-	def String printMeasures(MeasureBlock measureBlock){
+	def String printMeasures(MeasureBlock measureBlock, System system){
 		'''
 		«IF measureBlock != null»
 		«FOR measure : measureBlock.measures»
-		«measure.printMeasure»
+		«measure.printMeasure(system)»
 		«ENDFOR»
 		«ENDIF»
 		'''
 	}
 	
-	def String printMeasure(Measure measure){
+	def String printMeasure(Measure measure, System system){
 		var products = new ArrayList<ArrayList<String>>()
 		(measure.ranges as MeasureVariableDeclarations).product.cartesianProduct(products)
 		'''
@@ -65,15 +67,15 @@ class MainHandler {
 		«FOR arg : measure.ranges.asArguments(product,measure)»
 		«arg»
 		«ENDFOR»
-		«measure.addSamplingFunction»
+		«measure.addSamplingFunction(system)»
 		«ENDFOR»
 		'''
 	}
 	
 	
 
-	def String addSamplingFunction(Measure measure){
-		'''sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, getMeasure«(Math.abs(measure.measure.hashCode*measure.measure.hashCode)+"").substring(0,3)»("«measure.name.name»",«measure.measure.predicate.disarmOut»)));'''	
+	def String addSamplingFunction(Measure measure, System system){
+		'''sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, «(system as BlockSystem).name.name.toFirstLower».getMeasure«(Math.abs(measure.measure.hashCode*measure.measure.hashCode)+"").substring(0,3)»("«measure.name.name»",«measure.measure.predicate.disarmOut»)));'''	
 	}
 	
 	def String declare(Measure measure){
