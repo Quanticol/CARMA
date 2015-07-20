@@ -95,9 +95,9 @@ class CollectiveJavaniser {
 	def int actionName(Action action){
 		var toReturn = 10 * 13
 		
-		for(var i = 0 ; i < action.name.name.length; i++){
-			toReturn = toReturn + action.name.name.charAt(i) * 13
-		}
+//		for(var i = 0 ; i < action.name.name.length; i++){
+//			toReturn = toReturn + action.name.name.charAt(i) * 13
+//		}
 		
 		return toReturn
 	}
@@ -486,20 +486,20 @@ class CollectiveJavaniser {
 		}
 	}
 	
-	def String express(BaseType bt){
+	def dispatch String express(BaseType bt){
 		if(bt.me.equals("int")){
-			'''int'''
+			'''Integer'''
 		} else {
 			'''«bt.me»'''
 		}
 	}
 
 	
-	def String express(Types types){
+	def dispatch String express(Types types){
 		types.type.express
 	}
 	
-	def String express(Type type){
+	def dispatch String express(Type type){
 		switch(type){
 			DoubleType: "double"
 			IntgerType: "int"
@@ -508,87 +508,87 @@ class CollectiveJavaniser {
 		}
 	}
 
-	def String express(FunctionExpression functionExpression) {
+	def dispatch String express(FunctionExpression functionExpression) {
 		functionExpression.expression.express
 	}
 	
-	def String express(BooleanExpression functionExpression) {
+	def dispatch String express(BooleanExpression functionExpression) {
 		functionExpression.expression.express
 	}
 	
-	def String express(UpdateExpression functionExpression) {
+	def dispatch String express(UpdateExpression functionExpression) {
 		functionExpression.expression.express
 	}
 
-	def String express(Expressions e) {
-		switch (e) {
-			Or: 						{e.express}
-			And:						{e.express}
-			Equality: 					{e.express}
-			Comparison: 				{e.express}
-			Subtraction: 				{e.express}
-			Addition: 					{e.express}
-			Multiplication: 			{e.express}
-			Modulo: 					{e.express}
-			Division: 					{e.express}
-			Not: 						{e.express}
-			AtomicPrimitive: 			{e.express}
-			AtomicVariable: 			{e.express}
-			AtomicCalls: 				{e.express}
-			AtomicNow: 					{e.express}
-			AtomicMeasure: 				{e.express}
-			AtomicRecord: 				{e.express}
-			AtomicOutcome: 				{"//eu.quanticol.carma.core.generator.ms.function.express.AtomicOutcome"}
-			AtomicProcessComposition:	{"//eu.quanticol.carma.core.generator.ms.function.express.AtomicProcessComposition"}
-		}
+//	def dispatch String express(Expressions e) {
+//		switch (e) {
+//			Or: 						{e.express}
+//			And:						{e.express}
+//			Equality: 					{e.express}
+//			Comparison: 				{e.express}
+//			Subtraction: 				{e.express}
+//			Addition: 					{e.express}
+//			Multiplication: 			{e.express}
+//			Modulo: 					{e.express}
+//			Division: 					{e.express}
+//			Not: 						{e.express}
+//			AtomicPrimitive: 			{e.express}
+//			AtomicVariable: 			{e.express}
+//			AtomicCalls: 				{e.express}
+//			AtomicNow: 					{e.express}
+//			AtomicMeasure: 				{e.express}
+//			AtomicRecord: 				{e.express}
+//			AtomicOutcome: 				{"//eu.quanticol.carma.core.generator.ms.function.express.AtomicOutcome"}
+//			AtomicProcessComposition:	{"//eu.quanticol.carma.core.generator.ms.function.express.AtomicProcessComposition"}
+//		}
+//
+//	}
 
-	}
-
-	def String express(Or e) {
+	def dispatch String express(Or e) {
 		'''(«e.left.express» || «e.right.express»)'''
 	}
 
-	def String express(And e) {
+	def dispatch String express(And e) {
 		'''(«e.left.express» && «e.right.express»)'''
 	}
 
-	def String express(Equality e) {
+	def dispatch String express(Equality e) {
 		'''(«e.left.express» «e.op» «e.right.express»)'''
 	}
 
-	def String express(Comparison e) {
+	def dispatch String express(Comparison e) {
 		'''(«e.left.express» «e.op» «e.right.express»)'''
 	}
 
-	def String express(Subtraction e) {
+	def dispatch String express(Subtraction e) {
 		'''(«e.left.express» - «e.right.express»)'''
 	}
 
-	def String express(Addition e) {
+	def dispatch String express(Addition e) {
 		'''(«e.left.express» + «e.right.express»)'''
 	}
 
-	def String express(Multiplication e) {
+	def dispatch String express(Multiplication e) {
 		'''(«e.left.express» * «e.right.express»)'''
 	}
 
-	def String express(Modulo e) {
+	def dispatch String express(Modulo e) {
 		'''(«e.left.express» % «e.right.express»)'''
 	}
 
-	def String express(Division e) {
+	def dispatch String express(Division e) {
 		'''(«e.left.express» / «e.right.express»)'''
 	}
 
-	def String express(Not e) {
+	def dispatch String express(Not e) {
 		'''!(«e.expression.express»)'''
 	}
 
-	def String express(AtomicPrimitive e) {
+	def dispatch String express(AtomicPrimitive e) {
 		e.value.express
 	}
 
-	def String express(PrimitiveTypes pts) {
+	def dispatch String express(PrimitiveTypes pts) {
 		switch (pts) {
 			CarmaDouble: pts.express
 			CarmaInteger: pts.express
@@ -597,7 +597,7 @@ class CollectiveJavaniser {
 		}
 	}
 
-	def String express(CarmaDouble pt) {
+	def dispatch String express(CarmaDouble pt) {
 		var String toReturn = ""
 		if (pt.negative != null)
 			toReturn = toReturn + "-"
@@ -607,59 +607,59 @@ class CollectiveJavaniser {
 		return toReturn
 	}
 
-	def String express(CarmaExponent exp) {
+	def dispatch String express(CarmaExponent exp) {
 		var String negative = ""
 		if (exp.negative != null)
 			negative = "-"
 		''' * «negative» Math.pow(«exp.base»,«exp.exponent»)'''
 	}
 
-	def String express(CarmaInteger pt) {
+	def dispatch String express(CarmaInteger pt) {
 		if (pt.negative != null)
 			return "-" + pt.value
 		else
 			return "" + pt.value
 	}
 
-	def String express(CarmaBoolean pt) {
+	def dispatch String express(CarmaBoolean pt) {
 		'''«pt.value»'''
 	}
 
-	def String express(AtomicVariable expression) {
+	def dispatch String express(AtomicVariable expression) {
 		expression.value.express
 	}
 
-	def String express(VariableReference vr) {
+	def dispatch String express(VariableReference vr) {
 		switch (vr) {
-			VariableReferencePure: 		vr.name.name
-			VariableReferenceMy: 		vr.name.name
-			VariableReferenceReceiver: 	vr.name.name
-			VariableReferenceSender: 	vr.name.name
-			VariableReferenceGlobal: 	vr.name.name
-			RecordReferencePure: 		vr.name.name + "." + vr.feild.name
-			RecordReferenceMy: 			vr.name.name + "." + vr.feild.name
-			RecordReferenceReceiver: 	vr.name.name + "." + vr.feild.name
-			RecordReferenceSender: 		vr.name.name + "." + vr.feild.name
-			RecordReferenceGlobal: 		vr.name.name + "." + vr.feild.name
+			VariableReferencePure: 		'''_ATTR_«vr.name.name»'''
+			VariableReferenceMy: 		'''_MY_«vr.name.name»'''
+			VariableReferenceReceiver: 	'''_RECEIVER_«vr.name.name»'''
+			VariableReferenceSender: 	'''_SENDER_«vr.name.name»'''
+			VariableReferenceGlobal: 	'''_GLOBAL_«vr.name.name»'''
+			RecordReferencePure: 		'''_ATTR_«vr.name.name»''' + "._FIELD_" + vr.feild.name
+			RecordReferenceMy: 			'''_MY_«vr.name.name»''' + "._FIELD_" + vr.feild.name
+			RecordReferenceReceiver: 	'''_RECEIVER_«vr.name.name»''' + "._FIELD_" + vr.feild.name
+			RecordReferenceSender: 		'''_SENDER_«vr.name.name»''' + "._FIELD_" + vr.feild.name
+			RecordReferenceGlobal: 		'''_GLOBAL_«vr.name.name»''' + "._FIELD_" + vr.feild.name
 		}
 	}
 
-	def String express(AtomicCalls expression) {
+	def dispatch String express(AtomicCalls expression) {
 		expression.value.express
 	}
 
-	def String express(Calls calls) {
+	def dispatch String express(Calls calls) {
 		switch (calls) {
 			FunctionReferenceMan: calls.ref.express
 			FunctionReferencePre: calls.ref.express
 		}
 	}
 
-	def String express(FunctionCall functionCall) {
+	def dispatch String express(FunctionCall functionCall) {
 		'''«(functionCall.name as Name).name.toFirstLower»(«(functionCall.arguments as FunctionCallArguments).express»)'''
 	}
 	
-	def String express(FunctionCallArguments arguments){
+	def dispatch String express(FunctionCallArguments arguments){
 			var ArrayList<FunctionArgument> args = new ArrayList<FunctionArgument>(arguments.eAllOfType(FunctionArgument))
 			var toReturn = ""
 			if(args.size > 0){
@@ -671,11 +671,11 @@ class CollectiveJavaniser {
 			return toReturn
 	}
 	
-	def String express(FunctionArgument argument){
+	def dispatch String express(FunctionArgument argument){
 		argument.value.express
 	}
 	
-	def String express(PreFunctionCall preFunctionCall) {
+	def dispatch String express(PreFunctionCall preFunctionCall) {
 		switch (preFunctionCall) {
 			PDFunction:			{'''pdf(«(preFunctionCall.arguments as PredFunctionCallArguments).express»)'''}
 			UniformFunction:	{'''uniform(«(preFunctionCall.arguments as PredFunctionCallArguments).express»)'''}
@@ -686,7 +686,7 @@ class CollectiveJavaniser {
 		}
 	}
 	
-	def String express(PredFunctionCallArguments arguments){
+	def dispatch String express(PredFunctionCallArguments arguments){
 			var ArrayList<PreArgument> args = new ArrayList<PreArgument>(arguments.eAllOfType(PreArgument))
 			var toReturn = '''new ArrayList<Object>(Arrays.asList('''
 			if(args.size > 0){
@@ -698,24 +698,24 @@ class CollectiveJavaniser {
 			return toReturn + "))"
 	}
 	
-	def String express(PreArgument argument){
+	def dispatch String express(PreArgument argument){
 		argument.value.express
 	}
 	
-	def String express(AtomicNow expression){
+	def dispatch String express(AtomicNow expression){
 		'''now()'''
 	}
 	
-	def String express(AtomicMeasure expression){
+	def dispatch String express(AtomicMeasure expression){
 		'''«expression.value.expressMeasure(true)»'''
 	}
 	
-	def String express(AtomicRecord expression){
+	def dispatch String express(AtomicRecord expression){
 		var instance = (expression.value as InstantiateRecord)
 		'''new «(instance.type as Type).express» ( «(instance.arguments as RecordArguments).express» )'''
 	}
 	
-	def String express(RecordArguments arguments){
+	def dispatch String express(RecordArguments arguments){
 			var ArrayList<RecordArgument> args = new ArrayList<RecordArgument>(arguments.eAllOfType(RecordArgument))
 			var toReturn = ""
 			if(args.size > 0){
@@ -727,7 +727,7 @@ class CollectiveJavaniser {
 			return toReturn
 	}
 	
-	def String express(RecordArgument argument){
+	def dispatch String express(RecordArgument argument){
 		argument.value.express
 	}
 

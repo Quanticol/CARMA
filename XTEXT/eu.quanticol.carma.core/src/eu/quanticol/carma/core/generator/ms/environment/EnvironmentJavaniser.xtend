@@ -102,10 +102,10 @@ class EnvironmentJavaniser {
 	def int actionName(Action action){
 		var toReturn = 10 * 13
 		
-		for(var i = 0 ; i < action.name.name.length; i++){
-			toReturn = toReturn + action.name.name.charAt(i) * 13
-		}
-		
+//		for(var i = 0 ; i < action.name.name.length; i++){
+//			toReturn = toReturn + action.name.name.charAt(i) * 13
+//		}
+//		
 		return toReturn
 	}
 	

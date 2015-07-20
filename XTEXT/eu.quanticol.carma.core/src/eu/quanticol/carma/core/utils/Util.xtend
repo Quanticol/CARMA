@@ -2,7 +2,6 @@ package eu.quanticol.carma.core.utils
 
 import com.google.inject.Inject
 import eu.quanticol.carma.core.carma.Name
-import eu.quanticol.carma.core.carma.Component
 import eu.quanticol.carma.core.carma.Process
 import java.util.HashSet
 import static extension org.eclipse.xtext.EcoreUtil2.*
@@ -25,7 +24,7 @@ class Util {
 	
 	def ArrayList<Process> getInitialState(CBND cbnd){
 		
-		var definition = cbnd.name.getContainerOfType(Component) as ComponentBlockDefinition
+		var definition = cbnd.name.getContainerOfType(ComponentBlockDefinition)
 		var ProcessParameter processParameter = null 
 		if(definition.componentSignature.componentParameters.eAllOfType(ProcessParameter).size > 0)
 			processParameter = definition.componentSignature.componentParameters.eAllOfType(ProcessParameter).get(0)
@@ -67,23 +66,6 @@ class Util {
 			ProcessReference	: {array.add(processComposition.expression.getContainerOfType(Process))}
 		}
 	}
-	
-	def Tree getTree(CBND cbnd){
-		
-		var HashSet<Process> processes = new HashSet<Process>()
-		var Tree tree = null;
-		
-		processes.addAll(cbnd.initialState)
-		
-		for(p : processes)
-				processes.addAll(p.allReferences)
-				
-		if(processes.size > 0){
-			tree = new Tree(processes);
-		}
-		
-		return tree
-	}	
 	
 	/**
 	 * Return a List of all Processes associated with the given one. 

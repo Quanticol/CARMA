@@ -48,4 +48,24 @@ public interface CarmaPredicate {
 		}
 		
 	}
+	
+	public static class Conjunction implements CarmaPredicate {
+
+		private CarmaPredicate[] predicates;
+
+		public Conjunction( CarmaPredicate ... predicates ) {
+			this.predicates = predicates;
+		}
+		
+		@Override
+		public boolean satisfy(CarmaStore store) {
+			for (CarmaPredicate carmaPredicate : predicates) {
+				if (!carmaPredicate.satisfy(store)) {
+					return false;
+				}
+			}
+			return true;
+		}
+		
+	}
 }

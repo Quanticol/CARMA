@@ -16,12 +16,11 @@ import eu.quanticol.carma.core.carma.ComponentBlockNew
 import eu.quanticol.carma.core.carma.ComponentForVariableDeclaration
 import eu.quanticol.carma.core.carma.Declaration
 import eu.quanticol.carma.core.carma.GlobalStoreBlock
-import eu.quanticol.carma.core.carma.InputActionParameters
-import eu.quanticol.carma.core.carma.OutputActionArguments
 import eu.quanticol.carma.core.carma.Parameter
 import eu.quanticol.carma.core.carma.ProcessComposition
 import eu.quanticol.carma.core.carma.ProcessParameter
 import eu.quanticol.carma.core.carma.Processes
+import eu.quanticol.carma.core.carma.Process
 import eu.quanticol.carma.core.carma.RecordReferenceGlobal
 import eu.quanticol.carma.core.carma.RecordReferenceMy
 import eu.quanticol.carma.core.carma.RecordReferencePure
@@ -37,7 +36,6 @@ import eu.quanticol.carma.core.carma.VariableReferenceReceiver
 import eu.quanticol.carma.core.carma.VariableReferenceSender
 import eu.quanticol.carma.core.generator.ms.MSSystemCompiler
 import eu.quanticol.carma.core.typing.TypeProvider
-import eu.quanticol.carma.core.utils.Tree
 import eu.quanticol.carma.core.utils.Util
 import java.util.ArrayList
 import java.util.HashMap
@@ -46,6 +44,19 @@ import java.util.HashSet
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import eu.quanticol.carma.core.carma.UpdateAssignment
 import eu.quanticol.carma.core.carma.OutputActionArgument
+import org.eclipse.emf.common.util.EList
+import eu.quanticol.carma.core.services.CARMAGrammarAccess.ProcessExpressionActionElements
+import eu.quanticol.carma.core.carma.ProcessExpression
+import eu.quanticol.carma.core.carma.ProcessExpressionAction
+import eu.quanticol.carma.core.carma.ProcessExpressionGuard
+import eu.quanticol.carma.core.carma.Guard
+import java.util.LinkedList
+import java.util.List
+import eu.quanticol.carma.core.carma.ProcessExpressionChoice
+import eu.quanticol.carma.core.carma.ProcessExpressionNext
+import eu.quanticol.carma.core.carma.ProcessExpressionNil
+import eu.quanticol.carma.core.carma.ProcessExpressionKill
+import eu.quanticol.carma.core.carma.ProcessExpressionReference
 
 class CollectiveHandler {
 
@@ -168,55 +179,104 @@ class CollectiveHandler {
 		'''
 	}
 
-	def String createProcesses(BlockStyle blockStyle) {
-		var Processes processes = blockStyle.processes
-		var cbnds = blockStyle.eAllOfType(CBND)
-		var HashSet<String> toReturn = new HashSet<String>()
-		for (cbnd : cbnds)
-			toReturn.add(cbnd.createProcess(processes))
-		'''
-			«FOR item : toReturn»
-				«item»
-			«ENDFOR»
-		'''
-	}
+//	def String createProcesses(BlockStyle blockStyle) {
+//		var Processes processes = blockStyle.processes
+//		var cbnds = blockStyle.eAllOfType(CBND)
+//		var HashSet<String> toReturn = new HashSet<String>()
+//		for (cbnd : cbnds)
+//			toReturn.add(cbnd.createProcess(processes))
+//		'''
+//			«FOR item : toReturn»
+//				«item»
+//			«ENDFOR»
+//		'''
+//	}
 
-	def String createProcess(CBND declaration, Processes processes) {
-		var String componentName = declaration.name.name
-		var Tree tree = declaration.getTree
+	def String createProcess(EList<Process> processes,String name) {
 		'''
-			private static CarmaProcessAutomaton create«componentName»Process() {
-				CarmaProcessAutomaton toReturn = new CarmaProcessAutomaton("«componentName»");
-				«tree.createStates»
-				«tree.createActions»
-				«tree.createGuards»
-				«tree.createTransitions»
+			private static CarmaProcessAutomaton create«name»Process() {
+				CarmaProcessAutomaton toReturn = new CarmaProcessAutomaton("«name»");
+				«FOR p: processes»
+				CarmaProcessAutomaton.State _STATE_«p.name.name» = toReturn.newState("«p.name.name»");
+				«ENDFOR»
+				«FOR p: processes»
+				«FOR t: p.processExpression.normaliseProcessExpression»
+				{
+					«IF !t.key.empty»
+					CarmaPredicate guard = new CarmaPredicate.Conjunction(
+					«FOR g:t.key SEPARATOR ','»
+						new CarmaPredicate() {
+							@Override
+							public boolean satisfy(CarmaStore store) {
+							«g.booleanExpression.getGuardSatisfyBlock»;
+						}
+						}
+						);
+					«ENDFOR»
+					«ENDIF»
+					CarmaAction action = «t.value.action»	;
+					toReturn.addTransition(_STATE_«p.name.name»«IF !t.key.empty»,guard«ENDIF»,action,«t.value.next»);
+				}
+				«ENDFOR»
+				«ENDFOR»
 				return toReturn;
 			}
 		'''
 	}
+	
+	def createProcessExpressionNextCode( ProcessExpressionNext e ) {
+		switch e {
+			ProcessExpressionNil: '''null'''
+			ProcessExpressionKill: '''null''' //TODO: FIXME!!!
+			ProcessExpressionReference: '''_STATE_«e.expression.name»'''
+		}
+	}
+	
+	def Iterable<Pair<LinkedList<Guard>,ProcessExpressionAction>> normaliseProcessExpression(  ProcessExpression e ) {
 
-	def String createStates(Tree tree) {
-		var HashSet<String> states = new HashSet<String>();
-		tree.getStates(states)
-		'''
-			«FOR state : states»
-				«IF !state.equals("null")»
-					CarmaProcessAutomaton.State «state» = toReturn.newState("«state»");
-				«ENDIF»
-			«ENDFOR»
-		'''
+		switch e {
+			ProcessExpressionAction: newLinkedList( newLinkedList( ) -> e )
+			ProcessExpressionGuard: e.expression.normaliseProcessExpression.map[ p | p.key.addFirst(e.guard) p.key -> p.value ]
+			ProcessExpressionChoice: e.left.normaliseProcessExpression + e.right.normaliseProcessExpression
+		}
 	}
 
-	def String createActions(Tree tree) {
-		var HashMap<String, Action> actions = new HashMap<String, Action>()
-		tree.getActions(actions)
-		'''
-			«FOR key : actions.keySet»
-				«key.getAction(actions.get(key))»
-			«ENDFOR»
-		'''
-	}
+//	def String createProcess(CBND declaration, Processes processes) {
+//		var String componentName = declaration.name.name
+//		var Tree tree = declaration.getTree
+//		'''
+//			private static CarmaProcessAutomaton create«componentName»Process() {
+//				CarmaProcessAutomaton toReturn = new CarmaProcessAutomaton("«componentName»");
+//				«tree.createStates»
+//				«tree.createActions»
+//				«tree.createGuards»
+//				«tree.createTransitions»
+//				return toReturn;
+//			}
+//		'''
+//	}
+//
+//	def String createStates(Tree tree) {
+//		var HashSet<String> states = new HashSet<String>();
+//		tree.getStates(states)
+//		'''
+//			«FOR state : states»
+//				«IF !state.equals("null")»
+//					CarmaProcessAutomaton.State «state» = toReturn.newState("«state»");
+//				«ENDIF»
+//			«ENDFOR»
+//		'''
+//	}
+//
+//	def String createActions(Tree tree) {
+//		var HashMap<String, Action> actions = new HashMap<String, Action>()
+//		tree.getActions(actions)
+//		'''
+//			«FOR key : actions.keySet»
+//				«key.getAction(actions.get(key))»
+//			«ENDFOR»
+//		'''
+//	}
 
 	def String getAction(String name, Action action) {
 		'''
@@ -440,51 +500,52 @@ class CollectiveHandler {
 	}
 
 	def String getValues(Action action) {
-		if (action.eAllOfType(OutputActionArguments).size > 0) {
-			'''
-				@Override
-				protected Object getValue(CarmaStore my_store) {
-					«action.eAllOfType(OutputActionArguments).get(0).defineValueBlock»
-				}
-			'''
-		} else {
-			'''
-				@Override
-				protected Object getValue(CarmaStore my_store) {
-					return new Object();
-				}
-			'''
-		}
+		''''''
+//		if (action.eAllOfType(OutputActionArguments).size > 0) {
+//			'''
+//				@Override
+//				protected Object getValue(CarmaStore my_store) {
+//					«action.eAllOfType(OutputActionArguments).get(0).defineValueBlock»
+//				}
+//			'''
+//		} else {
+//			'''
+//				@Override
+//				protected Object getValue(CarmaStore my_store) {
+//					return new Object();
+//				}
+//			'''
+//		}
 	}
 
-	def String defineValueBlock(OutputActionArguments arguments) {
-		var ArrayList<OutputActionArgument> args = new ArrayList<OutputActionArgument>(
-			arguments.eAllOfType(OutputActionArgument))
-		var count = 0
-		'''
-			int[] output = new int[«args.size»];
-			HashMap<String,Class> my_variables = new HashMap<String,Class>();
-			«FOR arg : args»
-				«arg.checkStoreOutput»
-			«ENDFOR»
-			boolean hasAttributes = true;
-			if(my_variables != null)
-				for(String key : my_variables.keySet()){
-					hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
-				}
-			if(hasAttributes){
-				«FOR arg : args»
-					«arg.storeOutput»
-				«ENDFOR»
-				«FOR arg : args»
-					output[«count++»] = «arg.javanise»;
-				«ENDFOR»
-				return output;
-			} else {
-				return new Object();
-			}
-		'''
-	}
+//	def String defineValueBlock(OutputActionArguments arguments) {
+//		var ArrayList<OutputActionArgument> args = new ArrayList<OutputActionArgument>(
+//			arguments.eAllOfType(OutputActionArgument))
+//		var count = 0
+//		'''
+//			int[] output = new int[«args.size»];
+//			HashMap<String,Class> my_variables = new HashMap<String,Class>();
+//			«FOR arg : args»
+//				«arg.checkStoreOutput»
+//			«ENDFOR»
+//			boolean hasAttributes = true;
+//			if(my_variables != null)
+//				for(String key : my_variables.keySet()){
+//					hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
+//				}
+//			if(hasAttributes){
+//				«FOR arg : args»
+//					«arg.storeOutput»
+//				«ENDFOR»
+//				«FOR arg : args»
+//					output[«count++»] = «arg.javanise»;
+//				«ENDFOR»
+//				return output;
+//			} else {
+//				return new Object();
+//			}
+//		'''
+//	}
 
 	def String checkStoreOutput(OutputActionArgument oaa) {
 		switch (oaa.value) {
@@ -544,28 +605,29 @@ class CollectiveHandler {
 	}
 
 	def String getInputSatisfyBlock(Action action) {
-		var BooleanExpression bes = action.eAllOfType(ActionGuard).get(0).booleanExpression
-		var vrs = bes.eAllOfType(VariableReference)
-		'''
-			HashMap<String,Class> my_variables = new HashMap<String,Class>();
-			«FOR vr : vrs»
-				«vr.checkStoreInput»
-			«ENDFOR»
-			«setupInputArguments(action.eAllOfType(InputActionParameters).get(0))»
-			boolean hasAttributes = true;
-			if(my_variables != null)
-				for(String key : my_variables.keySet()){
-					hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
-				}
-			if(hasAttributes){
-				«FOR vr : vrs»
-					«vr.storeInput»
-				«ENDFOR»
-				return «bes.express»;
-			} else {
-				return false;
-			}
-		'''
+		''''''
+//		var BooleanExpression bes = action.eAllOfType(ActionGuard).get(0).booleanExpression
+//		var vrs = bes.eAllOfType(VariableReference)
+//		'''
+//			HashMap<String,Class> my_variables = new HashMap<String,Class>();
+//			«FOR vr : vrs»
+//				«vr.checkStoreInput»
+//			«ENDFOR»
+//			«setupInputArguments(action.eAllOfType(InputActionParameters).get(0))»
+//			boolean hasAttributes = true;
+//			if(my_variables != null)
+//				for(String key : my_variables.keySet()){
+//					hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
+//				}
+//			if(hasAttributes){
+//				«FOR vr : vrs»
+//					«vr.storeInput»
+//				«ENDFOR»
+//				return «bes.express»;
+//			} else {
+//				return false;
+//			}
+//		'''
 	}
 
 	def String checkStoreInput(VariableReference vr) {
@@ -590,32 +652,33 @@ class CollectiveHandler {
 	}
 
 	def String getStoreInput(VariableReference vr) {
-		switch (vr) {
-			VariableReferencePure: {
-				if (vr.getContainerOfType(InputActionParameters) !=
-					null
-				) '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);''' else ''''''
-			}
-			VariableReferenceMy: '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
-			VariableReferenceReceiver:
-				"receiver_store."
-			VariableReferenceSender:
-				"sender_store."
-			VariableReferenceGlobal:
-				"global_store."
-			RecordReferencePure: {
-				if (vr.getContainerOfType(InputActionParameters) !=
-					null
-				) '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);''' else ''''''
-			}
-			RecordReferenceMy: '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
-			RecordReferenceReceiver:
-				"receiver_store."
-			RecordReferenceSender:
-				"sender_store."
-			RecordReferenceGlobal:
-				"global_store."
-		}
+		''''''
+//		switch (vr) {
+//			VariableReferencePure: {
+//				if (vr.getContainerOfType(InputActionParameters) !=
+//					null
+//				) '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);''' else ''''''
+//			}
+//			VariableReferenceMy: '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
+//			VariableReferenceReceiver:
+//				"receiver_store."
+//			VariableReferenceSender:
+//				"sender_store."
+//			VariableReferenceGlobal:
+//				"global_store."
+//			RecordReferencePure: {
+//				if (vr.getContainerOfType(InputActionParameters) !=
+//					null
+//				) '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);''' else ''''''
+//			}
+//			RecordReferenceMy: '''«vr.name.type.express» «vr.name.name» = my_store.get("«vr.name.name»",«vr.type.storeExpress»);'''
+//			RecordReferenceReceiver:
+//				"receiver_store."
+//			RecordReferenceSender:
+//				"sender_store."
+//			RecordReferenceGlobal:
+//				"global_store."
+//		}
 	}
 
 	def String getInputUpdate(Action action) {
@@ -653,99 +716,60 @@ class CollectiveHandler {
 	}
 
 	def String inputUpdateBlock(Action action) {
-		var update = action.eAllOfType(Update).get(0)
-		var updateAssignments = update.eAllOfType(UpdateAssignment)
-		var vrs = new HashMap<String, VariableReference>()
-		for (updateAssignment : updateAssignments)
-			for (vr : updateAssignment.eAllOfType(VariableReference))
-				vrs.put(vr.name.name, vr)
-		'''
-			HashMap<String,Class> my_variables = new HashMap<String,Class>();
-			«FOR key : vrs.keySet»
-				«vrs.get(key).checkStoreInput»
-			«ENDFOR»
-			«setupInputArguments(action.eAllOfType(InputActionParameters).get(0))»
-			boolean hasAttributes = true;
-			if(my_variables != null)
-				for(String key : my_variables.keySet()){
-					hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
-				}
-			if(hasAttributes){
-				«FOR key : vrs.keySet»
-					«vrs.get(key).storeInput»
-				«ENDFOR»
-				«FOR updateAssignment : updateAssignments»
-					«updateAssignment.reference.type.express» «updateAssignment.reference.name.name» = my_store.get("«updateAssignment.reference.name.name»",«updateAssignment.reference.type.storeExpress»);
-					«updateAssignment.reference.name.name» = «updateAssignment.expression.express»;
-				«ENDFOR»
-				«FOR updateAssignment : updateAssignments»
-					my_store.set("«updateAssignment.reference.name.name»",«updateAssignment.reference.name.name»);
-				«ENDFOR»
-			}
-		'''
+		''''''
+//		var update = action.eAllOfType(Update).get(0)
+//		var updateAssignments = update.eAllOfType(UpdateAssignment)
+//		var vrs = new HashMap<String, VariableReference>()
+//		for (updateAssignment : updateAssignments)
+//			for (vr : updateAssignment.eAllOfType(VariableReference))
+//				vrs.put(vr.name.name, vr)
+//		'''
+//			HashMap<String,Class> my_variables = new HashMap<String,Class>();
+//			«FOR key : vrs.keySet»
+//				«vrs.get(key).checkStoreInput»
+//			«ENDFOR»
+//			«setupInputArguments(action.eAllOfType(InputActionParameters).get(0))»
+//			boolean hasAttributes = true;
+//			if(my_variables != null)
+//				for(String key : my_variables.keySet()){
+//					hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
+//				}
+//			if(hasAttributes){
+//				«FOR key : vrs.keySet»
+//					«vrs.get(key).storeInput»
+//				«ENDFOR»
+//				«FOR updateAssignment : updateAssignments»
+//					«updateAssignment.reference.type.express» «updateAssignment.reference.name.name» = my_store.get("«updateAssignment.reference.name.name»",«updateAssignment.reference.type.storeExpress»);
+//					«updateAssignment.reference.name.name» = «updateAssignment.expression.express»;
+//				«ENDFOR»
+//				«FOR updateAssignment : updateAssignments»
+//					my_store.set("«updateAssignment.reference.name.name»",«updateAssignment.reference.name.name»);
+//				«ENDFOR»
+//			}
+//		'''
 	}
 
-	def String setupInputArguments(InputActionParameters parameters) {
-		var ArrayList<VariableName> vns = new ArrayList<VariableName>(parameters.eAllOfType(VariableName))
-		'''
-			«FOR vn : vns»
-				int «vn.name» = ((int[]) value)[«vns.indexOf(vn)»];
-			«ENDFOR»
-		'''
-	}
-
-	def String createGuards(Tree tree) {
-		var HashMap<String, BooleanExpression> guardExpressions = new HashMap<String, BooleanExpression>();
-		tree.getGuards(guardExpressions);
-		'''
-			«FOR key : guardExpressions.keySet»
-				«key.getGuardPredicate(guardExpressions.get(key))»
-			«ENDFOR»
-		'''
-	}
-
-	def String getGuardPredicate(String name, BooleanExpression bes) {
-		'''
-			CarmaPredicate «name» = new CarmaPredicate() {
-				@Override
-				public boolean satisfy(CarmaStore store) {
-					«bes.getGuardSatisfyBlock»
-				}
-			};
-		'''
-	}
+//	def String setupInputArguments(InputActionParameters parameters) {
+//		var ArrayList<VariableName> vns = new ArrayList<VariableName>(parameters.eAllOfType(VariableName))
+//		'''
+//			«FOR vn : vns»
+//				int «vn.name» = ((int[]) value)[«vns.indexOf(vn)»];
+//			«ENDFOR»
+//		'''
+//	}
 
 	def String getGuardSatisfyBlock(BooleanExpression bes) {
 		var vrs = bes.eAllOfType(VariableReference)
-		'''
-			HashMap<String,Class> variables = new HashMap<String,Class>();
-			«FOR vr : vrs»
-				variables.put("«vr.name.name»",«vr.type.storeExpress»);
-			«ENDFOR»
-			boolean hasAttributes = true;
-			if(variables != null)
-				for(String key : variables.keySet()){
-					hasAttributes = store.has(key,variables.get(key)) && hasAttributes;
-				}
-			if(hasAttributes){
-				«FOR vr : vrs»
-					«vr.name.type.express» «vr.name.name» = store.get("«vr.name.name»",«vr.name.type.storeExpress»);
-				«ENDFOR»
-				return «bes.express»;
-			} else {
-				return false;
-			}
+		'''			
+		«FOR vr : vrs»
+		«vr.name.type.express» «vr.express» = store.get("«vr.name.name»",«vr.name.type.storeExpress»);
+		if («vr.express» == null) {
+			return false;
+		}
+		«ENDFOR»
+		return «bes.express»;
 		'''
 	}
 
-	def String createTransitions(Tree tree) {
-		var ArrayList<String> transitions = new ArrayList<String>()
-		tree.getTransitions(transitions)
-		'''
-			«FOR transition : transitions»
-				«transition»
-			«ENDFOR»
-		'''
-	}
 
 }

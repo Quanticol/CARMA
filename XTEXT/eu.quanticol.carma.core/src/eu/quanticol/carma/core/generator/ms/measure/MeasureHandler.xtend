@@ -229,11 +229,12 @@ class MeasureHandler {
 	
 	def ArrayList<String> allStates(ComponentBlockDefinition component){
 		var output = new ArrayList<String>()
-		var HashSet<String> states = new HashSet<String>()
-		var tree = component.getCBND.getTree
-		tree.getStates(states)
-		for(state : states)
-			output.add(state)
+		//FIXME!!!
+//		var HashSet<String> states = new HashSet<String>()
+//		var tree = component.getCBND.getTree
+//		tree.getStates(states)
+//		for(state : states)
+//			output.add(state)
 		return output
 	}
 	

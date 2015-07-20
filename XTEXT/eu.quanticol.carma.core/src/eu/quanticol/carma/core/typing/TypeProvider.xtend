@@ -68,8 +68,6 @@ import java.util.HashMap
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import eu.quanticol.carma.core.carma.AtomicCalls
 import eu.quanticol.carma.core.carma.Action
-import eu.quanticol.carma.core.carma.SpontaneousAction
-import eu.quanticol.carma.core.carma.MultiCast
 import eu.quanticol.carma.core.carma.OutputAction
 
 class BaseType {
@@ -423,19 +421,20 @@ class TypeProvider {
 	}
 	
 	def BaseType getType(Action action){
-		if(action.eAllOfType(SpontaneousAction).size > 0){
-			return spontType
-		}else if(action.eAllOfType(MultiCast).size > 0 && !(action.eAllOfType(SpontaneousAction).size > 0)){
-			if(action.eAllOfType(OutputAction).size > 0)
-				return broadOutType
-			else
-				return broadInType
-		} else {
-			if(action.eAllOfType(OutputAction).size > 0)
-				return uniOutType
-			else
-				return uniInType
-		}
+//		if(action.eAllOfType(SpontaneousAction).size > 0){
+//			return spontType
+//		}else if(action.eAllOfType(MultiCast).size > 0 && !(action.eAllOfType(SpontaneousAction).size > 0)){
+//			if(action.eAllOfType(OutputAction).size > 0)
+//				return broadOutType
+//			else
+//				return broadInType
+//		} else {
+//			if(action.eAllOfType(OutputAction).size > 0)
+//				return uniOutType
+//			else
+//				return uniInType
+//		}
+		null
 	}
 
 }

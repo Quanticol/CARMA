@@ -21,13 +21,13 @@ class CARMAGenerator implements IGenerator {
 		/**
 		 * I imagine here would be some sort of switch, for now we just use the "ms" - michele loreti simulator
 		 */
-		var files = resource.extractJava
-		
-		
-		if(files != null)
-			for(key : files.keySet){
-					fsa.generateFile(key,files.get(key))
-			}
+//		var files = resource.extractJava
+//		
+//		
+//		if(files != null)
+//			for(key : files.keySet){
+//					fsa.generateFile(key,files.get(key))
+//			}
 	}
 	
 }

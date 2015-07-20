@@ -1,7 +1,6 @@
 package eu.quanticol.carma.core.generator.ms
 
 import com.google.inject.Inject
-import eu.quanticol.carma.core.carma.BlockStyle
 import eu.quanticol.carma.core.carma.BlockSystem
 import eu.quanticol.carma.core.carma.Model
 import eu.quanticol.carma.core.carma.SetComp
@@ -57,7 +56,13 @@ class MSSystemCompiler {
 				«(system as BlockSystem).collective.constructor(null)»
 				«ENDIF»
 				«(model.components as BlockStyle).components»
-				«(model.components as BlockStyle).createProcesses»
+				
+				«(model.components as BlockStyle).processes.processes.createProcess("Global")»
+				
+				«FOR c:(model.components as BlockStyle).definitions»
+				«c.componentBlock.processes.processes.createProcess(c.componentSignature.name.name)»
+				«ENDFOR»
+				
 				«new ArrayList<SetComp>(model.eAllOfType(SetComp)).getMeasures»
 				«system.getEnvironment(model)»
 				«model.getMain(system)»
