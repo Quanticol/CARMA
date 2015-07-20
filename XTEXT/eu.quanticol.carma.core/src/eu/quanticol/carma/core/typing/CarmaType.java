@@ -1,7 +1,7 @@
 /**
  * 
  */
-package eu.quanticol.carma.core.utils;
+package eu.quanticol.carma.core.typing;
 
 /**
  * @author loreti

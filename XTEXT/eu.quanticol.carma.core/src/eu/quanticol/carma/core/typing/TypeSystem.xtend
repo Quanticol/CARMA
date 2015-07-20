@@ -1,4 +1,4 @@
-package eu.quanticol.carma.core.utils
+package eu.quanticol.carma.core.typing
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
 
@@ -77,75 +77,75 @@ import eu.quanticol.carma.core.carma.IfThenElseExpression
 
 class TypeSystem {
 	
-	def dispatch CarmaType typeOf( Or e ) {
+	def static dispatch CarmaType typeOf( Or e ) {
 		return CarmaType::BOOLEAN_TYPE
 	}		
 	
-	def dispatch CarmaType typeOf( And e ) {
+	def static dispatch CarmaType typeOf( And e ) {
 		return CarmaType::BOOLEAN_TYPE
 	}
 
-	def dispatch CarmaType typeOf( Equality e ) {
+	def static dispatch CarmaType typeOf( Equality e ) {
 		return CarmaType::BOOLEAN_TYPE
 	}
 
-	def dispatch CarmaType typeOf( DisEquality e ) {
+	def static dispatch CarmaType typeOf( DisEquality e ) {
 		return CarmaType::BOOLEAN_TYPE
 	}
 
-	def dispatch CarmaType typeOf( Less e ) {
-		return CarmaType::BOOLEAN_TYPE
-	}
-	
-	def dispatch CarmaType typeOf( LessOrEqual e ) {
+	def static dispatch CarmaType typeOf( Less e ) {
 		return CarmaType::BOOLEAN_TYPE
 	}
 	
-	def dispatch CarmaType typeOf( GreaterOrEqual e ) {
+	def static dispatch CarmaType typeOf( LessOrEqual e ) {
+		return CarmaType::BOOLEAN_TYPE
+	}
+	
+	def static dispatch CarmaType typeOf( GreaterOrEqual e ) {
 		return CarmaType::BOOLEAN_TYPE
 	}
 
-	def dispatch CarmaType typeOf( Greater e ) {
+	def static dispatch CarmaType typeOf( Greater e ) {
 		return CarmaType::BOOLEAN_TYPE
 	}
 
-	def dispatch CarmaType typeOf( Subtraction e ) {
+	def static dispatch CarmaType typeOf( Subtraction e ) {
 		return e.left.typeOf.mostGeneral( e.right.typeOf )
 	}
 
-	def dispatch CarmaType typeOf( Addition e ) {
+	def static dispatch CarmaType typeOf( Addition e ) {
 		return e.left.typeOf.mostGeneral( e.right.typeOf )
 	}
 
-	def dispatch CarmaType typeOf( Multiplication e ) {
+	def static dispatch CarmaType typeOf( Multiplication e ) {
 		return e.left.typeOf.mostGeneral( e.right.typeOf )
 	}
 
-	def dispatch CarmaType typeOf( Division e ) {
+	def static dispatch CarmaType typeOf( Division e ) {
 		return e.left.typeOf.mostGeneral( e.right.typeOf )
 	}
 
-	def dispatch CarmaType typeOf( Modulo e ) {
+	def static dispatch CarmaType typeOf( Modulo e ) {
 		return CarmaType::INTEGER_TYPE
 	}
 
-	def dispatch CarmaType typeOf( Not e ) {
+	def static dispatch CarmaType typeOf( Not e ) {
 		return CarmaType::BOOLEAN_TYPE
 	}
 
-	def dispatch CarmaType typeOf( UnaryPlus e ) {
+	def static dispatch CarmaType typeOf( UnaryPlus e ) {
 		return CarmaType::BOOLEAN_TYPE
 	}
 	
-	def dispatch CarmaType typeOf( UnaryMinus e ) {
+	def static dispatch CarmaType typeOf( UnaryMinus e ) {
 		return CarmaType::BOOLEAN_TYPE
 	}
 	
-	def dispatch CarmaType typeOf( IfThenElseExpression e ) {
+	def static dispatch CarmaType typeOf( IfThenElseExpression e ) {
 		return e.thenBranch.typeOf.mostGeneral( e.elseBranch.typeOf )
 	}
 	
-	def dispatch CarmaType typeOf( VariableReference e ) {
+	def static dispatch CarmaType typeOf( VariableReference e ) {
 		var ref = e.reference
 		switch ref {
 			IntegerParameter: CarmaType::INTEGER_TYPE 
@@ -153,7 +153,7 @@ class TypeSystem {
 			BooleanParameter: CarmaType::BOOLEAN_TYPE 
 			ProcessParameter: CarmaType::PROCESS_TYPE
 			CustomParameter: ref.reference.toCarmaType
-			AttributeDeclaration: ref.attributeType
+			AttributeDeclaration: ref.value.typeOf
 			FunctionDefinition: ref.type.toCarmaType
 			EnumCase: {
 				var c = ref.getContainerOfType(typeof(EnumDefinition))
@@ -167,147 +167,147 @@ class TypeSystem {
 		}
 	}
 	
-	def dispatch CarmaType typeOf( RecordAccess e ) {
+	def static dispatch CarmaType typeOf( RecordAccess e ) {
 		e.field.fieldType.toCarmaType
 	}
 	
-	def dispatch CarmaType typeOf( Call e ) {
+	def static dispatch CarmaType typeOf( Call e ) {
 		e.source.typeOf
 	}
 
-	def dispatch CarmaType typeOf( AtomicTrue e ) {
+	def static dispatch CarmaType typeOf( AtomicTrue e ) {
 		CarmaType::BOOLEAN_TYPE
 	}
 
-	def dispatch CarmaType typeOf( AtomicFalse e ) {
+	def static dispatch CarmaType typeOf( AtomicFalse e ) {
 		CarmaType::BOOLEAN_TYPE
 	}
 	
-	def dispatch CarmaType typeOf( AtomicInteger e ) {
+	def static dispatch CarmaType typeOf( AtomicInteger e ) {
 		CarmaType::INTEGER_TYPE
 	}
 	
-	def dispatch CarmaType typeOf( AtomicReal e ) {
+	def static dispatch CarmaType typeOf( AtomicReal e ) {
 		CarmaType::REAL_TYPE
 	}
 
-	def dispatch CarmaType typeOf( AtomicRecord e ) {
+	def static dispatch CarmaType typeOf( AtomicRecord e ) {
 		e.fields.head.field.recordType
 	}
 	
-	def dispatch CarmaType typeOf( AtomicNow e ) {
+	def static dispatch CarmaType typeOf( AtomicNow e ) {
 		CarmaType::REAL_TYPE
 	}
 	
-	def dispatch CarmaType typeOf( AtomicRnd e ) {
+	def static dispatch CarmaType typeOf( AtomicRnd e ) {
 		CarmaType::REAL_TYPE
 	}
 	
-	def dispatch CarmaType typeOf( AtomicPi e ) {
+	def static dispatch CarmaType typeOf( AtomicPi e ) {
 		CarmaType::REAL_TYPE
 	}
 	
-	def dispatch CarmaType typeOf( AtomicExp e ) {
+	def static dispatch CarmaType typeOf( AtomicExp e ) {
 		CarmaType::REAL_TYPE
 	}
 	
-	def dispatch CarmaType typeOf( SetComp e ) {
+	def static dispatch CarmaType typeOf( SetComp e ) {
 		CarmaType::INTEGER_TYPE
 	}
 
-	def dispatch CarmaType typeOf( MyContext e ) {
+	def static dispatch CarmaType typeOf( MyContext e ) {
 		e.reference.typeOf
 	}
 		
-	def dispatch CarmaType typeOf( ReceiverContext e ) {
+	def static dispatch CarmaType typeOf( ReceiverContext e ) {
 		e.reference.typeOf
 	}
 
-	def dispatch CarmaType typeOf( SenderContext e ) {
+	def static dispatch CarmaType typeOf( SenderContext e ) {
 		e.reference.typeOf
 	}
 
-	def dispatch CarmaType typeOf( GlobalContext e ) {
+	def static dispatch CarmaType typeOf( GlobalContext e ) {
 		e.reference.typeOf
 	}
 
-	def dispatch CarmaType typeOf( AbsFunction e ) {
+	def static dispatch CarmaType typeOf( AbsFunction e ) {
 		CarmaType::REAL_TYPE
 	}
 
-	def dispatch CarmaType typeOf( AcosFunction e ) {
+	def static dispatch CarmaType typeOf( AcosFunction e ) {
 		CarmaType::REAL_TYPE
 	}
 
-	def dispatch CarmaType typeOf( AsinFunction e ) {
+	def static dispatch CarmaType typeOf( AsinFunction e ) {
 		CarmaType::REAL_TYPE
 	}
 
-	def dispatch CarmaType typeOf( AtanFunction e ) {
+	def static dispatch CarmaType typeOf( AtanFunction e ) {
 		CarmaType::REAL_TYPE
 	}
 
-	def dispatch CarmaType typeOf( Atan2Function e ) {
+	def static dispatch CarmaType typeOf( Atan2Function e ) {
 		CarmaType::REAL_TYPE
 	}
 
-	def dispatch CarmaType typeOf( CbrtFunction e ) {
+	def static dispatch CarmaType typeOf( CbrtFunction e ) {
 		CarmaType::REAL_TYPE
 	}
 
-	def dispatch CarmaType typeOf( CeilFunction e ) {
+	def static dispatch CarmaType typeOf( CeilFunction e ) {
 		CarmaType::REAL_TYPE
 	}
 
-	def dispatch CarmaType typeOf( CosFunction e ) {
+	def static dispatch CarmaType typeOf( CosFunction e ) {
 		CarmaType::REAL_TYPE
 	}
 
-	def dispatch CarmaType typeOf( ExpFunction e ) {
+	def static dispatch CarmaType typeOf( ExpFunction e ) {
 		CarmaType::REAL_TYPE
 	}
 
-	def dispatch CarmaType typeOf( FloorFunction e ) {
+	def static dispatch CarmaType typeOf( FloorFunction e ) {
 		CarmaType::REAL_TYPE
 	}
 
-	def dispatch CarmaType typeOf( LogFunction e ) {
+	def static dispatch CarmaType typeOf( LogFunction e ) {
 		CarmaType::REAL_TYPE
 	}
 
-	def dispatch CarmaType typeOf( Log10Function e ) {
+	def static dispatch CarmaType typeOf( Log10Function e ) {
 		CarmaType::REAL_TYPE
 	}
 
-	def dispatch CarmaType typeOf( MaxFunction e ) {
+	def static dispatch CarmaType typeOf( MaxFunction e ) {
 		return e.first.typeOf.mostGeneral( e.second.typeOf )
 	}
 
-	def dispatch CarmaType typeOf( MinFunction e ) {
+	def static dispatch CarmaType typeOf( MinFunction e ) {
 		return e.first.typeOf.mostGeneral( e.second.typeOf )
 	}
 
-	def dispatch CarmaType typeOf( PowFunction e ) {
+	def static dispatch CarmaType typeOf( PowFunction e ) {
 		CarmaType::REAL_TYPE
 	}
 
-	def dispatch CarmaType typeOf( SinFunction e ) {
+	def static dispatch CarmaType typeOf( SinFunction e ) {
 		CarmaType::REAL_TYPE
 	}
 
-	def dispatch CarmaType typeOf( SqrtFunction e ) {
+	def static dispatch CarmaType typeOf( SqrtFunction e ) {
 		CarmaType::REAL_TYPE
 	}
 
-	def dispatch CarmaType typeOf( TanFunction e ) {
+	def static dispatch CarmaType typeOf( TanFunction e ) {
 		CarmaType::REAL_TYPE
 	}
 
-	def dispatch CarmaType typeOf( UniformFunction e ) {
+	def static dispatch CarmaType typeOf( UniformFunction e ) {
 		e.args.head.typeOf
 	}
 
-	def CarmaType toCarmaType( ValueType t ) {
+	def static CarmaType toCarmaType( ValueType t ) {
 		switch t {
 			ProcessType: CarmaType::PROCESS_TYPE
 			IntegerType: CarmaType::INTEGER_TYPE
@@ -317,18 +317,14 @@ class TypeSystem {
 		}	
 	}
 	
-	def CarmaType toCarmaType( ReferenceableType ref ) {
+	def static CarmaType toCarmaType( ReferenceableType ref ) {
 		switch ref {
 			EnumDefinition: CarmaType::createEnumType(ref.name)
 			RecordDefinition: CarmaType::createRecordType(ref.name)
 		}
 	}
 	
-	def CarmaType getAttributeType( AttributeDeclaration a ) {
-		CarmaType::ERROR_TYPE
-	}
-	
-	def CarmaType getRecordType( FieldDefinition f ) {
+	def static CarmaType getRecordType( FieldDefinition f ) {
 		var v = f.getContainerOfType(typeof(RecordDefinition))
 		if (v != null) {
 			CarmaType::createRecordType(v.name)

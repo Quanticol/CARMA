@@ -204,8 +204,8 @@ StoreBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 AttributeDeclaration:
-	{AttributeConstDeclaration} "const" name=LOWERST
-	| {AttibuteVarDeclaration} "attrib" name=LOWERST 
+	{AttributeConstDeclaration} "const" name=LOWERST ":=" value=Expression
+	| {AttibuteVarDeclaration} "attrib" name=LOWERST  ":=" value=Expression
 ;
 	
 ProcessesBlock hidden(ML_COMMENT,SL_COMMENT,WS):
