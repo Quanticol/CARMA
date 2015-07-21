@@ -50,8 +50,9 @@ class MSSystemCompiler {
 				«getUniform»
 				«getPow»
 				«getAbs»
-				
+				«IF model.functions != null»
 				«model.functions.printFunctions»
+				«ENDIF»
 				«model.records.records»
 				«IF (system as BlockSystem).environment != null»
 				«(system as BlockSystem).collective.constructor((system as BlockSystem).environment.stores)»
