@@ -324,7 +324,7 @@ class CollectiveHandler {
 		var vrs = bes.eAllOfType(VariableReference)
 		var vrsh = new HashMap<String, VariableReference>()
 		for (vr : vrs) {
-			vrsh.put(vr.name.name, vr)
+			vrsh.put(vr.variableName, vr)
 		}
 		'''
 			HashMap<String,Class> my_variables = new HashMap<String,Class>();
@@ -424,8 +424,7 @@ class CollectiveHandler {
 		var vrs = new HashMap<String, VariableReference>()
 		for (updateAssignment : updateAssignments)
 			for (vr : updateAssignment.eAllOfType(VariableReference))
-				vrs.put(vr.name.name, vr)
-
+				vrs.put(vr.variableName, vr)
 		'''
 			HashMap<String,Class> my_variables = new HashMap<String,Class>();
 			«FOR key : vrs.keySet»
@@ -511,14 +510,19 @@ class CollectiveHandler {
 	}
 
 	def String defineValueBlock(OutputActionArguments arguments) {
-		var ArrayList<OutputActionArgument> args = new ArrayList<OutputActionArgument>(
-			arguments.eAllOfType(OutputActionArgument))
+		var ArrayList<OutputActionArgument> args = new ArrayList<OutputActionArgument>(arguments.eAllOfType(OutputActionArgument))
+		var argsh = newHashMap
+		for(arg : args){
+			switch(arg.value){
+				VariableReference: argsh.put((arg.value as VariableReference).variableName, arg as OutputActionArgument)
+			}
+		}
 		var count = 0
 		'''
 			double[] output = new double[«args.size»];
 			HashMap<String,Class> my_variables = new HashMap<String,Class>();
-			«FOR arg : args»
-				«arg.checkStoreOutput»
+			«FOR key : argsh.keySet»
+				«argsh.get(key).checkStoreOutput»
 			«ENDFOR»
 			boolean hasAttributes = true;
 			if(my_variables != null)
@@ -526,18 +530,50 @@ class CollectiveHandler {
 					hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
 				}
 			if(hasAttributes){
-				«FOR arg : args»
-					«arg.storeOutput»
-				«ENDFOR»
-				«FOR arg : args»
-					output[«count++»] = «arg.javanise»;
-				«ENDFOR»
+			«FOR key : argsh.keySet»
+				«argsh.get(key).getStoreOutput»
+			«ENDFOR»
+			«FOR arg : args»
+				output[«count++»] = «arg.javanise»;
+			«ENDFOR»
 				return output;
 			} else {
 				return new Object();
 			}
 		'''
 	}
+	
+//	def String getOutputSatisfyBlock(BooleanExpression bes) {
+//		var vrs = bes.eAllOfType(VariableReference)
+//		var vrsh = new HashMap<String, VariableReference>()
+//		for (vr : vrs) {
+//			vrsh.put(vr.variableName, vr)
+//		}
+//		'''
+//			HashMap<String,Class> my_variables = new HashMap<String,Class>();
+//			HashMap<String,Class> their_variables = new HashMap<String,Class>();
+//			«FOR key : vrsh.keySet»
+//				«vrsh.get(key).checkStoreOutputPredicate»
+//			«ENDFOR»
+//			boolean hasAttributes = true;
+//			if(my_variables != null)
+//				for(String key : my_variables.keySet()){
+//					hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
+//				}
+//			if(their_variables != null)
+//				for(String key : their_variables.keySet()){
+//					hasAttributes = their_store.has(key,their_variables.get(key)) && hasAttributes;
+//				}
+//			if(hasAttributes){
+//				«FOR key : vrsh.keySet»
+//					«vrsh.get(key).storeOutputPredicate»
+//				«ENDFOR»
+//				return «bes.javanise»;
+//			} else {
+//				return false;
+//			}
+//		'''
+//	}
 
 	def String checkStoreOutput(OutputActionArgument oaa) {
 		switch (oaa.value) {
@@ -603,10 +639,14 @@ class CollectiveHandler {
 	def String getInputSatisfyBlock(Action action) {
 		var BooleanExpression bes = action.eAllOfType(ActionGuard).get(0).booleanExpression
 		var vrs = bes.eAllOfType(VariableReference)
+		var vrsh = new HashMap<String, VariableReference>()
+		for (vr : vrs) {
+			vrsh.put(vr.variableName, vr)
+		}
 		'''
 			HashMap<String,Class> my_variables = new HashMap<String,Class>();
-			«FOR vr : vrs»
-				«vr.checkStoreInput»
+			«FOR key : vrsh.keySet»
+				«vrsh.get(key).checkStoreInput»
 			«ENDFOR»
 			«setupInputArguments(action.eAllOfType(InputActionParameters).get(0))»
 			boolean hasAttributes = true;
@@ -615,8 +655,8 @@ class CollectiveHandler {
 					hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
 				}
 			if(hasAttributes){
-				«FOR vr : vrs»
-					«vr.storeInput»
+				«FOR key : vrsh.keySet»
+					«vrsh.get(key).storeInput»
 				«ENDFOR»
 				return «bes.javanise»;
 			} else {

@@ -309,7 +309,9 @@ class SharedJavaniser {
 								toReturn = 
 				'''«primitives.get(0).declare»;'''
 			for(var i = 1; i < primitives.size; i++){
-				toReturn = '''«toReturn», «primitives.get(i).declare»'''
+				toReturn = '''
+				«toReturn» 
+				«primitives.get(i).declare»;'''
 			}
 		}
 		return toReturn

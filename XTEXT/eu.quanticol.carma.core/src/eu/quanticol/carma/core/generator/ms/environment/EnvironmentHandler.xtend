@@ -149,7 +149,7 @@ class EnvironmentHandler {
 				int action) {
 			«FOR probability : probabilities»
 			if(action == «probability.stub.name.getContainerOfType(Action).name.name.hashCode»
-			&& get«probability.javanise»Predicate(sender_store).satisfy(receiver_store){
+			&& get«probability.javanise»Predicate(sender_store).satisfy(receiver_store)){
 				«probability.getValue»
 			}
 			«ENDFOR»
