@@ -98,8 +98,7 @@ public abstract class CarmaSystem implements ModelI {
 	public WeightedStructure<Activity> getActivities() {
 		WeightedStructure<Activity> toReturn = new ComposedWeightedStructure<Activity>();
 		for (CarmaComponent caspaComponent : collective) {
-			WeightedStructure<Activity> test = caspaComponent.getActivities( this );
-			toReturn = toReturn.add( test );
+			toReturn = toReturn.add( caspaComponent.getActivities( this ) );
 		}
 		return toReturn;
 	}
