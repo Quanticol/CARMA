@@ -54,6 +54,8 @@ public class CarmaSequentialProcess extends CarmaProcess {
 		}
 		LinkedList<CarmaProcessAutomaton.Transition> transitions = currenstate.getTransitions();
 		CarmaStore store = getComponent().store;
+		
+		
 		for (CarmaProcessAutomaton.Transition transition : transitions) {
 			CarmaPredicate guard = transition.getGuard();
 			CarmaAction action = transition.getAction();

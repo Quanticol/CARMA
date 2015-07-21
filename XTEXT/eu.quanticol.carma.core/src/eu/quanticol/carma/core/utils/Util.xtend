@@ -71,13 +71,16 @@ class Util {
 	def Tree getTree(CBND cbnd){
 		
 		var HashSet<Process> processes = new HashSet<Process>()
+		var HashSet<Process> processes2 = new HashSet<Process>()
 		var Tree tree = null;
 		
 		processes.addAll(cbnd.initialState)
 		
 		for(p : processes)
-				processes.addAll(p.allReferences)
-				
+				processes2.addAll(p.allReferences)
+		
+		processes.addAll(processes2);
+		
 		if(processes.size > 0){
 			tree = new Tree(processes);
 		}
@@ -135,12 +138,12 @@ class Util {
 		
 		for(Process p2 : p1.getContainerOfType(ComponentStyle).eAllOfType(Process))
 			for(ProcessExpressionReference pr : p2.eAllOfType(ProcessExpressionReference))
-				if(p1.name.equals(pr.expression.name))
+				if(p1.name.name.equals(pr.expression.name))
 					output.add(p2)
 		
 		for(ProcessExpressionReference pr : p1.eAllOfType(ProcessExpressionReference))
 			for(Process p2 : p1.getContainerOfType(ComponentStyle).eAllOfType(Process))
-				if(p2.name.equals(pr.expression.name))
+				if(p2.name.name.equals(pr.expression.name))
 					output.add(p2)
 					
 		return output 
@@ -160,7 +163,7 @@ class Util {
 		
 		for(Process p2 : p1.getContainerOfType(ComponentStyle).eAllOfType(Process))
 			for(ProcessExpressionReference pr : p2.eAllOfType(ProcessExpressionReference))
-				if(p1.name.equals(pr.expression.name))
+				if(p1.name.name.equals(pr.expression.name))
 					output.add(p2)
 							
 		return output 

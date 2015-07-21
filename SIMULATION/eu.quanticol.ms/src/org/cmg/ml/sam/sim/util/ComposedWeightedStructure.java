@@ -30,6 +30,14 @@ public class ComposedWeightedStructure<S> implements WeightedStructure<S> {
 	public ComposedWeightedStructure() {
 		this(null, null);
 	}
+	
+	public String leftNull(){
+		return "left " + (this.left == null);
+	}
+	
+	public String rightNull(){
+		return "right " + (this.right == null);
+	}
 
 	public ComposedWeightedStructure(WeightedStructure<S> left,
 			WeightedStructure<S> right) {
