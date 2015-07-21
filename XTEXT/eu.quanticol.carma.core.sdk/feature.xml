@@ -2,7 +2,7 @@
 <feature
       id="eu.quanticol.carma.core.sdk"
       label="CARMA SDK Feature "
-      version="0.1.2.beta">
+      version="0.1.3.beta">
 
    <includes
          id="org.eclipse.xtext.redist"
