@@ -15,12 +15,13 @@ class RecordHandler {
 	@Inject extension SharedJavaniser
 	
 	def String getRecords(Records records){
-		if(records.recordDefinitions != null)
-		'''
-		«FOR recordDefinition : records.recordDefinitions»
-		«recordDefinition.getRecord»
-		«ENDFOR»
-		'''
+		if(records != null)
+			if(records.recordDefinitions != null)
+				'''
+				«FOR recordDefinition : records.recordDefinitions»
+				«recordDefinition.getRecord»
+				«ENDFOR»
+				'''
 	}
 	
 	def String getRecord(RecordDefinition recordDefinition){
