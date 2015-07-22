@@ -327,70 +327,23 @@ class CollectiveHandler {
 			vrsh.put(vr.variableName, vr)
 		}
 		'''
-			HashMap<String,Class> my_variables = new HashMap<String,Class>();
-			HashMap<String,Class> their_variables = new HashMap<String,Class>();
+		try {
 			«FOR key : vrsh.keySet»
-				«vrsh.get(key).checkStoreOutputPredicate»
+			«vrsh.get(key).storeOutputPredicate»
 			«ENDFOR»
-			boolean hasAttributes = true;
-			if(my_variables != null)
-				for(String key : my_variables.keySet()){
-					hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
-				}
-			if(their_variables != null)
-				for(String key : their_variables.keySet()){
-					hasAttributes = their_store.has(key,their_variables.get(key)) && hasAttributes;
-				}
-			if(hasAttributes){
-				«FOR key : vrsh.keySet»
-					«vrsh.get(key).storeOutputPredicate»
-				«ENDFOR»
-				return «bes.javanise»;
-			} else {
-				return false;
-			}
-		'''
-	}
-
-	def String checkStoreOutputPredicate(VariableReference vr) {
-		switch (vr) {
-			VariableReferencePure: '''their_variables.put("«vr.name.name»",«vr.type.classJavanise»);'''
-			VariableReferenceMy: '''my_variables.put("«vr.name.name»",«vr.type.classJavanise»);'''
-			VariableReferenceReceiver:
-				"receiver_store."
-			VariableReferenceSender:
-				"sender_store."
-			VariableReferenceGlobal:
-				"global_store."
-			RecordReferencePure: '''their_variables.put("«vr.name.name»",«vr.type.classJavanise»);'''
-			RecordReferenceMy: '''my_variables.put("«vr.name.name»",«vr.type.classJavanise»);'''
-			RecordReferenceReceiver:
-				"receiver_store."
-			RecordReferenceSender:
-				"sender_store."
-			RecordReferenceGlobal:
-				"global_store."
+			return «bes.javanise»;
+		} catch (NullPointerException exception) {
+			return false;
 		}
+		'''
 	}
 
 	def String getStoreOutputPredicate(VariableReference vr) {
 		switch (vr) {
 			VariableReferencePure: '''«vr.name.type.javanise» attrib_«vr.name.name» = their_store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
 			VariableReferenceMy: '''«vr.name.type.javanise» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
-			VariableReferenceReceiver:
-				"receiver_store."
-			VariableReferenceSender:
-				"sender_store."
-			VariableReferenceGlobal:
-				"global_store."
 			RecordReferencePure: '''«vr.name.type.javanise» attrib_«vr.name.name» = their_store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
 			RecordReferenceMy: '''«vr.name.type.javanise» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
-			RecordReferenceReceiver:
-				"receiver_store."
-			RecordReferenceSender:
-				"sender_store."
-			RecordReferenceGlobal:
-				"global_store."
 		}
 	}
 
@@ -426,68 +379,28 @@ class CollectiveHandler {
 			for (vr : updateAssignment.eAllOfType(VariableReference))
 				vrs.put(vr.variableName, vr)
 		'''
-			HashMap<String,Class> my_variables = new HashMap<String,Class>();
+		try{
 			«FOR key : vrs.keySet»
-				«vrs.get(key).checkStoreOutput»
+			«vrs.get(key).storeOutput»
 			«ENDFOR»
-			boolean hasAttributes = true;
-			if(my_variables != null)
-				for(String key : my_variables.keySet()){
-					hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
-				}
-			if(hasAttributes){
-				«FOR key : vrs.keySet»
-					«vrs.get(key).storeOutput»
-				«ENDFOR»
-				«FOR updateAssignment : updateAssignments»
-					attrib_«updateAssignment.reference.name.name» = «updateAssignment.expression.javanise»;
-				«ENDFOR»
-				«FOR updateAssignment : updateAssignments»
-					my_store.set("«updateAssignment.reference.name.name»",attrib_«updateAssignment.reference.name.name»);
-				«ENDFOR»
-			}
-		'''
-	}
-
-	def String checkStoreOutput(VariableReference vr) {
-		switch (vr) {
-			VariableReferencePure: '''my_variables.put("«vr.name.name»",«vr.type.classJavanise»);'''
-			VariableReferenceMy: '''my_variables.put("«vr.name.name»",«vr.type.classJavanise»);'''
-			VariableReferenceReceiver:
-				"receiver_store."
-			VariableReferenceSender:
-				"sender_store."
-			VariableReferenceGlobal:
-				"global_store."
-			RecordReferencePure: '''my_variables.put("«vr.name.name»",«vr.type.classJavanise»);'''
-			RecordReferenceMy: '''my_variables.put("«vr.name.name»",«vr.type.classJavanise»);'''
-			RecordReferenceReceiver:
-				"receiver_store."
-			RecordReferenceSender:
-				"sender_store."
-			RecordReferenceGlobal:
-				"global_store."
+			«FOR updateAssignment : updateAssignments»
+			attrib_«updateAssignment.reference.name.name» = «updateAssignment.expression.javanise»;
+			«ENDFOR»
+			«FOR updateAssignment : updateAssignments»
+			my_store.set("«updateAssignment.reference.name.name»",attrib_«updateAssignment.reference.name.name»);
+			«ENDFOR»
+		} catch (NullPointerException exception) {
+				
 		}
+		'''
 	}
 
 	def String getStoreOutput(VariableReference vr) {
 		switch (vr) {
 			VariableReferencePure: '''«vr.name.type.javanise» attrib_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.classJavanise»);'''
 			VariableReferenceMy: '''«vr.name.type.javanise» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.classJavanise»);'''
-			VariableReferenceReceiver:
-				"receiver_store."
-			VariableReferenceSender:
-				"sender_store."
-			VariableReferenceGlobal:
-				"global_store."
 			RecordReferencePure: '''«vr.name.type.javanise» attrib_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.classJavanise»);'''
 			RecordReferenceMy: '''«vr.name.type.javanise» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.classJavanise»);'''
-			RecordReferenceReceiver:
-				"receiver_store."
-			RecordReferenceSender:
-				"sender_store."
-			RecordReferenceGlobal:
-				"global_store."
 		}
 	}
 
@@ -520,68 +433,18 @@ class CollectiveHandler {
 		var count = 0
 		'''
 			double[] output = new double[«args.size»];
-			HashMap<String,Class> my_variables = new HashMap<String,Class>();
-			«FOR key : argsh.keySet»
-				«argsh.get(key).checkStoreOutput»
-			«ENDFOR»
-			boolean hasAttributes = true;
-			if(my_variables != null)
-				for(String key : my_variables.keySet()){
-					hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
-				}
-			if(hasAttributes){
-			«FOR key : argsh.keySet»
+			try {
+				«FOR key : argsh.keySet»
 				«argsh.get(key).getStoreOutput»
-			«ENDFOR»
-			«FOR arg : args»
+				«ENDFOR»
+				«FOR arg : args»
 				output[«count++»] = «arg.javanise»;
-			«ENDFOR»
+				«ENDFOR»
 				return output;
-			} else {
+			} catch (NullPointerException exception) {
 				return new Object();
 			}
 		'''
-	}
-	
-//	def String getOutputSatisfyBlock(BooleanExpression bes) {
-//		var vrs = bes.eAllOfType(VariableReference)
-//		var vrsh = new HashMap<String, VariableReference>()
-//		for (vr : vrs) {
-//			vrsh.put(vr.variableName, vr)
-//		}
-//		'''
-//			HashMap<String,Class> my_variables = new HashMap<String,Class>();
-//			HashMap<String,Class> their_variables = new HashMap<String,Class>();
-//			«FOR key : vrsh.keySet»
-//				«vrsh.get(key).checkStoreOutputPredicate»
-//			«ENDFOR»
-//			boolean hasAttributes = true;
-//			if(my_variables != null)
-//				for(String key : my_variables.keySet()){
-//					hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
-//				}
-//			if(their_variables != null)
-//				for(String key : their_variables.keySet()){
-//					hasAttributes = their_store.has(key,their_variables.get(key)) && hasAttributes;
-//				}
-//			if(hasAttributes){
-//				«FOR key : vrsh.keySet»
-//					«vrsh.get(key).storeOutputPredicate»
-//				«ENDFOR»
-//				return «bes.javanise»;
-//			} else {
-//				return false;
-//			}
-//		'''
-//	}
-
-	def String checkStoreOutput(OutputActionArgument oaa) {
-		switch (oaa.value) {
-			VariableReferencePure: 	'''my_variables.put("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.classJavanise»);'''
-			VariableReferenceMy: 	'''my_variables.put("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.classJavanise»);'''
-			RecordReferencePure:	'''my_variables.put("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.classJavanise»);'''
-			RecordReferenceMy: 		'''my_variables.put("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.classJavanise»);'''
-		}
 	}
 
 	def String getStoreOutput(OutputActionArgument oaa) {
@@ -644,74 +507,34 @@ class CollectiveHandler {
 			vrsh.put(vr.variableName, vr)
 		}
 		'''
-			HashMap<String,Class> my_variables = new HashMap<String,Class>();
-			«FOR key : vrsh.keySet»
-				«vrsh.get(key).checkStoreInput»
-			«ENDFOR»
-			«setupInputArguments(action.eAllOfType(InputActionParameters).get(0))»
-			boolean hasAttributes = true;
-			if(my_variables != null)
-				for(String key : my_variables.keySet()){
-					hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
-				}
-			if(hasAttributes){
+			try {
+				«setupInputArguments(action.eAllOfType(InputActionParameters).get(0))»
 				«FOR key : vrsh.keySet»
-					«vrsh.get(key).storeInput»
+				«vrsh.get(key).storeInput»
 				«ENDFOR»
 				return «bes.javanise»;
-			} else {
+			} catch (NullPointerException exception) {
 				return false;
 			}
 		'''
 	}
 
-	def String checkStoreInput(VariableReference vr) {
-		switch (vr) {
-			VariableReferencePure: ''''''
-			VariableReferenceMy: '''my_variables.put("«vr.name.name»",«vr.type.classJavanise»);'''
-			VariableReferenceReceiver:
-				"receiver_store."
-			VariableReferenceSender:
-				"sender_store."
-			VariableReferenceGlobal:
-				"global_store."
-			RecordReferencePure: ''''''
-			RecordReferenceMy: '''my_variables.put("«vr.name.name»",«vr.type.classJavanise»);'''
-			RecordReferenceReceiver:
-				"receiver_store."
-			RecordReferenceSender:
-				"sender_store."
-			RecordReferenceGlobal:
-				"global_store."
-		}
-	}
-
 	def String getStoreInput(VariableReference vr) {
 		switch (vr) {
 			VariableReferencePure: {
-				if (vr.getContainerOfType(InputActionParameters) !=
-					null
-				) '''«vr.name.type.javanise» attrib_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.classJavanise»);''' else ''''''
+				if (vr.getContainerOfType(InputActionParameters) != null) 
+					'''«vr.name.type.javanise» attrib_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.classJavanise»);''' 
+				else 
+					''''''
 			}
 			VariableReferenceMy: '''«vr.name.type.javanise» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.classJavanise»);'''
-			VariableReferenceReceiver:
-				"receiver_store."
-			VariableReferenceSender:
-				"sender_store."
-			VariableReferenceGlobal:
-				"global_store."
 			RecordReferencePure: {
-				if (vr.getContainerOfType(InputActionParameters) !=
-					null
-				) '''«vr.name.type.javanise» attrib_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.classJavanise»);''' else ''''''
+				if (vr.getContainerOfType(InputActionParameters) != null) 
+					'''«vr.name.type.javanise» attrib_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.classJavanise»);''' 
+				else 
+					''''''
 			}
 			RecordReferenceMy: '''«vr.name.type.javanise» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.classJavanise»);'''
-			RecordReferenceReceiver:
-				"receiver_store."
-			RecordReferenceSender:
-				"sender_store."
-			RecordReferenceGlobal:
-				"global_store."
 		}
 	}
 
@@ -757,27 +580,20 @@ class CollectiveHandler {
 			for (vr : updateAssignment.eAllOfType(VariableReference))
 				vrs.put(vr.name.name, vr)
 		'''
-			HashMap<String,Class> my_variables = new HashMap<String,Class>();
-			«FOR key : vrs.keySet»
-				«vrs.get(key).checkStoreInput»
-			«ENDFOR»
-			«setupInputArguments(action.eAllOfType(InputActionParameters).get(0))»
-			boolean hasAttributes = true;
-			if(my_variables != null)
-				for(String key : my_variables.keySet()){
-					hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
-				}
-			if(hasAttributes){
+			try{
+				«setupInputArguments(action.eAllOfType(InputActionParameters).get(0))»
 				«FOR key : vrs.keySet»
-					«vrs.get(key).storeInput»
+				«vrs.get(key).storeInput»
 				«ENDFOR»
 				«FOR updateAssignment : updateAssignments»
-					«updateAssignment.reference.type.javanise» attrib_«updateAssignment.reference.name.name» = my_store.get("«updateAssignment.reference.name.name»",«updateAssignment.reference.type.classJavanise»);
-					attrib_«updateAssignment.reference.name.name» = «updateAssignment.expression.javanise»;
+				«updateAssignment.reference.type.javanise» attrib_«updateAssignment.reference.name.name» = my_store.get("«updateAssignment.reference.name.name»",«updateAssignment.reference.type.classJavanise»);
+				attrib_«updateAssignment.reference.name.name» = «updateAssignment.expression.javanise»;
 				«ENDFOR»
 				«FOR updateAssignment : updateAssignments»
-					my_store.set("«updateAssignment.reference.name.name»",attrib_«updateAssignment.reference.name.name»);
+				my_store.set("«updateAssignment.reference.name.name»",attrib_«updateAssignment.reference.name.name»);
 				«ENDFOR»
+			} catch (NullPointerException exception){
+				
 			}
 		'''
 	}
@@ -818,21 +634,12 @@ class CollectiveHandler {
 			vrs.put(vr.name.name, vr)
 		}
 		'''
-			HashMap<String,Class> my_variables = new HashMap<String,Class>();
-			«FOR key : vrs.keySet»
-				«vrs.get(key).checkStoreOutput»
-			«ENDFOR»
-			boolean hasAttributes = true;
-			if(my_variables != null)
-				for(String key : my_variables.keySet()){
-					hasAttributes = my_store.has(key,my_variables.get(key)) && hasAttributes;
-				}
-			if(hasAttributes){
+			try{
 				«FOR key : vrs.keySet»
-					«vrs.get(key).storeOutput»
+				«vrs.get(key).storeOutput»
 				«ENDFOR»
 				return «bes.javanise»;
-			} else {
+			} catch (NullPointerException exception) {
 				return false;
 			}
 		'''

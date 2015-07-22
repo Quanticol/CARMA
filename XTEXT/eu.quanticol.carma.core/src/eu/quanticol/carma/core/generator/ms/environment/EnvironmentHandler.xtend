@@ -187,31 +187,12 @@ class EnvironmentHandler {
 			vrsh.put(vr.prefix + vr.name.name, vr)
 		}
 		'''
-		HashMap<String,Class> receiver_variables = new HashMap<String,Class>();
-		HashMap<String,Class> sender_variables = new HashMap<String,Class>();
-		HashMap<String,Class> global_variables = new HashMap<String,Class>();
-		«FOR key : vrsh.keySet»
-		«vrsh.get(key).checkStorePredicate»
-		«ENDFOR»
-		boolean hasAttributes = true;
-		if(receiver_variables != null)
-			for(String key : receiver_variables.keySet()){
-				hasAttributes = receiver_store.has(key,receiver_variables.get(key)) && hasAttributes;
-			}
-		if(sender_variables != null)
-			for(String key : sender_variables.keySet()){
-				hasAttributes = sender_store.has(key,sender_variables.get(key)) && hasAttributes;
-			}
-		if(global_variables != null)
-			for(String key : global_variables.keySet()){
-				hasAttributes = global_store.has(key,global_variables.get(key)) && hasAttributes;
-			}
-		if(hasAttributes){
+		try{
 			«FOR key : vrsh.keySet»
 			«vrsh.get(key).getStore»
 			«ENDFOR»
 			return «bes.javanise»;
-		} else {
+		} catch (NullPointerException exception) {
 			return false;
 		}
 		'''
@@ -236,26 +217,7 @@ class EnvironmentHandler {
 			vrsh.put(vr.prefix + vr.name.name, vr)
 		}
 		'''
-		HashMap<String,Class> receiver_variables = new HashMap<String,Class>();
-		HashMap<String,Class> sender_variables = new HashMap<String,Class>();
-		HashMap<String,Class> global_variables = new HashMap<String,Class>();
-		«FOR key : vrsh.keySet»
-		«vrsh.get(key).checkStorePredicate»
-		«ENDFOR»
-		boolean hasAttributes = true;
-		if(receiver_variables != null)
-			for(String key : receiver_variables.keySet()){
-				hasAttributes = receiver_store.has(key,receiver_variables.get(key)) && hasAttributes;
-			}
-		if(sender_variables != null)
-			for(String key : sender_variables.keySet()){
-				hasAttributes = sender_store.has(key,sender_variables.get(key)) && hasAttributes;
-			}
-		if(global_variables != null)
-			for(String key : global_variables.keySet()){
-				hasAttributes = global_store.has(key,global_variables.get(key)) && hasAttributes;
-			}
-		if(hasAttributes){
+		try{
 			«FOR key : vrsh.keySet»
 			«vrsh.get(key).getStore»
 			«ENDFOR»
@@ -263,6 +225,8 @@ class EnvironmentHandler {
 			«epe.declarePrimitiveTypes»
 			«ENDIF»
 			return «epe.javanise»;
+		} catch (NullPointerException exception) {
+			
 		}
 		'''
 	}
@@ -323,26 +287,12 @@ class EnvironmentHandler {
 			vrsh.put(vr.prefix + vr.name.name, vr)
 		}
 		'''
-		HashMap<String,Class> sender_variables = new HashMap<String,Class>();
-		HashMap<String,Class> global_variables = new HashMap<String,Class>();
-		«FOR key : vrsh.keySet»
-		«vrsh.get(key).checkStorePredicate»
-		«ENDFOR»
-		boolean hasAttributes = true;
-		if(sender_variables != null)
-			for(String key : sender_variables.keySet()){
-				hasAttributes = sender_store.has(key,sender_variables.get(key)) && hasAttributes;
-			}
-		if(global_variables != null)
-			for(String key : global_variables.keySet()){
-				hasAttributes = global_store.has(key,global_variables.get(key)) && hasAttributes;
-			}
-		if(hasAttributes){
+		try{
 			«FOR key : vrsh.keySet»
 			«vrsh.get(key).getStore»
 			«ENDFOR»
 			return «bes.javanise»;
-		} else {
+		} catch (NullPointerException exception) {
 			return false;
 		}
 		'''
@@ -394,20 +344,7 @@ class EnvironmentHandler {
 			vrsh.put(vr.prefix + vr.name.name, vr)
 		}
 		'''
-		HashMap<String,Class> sender_variables = new HashMap<String,Class>();
-		HashMap<String,Class> global_variables = new HashMap<String,Class>();
-		«FOR key : vrsh.keySet»
-		«ENDFOR»
-		boolean hasAttributes = true;
-		if(sender_variables != null)
-			for(String key : sender_variables.keySet()){
-				hasAttributes = sender_store.has(key,sender_variables.get(key)) && hasAttributes;
-			}
-		if(global_variables != null)
-			for(String key : global_variables.keySet()){
-				hasAttributes = global_store.has(key,global_variables.get(key)) && hasAttributes;
-			}
-		if(hasAttributes){
+		try{
 			«FOR key : vrsh.keySet»
 			«vrsh.get(key).getStore»
 			«ENDFOR»
@@ -415,6 +352,8 @@ class EnvironmentHandler {
 			«epe.declarePrimitiveTypes»
 			«ENDIF»
 			return «epe.javanise»;
+		} catch (NullPointerException exception) {
+			
 		}
 		'''
 	}
@@ -475,31 +414,12 @@ class EnvironmentHandler {
 			vrsh.put(vr.prefix + vr.name.name, vr)
 		}
 		'''
-		HashMap<String,Class> receiver_variables = new HashMap<String,Class>();
-		HashMap<String,Class> sender_variables = new HashMap<String,Class>();
-		HashMap<String,Class> global_variables = new HashMap<String,Class>();
-		«FOR key : vrsh.keySet»
-		«vrsh.get(key).checkStorePredicate»
-		«ENDFOR»
-		boolean hasAttributes = true;
-		if(receiver_variables != null)
-			for(String key : receiver_variables.keySet()){
-				hasAttributes = receiver_store.has(key,receiver_variables.get(key)) && hasAttributes;
-			}
-		if(sender_variables != null)
-			for(String key : sender_variables.keySet()){
-				hasAttributes = sender_store.has(key,sender_variables.get(key)) && hasAttributes;
-			}
-		if(global_variables != null)
-			for(String key : global_variables.keySet()){
-				hasAttributes = global_store.has(key,global_variables.get(key)) && hasAttributes;
-			}
-		if(hasAttributes){
+		try{
 			«FOR key : vrsh.keySet»
 			«vrsh.get(key).getStore»
 			«ENDFOR»
 			return «bes.javanise»;
-		} else {
+		} catch (NullPointerException exception) {
 			return false;
 		}
 		'''
@@ -514,8 +434,6 @@ class EnvironmentHandler {
 			«FOR update : updates»
 			if(action == «update.stub.name.getContainerOfType(Action).name.name.hashCode»
 			&& get«update.javanise»Predicate(sender_store).satisfy(null)){
-				HashMap<String,Class> sender_variables = new HashMap<String,Class>();
-				HashMap<String,Class> global_variables = new HashMap<String,Class>();
 				«IF update.eAllOfType(EnvironmentUpdateAssignment).size > 0»
 				«update.getBroadValue»
 				«ENDIF»
@@ -536,9 +454,6 @@ class EnvironmentHandler {
 			«FOR update : updates»
 			if(action == «update.stub.name.getContainerOfType(Action).name.name.hashCode»
 			&& get«update.javanise»Predicate(sender_store).satisfy(receiver_store)){
-				HashMap<String,Class> receiver_variables = new HashMap<String,Class>();
-				HashMap<String,Class> sender_variables = new HashMap<String,Class>();
-				HashMap<String,Class> global_variables = new HashMap<String,Class>();
 				«IF update.eAllOfType(EnvironmentUpdateAssignment).size > 0»
 				«update.getValue»
 				«ENDIF»
@@ -558,19 +473,7 @@ class EnvironmentHandler {
 			for(vr : updateAssignment.eAllOfType(VariableReference))
 				vrs.put(vr.prefix + vr.name.name, vr)
 		'''
-		«FOR key : vrs.keySet»
-		«vrs.get(key).checkStorePredicate»
-		«ENDFOR»
-		boolean hasAttributes = true;
-		if(sender_variables != null)
-			for(String key : sender_variables.keySet()){
-				hasAttributes = sender_store.has(key,sender_variables.get(key)) && hasAttributes;
-			}
-		if(global_variables != null)
-			for(String key : global_variables.keySet()){
-				hasAttributes = global_store.has(key,global_variables.get(key)) && hasAttributes;
-			}
-		if(hasAttributes){
+		try{
 			«FOR key : vrs.keySet»
 			«vrs.get(key).getStore»
 			«ENDFOR»
@@ -583,6 +486,8 @@ class EnvironmentHandler {
 			«FOR updateAssignment : updateAssignments»
 			global_store.set("«updateAssignment.reference.name.name»",«updateAssignment.label»);
 			«ENDFOR»
+		} catch (NullPointerException exception){
+			
 		}
 		
 		'''
@@ -595,23 +500,7 @@ class EnvironmentHandler {
 			for(vr : updateAssignment.eAllOfType(VariableReference))
 				vrs.put(vr.prefix + vr.name.name, vr)
 		'''
-		«FOR key : vrs.keySet»
-		«vrs.get(key).checkStorePredicate»
-		«ENDFOR»
-		boolean hasAttributes = true;
-		if(receiver_variables != null)
-			for(String key : receiver_variables.keySet()){
-				hasAttributes = receiver_store.has(key,receiver_variables.get(key)) && hasAttributes;
-			}
-		if(sender_variables != null)
-			for(String key : sender_variables.keySet()){
-				hasAttributes = sender_store.has(key,sender_variables.get(key)) && hasAttributes;
-			}
-		if(global_variables != null)
-			for(String key : global_variables.keySet()){
-				hasAttributes = global_store.has(key,global_variables.get(key)) && hasAttributes;
-			}
-		if(hasAttributes){
+		try{
 			«FOR key : vrs.keySet»
 			«vrs.get(key).getStore»
 			«ENDFOR»
@@ -624,8 +513,9 @@ class EnvironmentHandler {
 			«FOR updateAssignment : updateAssignments»
 			global_store.set("«updateAssignment.reference.name.name»",«updateAssignment.label»);
 			«ENDFOR»
+		} catch (NullPointerException exception) {
+			
 		}
-		
 		'''
 	}
 	
@@ -678,29 +568,15 @@ class EnvironmentHandler {
 		for(vr : (componentBlockDeclaration.arguments as ComponentBlockArguments).eAllOfType(VariableReference))
 			vrs.put(vr.prefix + vr.name.name, vr)
 		'''
-		«FOR key : vrs.keySet»
-		«vrs.get(key).checkStorePredicate»
-		«ENDFOR»
-		boolean hasAttributes = true;
-		if(receiver_variables != null)
-			for(String key : receiver_variables.keySet()){
-				hasAttributes = receiver_store.has(key,receiver_variables.get(key)) && hasAttributes;
-			}
-		if(sender_variables != null)
-			for(String key : sender_variables.keySet()){
-				hasAttributes = sender_store.has(key,sender_variables.get(key)) && hasAttributes;
-			}
-		if(global_variables != null)
-			for(String key : global_variables.keySet()){
-				hasAttributes = global_store.has(key,global_variables.get(key)) && hasAttributes;
-			}
-		if(hasAttributes){
+		try{
 			«FOR key : vrs.keySet»
 			«vrs.get(key).getStore»
 			«ENDFOR»			
 			«FOR args : products»
 			addComponent(get«name.toFirstUpper»(«args.asArguments»));
 			«ENDFOR»
+		} catch (NullPointerException exception){
+			
 		}
 		'''
 	}
@@ -720,25 +596,15 @@ class EnvironmentHandler {
 		for(vr : (componentBlockDeclaration.arguments as ComponentBlockArguments).eAllOfType(VariableReference))
 			vrs.put(vr.prefix + vr.name.name, vr)
 		'''
-		«FOR key : vrs.keySet»
-		«vrs.get(key).checkStorePredicate»
-		«ENDFOR»
-		boolean hasAttributes = true;
-		if(sender_variables != null)
-			for(String key : sender_variables.keySet()){
-				hasAttributes = sender_store.has(key,sender_variables.get(key)) && hasAttributes;
-			}
-		if(global_variables != null)
-			for(String key : global_variables.keySet()){
-				hasAttributes = global_store.has(key,global_variables.get(key)) && hasAttributes;
-			}
-		if(hasAttributes){
+		try{
 			«FOR key : vrs.keySet»
 			«vrs.get(key).getStore»
 			«ENDFOR»			
 			«FOR args : products»
 			addComponent(get«name.toFirstUpper»(«args.asArguments»));
 			«ENDFOR»
+		} catch (NullPointerException exception){
+			
 		}
 		'''
 	}

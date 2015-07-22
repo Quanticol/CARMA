@@ -108,21 +108,12 @@ class MeasureHandler {
 			vrsh.put(vr.name.name,vr)
 		}
 		'''
-		HashMap<String,Class> my_variables = new HashMap<String,Class>();
-		«FOR key : vrsh.keySet»
-		«vrsh.get(key).checkStorePredicate»
-		«ENDFOR»
-		boolean hasAttributes = true;
-		if(my_variables != null)
-			for(String key : my_variables.keySet()){
-				hasAttributes = store.has(key,my_variables.get(key)) && hasAttributes;
-			}
-		if(hasAttributes){
+		try{
 			«FOR key : vrsh.keySet»
 			«vrsh.get(key).storePredicate»
 			«ENDFOR»
 			return «setcomp.predicate.javanise»;
-		} else {
+		} catch (NullPointerException exception) {
 			return false;
 		}
 		'''
