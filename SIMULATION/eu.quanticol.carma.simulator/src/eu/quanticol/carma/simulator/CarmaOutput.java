@@ -75,7 +75,10 @@ public abstract class CarmaOutput implements CarmaAction {
 					return true;
 				} else {
 					if (caspaSystem.unicastOutput(r, caspaComponent, action, getPredicate(caspaComponent.store), getValue( caspaComponent.store))) {
-						getUpdate().update( r , caspaComponent.store );
+						CarmaStoreUpdate update = getUpdate();
+						if (update != null) {
+							update.update( r , caspaComponent.store );
+						}
 						//N.B. The update of a unicast is triggered inside input action!!!!
 						return true;
 					}
