@@ -71,6 +71,12 @@ import eu.quanticol.carma.core.carma.Action
 import eu.quanticol.carma.core.carma.SpontaneousAction
 import eu.quanticol.carma.core.carma.MultiCast
 import eu.quanticol.carma.core.carma.OutputAction
+import eu.quanticol.carma.core.carma.InputAction
+import com.google.inject.Inject
+import eu.quanticol.carma.core.utils.Util
+import eu.quanticol.carma.core.carma.InputActionParameters
+import eu.quanticol.carma.core.carma.OutputActionArguments
+import eu.quanticol.carma.core.carma.OutputActionArgument
 
 class BaseType {
 	
@@ -104,6 +110,8 @@ class BaseType {
 }
 
 class TypeProvider {
+	
+	@Inject extension Util
 	
 	public static val attribType  			= new BaseType() => [ parent="primitive"	me="int" 			operation="arith" 		set="natural"]
 	public static val doubleType  			= new BaseType() => [ parent="primitive"	me="double" 		operation="arith" 		set="real"	 ]
@@ -145,6 +153,13 @@ class TypeProvider {
 		one.operation.equals(two.operation)
 	}
 	
+	def BaseType getType(OutputActionArgument outputActionArgument){
+		switch(outputActionArgument.value){
+			VariableReference : (outputActionArgument.value as VariableReference).name.type
+			CarmaInteger : (outputActionArgument.value as CarmaInteger).type
+		}
+	}
+
 	def BaseType getType(VariableName variableName){
 		var declaration = variableName.getContainerOfType(Declaration)
 		var parameter = variableName.getContainerOfType(Parameter)
@@ -160,9 +175,15 @@ class TypeProvider {
 		
 		//it could be an input action parameter, which doesn't have a "type" attribute
 		if(types.size == 0){
-			parameter = variableName.getContainerOfType(InputActionParameter)
-			if(parameter != null)
-				toReturn = attribType
+			if(variableName.getContainerOfType(InputAction) != null){
+				var ia = variableName.getContainerOfType(Action)
+				parameter = variableName.getContainerOfType(InputActionParameter)
+				var parameters = parameter.getContainerOfType(InputActionParameters)
+				var index = getIndex(parameters, parameter as InputActionParameter)
+				var oa = ia.getOpposite
+				var oaas = oa.eAllOfType(OutputActionArguments).get(0).outputArguments
+				toReturn = (oaas.get(index) as OutputActionArgument).type
+			}
 		}
 		
 		//it is probably a record declaration, in which case there are two "RecordType" one on the left

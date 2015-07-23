@@ -16,11 +16,54 @@ import eu.quanticol.carma.core.carma.ParallelComposition
 import eu.quanticol.carma.core.carma.ProcessReference
 import eu.quanticol.carma.core.carma.ComponentStyle
 import eu.quanticol.carma.core.carma.ProcessExpressionReference
+import eu.quanticol.carma.core.carma.Action
+import eu.quanticol.carma.core.carma.OutputAction
+import eu.quanticol.carma.core.carma.Model
+import eu.quanticol.carma.core.carma.InputAction
+import eu.quanticol.carma.core.carma.InputActionParameters
+import eu.quanticol.carma.core.carma.OutputActionArguments
+import eu.quanticol.carma.core.carma.InputActionParameter
 
 class Util {
 	
 	def boolean sameName(Name name1, Name name2){
 		name1.name.equals(name2.name)
+	}
+	
+	def Action getOpposite(Action action){
+		var actionName = action.name
+		var isOutput = action.eAllOfType(OutputAction).size > 0
+		var actions = action.getContainerOfType(Model).eAllOfType(Action)
+		
+		for(act : actions){
+			if(act.name.sameName(actionName))
+				if(isOutput){
+					if(act.eAllOfType(OutputAction).size == 0){
+						if(act.eAllOfType(InputActionParameters).get(0).parameters.size == 
+							action.eAllOfType(OutputActionArguments).get(0).outputArguments.size)
+							return act
+					}
+				} else {
+					if(act.eAllOfType(OutputAction).size > 0){
+						if(action.eAllOfType(InputActionParameters).get(0).parameters.size == 
+							act.eAllOfType(OutputActionArguments).get(0).outputArguments.size)
+							return act
+					}
+				}
+		}
+		
+		return null;
+	}
+	
+	def int getIndex(InputActionParameters inputActionParameters, InputActionParameter inputActionParameter){
+		var count = 0;
+		for(parameter : inputActionParameters.parameters){
+			if((parameter as InputActionParameter).name.sameName(inputActionParameter.name)){
+				return count;
+			}
+			count++ 
+		}
+		return -1
 	}
 	
 	def ArrayList<Process> getInitialState(CBND cbnd){

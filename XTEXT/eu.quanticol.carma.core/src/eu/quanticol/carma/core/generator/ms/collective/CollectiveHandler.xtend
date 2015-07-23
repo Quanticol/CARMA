@@ -432,28 +432,17 @@ class CollectiveHandler {
 		}
 		var count = 0
 		'''
-			double[] output = new double[«args.size»];
+			ArrayList<Object> output = new ArrayList<Object>();
+			//double[] output = new double[«args.size»];
 			try {
 				«FOR key : argsh.keySet»
-				«argsh.get(key).getStoreOutput»
-				«ENDFOR»
-				«FOR arg : args»
-				output[«count++»] = «arg.javanise»;
+				output.add(my_store.get("«(argsh.get(key).value as VariableReference).name.name»",«(argsh.get(key).value as VariableReference).type.classJavanise»));
 				«ENDFOR»
 				return output;
 			} catch (NullPointerException exception) {
 				return new Object();
 			}
 		'''
-	}
-
-	def String getStoreOutput(OutputActionArgument oaa) {
-		switch (oaa.value) {
-			VariableReferencePure: '''«(oaa.value as VariableReference).name.type.javanise» attrib_«(oaa.value as VariableReference).name.name» = my_store.get("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.classJavanise»);'''
-			VariableReferenceMy: '''«(oaa.value as VariableReference).name.type.javanise» my_«(oaa.value as VariableReference).name.name» = my_store.get("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.classJavanise»);'''
-			RecordReferencePure: '''«(oaa.value as VariableReference).name.type.javanise» attrib_«(oaa.value as VariableReference).name.name» = my_store.get("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.classJavanise»);'''
-			RecordReferenceMy: '''«(oaa.value as VariableReference).name.type.javanise» my_«(oaa.value as VariableReference).name.name» = my_store.get("«(oaa.value as VariableReference).name.name»",«(oaa.value as VariableReference).type.classJavanise»);'''
-		}
 	}
 
 	def String getActionInput(String actionName, boolean isBroadcast, Action action) {
@@ -470,7 +459,7 @@ class CollectiveHandler {
 			'''
 				@Override
 				protected CarmaPredicate getPredicate(final CarmaStore my_store, final Object value) {
-					if (value instanceof double[]){
+					if (value instanceof ArrayList<?>){
 						return new CarmaPredicate() {
 							@Override
 							public boolean satisfy(CarmaStore their_store) {
@@ -485,7 +474,7 @@ class CollectiveHandler {
 			'''
 				@Override
 				protected CarmaPredicate getPredicate(final CarmaStore my_store, final Object value) {
-					if (value instanceof double[]){
+					if (value instanceof ArrayList<?>){
 						return new CarmaPredicate() {
 							@Override
 							public boolean satisfy(CarmaStore their_store) {
@@ -547,7 +536,7 @@ class CollectiveHandler {
 					return new CarmaStoreUpdate() {
 						@Override
 						public void update(RandomGenerator r, CarmaStore my_store) {
-							if (value instanceof double[]){
+							if (value instanceof ArrayList<?>){
 								«action.inputUpdateBlock»
 							};
 						};
@@ -602,7 +591,7 @@ class CollectiveHandler {
 		var ArrayList<VariableName> vns = new ArrayList<VariableName>(parameters.eAllOfType(VariableName))
 		'''
 			«FOR vn : vns»
-				double attrib_«vn.name» = ((double[]) value)[«vns.indexOf(vn)»];
+				«vn.type.javanise» attrib_«vn.name» = («vn.type.javanise»)((ArrayList<?>) value).get(«vns.indexOf(vn)»);
 			«ENDFOR»
 		'''
 	}

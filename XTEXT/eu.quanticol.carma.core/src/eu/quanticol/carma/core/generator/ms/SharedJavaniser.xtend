@@ -614,9 +614,7 @@ class SharedJavaniser {
 	}
 
 	def dispatch String javanise(FunctionCall functionCall) {
-		'''
-			«(functionCall.name as Name).name.toFirstLower»(«(functionCall.arguments as FunctionCallArguments).javanise»)
-		'''
+		'''«(functionCall.name as Name).name.toFirstLower»(«(functionCall.arguments as FunctionCallArguments).javanise»)'''
 	}
 	
 	def dispatch String javanise(FunctionCallArguments arguments){
