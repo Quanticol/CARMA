@@ -296,10 +296,10 @@ class CollectiveHandler {
 		if (action.eAllOfType(ActionGuard).size > 0) {
 			'''
 				@Override
-				protected CarmaPredicate getPredicate(final CarmaStore their_store) {
+				protected CarmaPredicate getPredicate(final CarmaStore my_store) {
 					return new CarmaPredicate() {
 						@Override
-						public boolean satisfy(CarmaStore my_store) {
+						public boolean satisfy(CarmaStore their_store) {
 							«getOutputSatisfyBlock(action.eAllOfType(ActionGuard).get(0).booleanExpression)»
 						}
 					};
@@ -308,10 +308,10 @@ class CollectiveHandler {
 		} else {
 			'''
 				@Override
-				protected CarmaPredicate getPredicate(final CarmaStore their_store) {
+				protected CarmaPredicate getPredicate(final CarmaStore my_store) {
 					return new CarmaPredicate() {
 						@Override
-						public boolean satisfy(CarmaStore my_store) {
+						public boolean satisfy(CarmaStore their_store) {
 							return true;
 						}
 					};

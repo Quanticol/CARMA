@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: eu.quanticol.carma.core
 Bundle-Vendor: Edinburgh University
-Bundle-Version: 0.1.5.beta
+Bundle-Version: 0.1.6.beta
 Bundle-SymbolicName: eu.quanticol.carma.core; singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.xtext;visibility:=reexport,
