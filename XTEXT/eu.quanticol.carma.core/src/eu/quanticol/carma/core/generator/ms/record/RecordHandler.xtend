@@ -1,43 +1,35 @@
 package eu.quanticol.carma.core.generator.ms.record
 
-import com.google.inject.Inject
-import eu.quanticol.carma.core.carma.Records
 import eu.quanticol.carma.core.carma.RecordDefinition
-import java.util.ArrayList
 
-import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.carma.AttribParameter
-import eu.quanticol.carma.core.carma.FeildDeclaration
+import static extension eu.quanticol.carma.core.utils.Util.*
 
 class RecordHandler {
 	
-	@Inject extension RecordJavaniser
-	
-	def String getRecords(Records records){
+	def String getRecords(Iterable<RecordDefinition> records){
 		'''
-		«FOR recordDefinition : records.recordDefinitions»
+		«FOR recordDefinition : records»
 		«recordDefinition.getRecord»
 		«ENDFOR»
 		'''
 	}
 	
 	def String getRecord(RecordDefinition recordDefinition){
-		var name = recordDefinition.recordSignature.type.name
-		var ArrayList<AttribParameter> parameters = new ArrayList<AttribParameter>(recordDefinition.eAllOfType(AttribParameter))
 		'''
-		public static class «name» {
+		public static class «recordDefinition.name.recordClass» {
 			
-			«FOR feild : recordDefinition.recordDefinitionStatementBlock.feilds»
-			«(feild as FeildDeclaration).declare»
+			«FOR field : recordDefinition.fields»
+			public final «field.fieldType.toJavaType»;
 			«ENDFOR»
 			
-			public «name» ( «parameters.getParameters» ) {
-				«FOR feild : recordDefinition.recordDefinitionStatementBlock.feilds»
-				«(feild as FeildDeclaration).javanise»
+			public «recordDefinition.name.recordClass»( «FOR field:recordDefinition.fields SEPARATOR ','»«field.fieldType.toJavaType» «field.name.fieldName»«ENDFOR») {
+				«FOR field :  recordDefinition.fields»
+				this.«field.name.fieldName» = «field.name»;
 				«ENDFOR»
 			}
 			
 		}
 		'''
 	}
+	
 }

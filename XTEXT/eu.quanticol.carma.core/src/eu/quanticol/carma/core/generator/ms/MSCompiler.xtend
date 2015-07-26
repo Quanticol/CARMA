@@ -81,10 +81,10 @@ class MSCompiler implements Compiler {
 		MSCompiler.PATH = MSCompiler.PATH + modelName.toLowerCase + "/"
 		MSCompiler.PACK = MSCompiler.PACK + modelName.toLowerCase 
 		
-		for(system : model.eAllOfType(System)){
-			system.extractSystem(model, toReturn)
-			system.extractFactory(model, toReturn)
-		}
+//		for(system : model.eAllOfType(System)){
+//			system.extractSystem(model, toReturn)
+//			system.extractFactory(model, toReturn)
+//		}
 		
 		
 		

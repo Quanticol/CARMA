@@ -1,6 +1,7 @@
 package eu.quanticol.carma.core.typing
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
+import static extension eu.quanticol.carma.core.utils.Util.*
 
 import eu.quanticol.carma.core.carma.Or
 import eu.quanticol.carma.core.carma.And
@@ -74,6 +75,12 @@ import eu.quanticol.carma.core.carma.SqrtFunction
 import eu.quanticol.carma.core.carma.TanFunction
 import eu.quanticol.carma.core.carma.UniformFunction
 import eu.quanticol.carma.core.carma.IfThenElseExpression
+import eu.quanticol.carma.core.carma.Model
+import eu.quanticol.carma.core.carma.UntypedVariable
+import eu.quanticol.carma.core.carma.InputAction
+import java.util.List
+import eu.quanticol.carma.core.carma.Activity
+import eu.quanticol.carma.core.carma.FieldType
 
 class TypeSystem {
 	
@@ -164,6 +171,7 @@ class TypeSystem {
 				}
 			}
 			ConstantDefinition: ref.value.typeOf
+			UntypedVariable: ref.inferTypeOf.toCarmaType
 		}
 	}
 	
@@ -330,6 +338,29 @@ class TypeSystem {
 			CarmaType::createRecordType(v.name)
 		} else {
 			CarmaType::ERROR_TYPE
+		}
+	}
+	
+	def static combine( Iterable<CarmaType> l1 , Iterable<CarmaType> l2 ) {
+		if (l1.length != l2.length) {
+			newLinkedList( CarmaType::ERROR_TYPE )
+		} else {
+			val result = newLinkedList()
+			l1.indexed.forEach[ result.add( it.value.mostGeneral( l2.get(it.key)) ) ]
+			result
+		}	
+	}
+	
+	def static inferTypeOf( UntypedVariable v ) {
+		var act = v.getContainerOfType(typeof(InputAction))		
+		act.activity.reference.types.get(act.parameters.indexOf(v))
+	}
+	
+	def static extractType( List<FieldType> types , int idx ) {
+		if (( types == null )||( idx < 0 )||(types.size<=idx)) {
+			CarmaType::ERROR_TYPE
+		} else {
+			types.get(idx)
 		}
 	}
 	

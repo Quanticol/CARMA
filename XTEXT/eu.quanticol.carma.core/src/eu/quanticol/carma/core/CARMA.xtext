@@ -18,6 +18,11 @@ Element:
 	| EnumDefinition
 	| MeasureDefinition
 	| SystemDefinition
+	| ActivityDefinition
+;
+
+ActivityDefinition:
+	name=LOWERST ':' '[' types += FieldType (',' types += FieldType )* ']' ';'	
 ;
 
 ////////////////////////////////////////////////////RECORDS, ENUMS AND TYPES
@@ -51,7 +56,7 @@ ValueType hidden(ML_COMMENT,SL_COMMENT,WS):
 		FieldType
 ;
 
-FieldType returns ValueType:
+FieldType:
 		{IntegerType} "int" |
 		{RealType} "real" |
 		{BooleanType} "bool" |
@@ -68,15 +73,19 @@ Variable:
 	| {CustomParameter} reference=[ReferenceableType]  name=LOWERST
 ;
 
+UntypedVariable:
+	name=LOWERST
+;
+
 ReferenceableElement:
-	Variable|AttributeDeclaration|FunctionDefinition|EnumCase|ConstantDefinition
+	UntypedVariable|Variable|AttributeDeclaration|FunctionDefinition|
+	EnumCase|
+	ConstantDefinition
 ;
 
 ////////////////////////////////////////////////////FUNCTIONS
-FunctionDefinition hidden(ML_COMMENT,SL_COMMENT,WS):
-	"fun"
-	type=ValueType
-	name=UPPERST
+FunctionDefinition:
+	"fun" type=ValueType name=ID
 	'('
 	(parameters += Variable (',' parameters+=Variable)*)?
 	')' '=' body=Expression ';'
@@ -155,7 +164,7 @@ ParallelComponentComprehension returns ComponentComprehension  hidden(ML_COMMENT
 AtomicComponentComprehension returns ComponentComprehension  hidden(ML_COMMENT,SL_COMMENT,WS):
 	 {AllComponents} 		"*" 											|
 	 {AComponentAllStates}	comp=[ComponentDefinition] "[" "*" "]"		|
-	 {AComponentAState}		comp=[ComponentDefinition] "[" state=ProcessComposition "]"
+	 {AComponentAState}		comp=[ComponentDefinition] "[" state=ProcessComposition "]" 
 ;
 
 ////////////////////////////////////////////////////SPAWN
@@ -184,17 +193,13 @@ BlockSpawn hidden(ML_COMMENT,SL_COMMENT,WS):
 ////////////////////////////////////////////////////COMPONENT
 ComponentDefinition hidden(ML_COMMENT,SL_COMMENT,WS):
 	"component" name=UPPERST '(' (parameters += Variable (',' paramters +=Variable ))? ')'
-	block = ComponentBlock
-;
-
-ComponentBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 	"{"
 	store=StoreBlock
 	processes=ProcessesBlock
 	initBlock=InitBlock
 	"}"
 ;
-	
+
 StoreBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 	{StoreBlock}
 	"store" 
@@ -323,37 +328,44 @@ Guard hidden(ML_COMMENT,SL_COMMENT,WS):
 	"[" booleanExpression=Expression "]"
 ;
 
-ActionName:
-	name=LOWERST
+Activity:
+	reference=[ActivityDefinition] (isBroadacst?='*')? (predicate=ActionGuard)? 	
 ;
 
 Action hidden(ML_COMMENT,SL_COMMENT,WS):
-	ActionName (
-		{MulticastAction.action=current} '*' (predicate=ActionGuard)? (io=IO)? (update=Update)?
-		| {UnicastAction.action=current} (predicate=ActionGuard)?	io=IO (update=Update)?
+	Activity (
+		{OutputAction.activity=current} 
+			("<" (outputArguments+=Expression ( "," outputArguments+=Expression )*)? ">")? 
+			(update=Update)?
+		| {InputAction.activity=current} 
+			"(" 
+				(parameters+=UntypedVariable
+				( "," parameters+=UntypedVariable )* )?
+			")"
+			(update=Update)?
 	)
 ;
 
-IO hidden(ML_COMMENT,SL_COMMENT,WS):
-	( 
-		InputAction			|
-		OutputAction
-	)
-;
-
-InputAction returns IO  hidden(ML_COMMENT,SL_COMMENT,WS):
-	{InputAction}  "(" 
-	(parameters+=Variable
-	( "," parameters+=Variable )* )?
-	")"
-;
-
-OutputAction returns IO hidden(ML_COMMENT,SL_COMMENT,WS):
-	{OutputAction} "<"
-	(outputArguments+=Expression
-	( "," outputArguments+=Expression )*)?
-	">"
-;
+//IO hidden(ML_COMMENT,SL_COMMENT,WS):
+//	( 
+//		InputAction			|
+//		OutputAction
+//	)
+//;
+//
+//InputAction returns IO  hidden(ML_COMMENT,SL_COMMENT,WS):
+//	{InputAction}  "(" 
+//	(parameters+=UntypedVariable
+//	( "," parameters+=UntypedVariable )* )?
+//	")"
+//;
+//
+//OutputAction returns IO hidden(ML_COMMENT,SL_COMMENT,WS):
+//	{OutputAction} "<"
+//	(outputArguments+=Expression
+//	( "," outputArguments+=Expression )*)?
+//	">"
+//;
 
 
 
@@ -364,24 +376,24 @@ Update hidden(ML_COMMENT,SL_COMMENT,WS):
 ActionGuard hidden(ML_COMMENT,SL_COMMENT,WS):
 	{ActionGuard} "[" guard=Expression "]"
 ;
-////////////////////////////////////////////////////EXPRESSIONS
-Expression returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
+////////////////////////////////////////////////////Expression
+Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	Or
 ;
 
-Or returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
+Or returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	And ({Or.left=current} "||" 
 		right=And
 	)*
 ;
 
-And returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
+And returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	Equality ({And.left=current} "&&" 
 		right=Equality
 	)*
 ;
 	
-Equality returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
+Equality returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	SumDiff (
 		{Equality.left=current} '==' right=SumDiff
 		| {DisEquality.left=current} '!=' right=SumDiff
@@ -392,26 +404,26 @@ Equality returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
 	)?
 ;
 
-SumDiff returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
+SumDiff returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	MulDiv (
 		{Subtraction.left=current} '-' right=MulDiv
 		| {Addition.left=current} '+' right=MulDiv
 	)*
 ;
 
-MulDiv returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
+MulDiv returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	Modulo ({Multiplication.left=current} '*' right=Modulo
 		| {Division.left=current} '/' right=Modulo
 	)*
 ;
 
-Modulo returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS): 
+Modulo returns Expression hidden(ML_COMMENT,SL_COMMENT,WS): 
 	Primary ({Modulo.left=current} '%' 
 		right=Primary
 	)?
 ;
 
-Primary returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
+Primary returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	'(' Expression 	({IfThenElseExpression.guard=current} "?" thenBranch=Expression ":" elseBranch=Expression)? ")" | 
 	{Not} "!" expression=Primary |
 	{UnaryPlus} '+' expression=Primary |
@@ -421,7 +433,7 @@ Primary returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
 
 
 
-Atomic returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
+Atomic returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	ReferenceToSymbol 
 	| {AtomicTrue} "true"
 	| {AtomicFalse} "false"
@@ -442,7 +454,7 @@ Atomic returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
 //	| {AtomicProcessComposition}	value=ProcessComposition
 ;
 
-BuiltInFunctions returns Expressions :
+BuiltInFunctions returns Expression :
 	{AbsFunction} "abs" '(' arg=Expression ')' 
 			//The absolute value of arg.
 	| {AcosFunction} "acos" '(' arg=Expression ')' 

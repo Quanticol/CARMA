@@ -18,6 +18,13 @@ import static extension org.eclipse.xtext.EcoreUtil2.*
 import eu.quanticol.carma.core.carma.StoreBlock
 import eu.quanticol.carma.core.carma.FunctionDefinition
 import static extension eu.quanticol.carma.core.typing.TypeSystem.*
+import eu.quanticol.carma.core.carma.RecordDefinition
+import eu.quanticol.carma.core.carma.FieldDefinition
+import eu.quanticol.carma.core.carma.ConstantDefinition
+import eu.quanticol.carma.core.carma.ComponentDefinition
+import eu.quanticol.carma.core.carma.Variable
+import eu.quanticol.carma.core.carma.AttributeDeclaration
+import eu.quanticol.carma.core.carma.MeasureDefinition
 
 class CARMAValidator extends AbstractCARMAValidator {
 	
@@ -37,29 +44,173 @@ class CARMAValidator extends AbstractCARMAValidator {
 		var generalType = declaredType.mostGeneral(inferredType)
 				
 		if (!inferredType.isError()&&(!declaredType.equals(generalType))) {
-			error("Type Error: Expected "+declaredType+" is "+inferredType,CarmaPackage::eINSTANCE.functionDefinition_Body);
+			error("Type Error: Expected "+declaredType+" is "+inferredType,CarmaPackage::eINSTANCE.functionDefinition_Body,ERROR_FunctionDefinition_coherent_type);
 		}
 	}
 	
-//	//FunctionDefinition - duplicated function name
-//	public static val ERROR_FunctionDefinition_multiple_definition 	= "ERROR_FunctionDefinition_multiple_definition"
-//	
-//	@Check
-//	def check_ERROR_FunctionDefinition_multiple_definition(FunctionDefinition f) {
-//		
-//		var model = f.getContainerOfType(typeof(Model))
-//		if (model != null) {
-//
-//			var functions = model.functions.filter[ it.name == f.name ]
-//			if (functions.length > 1) {
-//				error("Error: duplicated function declaration",CarmaPackage::eINSTANCE, ERROR_FunctionDefinition_multiple_definition,f.name);				
-//			}
-//			
-//		}
-//
-//	}
+	//FunctionDefinition - duplicated function name
+	public static val ERROR_FunctionDefinition_multiple_definition 	= "ERROR_FunctionDefinition_multiple_definition"
 	
+	@Check
+	def check_ERROR_FunctionDefinition_multiple_definition(FunctionDefinition f) {
+		
+		var model = f.getContainerOfType(typeof(Model))
+		if (model != null) {
 
+			var functions = model.functions.filter[ it.name == f.name ]
+			if (functions.length > 1) {
+				error("Error: duplicated function declaration",CarmaPackage::eINSTANCE.referenceableElement_Name, ERROR_FunctionDefinition_multiple_definition);				
+			}
+			
+		}
+
+	}
+	
+	//RecordDefinition - duplicated record name
+	public static val ERROR_RecordDefinition_multiple_definition 	= "ERROR_RecordDefinition_multiple_definition"
+	
+	@Check
+	def check_ERROR_RecordDefinition_multiple_definition(RecordDefinition r) {
+		
+		var model = r.getContainerOfType(typeof(Model))
+		if (model != null) {
+
+			var functions = model.records.filter[ it.name == r.name ]
+			if (functions.length > 1) {
+				error("Error: duplicated record declaration",CarmaPackage::eINSTANCE.recordDefinition_Name, ERROR_RecordDefinition_multiple_definition);				
+			}
+			
+		}
+
+	}
+	
+	//FunctionDefinition - duplicated function name
+	public static val ERROR_FieldDefinition_multiple_definition 	= "ERROR_FieldDefinition_multiple_definition"
+	
+	@Check
+	def check_ERROR_FieldDefinition_multiple_definition(FieldDefinition f) {
+		
+		var model = f.getContainerOfType(typeof(Model))
+		if (model != null) {
+
+			var functions = model.fields.filter[ it.name == f.name ]
+			if (functions.length > 1) {
+				error("Error: duplicated field declaration",CarmaPackage::eINSTANCE.fieldDefinition_Name, ERROR_FieldDefinition_multiple_definition);				
+			}
+			
+		}
+
+	}
+	
+	//Process - duplicated process name
+	public static val ERROR_Process_multiple_definition 	= "ERROR_Process_multiple_definition"
+	
+	@Check
+	def check_ERROR_Process_multiple_definition(Process p) {
+		
+		var model = p.getContainerOfType(typeof(Model))
+		if (model != null) {
+
+			var functions = model.processes.filter[ it.name == p.name ]
+			if (functions.length > 1) {
+				error("Error: duplicated process declaration",CarmaPackage::eINSTANCE.process_Name, ERROR_Process_multiple_definition);				
+			}
+			
+		}
+
+	}
+
+	//ConstantDefinition - duplicated constant name
+	public static val ERROR_ConstantDefinition_multiple_definition 	= "ERROR_ConstantDefinition_multiple_definition"
+	
+	@Check
+	def check_ERROR_Process_multiple_definition(ConstantDefinition c) {
+		
+		var model = c.getContainerOfType(typeof(Model))
+		if (model != null) {
+
+			var functions = model.processes.filter[ it.name == c.name ]
+			if (functions.length > 1) {
+				error("Error: duplicated constant declaration",CarmaPackage::eINSTANCE.referenceableElement_Name, ERROR_ConstantDefinition_multiple_definition);				
+			}
+			
+		}
+
+	}
+
+	//Component - duplicated component name
+	public static val ERROR_ComponentDefinition_multiple_definition 	= "ERROR_ComponentDefinition_multiple_definition"
+	
+	@Check
+	def check_ERROR_ComponentDefinition_multiple_definition(ComponentDefinition c) {
+		
+		var model = c.getContainerOfType(typeof(Model))
+		if (model != null) {
+
+			var functions = model.processes.filter[ it.name == c.name ]
+			if (functions.length > 1) {
+				error("Error: duplicated component declaration",CarmaPackage::eINSTANCE.componentDefinition_Name, ERROR_ComponentDefinition_multiple_definition);				
+			}
+			
+		}
+
+	}
+
+	//Variable - duplicated variable name
+	public static val ERROR_Variable_multiple_definition 	= "ERROR_Variable_multiple_definition"
+	
+	@Check
+	def check_ERROR_Variable_multiple_definition(Variable v) {
+
+		var vars = null as Iterable<Variable>;	
+		var f = v.getContainerOfType(typeof(FunctionDefinition))
+		if (f != null) {
+			vars = f.parameters.filter[ it.name == v.name ]			
+		}
+		var c = v.getContainerOfType(typeof(ComponentDefinition))
+		if (c != null) {
+			vars = c.parameters.filter[ it.name == v.name ]			
+		}
+		if ((vars != null)&&(vars.length > 1)) {
+			error("Error: duplicated variable declaration",CarmaPackage::eINSTANCE.referenceableElement_Name, ERROR_Variable_multiple_definition);				
+		}
+			
+	}
+	
+	//AttributeDeclaration - duplicated variable name
+	public static val ERROR_AttributeDeclaration_multiple_definition 	= "ERROR_AttributeDeclaration_multiple_definition"
+	
+	@Check
+	def check_ERROR_AttributeDeclaration_multiple_definition(AttributeDeclaration a) {
+
+		var block = a.getContainerOfType(typeof(StoreBlock))
+		if (block != null) {
+			var attrs = block.attributes.filter[ it.name == a.name ]			
+			if (attrs.length > 1) {
+				error("Error: duplicated attribute declaration",CarmaPackage::eINSTANCE.referenceableElement_Name, ERROR_AttributeDeclaration_multiple_definition);				
+			}
+		}
+			
+	}
+
+	//MeasureDefinition - duplicated measure name
+	public static val ERROR_MeasureDefinition_multiple_definition 	= "ERROR_MeasureDefinition_multiple_definition"
+	
+	@Check
+	def check_ERROR_MeasureDefinition_multiple_definition(MeasureDefinition m) {
+
+		var model = m.getContainerOfType(typeof(Model))
+		if (model != null) {
+
+			var functions = model.processes.filter[ it.name == m.name ]
+			if (functions.length > 1) {
+				error("Error: duplicated measure declaration",CarmaPackage::eINSTANCE.measureDefinition_Name, ERROR_MeasureDefinition_multiple_definition);				
+			}
+			
+		}
+			
+	}
+	
 
 //	
 //	//TODO make sure number of RecordArguments matches the number of FeildDeclaration  
