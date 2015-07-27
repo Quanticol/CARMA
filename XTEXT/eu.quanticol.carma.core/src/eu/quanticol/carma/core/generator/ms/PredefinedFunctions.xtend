@@ -27,4 +27,13 @@ class PredefinedFunctions {
 		'''
 	}
 	
+	def String getRan(){
+		'''
+		public Double ran(ArrayList<Double> input){
+			RandomGenerator random = new DefaultRandomGenerator();
+			return (Double) random.nextDouble();
+		}
+		'''
+	}
+	
 }

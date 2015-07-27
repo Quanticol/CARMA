@@ -545,6 +545,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="MinFunction" eSuperTypes="#//PreFunctionCall"/>
   <eClassifiers xsi:type="ecore:EClass" name="PowFunction" eSuperTypes="#//PreFunctionCall"/>
   <eClassifiers xsi:type="ecore:EClass" name="AbsFunction" eSuperTypes="#//PreFunctionCall"/>
+  <eClassifiers xsi:type="ecore:EClass" name="RanFunction" eSuperTypes="#//PreFunctionCall"/>
   <eClassifiers xsi:type="ecore:EClass" name="BlockStyle" eSuperTypes="#//ComponentStyle">
     <eStructuralFeatures xsi:type="ecore:EReference" name="definitions" upperBound="-1"
         eType="#//Component" containment="true"/>

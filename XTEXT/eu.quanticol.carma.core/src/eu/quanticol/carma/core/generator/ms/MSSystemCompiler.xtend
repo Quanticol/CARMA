@@ -50,6 +50,7 @@ class MSSystemCompiler {
 				«getUniform»
 				«getPow»
 				«getAbs»
+				«getRan»
 				«IF model.functions != null»
 				«model.functions.printFunctions»
 				«ENDIF»

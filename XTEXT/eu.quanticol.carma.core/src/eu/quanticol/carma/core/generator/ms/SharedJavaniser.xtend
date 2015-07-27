@@ -92,6 +92,7 @@ import java.util.ArrayList
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import eu.quanticol.carma.core.carma.FeildDeclaration
 import eu.quanticol.carma.core.carma.AttribParameter
+import eu.quanticol.carma.core.carma.RanFunction
 
 class SharedJavaniser {
 	
@@ -643,6 +644,7 @@ class SharedJavaniser {
 			MinFunction:		{'''min(«(preFunctionCall.arguments as PredFunctionCallArguments).javanise»)'''}
 			PowFunction:		{'''pow(«(preFunctionCall.arguments as PredFunctionCallArguments).javanise»)'''}
 			AbsFunction:		{'''abs(«(preFunctionCall.arguments as PredFunctionCallArguments).javanise»)'''}
+			RanFunction:		{'''ran(«(preFunctionCall.arguments as PredFunctionCallArguments).javanise»)'''}
 		}
 	}
 	

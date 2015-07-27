@@ -438,6 +438,7 @@
     <genClasses ecoreClass="CARMA.ecore#//MinFunction"/>
     <genClasses ecoreClass="CARMA.ecore#//PowFunction"/>
     <genClasses ecoreClass="CARMA.ecore#//AbsFunction"/>
+    <genClasses ecoreClass="CARMA.ecore#//RanFunction"/>
     <genClasses ecoreClass="CARMA.ecore#//BlockStyle">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//BlockStyle/definitions"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//BlockStyle/processes"/>

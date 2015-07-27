@@ -516,7 +516,8 @@ PreFunctionCall returns PreFunctionCall hidden(ML_COMMENT,SL_COMMENT,WS):
 	{MaxFunction}		name="Max"		|
 	{MinFunction}		name="Min"		|
 	{PowFunction}		name="Pow"		|
-	{AbsFunction}		name="Abs"
+	{AbsFunction}		name="Abs"		|
+	{RanFunction}		name="Ran"
 	)
 	arguments=PredFunctionCallArguments 
 ;
