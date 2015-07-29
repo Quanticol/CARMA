@@ -25,6 +25,8 @@ import eu.quanticol.carma.core.carma.ComponentDefinition
 import eu.quanticol.carma.core.carma.Variable
 import eu.quanticol.carma.core.carma.AttributeDeclaration
 import eu.quanticol.carma.core.carma.MeasureDefinition
+import eu.quanticol.carma.core.carma.UpdateAssignment
+import eu.quanticol.carma.core.carma.EnumDefinition
 
 class CARMAValidator extends AbstractCARMAValidator {
 	
@@ -32,8 +34,35 @@ class CARMAValidator extends AbstractCARMAValidator {
 //	@Inject extension Util
 
 
-	
+	public static val ERROR_FunctionDefinition_wrong_name 	= "ERROR_FunctionDefinition_wong_name"
 
+	@Check
+	def check_ERROR_FunctionDefinition_wrong_name(FunctionDefinition f){
+		if ((f.name != null)&&(!f.name.empty)&&(!Character::isUpperCase( f.name.charAt(0) ) )) {
+			error("Name error: function names have to start with a capitalised letter!",CarmaPackage::eINSTANCE.referenceableElement_Name,ERROR_FunctionDefinition_wrong_name);
+		}
+	}
+
+	public static val ERROR_RecordDefinition_wong_name 	= "ERROR_RecordDefinition_wong_name"
+
+	@Check
+	def check_ERROR_RecordDefinition_wrong_name(RecordDefinition f){
+		if ((f.name != null)&&(!f.name.empty)&&(!Character::isUpperCase( f.name.charAt(0) ) )) {
+			error("Name error: record names have to start with a capitalised letter!",CarmaPackage::eINSTANCE.recordDefinition_Name,ERROR_RecordDefinition_wong_name);
+		}
+	}
+
+	public static val ERROR_EnumDefinition_wong_name 	= "ERROR_EnumDefinition_wong_name"
+
+	@Check
+	def check_ERROR_EnumDefinition_wong_name(EnumDefinition f){
+		if ((f.name != null)&&(!f.name.empty)&&(!Character::isUpperCase( f.name.charAt(0) ) )) {
+			error("Name error: enumeration names have to start with a capitalised letter!",CarmaPackage::eINSTANCE.enumDefinition_Name,ERROR_EnumDefinition_wong_name);
+		}
+	}
+
+	//TODO: ADD SIMILAR APPROPRIATE VALIDATORS FOR THE OTHER SYNTACTIC CATEGORIES.	
+	
 	//FunctionDefinition - must have same type of its body
 	public static val ERROR_FunctionDefinition_coherent_type 	= "ERROR_FunctionDefinition_coherent_type"
 	
@@ -210,6 +239,22 @@ class CARMAValidator extends AbstractCARMAValidator {
 		}
 			
 	}
+	
+	//FunctionDefinition - duplicated function name
+	public static val ERROR_UpdateAssignment_type_error 	= "ERROR_UpdateAssignment_type_error"
+	
+	@Check
+	def check_ERROR_AttributeAssignment_type_error( UpdateAssignment assignment ) {
+		
+		var expectedType = assignment ?. reference ?. typeOf
+		var actualType = assignment ?. expression ?. typeOf
+		if ((expectedType != null)&&(actualType !=null)&&(!expectedType.mostGeneral(actualType).equals(expectedType))) {
+			error("Type Error: Expected "+expectedType+" is "+actualType,CarmaPackage::eINSTANCE.updateAssignment_Expression,ERROR_FunctionDefinition_coherent_type);			
+		}
+
+	}
+	
+	
 	
 
 //	

@@ -18,25 +18,20 @@ Element:
 	| EnumDefinition
 	| MeasureDefinition
 	| SystemDefinition
-	| ActivityDefinition
-;
-
-ActivityDefinition:
-	name=LOWERST ':' '[' types += FieldType (',' types += FieldType )* ']' ';'	
 ;
 
 ////////////////////////////////////////////////////RECORDS, ENUMS AND TYPES
 
 EnumDefinition:
-	'enum' name=UPPERST '=' values += EnumCase (',' values += EnumCase ) ';'
+	'enum' name=ID '=' values += EnumCase (',' values += EnumCase ) ';'
 ;
 
 RecordDefinition returns RecordDefinition hidden(ML_COMMENT,SL_COMMENT,WS):
-	'record' name=UPPERST '=' '[' fields += FieldDefinition (','  fields += FieldDefinition)* ']' ';'
+	'record' name=ID '=' '[' fields += FieldDefinition (','  fields += FieldDefinition)* ']' ';'
 ;
 
 FieldDefinition:
-	fieldType=FieldType name=LOWERST
+	fieldType=BasicType name=ID
 ;
 
 ReferenceableType:
@@ -44,19 +39,19 @@ ReferenceableType:
 ;
 
 EnumCase:
-	name=UPPERST
+	name=ID
 ;
 
 ConstantDefinition:
-	'const' name=LOWERST '=' value=Expression ';'
+	'const' name=ID '=' value=Expression ';'
 ;
 
 ValueType hidden(ML_COMMENT,SL_COMMENT,WS):
 		{ProcessType} "process"	|
-		FieldType
+		BasicType
 ;
 
-FieldType:
+BasicType:
 		{IntegerType} "int" |
 		{RealType} "real" |
 		{BooleanType} "bool" |
@@ -66,15 +61,11 @@ FieldType:
 ////////////////////////////////////////////////////VARIABLES AND REFERENCES
 
 Variable:
-	{IntegerParameter} "int" name=LOWERST
-	| {RealParameter} "real" name=LOWERST
-	| {BooleanParameter} "bool" name=LOWERST
-	| {ProcessParameter} "process" name=UPPERST
-	| {CustomParameter} reference=[ReferenceableType]  name=LOWERST
+	type=ValueType name=ID
 ;
 
 UntypedVariable:
-	name=LOWERST
+	name=ID
 ;
 
 ReferenceableElement:
@@ -85,7 +76,7 @@ ReferenceableElement:
 
 ////////////////////////////////////////////////////FUNCTIONS
 FunctionDefinition:
-	"fun" type=ValueType name=ID
+	"fun" type=BasicType name=ID
 	'('
 	(parameters += Variable (',' parameters+=Variable)*)?
 	')' '=' body=Expression ';'
@@ -192,7 +183,7 @@ BlockSpawn hidden(ML_COMMENT,SL_COMMENT,WS):
 
 ////////////////////////////////////////////////////COMPONENT
 ComponentDefinition hidden(ML_COMMENT,SL_COMMENT,WS):
-	"component" name=UPPERST '(' (parameters += Variable (',' paramters +=Variable ))? ')'
+	"component" name=ID '(' (parameters += Variable (',' parameters +=Variable )*)? ')'
 	"{"
 	store=StoreBlock
 	processes=ProcessesBlock
@@ -209,8 +200,8 @@ StoreBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 AttributeDeclaration:
-	{AttributeConstDeclaration} "const" name=LOWERST ":=" value=Expression
-	| {AttibuteVarDeclaration} "attrib" name=LOWERST  ":=" value=Expression
+	{AttributeConstDeclaration} "const" name=ID ":=" value=Expression
+	| {AttibuteVarDeclaration} "attrib" name=ID  ":=" value=Expression
 ;
 	
 ProcessesBlock hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -231,14 +222,14 @@ InitBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 
 BlockSystem returns System:
 	{BlockSystem}
-	"system" name=UPPERST "{"
+	"system" name=ID "{"
 	collective=BlockCollective
 	(environment=Environment)?
 	"}"
 ;
 
 SystemDefinition:
-	"system" name=UPPERST '{'
+	"system" name=ID '{'
 		'collective' '{'
 			collective += ComponentBlockDeclaration ('||' collective+=ComponentBlockDeclaration)*			
 		'}'
@@ -278,7 +269,7 @@ ComponentBlockSpawn returns CBND hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 ComponentBlockForStatement hidden(ML_COMMENT,SL_COMMENT,WS):
-	"for" "(" variable=LOWERST ";" expression=Expression ";" afterThought=Expression ")" '{'
+	"for" "(" variable=ID ";" expression=Expression ";" afterThought=Expression ")" '{'
 			collective += ComponentBlockDeclaration ('||' collective+=ComponentBlockDeclaration)*			
 	'}'
 ;
@@ -291,7 +282,7 @@ Processes hidden(ML_COMMENT,SL_COMMENT,WS): {Processes}
 ;
 
 Process hidden(ML_COMMENT,SL_COMMENT,WS):
-	name=UPPERST
+	name=ID
 	"="
 	processExpression=ProcessExpression 
 ;
@@ -329,7 +320,7 @@ Guard hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 Activity:
-	reference=[ActivityDefinition] (isBroadacst?='*')? (predicate=ActionGuard)? 	
+	name=ID (isBroadacst?='*')? (predicate=ActionGuard)? 	
 ;
 
 Action hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -428,13 +419,16 @@ Primary returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	{Not} "!" expression=Primary |
 	{UnaryPlus} '+' expression=Primary |
 	{UnaryMinus} '-' expression=Primary | 
-	Atomic	
+	RecordAccess 	
+;
+
+RecordAccess returns Expression:
+	Atomic ( {RecordAccess.source=current} '.' field=[FieldDefinition] )*
 ;
 
 
-
 Atomic returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
-	ReferenceToSymbol 
+	Reference 
 	| {AtomicTrue} "true"
 	| {AtomicFalse} "false"
 	| {AtomicInteger} value=INT 
@@ -446,10 +440,10 @@ Atomic returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	| {AtomicPi} "PI"
 	| {AtomicExp} "E"
 	| BuiltInFunctions
-	| {MyContext} "my" "." reference=ReferenceToSymbol
-	| {ReceiverContext} "recever" "." reference=ReferenceToSymbol
-	| {SenderContext} "sender" "." reference=ReferenceToSymbol
-	| {GlobalContext} "global" "." reference=ReferenceToSymbol
+	| {MyContext} "my" "." reference=Reference
+	| {ReceiverContext} "receiver" "." reference=Reference
+	| {SenderContext} "sender" "." reference=Reference
+	| {GlobalContext} "global" "." reference=Reference
 //	| {AtomicOutcome}				value=OutcomeProbability	THE ROLE OF THIS CASES IS NOT CLEAR FOR ME.
 //	| {AtomicProcessComposition}	value=ProcessComposition
 ;
@@ -479,8 +473,13 @@ BuiltInFunctions returns Expression :
 			//Returns the natural logarithm (base e) of a double value.
 	| {Log10Function} "log10" '(' arg=Expression ')'
 			//Returns the base 10 logarithm of a double value.
-	| {MaxFunction} "max" '(' first=Expression ',' second=Expression ')'
-	| {MinFunction} "min" '(' first=Expression ',' second=Expression ')'
+	| "max" ({MaxFunction} '(' first=Expression ',' second=Expression ')'
+		| {MaxMeasure} '{' value=Expression ('|' guard=Expression)? '}'
+	)
+	| "min" ({MinFunction} '(' first=Expression ',' second=Expression ')'
+		| {MinMeasure} '{' value=Expression ('|' guard=Expression)? '}'
+	)
+	| "avg" {AverageMeasure} '{' value=Expression ('|' guard=Expression)? '}'
 	| {PowFunction} "pow" '(' first=Expression ',' second=Expression ')'
 	| {SinFunction} "sin" '(' arg=Expression ')'
 			//Returns the trigonometric sine of an angle.
@@ -498,21 +497,14 @@ FieldAssignment:
 ////////////////////////////////////////////////////REFERENCE
 
 
-ReferenceToSymbol:
-	VariableReference (
-		{RecordAccess.source=current} '.' field=[FieldDefinition]
-		| {Call.source=current} '(' ( args+=Expression ( ',' args+=Expression )* )? ')'
-	)?
-;
-
-VariableReference hidden(ML_COMMENT,SL_COMMENT,WS):
-	reference=[ReferenceableElement] 
+Reference hidden(ML_COMMENT,SL_COMMENT,WS):
+	reference=[ReferenceableElement] ( isCall ?= '(' ( args+=Expression ( ',' args+=Expression )* )? ')' )?
 ;
 
 ////////////////////////////////////////////////////MEASURES
 
 MeasureDefinition hidden(ML_COMMENT,SL_COMMENT,WS):
-	"measure" name=UPPERST (ranges=MeasureVariableDeclarations)? "="  measure=Expression  ';'
+	"measure" name=ID (ranges=MeasureVariableDeclarations)? "="  measure=Expression  ';'
 ;
 
 MeasureVariableDeclarations hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -523,7 +515,7 @@ MeasureVariableDeclarations hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 MeasureVariableDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	{MeasureVariableDeclaration} name=LOWERST	":="	assign=(
+	{MeasureVariableDeclaration} name=ID	":="	assign=(
 		Range |
 		Expression
 	)
@@ -535,7 +527,7 @@ Environment hidden(ML_COMMENT,SL_COMMENT,WS):
 	{Environment}
 	"environment" 
 	"{"
-	(stores=StoreBlock)?
+	(store=StoreBlock)?
 	(probabilityBlock=ProbabilityBlock)?
 	(rateBlock=RateBlock)?
 	(updateBlock=UpdateBlock)?
@@ -589,6 +581,4 @@ ActionStub hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 
-terminal LOWERST: 			("a".."z") ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*;
-terminal UPPERST: 			("A".."Z") ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*;
 terminal REAL returns ecore::EDouble: (('0'..'9')+ '.' ('0' .. '9')*)|('.'('0' .. '9')*);

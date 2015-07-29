@@ -8,7 +8,6 @@ import java.util.ArrayList
 import eu.quanticol.carma.core.carma.CBND
 import eu.quanticol.carma.core.carma.Process
 import eu.quanticol.carma.core.carma.ProcessComposition
-import eu.quanticol.carma.core.carma.ProcessParameter
 import eu.quanticol.carma.core.carma.ParallelComposition
 import eu.quanticol.carma.core.carma.ProcessReference
 import eu.quanticol.carma.core.carma.ProcessExpressionReference
@@ -20,7 +19,6 @@ import eu.quanticol.carma.core.carma.Processes
 import eu.quanticol.carma.core.carma.ConstantDefinition
 import eu.quanticol.carma.core.carma.ComponentDefinition
 import eu.quanticol.carma.core.carma.MeasureDefinition
-import eu.quanticol.carma.core.carma.FieldType
 import eu.quanticol.carma.core.carma.IntegerType
 import eu.quanticol.carma.core.carma.RealType
 import eu.quanticol.carma.core.carma.BooleanType
@@ -33,14 +31,19 @@ import eu.quanticol.carma.core.carma.AttributeDeclaration
 import eu.quanticol.carma.core.carma.EnumCase
 import eu.quanticol.carma.core.carma.ProcessType
 import eu.quanticol.carma.core.carma.ValueType
-import eu.quanticol.carma.core.carma.IntegerParameter
-import eu.quanticol.carma.core.carma.RealParameter
-import eu.quanticol.carma.core.carma.BooleanParameter
-import eu.quanticol.carma.core.carma.CustomParameter
 import eu.quanticol.carma.core.carma.ReferenceableType
 import eu.quanticol.carma.core.carma.Action
 import eu.quanticol.carma.core.carma.OutputAction
 import eu.quanticol.carma.core.carma.Activity
+import eu.quanticol.carma.core.carma.Element
+import eu.quanticol.carma.core.carma.SystemDefinition
+import eu.quanticol.carma.core.carma.StoreBlock
+import org.eclipse.xtext.scoping.Scopes
+import org.eclipse.xtext.scoping.IScope
+import org.eclipse.emf.common.util.EList
+import java.util.Set
+import java.util.LinkedList
+import eu.quanticol.carma.core.typing.CarmaType
 
 class Util {
 
@@ -59,6 +62,61 @@ class Util {
 	public static final String STATE_PREFIX = "__STATE__";
 	public static final String ACT_PREFIX = "__ACT__";
 	
+	
+	
+	def static getActivities( Model m , boolean broadcast ) {
+		var activities = m.getAllContentsOfType(typeof(Activity)).filter[ it.isBroadacst==broadcast ]
+		val LinkedList<Activity> toReturn = newLinkedList()
+		activities.forEach[ a |
+			if (toReturn.forall[ !it.name.equals(a.name) ]) {
+				toReturn.add(a)
+			}
+		]
+		toReturn
+	}
+	
+	def static getMessages( Model m , Activity a ) {
+		m.getAllContentsOfType(typeof(OutputAction)).filter[ 
+			(it.activity.name == a.name)&&(it.activity.isIsBroadacst==a.isIsBroadacst)
+		].map[it.outputArguments]
+	}
+	
+	def static getAllAttributes( Model m ) {
+		m.components.map[it.store.attributes].flatten
+		
+	}
+	
+	def static getAllGlobalAttributes( Model m ) {
+		m.systems.filter[it.environment != null].
+			filter[ it.environment.store != null].
+				map[ it.environment.store.attributes ].flatten
+	}
+	
+	def static getGlobalAttributes( Model m ) {
+		var sys = m.systems
+		val toReturn = newLinkedList()
+		sys.filter[it.environment != null].
+				filter[ it.environment.store != null].
+					forEach[
+						toReturn.mergeAttributes(it.environment.store.attributes)
+					]
+		toReturn
+	}
+	
+	def static getAttributes( Model m ) {
+		var comps = m.components
+		val toReturn = newLinkedList()
+		comps.forEach[
+			toReturn.mergeAttributes(it.store.attributes)
+		]
+		toReturn
+	}
+	
+	def static mergeAttributes( LinkedList<AttributeDeclaration> set , EList<AttributeDeclaration> attrs ) {
+		attrs.forEach[
+			a | if (set.forall[ !it.name.equals(a.name) ]) { set.add(a) }
+		]
+	}
 	
 	def static getFunctions( Model m ) {
 		m.elements.filter(typeof(FunctionDefinition)) 		
@@ -87,6 +145,11 @@ class Util {
 	def static getMeasures( Model m ) {
 		m.elements.filter(typeof(MeasureDefinition))
 	}
+
+	def static getSystems( Model m ) {
+		m.elements.filter(typeof(SystemDefinition))
+	}
+	
 	
 	def static enumClass( String name ) {
 		'''«ENUM_PREFIX»«name»'''
@@ -106,20 +169,7 @@ class Util {
 	
 	
 	def static toJavaDeclaration( Variable v ) {
-		switch v {
-			IntegerParameter: '''Integer «v.name.variableName»'''
-			RealParameter: '''Double «v.name.variableName»'''
-			BooleanParameter: '''Boolean «v.name.variableName»'''
-			ProcessParameter: '''Object «v.name»''' //FIXME!!!
-			CustomParameter: {
-				var ref = v.reference
-				switch ref {
-					EnumDefinition: '''«ref.name.enumClass» «v.name.variableName»'''							
-					RecordDefinition: '''«ref.name.recordClass» «v.name.variableName»'''							
-				}
-			
-			}
-		}
+		'''«v.type.toJavaType» «v.name.variableName»'''
 	}
 	
 	def static toJavaType( ValueType ft ) {

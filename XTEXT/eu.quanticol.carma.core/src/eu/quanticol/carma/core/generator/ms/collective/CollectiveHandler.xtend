@@ -1,6 +1,7 @@
 package eu.quanticol.carma.core.generator.ms.collective
 
 import static extension eu.quanticol.carma.core.utils.Util.*
+import static extension eu.quanticol.carma.core.typing.TypeSystem.*
 import static extension eu.quanticol.carma.core.generator.ms.expression.ExpressionHandler.*
 
 import eu.quanticol.carma.core.carma.UpdateAssignment
@@ -77,11 +78,11 @@ class CollectiveHandler {
 	}
 	
 	def static dispatch CharSequence actionCode( InputAction act ) {
-		var t = act.activity.reference.types
+		var t = act.activity.inferActivityType
 		var idxVar = act.parameters.indexed
 		'''
 		CarmaAction action = new CarmaInput( 
-			«act.activity.reference.name.actionName» , «act.activity.isIsBroadacst»  		
+			«act.activity.name.actionName» , «act.activity.isIsBroadacst»  		
 		) {
 			
 			@Override
@@ -111,7 +112,7 @@ class CollectiveHandler {
 	def static dispatch CharSequence actionCode( OutputAction act ) {
 		'''
 		CarmaAction action = new CarmaOutput(
-			«act.activity.reference.name.actionName» , «act.activity.isIsBroadacst»  		
+			«act.activity.name.actionName» , «act.activity.isIsBroadacst»  		
 		) {
 			
 			@Override

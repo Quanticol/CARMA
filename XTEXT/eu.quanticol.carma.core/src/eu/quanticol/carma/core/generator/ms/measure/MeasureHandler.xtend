@@ -15,7 +15,6 @@ import java.util.HashSet
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import eu.quanticol.carma.core.carma.ProcessComposition
 import eu.quanticol.carma.core.utils.Util
-import eu.quanticol.carma.core.carma.VariableReference
 import eu.quanticol.carma.core.carma.MeasureDefinition
 
 class MeasureHandler {

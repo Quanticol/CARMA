@@ -24,21 +24,21 @@ class CGT10_EnvironmentUpdate_Unicast {
 	@Test
 	def void testGenerationCodeProducer(){
 		val model = parseHelper.parse('''
-component Producer(enum a, enum b, enum c, enum d, Z){
+		
+component Producer(int elements,int limit){
     
     store{
-        enum product := a;
-        record position := {x := c, y := d};
-        enum eu_sender := 1;
+        attr product := elements;
+        const limit := limit;
     }
 
     behaviour{
-        Produce = [my.product > 0] produce*{product := product + 1}.Produce;
+        Produce = [my.product < 0] produce*{product := product + 1}.Produce;
         Send = [my.product > 0] send[eu_receiver == 1]<1>{product := product - 1}.Send;
     }
 
     init{
-        Z;
+        Produce|;
     }
 }
 

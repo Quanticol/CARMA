@@ -16,9 +16,7 @@ import eu.quanticol.carma.core.carma.Modulo
 import eu.quanticol.carma.core.carma.Not
 import eu.quanticol.carma.core.carma.UnaryPlus
 import eu.quanticol.carma.core.carma.UnaryMinus
-import eu.quanticol.carma.core.carma.VariableReference
 import eu.quanticol.carma.core.carma.RecordAccess
-import eu.quanticol.carma.core.carma.Call
 import eu.quanticol.carma.core.carma.AtomicTrue
 import eu.quanticol.carma.core.carma.AtomicFalse
 import eu.quanticol.carma.core.carma.AtomicInteger
@@ -57,8 +55,8 @@ import static extension org.eclipse.xtext.EcoreUtil2.*
 import static extension eu.quanticol.carma.core.utils.Util.*
 import eu.quanticol.carma.core.carma.FieldAssignment
 import eu.quanticol.carma.core.carma.RecordDefinition
-import eu.quanticol.carma.core.carma.ReferenceToSymbol
 import eu.quanticol.carma.core.carma.IfThenElseExpression
+import eu.quanticol.carma.core.carma.Reference
 
 class ExpressionHandler {
 	
@@ -126,20 +124,16 @@ class ExpressionHandler {
 		'''-(«e.expression.expressionToJava»)'''
 	}
 	
-	def static dispatch CharSequence expressionToJava( VariableReference e ) {
-		e.reference.getReference( ReferenceContext::NONE )
+	def static dispatch CharSequence expressionToJava( Reference e ) {
+		'''«e.reference.getReference( ReferenceContext::NONE )»«IF e.isIsCall»( 
+			«FOR p:e.args SEPARATOR ','»«p.expressionToJava»«ENDFOR»
+		)«ENDIF»'''		
 	}
 
 	def static dispatch CharSequence expressionToJava( RecordAccess e ) {
-		'''«e.source.reference.getReference( ReferenceContext::NONE )».«e.field.name.fieldName»'''		
+		'''«e.source.expressionToJava».«e.field.name.fieldName»'''		
 	}
 		
-	def static dispatch CharSequence expressionToJava( Call e ) {
-		'''«e.source.reference.getReference( ReferenceContext::NONE )»( 
-			«FOR p:e.args SEPARATOR ','»«p.expressionToJava»«ENDFOR»
-		)'''		
-	}
-
 	def static dispatch CharSequence expressionToJava( IfThenElseExpression e ) {
 		'''( «e.guard.expressionToJava» ? «e.thenBranch.expressionToJava» ; «e.elseBranch.expressionToJava» )'''		
 	}
@@ -188,18 +182,12 @@ class ExpressionHandler {
 		'''Math.E'''
 	}
 
-	def static getLitteral( ReferenceToSymbol s , ReferenceContext c ) {
-		switch s {
-			VariableReference: s.reference.getReference(c)
-			RecordAccess: '''«s.source.reference.getReference( c )».«s.field.name.fieldName»'''		
-			Call: 		
-			'''
-			«s.source.reference.getReference( c )»(
-				«FOR p:s.args SEPARATOR ','»«p.expressionToJava»«ENDFOR»
-			)
-			'''		
-			
-		}
+	def static dispatch getLitteral( Reference s , ReferenceContext c ) {
+		'''
+		«s.reference.getReference(c)»«IF s.isIsCall»(
+			«FOR p:s.args SEPARATOR ','»«p.expressionToJava»«ENDFOR»
+		)«ENDIF»
+		''' 
 	}
 
 	def static dispatch CharSequence expressionToJava( MyContext e ) {

@@ -3,24 +3,30 @@
  */
 package eu.quanticol.carma.core.typing;
 
+import org.eclipse.emf.ecore.EObject;
+
+import eu.quanticol.carma.core.carma.EnumDefinition;
+import eu.quanticol.carma.core.carma.RecordDefinition;
+import eu.quanticol.carma.core.utils.Util;
+
 /**
  * @author loreti
  *
  */
 public class CarmaType {
 	
-	public final static CarmaType INTEGER_TYPE = new CarmaType( TypeCode.INTEGER , "int" );
-	public final static CarmaType REAL_TYPE = new CarmaType( TypeCode.REAL , "real" );
-	public final static CarmaType BOOLEAN_TYPE = new CarmaType( TypeCode.BOOLEAN , "bool" );
-	public final static CarmaType ERROR_TYPE = new CarmaType( TypeCode.ERROR , "error" );
-	public final static CarmaType PROCESS_TYPE = new CarmaType( TypeCode.PROCESS , "process" );
-
-	public static CarmaType createRecordType( String name ) {
-		return new CarmaType( TypeCode.RECORD , name );
+	public final static CarmaType INTEGER_TYPE = new CarmaType( TypeCode.INTEGER , null );
+	public final static CarmaType REAL_TYPE = new CarmaType( TypeCode.REAL , null );
+	public final static CarmaType BOOLEAN_TYPE = new CarmaType( TypeCode.BOOLEAN , null );
+	public final static CarmaType ERROR_TYPE = new CarmaType( TypeCode.ERROR , null );
+	public final static CarmaType PROCESS_TYPE = new CarmaType( TypeCode.PROCESS , null );
+	
+	public static CarmaType createRecordType( RecordDefinition reference ) {
+		return new CarmaType( TypeCode.RECORD , reference );
 	}
 
-	public static CarmaType createEnumType( String name ) {
-		return new CarmaType( TypeCode.ENUM , name );
+	public static CarmaType createEnumType( EnumDefinition reference ) {
+		return new CarmaType( TypeCode.ENUM , reference );
 	}
 
 	public static enum TypeCode {
@@ -35,42 +41,52 @@ public class CarmaType {
 	
 	private final TypeCode code;
 
-	private final String id;
+	private final EObject reference;
 	
-	public CarmaType( TypeCode code , String id ) {
+	public CarmaType( TypeCode code , EObject reference ) {
 		this.code = code;
-		this.id = id;
+		this.reference = reference;
 	}
 	
 	public TypeCode getCode() {
 		return code;
 	}
 	
-	public String getId() {
-		return id;
+	public EObject getReference() {
+		return reference;
 	}
 	
 	public boolean isError() {
 		return code == TypeCode.ERROR;
 	}
 	
+	public boolean isRecord() {
+		return code == TypeCode.RECORD;
+	}
+	
+	public boolean isProcess() {
+		return code == TypeCode.PROCESS;
+	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof CarmaType) {
 			CarmaType cType = (CarmaType) obj;
-			return (this.code == cType.code)&&(this.id.equals(cType.id));
+			return (this.code == cType.code)&&
+					(((this.reference == null)&&(cType.reference==null))||
+					((this.reference != null)&&(this.reference.equals(cType.reference))));
 		}
 		return false;
 	}
 
 	@Override
 	public int hashCode() {
-		return id.hashCode();
+		return code.hashCode();
 	}
 
 	@Override
 	public String toString() {
-		return id;
+		return code.toString();
 	}
 	
 	
@@ -83,6 +99,19 @@ public class CarmaType {
 			return REAL_TYPE;
 		}
 		return ERROR_TYPE;
+	}
+	
+	public String toJavaType() {
+		switch (code) {
+			case BOOLEAN: return "Boolean";
+			case INTEGER: return "Integer";
+			case REAL: return "Double";
+			case PROCESS: return "Object";//FIXME!!!
+			case RECORD: return Util.recordClass(((RecordDefinition) reference).getName()).toString();
+			case ENUM: return Util.recordClass(((EnumDefinition) reference).getName()).toString();
+			case ERROR: return "Object";
+			default: return null;
+		}
 	}
 	
 }

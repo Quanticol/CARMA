@@ -19,12 +19,6 @@ import eu.quanticol.carma.core.carma.Modulo
 import eu.quanticol.carma.core.carma.Not
 import eu.quanticol.carma.core.carma.UnaryPlus
 import eu.quanticol.carma.core.carma.UnaryMinus
-import eu.quanticol.carma.core.carma.VariableReference
-import eu.quanticol.carma.core.carma.IntegerParameter
-import eu.quanticol.carma.core.carma.RealParameter
-import eu.quanticol.carma.core.carma.BooleanParameter
-import eu.quanticol.carma.core.carma.ProcessParameter
-import eu.quanticol.carma.core.carma.CustomParameter
 import eu.quanticol.carma.core.carma.ValueType
 import eu.quanticol.carma.core.carma.ProcessType
 import eu.quanticol.carma.core.carma.IntegerType
@@ -39,7 +33,6 @@ import eu.quanticol.carma.core.carma.FunctionDefinition
 import eu.quanticol.carma.core.carma.EnumCase
 import eu.quanticol.carma.core.carma.ConstantDefinition
 import eu.quanticol.carma.core.carma.RecordAccess
-import eu.quanticol.carma.core.carma.Call
 import eu.quanticol.carma.core.carma.AtomicTrue
 import eu.quanticol.carma.core.carma.AtomicFalse
 import eu.quanticol.carma.core.carma.AtomicInteger
@@ -80,7 +73,11 @@ import eu.quanticol.carma.core.carma.UntypedVariable
 import eu.quanticol.carma.core.carma.InputAction
 import java.util.List
 import eu.quanticol.carma.core.carma.Activity
-import eu.quanticol.carma.core.carma.FieldType
+import eu.quanticol.carma.core.carma.Variable
+import eu.quanticol.carma.core.carma.BasicType
+import eu.quanticol.carma.core.carma.Reference
+import eu.quanticol.carma.core.carma.ComponentDefinition
+import eu.quanticol.carma.core.carma.Environment
 
 class TypeSystem {
 	
@@ -152,37 +149,58 @@ class TypeSystem {
 		return e.thenBranch.typeOf.mostGeneral( e.elseBranch.typeOf )
 	}
 	
-	def static dispatch CarmaType typeOf( VariableReference e ) {
-		var ref = e.reference
-		switch ref {
-			IntegerParameter: CarmaType::INTEGER_TYPE 
-			RealParameter: CarmaType::REAL_TYPE 
-			BooleanParameter: CarmaType::BOOLEAN_TYPE 
-			ProcessParameter: CarmaType::PROCESS_TYPE
-			CustomParameter: ref.reference.toCarmaType
-			AttributeDeclaration: ref.value.typeOf
-			FunctionDefinition: ref.type.toCarmaType
-			EnumCase: {
-				var c = ref.getContainerOfType(typeof(EnumDefinition))
-				if (c != null) {
-					CarmaType::createEnumType(c.name)
-				} else {
-					CarmaType::ERROR_TYPE
+	def static dispatch CarmaType typeOf( Reference e ) {
+		e.reference.typeOf
+	}
+	
+	def static dispatch CarmaType typeOf( Variable v ) {
+		v.type.toCarmaType
+	}
+
+	def static dispatch CarmaType typeOf( AttributeDeclaration a ) {
+		var model = a.getContainerOfType(typeof(Model))
+		if (model != null) {
+			if (a.getContainerOfType(typeof(ComponentDefinition)) != null) {
+				//This is an attribute declared in a component				
+				model.getComponentAttributeType( a.name )
+			} else {
+				if (a.getContainerOfType(typeof(Environment)) != null) {
+					model.getGlobalAttributeType( a.name )
+				} else {	
+					CarmaType::ERROR_TYPE			
 				}
 			}
-			ConstantDefinition: ref.value.typeOf
-			UntypedVariable: ref.inferTypeOf.toCarmaType
+		} else {
+			CarmaType::ERROR_TYPE			
 		}
 	}
+
+	def static dispatch CarmaType typeOf( FunctionDefinition f ) {
+		f.type.typeOf
+	}
+
+	def static dispatch CarmaType typeOf( EnumCase ec ) {
+		var c = ec.getContainerOfType(typeof(EnumDefinition))
+		if (c != null) {
+			CarmaType::createEnumType(c)
+		} else {
+			CarmaType::ERROR_TYPE
+		}
+	}
+	
+	def static dispatch CarmaType typeOf( ConstantDefinition c ) {
+		c.value.typeOf
+	}
+	
+	def static dispatch CarmaType typeOf( UntypedVariable v ) {
+		v.inferTypeOf
+	}
+	
 	
 	def static dispatch CarmaType typeOf( RecordAccess e ) {
 		e.field.fieldType.toCarmaType
 	}
 	
-	def static dispatch CarmaType typeOf( Call e ) {
-		e.source.typeOf
-	}
-
 	def static dispatch CarmaType typeOf( AtomicTrue e ) {
 		CarmaType::BOOLEAN_TYPE
 	}
@@ -327,41 +345,72 @@ class TypeSystem {
 	
 	def static CarmaType toCarmaType( ReferenceableType ref ) {
 		switch ref {
-			EnumDefinition: CarmaType::createEnumType(ref.name)
-			RecordDefinition: CarmaType::createRecordType(ref.name)
+			EnumDefinition: CarmaType::createEnumType(ref)
+			RecordDefinition: CarmaType::createRecordType(ref)
 		}
 	}
 	
 	def static CarmaType getRecordType( FieldDefinition f ) {
 		var v = f.getContainerOfType(typeof(RecordDefinition))
 		if (v != null) {
-			CarmaType::createRecordType(v.name)
+			CarmaType::createRecordType(v)
 		} else {
 			CarmaType::ERROR_TYPE
 		}
 	}
 	
 	def static combine( Iterable<CarmaType> l1 , Iterable<CarmaType> l2 ) {
-		if (l1.length != l2.length) {
-			newLinkedList( CarmaType::ERROR_TYPE )
+		if (l1 != null) {
+			if (l1.length != l2.length) {
+				newLinkedList( CarmaType::ERROR_TYPE )
+			} else {
+				val result = newLinkedList()
+				l1.indexed.forEach[ result.add( it.value.mostGeneral( l2.get(it.key)) ) ]
+				result
+			}	
 		} else {
-			val result = newLinkedList()
-			l1.indexed.forEach[ result.add( it.value.mostGeneral( l2.get(it.key)) ) ]
-			result
-		}	
+			l2
+		}
 	}
 	
 	def static inferTypeOf( UntypedVariable v ) {
 		var act = v.getContainerOfType(typeof(InputAction))		
-		act.activity.reference.types.get(act.parameters.indexOf(v))
+		var actType = act.activity.inferActivityType
+		var vidx = act.parameters.indexOf(v)
+		if (vidx < actType.size) {
+			actType.get(vidx)
+		} else {
+			CarmaType::ERROR_TYPE			
+		}
 	}
 	
-	def static extractType( List<FieldType> types , int idx ) {
+	def static extractType( List<BasicType> types , int idx ) {
 		if (( types == null )||( idx < 0 )||(types.size<=idx)) {
 			CarmaType::ERROR_TYPE
 		} else {
-			types.get(idx)
+			types.get(idx).toCarmaType
 		}
+	}
+
+	def static getComponentAttributeType( Model m , String name ) {
+		var attributes = m.allAttributes.filter[it.name == name]
+		attributes.fold(null,[ t,a | if (t==null) { a.value.typeOf } else { t.mostGeneral(a.value.typeOf)} ])		
+	}
+
+	def static getGlobalAttributeType( Model m , String name ) {
+		var attributes = m.allGlobalAttributes.filter[it.name == name]
+		attributes.fold(null,[ t,a | if (t==null) { a.value.typeOf } else { t.mostGeneral(a.value.typeOf)} ])		
+	}
+	
+	def static inferActivityType( Activity a ) {
+		var m = a.getContainerOfType(typeof(Model))
+		if (m != null) {
+			m.getMessages(a).map[
+				it.map[it.typeOf]	
+			].fold( null , [r,t| r.combine( t ) ] )		
+		} else {
+			newLinkedList( CarmaType::ERROR_TYPE )
+		}	
 	}
 	
 }

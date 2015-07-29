@@ -11,7 +11,6 @@ import eu.quanticol.carma.core.carma.Rate
 import eu.quanticol.carma.core.carma.RateBlock
 import eu.quanticol.carma.core.carma.System
 import eu.quanticol.carma.core.carma.UpdateBlock
-import eu.quanticol.carma.core.carma.VariableReference
 import java.util.ArrayList
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
