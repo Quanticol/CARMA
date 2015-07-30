@@ -109,7 +109,8 @@
         eType="#//Expression" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentBlockForStatement" eSuperTypes="#//ComponentBlockDeclaration">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="variable" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="variable" eType="#//UntypedVariable"
+        containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="expression" eType="#//Expression"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="afterThought" eType="#//Expression"
@@ -121,8 +122,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="processes" upperBound="-1"
         eType="#//Process" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Process">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Process" eSuperTypes="#//ReferenceableElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="processExpression" eType="#//ProcessExpression"
         containment="true"/>
   </eClassifiers>
@@ -176,8 +176,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="variables" upperBound="-1"
         eType="#//MeasureVariableDeclaration" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="MeasureVariableDeclaration">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  <eClassifiers xsi:type="ecore:EClass" name="MeasureVariableDeclaration" eSuperTypes="#//ReferenceableElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="assign" eType="ecore:EClass http://www.eclipse.org/emf/2002/Ecore#//EObject"
         containment="true"/>
   </eClassifiers>
@@ -225,7 +224,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EvolutionRule"/>
   <eClassifiers xsi:type="ecore:EClass" name="ActionStub">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="name" eType="#//Action"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="activity" eType="#//Activity"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="isBroadcast" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ProcessType" eSuperTypes="#//ValueType"/>
@@ -251,7 +250,7 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ProcessReference" eSuperTypes="#//ProcessComposition">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="expression" eType="#//Process"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="expression" eType="#//ReferenceableElement"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ParallelComponentComprehension" eSuperTypes="#//ComponentComprehension">
     <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//ComponentComprehension"

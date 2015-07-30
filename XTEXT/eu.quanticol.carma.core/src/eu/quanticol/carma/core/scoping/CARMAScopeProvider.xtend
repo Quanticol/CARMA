@@ -30,6 +30,7 @@ import eu.quanticol.carma.core.carma.SenderContext
 import eu.quanticol.carma.core.carma.ReceiverContext
 import eu.quanticol.carma.core.carma.InputAction
 import eu.quanticol.carma.core.carma.Processes
+import eu.quanticol.carma.core.carma.AtomicRecord
 
 /**
  * This class contains custom scoping description.
@@ -39,6 +40,8 @@ import eu.quanticol.carma.core.carma.Processes
  *
  */
 class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider {
+
+
 
 	def scope_Reference_reference( AttributeDeclaration a , EReference r) {
 		var parentScope = a.getContainerOfType(typeof(Element)).referenceableElementScopeForElement
@@ -84,7 +87,12 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 		if (comp != null) {
 			Scopes::scopeFor( comp.store.attributes )
 		} else {
-			IScope::NULLSCOPE
+			var model = a. getContainerOfType(typeof(Model))
+			if (model != null) {
+				Scopes::scopeFor( model.attributes )
+			} else {
+				IScope::NULLSCOPE			
+			}
 		}
 	}
 	
@@ -165,6 +173,23 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 		e.referenceableElementScopeForElement
 	}
 	
+	def scope_FieldAssignment_field( AtomicRecord record , EReference r ) {
+		var model = record.getContainerOfType(typeof(Model))
+		if (model != null) {
+			Scopes::scopeFor( model.fields )
+		} else {
+			IScope::NULLSCOPE
+		}
+	}
+	
+	def scope_UpdateAssignment_reference( Processes p , EReference r ) {
+		var model = p.getContainerOfType(typeof(Model)) 
+		if (model != null) {
+			Scopes::scopeFor( model.attributes )
+		} else {
+			IScope::NULLSCOPE
+		}		
+	}
 	
 	def scope_ProcessReference_expression( Processes p ,EReference r ) {
 		Scopes::scopeFor( p.processes )
@@ -190,6 +215,24 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 		}
 	}
 	
+	def dispatch getReferenceableElementScopeForElement( MeasureDefinition m ) {
+		if ( m != null ) {
+			var parentScope = m.referenceableElementsBefore
+			var model = m.getContainerOfType(typeof(Model))
+			if (model != null) {
+				parentScope = Scopes::scopeFor( model.attributes , parentScope )
+			}			
+			if (m.ranges != null) {
+				Scopes::scopeFor( m.ranges.variables , parentScope )
+			} else {
+				parentScope
+			}
+		} else {
+			IScope::NULLSCOPE
+		}
+	}
+	
+	
 	def getReferenceableElementsBefore( Element e ) {
 		var model = e.getContainerOfType(typeof(Model))
 		if (model != null) {
@@ -204,6 +247,13 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 		}
 	}
 	
-
+	def scope_ActionStub_activity( SystemDefinition sys ,EReference r ) {
+		var model = sys.getContainerOfType(typeof(Model))
+		if (model != null) {
+			Scopes::scopeFor( model.activities )
+		} else {
+			IScope::NULLSCOPE
+		}
+	}
 
 }

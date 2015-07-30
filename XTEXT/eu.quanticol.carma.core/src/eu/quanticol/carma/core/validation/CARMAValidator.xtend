@@ -142,7 +142,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 
 			var functions = model.processes.filter[ it.name == p.name ]
 			if (functions.length > 1) {
-				error("Error: duplicated process declaration",CarmaPackage::eINSTANCE.process_Name, ERROR_Process_multiple_definition);				
+				error("Error: duplicated process declaration",CarmaPackage::eINSTANCE.referenceableElement_Name, ERROR_Process_multiple_definition);				
 			}
 			
 		}

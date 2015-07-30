@@ -62,7 +62,16 @@ class Util {
 	public static final String STATE_PREFIX = "__STATE__";
 	public static final String ACT_PREFIX = "__ACT__";
 	
-	
+	def static getActivities( Model m ) {
+		var activities = m.getAllContentsOfType(typeof(Activity))
+		val LinkedList<Activity> toReturn = newLinkedList()
+		activities.forEach[ a |
+			if (toReturn.forall[ !it.name.equals(a.name) ]) {
+				toReturn.add(a)
+			}
+		]
+		toReturn
+	}	
 	
 	def static getActivities( Model m , boolean broadcast ) {
 		var activities = m.getAllContentsOfType(typeof(Activity)).filter[ it.isBroadacst==broadcast ]

@@ -90,7 +90,7 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//CBND/arguments"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//ComponentBlockForStatement">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//ComponentBlockForStatement/variable"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ComponentBlockForStatement/variable"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ComponentBlockForStatement/expression"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ComponentBlockForStatement/afterThought"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ComponentBlockForStatement/collective"/>
@@ -99,7 +99,6 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Processes/processes"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//Process">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//Process/name"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Process/processExpression"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//ProcessExpression"/>
@@ -142,7 +141,6 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//MeasureVariableDeclarations/variables"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//MeasureVariableDeclaration">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//MeasureVariableDeclaration/name"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//MeasureVariableDeclaration/assign"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//Environment">
@@ -174,7 +172,7 @@
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//EvolutionRule"/>
     <genClasses ecoreClass="CARMA.ecore#//ActionStub">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//ActionStub/name"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//ActionStub/activity"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//ActionStub/isBroadcast"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//ProcessType"/>

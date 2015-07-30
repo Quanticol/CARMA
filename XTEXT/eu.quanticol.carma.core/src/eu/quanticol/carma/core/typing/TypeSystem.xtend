@@ -176,7 +176,7 @@ class TypeSystem {
 	}
 
 	def static dispatch CarmaType typeOf( FunctionDefinition f ) {
-		f.type.typeOf
+		f.type.toCarmaType
 	}
 
 	def static dispatch CarmaType typeOf( EnumCase ec ) {

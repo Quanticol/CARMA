@@ -71,7 +71,7 @@ UntypedVariable:
 ReferenceableElement:
 	UntypedVariable|Variable|AttributeDeclaration|FunctionDefinition|
 	EnumCase|
-	ConstantDefinition
+	ConstantDefinition|Process|MeasureVariableDeclaration
 ;
 
 ////////////////////////////////////////////////////FUNCTIONS
@@ -128,7 +128,7 @@ ParallelComposition returns ProcessComposition hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 ProcessReference returns ProcessComposition hidden(ML_COMMENT,SL_COMMENT,WS):
-	 {ProcessReference} expression=[Process]
+	 {ProcessReference} expression=[ReferenceableElement]
 ;
 
 ////////////////////////////////////////////////////SET COMPREHENSION
@@ -269,7 +269,7 @@ ComponentBlockSpawn returns CBND hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 ComponentBlockForStatement hidden(ML_COMMENT,SL_COMMENT,WS):
-	"for" "(" variable=ID ";" expression=Expression ";" afterThought=Expression ")" '{'
+	"for" "(" variable=UntypedVariable ";" expression=Expression ";" afterThought=Expression ")" '{'
 			collective += ComponentBlockDeclaration ('||' collective+=ComponentBlockDeclaration)*			
 	'}'
 ;
@@ -577,7 +577,7 @@ EnvironmentUpdate returns EvolutionRule hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 ActionStub hidden(ML_COMMENT,SL_COMMENT,WS):
-	{ActionStub} name=[Action] (isBroadcast?='*')?
+	{ActionStub} activity=[Activity] (isBroadcast?='*')?
 ;
 
 
