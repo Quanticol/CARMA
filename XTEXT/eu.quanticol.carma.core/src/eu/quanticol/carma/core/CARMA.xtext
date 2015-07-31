@@ -84,12 +84,6 @@ FunctionDefinition:
 	
 
 
-////////////////////////////////////////////////////RANGES
-Range returns PrimitiveTypes hidden(ML_COMMENT,SL_COMMENT,WS):
-	{Range} min=INT ".." max=INT
-;
-
-
 
 //VariableReference returns VariableReference hidden(ML_COMMENT,SL_COMMENT,WS):
 //	(
@@ -159,12 +153,8 @@ AtomicComponentComprehension returns ComponentComprehension  hidden(ML_COMMENT,S
 ;
 
 ////////////////////////////////////////////////////SPAWN
-Spawn hidden(ML_COMMENT,SL_COMMENT,WS):
-	{Spawn} spawn=BlockSpawn
-;
-
 BlockSpawn hidden(ML_COMMENT,SL_COMMENT,WS):
-	{BlockSpawn} comp+=ComponentBlockSpawn ("," comp+=ComponentBlockSpawn+)*
+	{BlockSpawn} comp+=ComponentBlockInstantiation ("," comp+=ComponentBlockInstantiation+)*
 ;
 
 //////////////////////////////////////////////////////PREDEFINED METHODS	
@@ -220,57 +210,49 @@ InitBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 	"}"
 ;
 
-BlockSystem returns System:
-	{BlockSystem}
-	"system" name=ID "{"
-	collective=BlockCollective
-	(environment=Environment)?
-	"}"
-;
-
 SystemDefinition:
 	"system" name=ID '{'
 		'collective' '{'
-			collective += ComponentBlockDeclaration ('||' collective+=ComponentBlockDeclaration)*			
+			collective += ComponentBlockDeclaration (collective+=ComponentBlockDeclaration)*			
 		'}'
 		(environment=Environment)?
 		
 	'}'
 ;
 
-BlockCollective hidden(ML_COMMENT,SL_COMMENT,WS):
-	"collective" "{"
-		declarations+=ComponentBlockDeclaration ('||' declarations+=ComponentBlockDeclaration)
-	"}"
-;
-	
-ComponentBlockDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
+ComponentBlockDeclaration :
 	(  
 		ComponentBlockNew |  
-		ComponentBlockForStatement
+		ComponentBlockForStatement |
+		ComponentBlockConditionalStatement 
 	)
 ;
+
+ComponentBlockConditionalStatement:
+	"if" '(' guard=Expression ')' '{'
+		(thenBranch += ComponentBlockDeclaration)*
+	'}' (=> 'else' '{'
+		(elseBranch += ComponentBlockDeclaration)*
+	'}'	
+	)?
+;
 	
-ComponentBlockNew returns CBND hidden(ML_COMMENT,SL_COMMENT,WS):
-	{ComponentBlockNew}
-	"new"
-	name=[ComponentDefinition] 
-	'(' (arguments+=Expression (',' arguments+=Expression)* )? ')'
-//	("["population=INT"]")?
+ComponentBlockNew returns ComponentBlockInstantiation:
+	ComponentBlockInstantiation
 	";"
 ;
 
-ComponentBlockSpawn returns CBND hidden(ML_COMMENT,SL_COMMENT,WS):
+ComponentBlockInstantiation hidden(ML_COMMENT,SL_COMMENT,WS):
 	{ComponentBlockSpawn}
 	"new"
 	name=[ComponentDefinition] 
-	'(' (arguments+=Expression (',' arguments+=Expression)* )? ')'
+	'(' (arguments+=Range (',' arguments+=Range)* )? ')'
 //	("["population=INT"]")?
 ;
 
 ComponentBlockForStatement hidden(ML_COMMENT,SL_COMMENT,WS):
 	"for" "(" variable=UntypedVariable ";" expression=Expression ";" afterThought=Expression ")" '{'
-			collective += ComponentBlockDeclaration ('||' collective+=ComponentBlockDeclaration)*			
+			(collective += ComponentBlockDeclaration)*			
 	'}'
 ;
 
@@ -368,6 +350,13 @@ ActionGuard hidden(ML_COMMENT,SL_COMMENT,WS):
 	{ActionGuard} "[" guard=Expression "]"
 ;
 ////////////////////////////////////////////////////Expression
+
+Range returns Expression:
+	Expression ({Range.min=current} ":" max=Expression (":" step=Expression)?)?
+;
+
+
+
 Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	Or
 ;
@@ -379,12 +368,12 @@ Or returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 And returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
-	Equality ({And.left=current} "&&" 
-		right=Equality
+	Relation ({And.left=current} "&&" 
+		right=Relation
 	)*
 ;
 	
-Equality returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
+Relation returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	SumDiff (
 		{Equality.left=current} '==' right=SumDiff
 		| {DisEquality.left=current} '!=' right=SumDiff
@@ -425,7 +414,6 @@ Primary returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 RecordAccess returns Expression:
 	Atomic ( {RecordAccess.source=current} '.' field=[FieldDefinition] )*
 ;
-
 
 Atomic returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	Reference 
@@ -515,10 +503,7 @@ MeasureVariableDeclarations hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 MeasureVariableDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	{MeasureVariableDeclaration} name=ID	":="	assign=(
-		Range |
-		Expression
-	)
+	{MeasureVariableDeclaration} name=ID	":="	assign= Range
 ;
 
 	
@@ -573,7 +558,7 @@ EnvironmentUpdate returns EvolutionRule hidden(ML_COMMENT,SL_COMMENT,WS):
 	{EnvironmentUpdate}
 	guard=Guard stub=ActionStub ":" 
 	((update+=UpdateAssignment ("," expression+=UpdateAssignment+)*)? 
-	("," spawn=Spawn)? | spawn=Spawn)
+	("," spawn=BlockSpawn)? | spawn=BlockSpawn)
 ;
 
 ActionStub hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -581,4 +566,4 @@ ActionStub hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 
-terminal REAL returns ecore::EDouble: (('0'..'9')+ '.' ('0' .. '9')*)|('.'('0' .. '9')*);
+terminal REAL returns ecore::EDouble: (('0'..'9')+ '.' ('0' .. '9')+)|('.'('0' .. '9')*);

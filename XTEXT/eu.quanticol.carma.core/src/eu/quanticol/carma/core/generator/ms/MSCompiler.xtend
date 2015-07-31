@@ -1,7 +1,6 @@
 package eu.quanticol.carma.core.generator.ms
 
 import com.google.inject.Inject
-import eu.quanticol.carma.core.carma.System
 import eu.quanticol.carma.core.carma.Model
 import eu.quanticol.carma.core.generator.Compiler
 import eu.quanticol.carma.core.generator.ms.function.FunctionHandler

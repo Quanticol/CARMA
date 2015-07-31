@@ -196,7 +196,9 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 	}
 
 	def scope_ProcessReference_expression( ComponentDefinition c ,EReference r ) {
-		Scopes::scopeFor( c.processes.processes , Scopes::scopeFor( c.parameters.filter[ it.typeOf.process ]) )
+		var outer = c.parameters.filter[ it.typeOf.process ]
+		var processes = c.processes.processes 
+		Scopes::scopeFor( processes , Scopes::scopeFor( outer ) )
 	}
 
 	def dispatch getReferenceableElementScopeForElement( FunctionDefinition f ) {

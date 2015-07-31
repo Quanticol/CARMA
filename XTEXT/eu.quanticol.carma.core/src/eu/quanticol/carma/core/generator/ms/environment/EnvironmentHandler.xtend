@@ -2,23 +2,19 @@ package eu.quanticol.carma.core.generator.ms.environment
 
 import com.google.inject.Inject
 import eu.quanticol.carma.core.carma.Action
-import eu.quanticol.carma.core.carma.BlockSystem
 import eu.quanticol.carma.core.carma.EnvironmentUpdate
 import eu.quanticol.carma.core.carma.Model
 import eu.quanticol.carma.core.carma.Probability
 import eu.quanticol.carma.core.carma.ProbabilityBlock
 import eu.quanticol.carma.core.carma.Rate
 import eu.quanticol.carma.core.carma.RateBlock
-import eu.quanticol.carma.core.carma.System
 import eu.quanticol.carma.core.carma.UpdateBlock
 import java.util.ArrayList
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import java.util.HashMap
 import eu.quanticol.carma.core.carma.SetComp
-import eu.quanticol.carma.core.carma.Spawn
 import eu.quanticol.carma.core.carma.ComponentBlockSpawn
-import eu.quanticol.carma.core.carma.CBND
 
 class EnvironmentHandler {
 	

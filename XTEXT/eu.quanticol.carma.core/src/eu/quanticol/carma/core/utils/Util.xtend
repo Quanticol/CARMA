@@ -5,7 +5,6 @@ import eu.quanticol.carma.core.carma.Process
 import java.util.HashSet
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import java.util.ArrayList
-import eu.quanticol.carma.core.carma.CBND
 import eu.quanticol.carma.core.carma.Process
 import eu.quanticol.carma.core.carma.ProcessComposition
 import eu.quanticol.carma.core.carma.ParallelComposition

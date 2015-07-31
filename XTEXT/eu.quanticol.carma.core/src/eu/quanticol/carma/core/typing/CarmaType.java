@@ -59,7 +59,23 @@ public class CarmaType {
 	public boolean isError() {
 		return code == TypeCode.ERROR;
 	}
-	
+
+	public boolean isBoolean() {
+		return code == TypeCode.BOOLEAN;
+	}
+
+	public boolean isNumber() {
+		return (code == TypeCode.INTEGER)||(code == TypeCode.REAL);
+	}
+
+	public boolean isInteger() {
+		return (code == TypeCode.INTEGER);
+	}
+
+	public boolean isReal() {
+		return (code == TypeCode.REAL);
+	}
+
 	public boolean isRecord() {
 		return code == TypeCode.RECORD;
 	}
@@ -91,6 +107,9 @@ public class CarmaType {
 	
 	
 	public CarmaType mostGeneral( CarmaType t ) {
+		if ( t==null ) {
+			return null;
+		}
 		if (this.equals(t)) {
 			return this;
 		}
@@ -99,6 +118,17 @@ public class CarmaType {
 			return REAL_TYPE;
 		}
 		return ERROR_TYPE;
+	}
+	
+	public boolean isCompatibleWith( CarmaType t ) {
+		if (t == null) {
+			return false;
+		}
+		if (this.equals(t)) {
+			return true;
+		}
+		return (((this.code == TypeCode.INTEGER)&&(t.code==TypeCode.REAL))
+				||((this.code == TypeCode.REAL)&&(t.code == TypeCode.INTEGER)));
 	}
 	
 	public String toJavaType() {

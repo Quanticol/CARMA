@@ -2,8 +2,6 @@ package eu.quanticol.carma.core.generator.ms
 
 import eu.quanticol.carma.core.carma.Model
 import java.util.HashMap
-import eu.quanticol.carma.core.carma.System
-import eu.quanticol.carma.core.carma.BlockSystem
 import eu.quanticol.carma.core.carma.SystemDefinition
 
 /**

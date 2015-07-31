@@ -27,6 +27,26 @@ import eu.quanticol.carma.core.carma.AttributeDeclaration
 import eu.quanticol.carma.core.carma.MeasureDefinition
 import eu.quanticol.carma.core.carma.UpdateAssignment
 import eu.quanticol.carma.core.carma.EnumDefinition
+import eu.quanticol.carma.core.carma.Or
+import eu.quanticol.carma.core.typing.CarmaType
+import eu.quanticol.carma.core.carma.And
+import eu.quanticol.carma.core.carma.Equality
+import eu.quanticol.carma.core.carma.DisEquality
+import eu.quanticol.carma.core.carma.Less
+import eu.quanticol.carma.core.carma.LessOrEqual
+import eu.quanticol.carma.core.carma.Greater
+import eu.quanticol.carma.core.carma.GreaterOrEqual
+import eu.quanticol.carma.core.carma.Addition
+import eu.quanticol.carma.core.carma.Subtraction
+import eu.quanticol.carma.core.carma.Multiplication
+import eu.quanticol.carma.core.carma.Division
+import eu.quanticol.carma.core.carma.Modulo
+import eu.quanticol.carma.core.carma.Not
+import eu.quanticol.carma.core.carma.UnaryMinus
+import eu.quanticol.carma.core.carma.UnaryPlus
+import eu.quanticol.carma.core.carma.FieldAssignment
+import eu.quanticol.carma.core.carma.AtomicRecord
+import eu.quanticol.carma.core.carma.IfThenElseExpression
 
 class CARMAValidator extends AbstractCARMAValidator {
 	
@@ -254,9 +274,364 @@ class CARMAValidator extends AbstractCARMAValidator {
 
 	}
 	
+	public static val ERROR_Expression_type_error = "ERROR_Expression_type_error"
 	
+	@Check
+	def check_ERROR_Expression_type_error_Or_left( Or e ) {
+		if (e.left != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.isBoolean)) {
+				error("Type Error: Expected "+CarmaType::BOOLEAN_TYPE+" is "+type,CarmaPackage::eINSTANCE.or_Left,ERROR_Expression_type_error);			
+			}
+		}
+	}
 	
+	@Check
+	def check_ERROR_Expression_type_error_Or_right( Or e ) {
+		if (e.right != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.isBoolean)) {
+				error("Type Error: Expected "+CarmaType::BOOLEAN_TYPE+" is "+type,CarmaPackage::eINSTANCE.or_Right,ERROR_Expression_type_error);			
+			}
+		}
+	}
 
+	@Check
+	def check_ERROR_Expression_type_error_And_left( And e ) {
+		if (e.left != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.isBoolean)) {
+				error("Type Error: Expected "+CarmaType::BOOLEAN_TYPE+" is "+type,CarmaPackage::eINSTANCE.and_Left,ERROR_Expression_type_error);			
+			}
+		}
+	}
+
+	@Check
+	def check_ERROR_Expression_type_error_IfThenElse_guard( IfThenElseExpression e ) {
+		if (e.guard != null) {
+			var type = e.guard.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.isBoolean)) {
+				error("Type Error: Expected "+CarmaType::BOOLEAN_TYPE+" is "+type,CarmaPackage::eINSTANCE.ifThenElseExpression_Guard,ERROR_Expression_type_error);			
+			}
+		}
+	}
+	
+	@Check
+	def check_ERROR_Expression_type_error_IfThenElse_elseBranch( IfThenElseExpression e ) {
+		if ((e.thenBranch != null)&&(e.elseBranch != null)) {
+			var thenBranchType = e.thenBranch.typeOf
+			var elseBranchType = e.elseBranch.typeOf 
+			if ((!thenBranchType.error)&&(!elseBranchType.error)&&(!thenBranchType.isCompatibleWith(elseBranchType))) {
+				error("Type Error: Expected "+thenBranchType+" is "+elseBranchType,CarmaPackage::eINSTANCE.ifThenElseExpression_ElseBranch,ERROR_Expression_type_error);			
+			}
+		}
+	}
+	
+	
+	@Check
+	def check_ERROR_Expression_type_error_And_right( And e ) {
+		if (e.right != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.isBoolean)) {
+				error("Type Error: Expected "+CarmaType::BOOLEAN_TYPE+" is "+type,CarmaPackage::eINSTANCE.and_Right,ERROR_Expression_type_error);			
+			}
+		}
+	}
+	
+	@Check
+	def check_ERROR_Expression_type_error_Relations_left( Equality e ) {
+		if (e.left != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.number)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.equality_Left,ERROR_Expression_type_error);			
+			}
+		}
+	}
+	
+	@Check
+	def check_ERROR_Expression_type_error_Relations_right( Equality e ) {
+		if (e.right != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.number)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.equality_Right,ERROR_Expression_type_error);			
+			}
+		}
+	}
+
+	@Check
+	def check_ERROR_Expression_type_error_Relations_left( DisEquality e ) {
+		if (e.left != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.number)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.disEquality_Left,ERROR_Expression_type_error);			
+			}
+		}
+	}
+	
+	@Check
+	def check_ERROR_Expression_type_error_Relations_right( DisEquality e ) {
+		if (e.right != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.number)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.disEquality_Right,ERROR_Expression_type_error);			
+			}
+		}
+	}
+
+	@Check
+	def check_ERROR_Expression_type_error_Relations_left( Less e ) {
+		if (e.left != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.number)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.less_Left,ERROR_Expression_type_error);			
+			}
+		}
+	}
+	
+	@Check
+	def check_ERROR_Expression_type_error_Relations_right( Less e ) {
+		if (e.right != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.number)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.less_Right,ERROR_Expression_type_error);			
+			}
+		}
+	}
+
+	@Check
+	def check_ERROR_Expression_type_error_Relations_left( LessOrEqual e ) {
+		if (e.left != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.number)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.lessOrEqual_Left,ERROR_Expression_type_error);			
+			}
+		}
+	}
+	
+	@Check
+	def check_ERROR_Expression_type_error_Relations_right( LessOrEqual e ) {
+		if (e.right != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.number)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.lessOrEqual_Right,ERROR_Expression_type_error);			
+			}
+		}
+	}
+
+	@Check
+	def check_ERROR_Expression_type_error_Relations_left( Greater e ) {
+		if (e.left != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.number)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.greater_Left,ERROR_Expression_type_error);			
+			}
+		}
+	}
+	
+	@Check
+	def check_ERROR_Expression_type_error_Relations_right( Greater e ) {
+		if (e.right != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.number)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.greater_Right,ERROR_Expression_type_error);			
+			}
+		}
+	}
+
+	@Check
+	def check_ERROR_Expression_type_error_Relations_left( GreaterOrEqual e ) {
+		if (e.left != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.number)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.greaterOrEqual_Left,ERROR_Expression_type_error);			
+			}
+		}
+	}
+	
+	@Check
+	def check_ERROR_Expression_type_error_Relations_right( GreaterOrEqual e ) {
+		if (e.right != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.number)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.greaterOrEqual_Right,ERROR_Expression_type_error);			
+			}
+		}
+	}
+	
+	@Check
+	def check_ERROR_Expression_type_error_Arithmetic_left( Addition e ) {
+		if (e.left != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.number)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.addition_Left,ERROR_Expression_type_error);			
+			}
+		}
+	}
+	
+	@Check
+	def check_ERROR_Expression_type_error_Arithmetic_right( Addition e ) {
+		if (e.right != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.number)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.addition_Left,ERROR_Expression_type_error);			
+			}
+		}
+	}
+	
+	@Check
+	def check_ERROR_Expression_type_error_Arithmetic_left( Subtraction e ) {
+		if (e.left != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.number)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.subtraction_Left,ERROR_Expression_type_error);			
+			}
+		}
+	}
+	
+	@Check
+	def check_ERROR_Expression_type_error_Arithmetic_right( Subtraction e ) {
+		if (e.right != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.number)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.subtraction_Right,ERROR_Expression_type_error);			
+			}
+		}
+	}
+
+	@Check
+	def check_ERROR_Expression_type_error_Arithmetic_left( Multiplication e ) {
+		if (e.left != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.number)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.multiplication_Left,ERROR_Expression_type_error);			
+			}
+		}
+	}
+	
+	@Check
+	def check_ERROR_Expression_type_error_Arithmetic_right( Multiplication e ) {
+		if (e.right != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.number)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.multiplication_Right,ERROR_Expression_type_error);			
+			}
+		}
+	}
+
+	@Check
+	def check_ERROR_Expression_type_error_Arithmetic_left( Division e ) {
+		if (e.left != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.number)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.division_Left,ERROR_Expression_type_error);			
+			}
+		}
+	}
+	
+	@Check
+	def check_ERROR_Expression_type_error_Arithmetic_right( Division e ) {
+		if (e.right != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.number)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.division_Right,ERROR_Expression_type_error);			
+			}
+		}
+	}
+
+
+	@Check
+	def check_ERROR_Expression_type_error_Arithmetic_left( Modulo e ) {
+		if (e.left != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.integer)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" is "+type,CarmaPackage::eINSTANCE.modulo_Left,ERROR_Expression_type_error);			
+			}
+		}
+	}
+	
+	@Check
+	def check_ERROR_Expression_type_error_Arithmetic_right( Modulo e ) {
+		if (e.right != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.integer)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" is "+type,CarmaPackage::eINSTANCE.modulo_Right,ERROR_Expression_type_error);			
+			}
+		}
+	}
+
+	@Check
+	def check_ERROR_Expression_type_error_Not( Not e ) {
+		if (e.expression != null) {
+			var type = e.expression.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.isBoolean)) {
+				error("Type Error: Expected "+CarmaType::BOOLEAN_TYPE+" is "+type,CarmaPackage::eINSTANCE.not_Expression,ERROR_Expression_type_error);			
+			}
+		}
+	}
+
+	@Check
+	def check_ERROR_Expression_type_error_Unary( UnaryMinus e ) {
+		if (e.expression != null) {
+			var type = e.expression.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.number)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.unaryMinus_Expression,ERROR_Expression_type_error);			
+			}
+		}
+	}
+
+	@Check
+	def check_ERROR_Expression_type_error_Unary( UnaryPlus e ) {
+		if (e.expression != null) {
+			var type = e.expression.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.number)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.unaryPlus_Expression,ERROR_Expression_type_error);			
+			}
+		}
+	}
+
+	//Component - duplicated component name
+	public static val ERROR_FieldAssignment_incompatible_field 	= "ERROR_FieldAssignment_incompatible_field"
+	
+	@Check
+	def check_ERROR_AtomicRecord_wrong_field( FieldAssignment f ) {
+		var t1 = f.field ?. recordType
+		var ar = f.getContainerOfType(typeof(AtomicRecord)) 
+		if ((ar != null)&&(t1 != null)&&(!t1.error)) {
+			var f2 = ar.fields.head
+			if ((f2 != null)&&(f != f2)) {
+				var t2 = f2.field ?. recordType
+				if ((t2 != null)&&(!t2.error)&&(t1.reference != t2.reference)) {
+					error("Field "+f.field.name+" is not valid for type "+(t2.reference as RecordDefinition).name,
+						CarmaPackage::eINSTANCE.fieldAssignment_Field , 
+						ERROR_FieldAssignment_incompatible_field												
+					)
+				}
+			}
+		}
+	}
+
+	//Component - duplicated component name
+	public static val ERROR_AtomicRecord_missing_field 	= "ERROR_AtomicRecord_missing_field"
+
+	@Check
+	def check_ERROR_AtomicRecord_missing_field( AtomicRecord r ) {
+		var f = r.fields.head
+		if (f != null) {
+			var t = f.field ?.recordType
+			if ((t!=null)&&(!t.error)&&(t.record)) {
+				var rt = t.reference as RecordDefinition
+				var missing =  rt.fields.filter[ df | r.fields.forall[ it.field != df ] ].map[it.name]
+				if (!missing.empty) {
+					error("Missing fields: "+missing.join(", "),
+						CarmaPackage::eINSTANCE.atomicRecord_Fields , 
+						ERROR_AtomicRecord_missing_field												
+					)
+				}
+			}
+		}
+	}
+
+	
 //	
 //	//TODO make sure number of RecordArguments matches the number of FeildDeclaration  
 //	//TODO Actions must have unique names
