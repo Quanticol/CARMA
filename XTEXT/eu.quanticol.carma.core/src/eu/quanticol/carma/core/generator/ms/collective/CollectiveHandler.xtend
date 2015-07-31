@@ -552,7 +552,6 @@ class CollectiveHandler {
 					return new CarmaStoreUpdate() {
 						@Override
 						public void update(RandomGenerator r, CarmaStore my_store) {
-							return null;
 						};
 					
 					};
