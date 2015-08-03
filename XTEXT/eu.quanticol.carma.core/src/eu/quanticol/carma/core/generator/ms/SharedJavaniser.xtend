@@ -424,10 +424,13 @@ class SharedJavaniser {
 		return toReturn
 	}
 	def dispatch String javanise(OutputActionArgument oaa){
-		switch (oaa.value) {
-			VariableReferenceMy: 		(oaa.value as VariableReference).javanise
-			RecordReferenceMy: 			(oaa.value as VariableReference).javanise
-			CarmaInteger:				(oaa.value as CarmaInteger).javanise
+		var vr = oaa.value
+		switch (vr) {
+			VariableReferencePure: 		"my_"+vr.name.name
+			VariableReferenceMy: 		"my_"+vr.name.name
+			RecordReferencePure: 		"my_"+vr.name.name + "." + vr.feild.name
+			RecordReferenceMy: 			"my_"+vr.name.name + "." + vr.feild.name
+			CarmaInteger:			(oaa.value as CarmaInteger).javanise
 		}
 	}
 	def dispatch String javanise(EnvironmentUpdate update){

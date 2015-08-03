@@ -23,6 +23,8 @@ import eu.quanticol.carma.core.carma.RecordReferenceMy
 import eu.quanticol.carma.core.typing.TypeProvider
 import eu.quanticol.carma.core.carma.Measure
 import eu.quanticol.carma.core.generator.ms.SharedJavaniser
+import eu.quanticol.carma.core.carma.ParallelComposition
+import eu.quanticol.carma.core.carma.ProcessReference
 
 class MeasureHandler {
 	
@@ -140,83 +142,36 @@ class MeasureHandler {
 				
 				@Override
 				public boolean eval(CarmaProcess p) {
-					return «setcomp.variable.evaluateExpression»
+					return «setcomp.variable.expressComponentComprehension»
 				}
 			};
 		}
 		'''
 	}
 	
-	def String evaluateExpression(ComponentComprehension ems){
-		var componentState = new HashMap<String,ArrayList<String>>()
-		ems.getComponentState(componentState)
-		var output = ""
-		if(componentState.keySet.size > 0){
-			output = output + '''
-			( 
-			(((CarmaSequentialProcess) p).automaton().getName().equals(«componentState.keySet.get(0)».getName())) && (
-			'''
-			for(state : componentState.get(componentState.keySet.get(0))){
-				output = output + '''
-				(((CarmaSequentialProcess) p).automaton().getState("«state»") != null ) ||
-				'''
-			}
-			output = output + '''
-			(((CarmaSequentialProcess) p).getState() !=  null))
-			)
-			'''
-			for(var int i = 1; i < componentState.keySet.size; i++){
-				output = output + '''
-				||( 
-				(((CarmaSequentialProcess) p).automaton().getName().equals(«componentState.keySet.get(i)».getName())) && (
-				'''
-				for(state : componentState.get(componentState.keySet.get(i))){
-					output = output + '''
-					(((CarmaSequentialProcess) p).automaton().getState("«state»") != null ) ||
-					'''
-				}
-				
-				output = output + '''
-				(((CarmaSequentialProcess) p).getState() !=  null))
-				)
-				'''
-			}
-		}
-		return output + ";"
-	}
-	
-	def void getComponentState(ComponentComprehension comp, HashMap<String,ArrayList<String>> componentState){
+	def String expressComponentComprehension(ComponentComprehension cc){
+		//sanity
+		if(cc == null){
+			return '''false;'''
+		} 
 		
+		return '''«cc.componentState»;'''
+	}
+
+	def String getComponentState(ComponentComprehension comp){
 		switch(comp){
-			ParallelComponentComprehension: {comp.left.getComponentState(componentState)  comp.right.getComponentState(componentState)}  
-			AllComponents:					comp.allComponents(componentState)
-			AComponentAllStates:			comp.comp.getContainerOfType(ComponentBlockDefinition).aComponentAllStates(componentState)
-			AComponentAState:				comp.comp.getContainerOfType(ComponentBlockDefinition).aComponentAState(componentState,new ArrayList<ProcessComposition>(comp.state.eAllOfType(ProcessComposition)))
+			ParallelComponentComprehension: '''(«comp.left.getComponentState» || «comp.right.getComponentState»)''' 
+			AllComponents:					'''true'''
+			AComponentAllStates:			'''(«comp.aComponentAllStates»)'''
+			AComponentAState:				'''(«comp.aComponentAState»)'''
 		}
 	}
-	
-	def void allComponents(ComponentComprehension comp, HashMap<String,ArrayList<String>> componentState){
-		var components = comp.getContainerOfType(Model).eAllOfType(ComponentBlockDefinition)
-		for(component : components){
-			componentState.put('''create«component.componentSignature.name.name.toFirstUpper»Process()''',component.allStates)
-		}
-	}
-	
-	def void aComponentAllStates(ComponentBlockDefinition component, HashMap<String,ArrayList<String>> componentState){
-		componentState.put('''create«component.componentSignature.name.name.toFirstUpper»Process()''',component.allStates)
-	}
-	
-	def void aComponentAState(ComponentBlockDefinition component, HashMap<String,ArrayList<String>> componentState, ArrayList<ProcessComposition> states){
-		var allStates = allStates(component)
-		var ArrayList<String> output = new ArrayList<String>()
-		for(state : states){
-			for(s : allStates){
-				if(s.equals("state_"+ state.javanise)){
-					output.add(s)
-				}			
-			}
-		}
-		componentState.put('''create«component.componentSignature.name.name.toFirstUpper»Process()''',output)
+
+	def String aComponentAllStates(AComponentAllStates comp){
+		var name = comp.comp.getContainerOfType(ComponentBlockDefinition).componentSignature.name.name
+		var component = comp.comp.getContainerOfType(ComponentBlockDefinition)
+		'''((CarmaSequentialProcess) p).automaton().getName().equals(create«name»Process().getName())
+		&& («FOR state : component.allStates SEPARATOR '||'» «state» «ENDFOR»)'''
 	}
 	
 	def ArrayList<String> allStates(ComponentBlockDefinition component){
@@ -225,8 +180,29 @@ class MeasureHandler {
 		var tree = component.getCBND.getTree
 		tree.getStates(states)
 		for(state : states)
-			output.add(state)
+			if(state.equals("null")){
+				output.add('''(((CarmaSequentialProcess) p).getState() ==  null)''')
+			} else {
+				output.add('''((((CarmaSequentialProcess) p).getState() !=  null) && 
+				((CarmaSequentialProcess) p).getState().getName().equals("«state»"))''')
+			}
+			
 		return output
+	}
+	
+	def String aComponentAState(AComponentAState comp){
+		var name = comp.comp.getContainerOfType(ComponentBlockDefinition).componentSignature.name.name
+		var processComposition = comp.state
+		'''((CarmaSequentialProcess) p).automaton().getName().equals(create«name»Process().getName()) && 
+		«processComposition.processCompositionState»'''
+	}
+	
+	def String getProcessCompositionState(ProcessComposition process){
+		switch(process){
+			ParallelComposition: '''(«process.left.getProcessCompositionState» || «process.right.getProcessCompositionState»)'''  
+			ProcessReference:	 '''(((CarmaSequentialProcess) p).getState() !=  null) && 
+			(((CarmaSequentialProcess) p).getState().getName().equals("state_«(process as ProcessReference).expression.name»"))'''
+		}
 	}
 	
 	def CBND getCBND(ComponentBlockDefinition component){

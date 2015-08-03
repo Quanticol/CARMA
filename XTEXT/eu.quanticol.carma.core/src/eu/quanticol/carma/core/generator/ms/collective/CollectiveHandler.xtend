@@ -58,6 +58,7 @@ import java.util.HashMap
 import java.util.HashSet
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
+import eu.quanticol.carma.core.carma.CarmaInteger
 
 class CollectiveHandler {
 
@@ -423,26 +424,38 @@ class CollectiveHandler {
 	}
 
 	def String defineValueBlock(OutputActionArguments arguments) {
-		var ArrayList<OutputActionArgument> args = new ArrayList<OutputActionArgument>(arguments.eAllOfType(OutputActionArgument))
-		var argsh = newHashMap
-		for(arg : args){
-			switch(arg.value){
-				VariableReference: argsh.put((arg.value as VariableReference).variableName, arg as OutputActionArgument)
-			}
+		var args = arguments.outputArguments
+		var vrs = arguments.eAllOfType(VariableReference)
+		var vrsh = new HashMap<String, VariableReference>()
+		for (vr : vrs) {
+			vrsh.put(vr.variableName, vr)
 		}
-		var count = 0
 		'''
 			ArrayList<Object> output = new ArrayList<Object>();
-			//double[] output = new double[«args.size»];
 			try {
-				«FOR key : argsh.keySet»
-				output.add(my_store.get("«(argsh.get(key).value as VariableReference).name.name»",«(argsh.get(key).value as VariableReference).type.classJavanise»));
+				«FOR key : vrsh.keySet»
+				«vrsh.get(key).getStoreOutputValue»
+				«ENDFOR»
+				«FOR arg : args»
+				«switch((arg as OutputActionArgument).value){
+					VariableReference : '''output.add(«(arg as OutputActionArgument).javanise»);'''
+					CarmaInteger : '''output.add(«(arg as OutputActionArgument).javanise»);'''
+				}»
 				«ENDFOR»
 				return output;
 			} catch (NullPointerException exception) {
 				return new Object();
 			}
 		'''
+	}
+	
+	def String getStoreOutputValue(VariableReference vr) {
+		switch (vr) {
+			VariableReferencePure: '''«vr.name.type.javanise» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
+			VariableReferenceMy: '''«vr.name.type.javanise» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
+			RecordReferencePure: '''«vr.name.type.javanise» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
+			RecordReferenceMy: '''«vr.name.type.javanise» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
+		}
 	}
 
 	def String getActionInput(String actionName, boolean isBroadcast, Action action) {

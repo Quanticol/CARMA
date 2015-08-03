@@ -155,7 +155,9 @@ class TypeProvider {
 	
 	def BaseType getType(OutputActionArgument outputActionArgument){
 		switch(outputActionArgument.value){
-			VariableReference : (outputActionArgument.value as VariableReference).name.type
+			RecordReferencePure			: attribType
+			RecordReferenceMy			: attribType
+			VariableReference			: (outputActionArgument.value as VariableReference).name.type
 			CarmaInteger : (outputActionArgument.value as CarmaInteger).type
 		}
 	}
