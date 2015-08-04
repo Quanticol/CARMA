@@ -7,18 +7,20 @@ import java.util.HashSet;
 import eu.quanticol.carma.core.carma.Action;
 import eu.quanticol.carma.core.carma.ActionName;
 import eu.quanticol.carma.core.carma.BooleanExpression;
-import eu.quanticol.carma.core.carma.ProcessExpressionKill;
-import eu.quanticol.carma.core.carma.ProcessExpressionNil;
+import eu.quanticol.carma.core.carma.InputAction;
 import eu.quanticol.carma.core.carma.Process;
 import eu.quanticol.carma.core.carma.ProcessExpression;
 import eu.quanticol.carma.core.carma.ProcessExpressionAction;
 import eu.quanticol.carma.core.carma.ProcessExpressionChoice;
 import eu.quanticol.carma.core.carma.ProcessExpressionGuard;
+import eu.quanticol.carma.core.carma.ProcessExpressionKill;
+import eu.quanticol.carma.core.carma.ProcessExpressionNil;
 import eu.quanticol.carma.core.carma.ProcessExpressionReference;
 import eu.quanticol.carma.core.carma.ProcessName;
 
 
 public class Leaf {
+	
 	
 	private Process process;
 	private Leaf parent;
@@ -61,14 +63,18 @@ public class Leaf {
 	
 	public String getAction(){
 		if(this.action != null){
-			return "action_"+((ActionName) this.action.getName()).getName();
+			if (this.action.getAction().getIo() instanceof InputAction) {
+				return "input_action_"+((ActionName) this.action.getName()).getName();
+			} else {
+				return "output_action_"+((ActionName) this.action.getName()).getName();
+			}
 		}
 		return "";
 	}
 	
 	public String getGuard(){
 		if(this.guard != null){
-			return "guard_"+this.state;
+			return "guard_"+this.state+Integer.toHexString(this.guard.hashCode());
 		}
 		return "";
 	}
