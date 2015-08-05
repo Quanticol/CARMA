@@ -236,7 +236,7 @@ class SharedJavaniser {
 
 	//MEASURE
 	def String expressMeasure(SetComp setComp, boolean outside){
-		'''getMeasure«(Math.abs(setComp.hashCode*setComp.hashCode)+"").substring(0,3)»("",«setComp.predicate.disarmArgumentsShared(outside)»).measure(this)'''
+		'''getMeasure«setComp.javanise»("",«setComp.predicate.disarmArgumentsShared(outside)»).measure(this)'''
 	}
 
 	
