@@ -32,11 +32,13 @@ import eu.quanticol.carma.core.carma.ComponentBlockSpawn
 import eu.quanticol.carma.core.carma.CBND
 import eu.quanticol.carma.core.carma.ComponentBlockArguments
 import eu.quanticol.carma.core.generator.ms.SharedJavaniser
+import eu.quanticol.carma.core.utils.Util
 
 class EnvironmentHandler {
 	
 	@Inject extension TypeProvider
 	@Inject extension SharedJavaniser
+	@Inject extension Util
 		
 	def String getEnvironment(System system, Model model){
 		'''
@@ -148,7 +150,7 @@ class EnvironmentHandler {
 		public double broadcastProbability(CarmaStore sender_store, CarmaStore receiver_store,
 				int action) {
 			«FOR probability : probabilities»
-			if(action == «probability.stub.name.getContainerOfType(Action).name.name.hashCode»
+			if(action == «probability.stub.name.getContainerOfType(Action).name.convertName»
 			&& get«probability.javanise»Predicate(sender_store).satisfy(receiver_store)){
 				«probability.getValue»
 			}
@@ -170,7 +172,7 @@ class EnvironmentHandler {
 		public double unicastProbability(CarmaStore sender_store, CarmaStore receiver_store,
 				int action) {
 			«FOR probability : probabilities»
-			if(action == «probability.stub.name.getContainerOfType(Action).name.name.hashCode»
+			if(action == «probability.stub.name.getContainerOfType(Action).name.convertName»
 			&& get«probability.javanise»Predicate(sender_store).satisfy(receiver_store)){
 				«probability.getValue»
 			}
@@ -307,7 +309,7 @@ class EnvironmentHandler {
 		@Override
 		public double broadcastRate(CarmaStore sender_store, int action){
 			«FOR rate : rates»
-			if(action == «rate.stub.name.getContainerOfType(Action).name.name.hashCode»
+			if(action == «rate.stub.name.getContainerOfType(Action).name.convertName»
 			&& get«rate.javanise»Predicate().satisfy(sender_store)){
 				«rate.getValue»
 			}
@@ -326,7 +328,7 @@ class EnvironmentHandler {
 		@Override
 		public double unicastRate(CarmaStore sender_store, int action){
 			«FOR rate : rates»
-			if(action == «rate.stub.name.getContainerOfType(Action).name.name.hashCode»
+			if(action == «rate.stub.name.getContainerOfType(Action).name.convertName»
 			&& get«rate.javanise»Predicate().satisfy(sender_store)){
 				«rate.getValue»
 			}
@@ -432,7 +434,7 @@ class EnvironmentHandler {
 		public void broadcastUpdate(RandomGenerator random, CarmaStore sender_store,
 				int action, Object value) {
 			«FOR update : updates»
-			if(action == «update.stub.name.getContainerOfType(Action).name.name.hashCode»
+			if(action == «update.stub.name.getContainerOfType(Action).name.convertName»
 			&& get«update.javanise»Predicate(sender_store).satisfy(null)){
 				«IF update.eAllOfType(EnvironmentUpdateAssignment).size > 0»
 				«update.getBroadValue»
@@ -452,7 +454,7 @@ class EnvironmentHandler {
 		public void unicastUpdate(RandomGenerator random, CarmaStore sender_store,
 				CarmaStore receiver_store, int action, Object value) {
 			«FOR update : updates»
-			if(action == «update.stub.name.getContainerOfType(Action).name.name.hashCode»
+			if(action == «update.stub.name.getContainerOfType(Action).name.convertName»
 			&& get«update.javanise»Predicate(sender_store).satisfy(receiver_store)){
 				«IF update.eAllOfType(EnvironmentUpdateAssignment).size > 0»
 				«update.getValue»

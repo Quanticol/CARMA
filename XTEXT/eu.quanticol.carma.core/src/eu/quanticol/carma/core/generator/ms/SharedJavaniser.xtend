@@ -335,19 +335,19 @@ class SharedJavaniser {
 	
 	def  String disarm(PrimitiveTypes pts) {
 		switch (pts) {
-			CarmaDouble: 	"double_"+(Math.abs(pts.hashCode*pts.hashCode)+"").substring(0,4)
-			CarmaInteger: 	"integer_"+(Math.abs(pts.hashCode*pts.hashCode)+"").substring(0,4)
-			CarmaBoolean: 	"boolean_"+(Math.abs(pts.hashCode*pts.hashCode)+"").substring(0,4)
-			Range: 			"integer_"+(Math.abs(pts.hashCode*pts.hashCode)+"").substring(0,4)
+			CarmaDouble: 	"double_"+Integer.toHexString(pts.hashCode())
+			CarmaInteger: 	"integer_"+Integer.toHexString(pts.hashCode())
+			CarmaBoolean: 	"boolean_"+Integer.toHexString(pts.hashCode())
+			Range: 			"integer_"+Integer.toHexString(pts.hashCode())
 		}
 	}
 	
 	def  String declare(PrimitiveTypes pts) {
 		switch (pts) {
-			CarmaDouble: 	"Double double_"+(Math.abs(pts.hashCode*pts.hashCode)+"").substring(0,4)+"="+pts.javanise
-			CarmaInteger: 	"Double integer_"+(Math.abs(pts.hashCode*pts.hashCode)+"").substring(0,4)+"="+pts.javanise
-			CarmaBoolean: 	"boolean boolean_"+(Math.abs(pts.hashCode*pts.hashCode)+"").substring(0,4)+"="+pts.javanise
-			Range: 			"Double integer_"+(Math.abs(pts.hashCode*pts.hashCode)+"").substring(0,4)+"="+pts.javanise
+			CarmaDouble: 	"Double double_"+Integer.toHexString(pts.hashCode())+"="+pts.javanise
+			CarmaInteger: 	"Double integer_"+Integer.toHexString(pts.hashCode())+"="+pts.javanise
+			CarmaBoolean: 	"boolean boolean_"+Integer.toHexString(pts.hashCode())+"="+pts.javanise
+			Range: 			"Double integer_"+Integer.toHexString(pts.hashCode())+"="+pts.javanise
 		}
 	}
 	
@@ -465,7 +465,7 @@ class SharedJavaniser {
 	}
 	
 	def dispatch String javanise(SetComp setComp){
-		(Math.abs(setComp.hashCode*setComp.hashCode)+"").substring(0,3)
+		""+Integer.toHexString(setComp.hashCode())
 	}	
 	
 	def dispatch String javanise(Expressions e) {

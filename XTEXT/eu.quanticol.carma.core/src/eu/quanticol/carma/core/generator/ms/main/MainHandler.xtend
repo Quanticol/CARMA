@@ -75,7 +75,7 @@ class MainHandler {
 	
 
 	def String addSamplingFunction(Measure measure, System system){
-		'''sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, «(system as BlockSystem).name.name.toFirstLower».getMeasure«(Math.abs(measure.measure.hashCode*measure.measure.hashCode)+"").substring(0,3)»("«measure.name.name»",«measure.measure.predicate.disarmOut»)));'''	
+		'''sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(deadline+1, 1.0, «(system as BlockSystem).name.name.toFirstLower».getMeasure«measure.measure.javanise»("«measure.name.name»",«measure.measure.predicate.disarmOut»)));'''	
 	}
 	
 	def String declare(Measure measure){

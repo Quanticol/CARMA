@@ -285,7 +285,7 @@ class CollectiveHandler {
 	def String getActionOutput(String actionName, boolean isBroadcast, Action action) {
 
 		'''
-			CarmaOutput «actionName» = new CarmaOutput( «action.name.name.hashCode», «isBroadcast» ) {
+			CarmaOutput «actionName» = new CarmaOutput( «action.name.convertName», «isBroadcast» ) {
 				«action.outputActionPredicate»
 				«action.getOutputUpdate»
 				«action.getValues»
@@ -460,7 +460,7 @@ class CollectiveHandler {
 
 	def String getActionInput(String actionName, boolean isBroadcast, Action action) {
 		'''
-			CarmaInput «actionName» = new CarmaInput( «action.name.name.hashCode», «isBroadcast» ) {
+			CarmaInput «actionName» = new CarmaInput( «action.name.convertName», «isBroadcast» ) {
 				«getInputActionPredicate(action)»
 				«getInputUpdate(action)»
 			};

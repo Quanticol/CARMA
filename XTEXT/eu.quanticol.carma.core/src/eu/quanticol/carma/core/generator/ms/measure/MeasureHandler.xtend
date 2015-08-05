@@ -48,17 +48,13 @@ class MeasureHandler {
 	 * my. should be the store of the Component under evaluation IE found in the predicate, and compared against the input arguments
 	 */
 	def String getMeasureFunction(SetComp setcomp){
-		var String name = ""
-		if(setcomp.getContainerOfType(Measure) != null){
-			name = setcomp.getContainerOfType(Measure).name.name
-		}
 		'''
 		public Measure<CarmaSystem> getMeasure«setcomp.javanise»(final String name, «setcomp.predicate.disarmParameters»){
 			
 			return new Measure<CarmaSystem>(){
 			
 				ComponentPredicate predicate = getMeasure«setcomp.javanise»_predicate_Predicate(«setcomp.predicate.disarmOut»);
-				String myName = setName(name+«setcomp.javanise»,«setcomp.predicate.disarmOut»);
+				String myName = setName(name+"«setcomp.javanise»",«setcomp.predicate.disarmOut»);
 				
 				public String setName(String name, «setcomp.predicate.disarmParameters»){
 					return ""+name+" : "+«setcomp.predicate.disarmString»;

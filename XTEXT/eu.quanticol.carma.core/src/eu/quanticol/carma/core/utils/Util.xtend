@@ -23,8 +23,21 @@ import eu.quanticol.carma.core.carma.InputAction
 import eu.quanticol.carma.core.carma.InputActionParameters
 import eu.quanticol.carma.core.carma.OutputActionArguments
 import eu.quanticol.carma.core.carma.InputActionParameter
+import java.math.BigInteger
 
 class Util {
+	
+	def String convertName(Name name){
+		var StringBuilder sb = new StringBuilder()
+		var chars = name.name.toCharArray()
+    	for (c : chars){
+    		sb.append(c as int)
+    	}
+    		
+
+    	var BigInteger mInt = new BigInteger(sb.toString());
+    	return "" + mInt.intValue
+	}
 	
 	def boolean sameName(Name name1, Name name2){
 		name1.name.equals(name2.name)
