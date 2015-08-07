@@ -1,19 +1,15 @@
 package eu.quanticol.carma.core.generator.ms.enums
 
-import static extension eu.quanticol.carma.core.utils.Util.*
+import eu.quanticol.carma.core.utils.Util
 import eu.quanticol.carma.core.carma.EnumDefinition
+import com.google.inject.Inject
 
 class EnumHandler {
 
-	def String getRecords(Iterable<EnumDefinition> enums){
-		'''
-		«FOR enumEdfinition : enums»
-		«enumEdfinition.getEnum»
-		«ENDFOR»
-		'''
-	}
+	@Inject extension Util
+
 	
-	def String getEnum(EnumDefinition enumDefinition){
+	def String enumToJava(EnumDefinition enumDefinition){
 		'''
 		public enum «enumDefinition.name.enumClass» {
 			

@@ -3,24 +3,19 @@ package eu.quanticol.carma.core.generator.ms
 import com.google.inject.Inject
 import eu.quanticol.carma.core.carma.Model
 import eu.quanticol.carma.core.generator.Compiler
-import eu.quanticol.carma.core.generator.ms.function.FunctionHandler
 import eu.quanticol.carma.core.utils.LabelUtil
 import java.util.HashMap
 import org.eclipse.emf.ecore.resource.Resource
-
-import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.generator.ms.record.RecordHandler
+import eu.quanticol.carma.core.generator.ms.model.ModelHandler
 
 class MSCompiler implements Compiler {
+
+	@Inject extension ModelHandler
 	
 	public static var PATH = "ms/" 
-	public static var PACK = "ms."
+	public static var PACK = "ms"
 	
 	@Inject extension LabelUtil
-	@Inject extension FunctionHandler
-	@Inject extension RecordHandler
-	@Inject extension MSSystemCompiler
-	@Inject extension MSFactoryCompiler
 	
 	/**
 	 * File structures:
@@ -71,27 +66,32 @@ class MSCompiler implements Compiler {
 	 * 		getModel()
 	 */
 		
-	override HashMap<String,String> extractJava(Resource resource){
+	override HashMap<String,CharSequence> extractJava(Resource resource){
 		
 		var Model model = resource.allContents.toIterable.filter(Model).get(0)
-		var String modelName = model.name
-		var HashMap<String,String> toReturn = new HashMap<String,String>()
+		var HashMap<String,CharSequence> toReturn = new HashMap<String,CharSequence>()
 		
-		MSCompiler.PATH = MSCompiler.PATH + modelName.toLowerCase + "/"
-		MSCompiler.PACK = MSCompiler.PACK + modelName.toLowerCase 
+		var className = model.name
+		var packageName = MSCompiler.PACK
+		var fileName = MSCompiler.PATH + className + ".java"
 		
-//		for(system : model.eAllOfType(System)){
-//			system.extractSystem(model, toReturn)
-//			system.extractFactory(model, toReturn)
-//		}
-		
-		
-		
+		toReturn.put( fileName , model.modelToJava(className,packageName) );		
 		
 		return toReturn
 		
 	}
+	
+	def getClassName( Resource resource ) {
+		
+	}
+	
+	def getPackageName( Resource resource ) {
+		
+	}
 
+	def targetFile( Resource resource ) {
+		
+	}
 	
 //		var Model model = resource.allContents.toIterable.filter(Model).get(0)
 //		var systems = resource.allContents.toIterable.filter(System)

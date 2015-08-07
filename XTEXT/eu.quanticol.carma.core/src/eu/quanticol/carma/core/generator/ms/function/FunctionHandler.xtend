@@ -2,15 +2,16 @@ package eu.quanticol.carma.core.generator.ms.function
 
 import com.google.inject.Inject
 import eu.quanticol.carma.core.carma.FunctionDefinition
-import java.util.ArrayList
 
-import static extension org.eclipse.xtext.EcoreUtil2.*
-import static extension eu.quanticol.carma.core.utils.Util.*
-import static extension eu.quanticol.carma.core.generator.ms.expression.ExpressionHandler.*
+import eu.quanticol.carma.core.utils.Util
+import org.eclipse.xtend.expression.TypeSystem
+import eu.quanticol.carma.core.generator.ms.expression.ExpressionHandler
 
 class FunctionHandler {
 	
-	
+	@Inject extension Util
+	@Inject extension ExpressionHandler
+		
 	def String printFunctions(Iterable<FunctionDefinition> functions){
 		'''
 		«FOR function : functions»

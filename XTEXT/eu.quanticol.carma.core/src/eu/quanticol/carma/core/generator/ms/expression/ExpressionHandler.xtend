@@ -52,233 +52,522 @@ import eu.quanticol.carma.core.carma.UniformFunction
 import eu.quanticol.carma.core.utils.ReferenceContext
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import static extension eu.quanticol.carma.core.utils.Util.*
 import eu.quanticol.carma.core.carma.FieldAssignment
 import eu.quanticol.carma.core.carma.RecordDefinition
 import eu.quanticol.carma.core.carma.IfThenElseExpression
 import eu.quanticol.carma.core.carma.Reference
+import eu.quanticol.carma.core.utils.Util
+import com.google.inject.Inject
+import eu.quanticol.carma.core.carma.AllComponents
+import eu.quanticol.carma.core.carma.Expression
+import eu.quanticol.carma.core.carma.AComponentAllStates
+import eu.quanticol.carma.core.carma.AComponentAState
+import eu.quanticol.carma.core.carma.ProcessReference
+import eu.quanticol.carma.core.carma.ParallelComposition
+import eu.quanticol.carma.core.generator.ms.attribute.AttributeHandler
+import eu.quanticol.carma.core.carma.MaxMeasure
+import eu.quanticol.carma.core.carma.MinMeasure
+import eu.quanticol.carma.core.carma.AverageMeasure
+import eu.quanticol.carma.core.carma.ProcessState
+import org.eclipse.emf.common.util.EList
+import eu.quanticol.carma.core.carma.Variable
+import eu.quanticol.carma.core.carma.RealType
+import eu.quanticol.carma.core.carma.IntegerType
+import eu.quanticol.carma.core.carma.ReferenceableElement
+import eu.quanticol.carma.core.carma.FunctionDefinition
+import java.util.List
+import eu.quanticol.carma.core.carma.ValueType
+import eu.quanticol.carma.core.carma.AtomicRnd
 
 class ExpressionHandler {
 	
-	def static dispatch CharSequence expressionToJava( Or e ) {
+	@Inject extension Util
+	@Inject extension AttributeHandler
+	
+	String currentComponent = ""
+	
+	def setCurrentComponent( String current ) {
+		currentComponent = current;
+	}
+	
+	
+	def dispatch CharSequence expressionToJava( Or e ) {
 		'''( «e.left.expressionToJava» )||( «e.right.expressionToJava» )'''
 	}
 	
-	def static dispatch CharSequence expressionToJava( And e ) {
+	def dispatch CharSequence expressionToJava( And e ) {
 		'''( «e.left.expressionToJava» )&&( «e.right.expressionToJava» )'''
 	}
 
-	def static dispatch CharSequence expressionToJava( Equality e ) {
+	def dispatch CharSequence expressionToJava( Equality e ) {
 		'''( «e.left.expressionToJava» )==( «e.right.expressionToJava» )'''
 	}
 	
-	def static dispatch CharSequence expressionToJava( DisEquality e ) {
+	def dispatch CharSequence expressionToJava( DisEquality e ) {
 		'''( «e.left.expressionToJava» )!=( «e.right.expressionToJava» )'''
 	}
 	
-	def static dispatch CharSequence expressionToJava( Less e ) {
+	def dispatch CharSequence expressionToJava( Less e ) {
 		'''( «e.left.expressionToJava» )<( «e.right.expressionToJava» )'''
 	}
 	
-	def static dispatch CharSequence expressionToJava( LessOrEqual e ) {
+	def dispatch CharSequence expressionToJava( LessOrEqual e ) {
 		'''( «e.left.expressionToJava» )<=( «e.right.expressionToJava» )'''
 	}
 	
-	def static dispatch CharSequence expressionToJava( Greater e ) {
+	def dispatch CharSequence expressionToJava( Greater e ) {
 		'''( «e.left.expressionToJava» )>( «e.right.expressionToJava» )'''
 	}
 	
-	def static dispatch CharSequence expressionToJava( GreaterOrEqual e ) {
+	def dispatch CharSequence expressionToJava( GreaterOrEqual e ) {
 		'''( «e.left.expressionToJava» )>=( «e.right.expressionToJava» )'''
 	}
 	
-	def static dispatch CharSequence expressionToJava( Subtraction e ) {
+	def dispatch CharSequence expressionToJava( Subtraction e ) {
 		'''( «e.left.expressionToJava» )-( «e.right.expressionToJava» )'''
 	}
 	
-	def static dispatch CharSequence expressionToJava( Addition e ) {
+	def dispatch CharSequence expressionToJava( Addition e ) {
 		'''( «e.left.expressionToJava» )+( «e.right.expressionToJava» )'''
 	}
 	
-	def static dispatch CharSequence expressionToJava( Division e ) {
+	def dispatch CharSequence expressionToJava( Division e ) {
 		'''( «e.left.expressionToJava» )/( «e.right.expressionToJava» )'''
 	}
 	
-	def static dispatch CharSequence expressionToJava( Multiplication e ) {
+	def dispatch CharSequence expressionToJava( Multiplication e ) {
 		'''( «e.left.expressionToJava» )*( «e.right.expressionToJava» )'''
 	}
 	
-	def static dispatch CharSequence expressionToJava( Modulo e ) {
+	def dispatch CharSequence expressionToJava( Modulo e ) {
 		'''( «e.left.expressionToJava» )%( «e.right.expressionToJava» )'''
 	}
 	
-	def static dispatch CharSequence expressionToJava( Not e ) {
+	def dispatch CharSequence expressionToJava( Not e ) {
 		'''!( «e.expression.expressionToJava» )'''
 	}
 
-	def static dispatch CharSequence expressionToJava( UnaryPlus e ) {
+	def dispatch CharSequence expressionToJava( UnaryPlus e ) {
 		'''«e.expression.expressionToJava»'''
 	}
 
-	def static dispatch CharSequence expressionToJava( UnaryMinus e ) {
+	def dispatch CharSequence expressionToJava( UnaryMinus e ) {
 		'''-(«e.expression.expressionToJava»)'''
 	}
 	
-	def static dispatch CharSequence expressionToJava( Reference e ) {
-		'''«e.reference.getReference( ReferenceContext::NONE )»«IF e.isIsCall»( 
-			«FOR p:e.args SEPARATOR ','»«p.expressionToJava»«ENDFOR»
+	def dispatch CharSequence expressionToJava( Reference e ) {
+		'''«e.reference.getReference( ReferenceContext::NONE , currentComponent  )»«IF e.isIsCall»( 
+			«e.args.map[it.expressionToJava].invocationParameters( e.reference.functionArguments.map[it.type] )»
 		)«ENDIF»'''		
 	}
 
-	def static dispatch CharSequence expressionToJava( RecordAccess e ) {
+	def getFunctionArguments( ReferenceableElement e ) {
+		switch e {
+			FunctionDefinition: e.parameters
+			default: newLinkedList()
+		}
+	}	
+
+	def dispatch CharSequence expressionToJava( RecordAccess e ) {
 		'''«e.source.expressionToJava».«e.field.name.fieldName»'''		
 	}
 		
-	def static dispatch CharSequence expressionToJava( IfThenElseExpression e ) {
-		'''( «e.guard.expressionToJava» ? «e.thenBranch.expressionToJava» ; «e.elseBranch.expressionToJava» )'''		
+	def dispatch CharSequence expressionToJava( IfThenElseExpression e ) {
+		'''( «e.guard.expressionToJava» ? «e.thenBranch.expressionToJava» : «e.elseBranch.expressionToJava» )'''		
 	}
 
 	
-	def static dispatch CharSequence expressionToJava( AtomicTrue e ) {
+	def dispatch CharSequence expressionToJava( AtomicTrue e ) {
 		'''true'''		
 	}
 	
-	def static dispatch CharSequence expressionToJava( AtomicFalse e ) {
+	def dispatch CharSequence expressionToJava( AtomicFalse e ) {
 		'''false'''		
 	}
 
-	def static dispatch CharSequence expressionToJava( AtomicInteger e ) {
+	def dispatch CharSequence expressionToJava( AtomicInteger e ) {
 		'''«e.value»'''
 	}
 
-	def static dispatch CharSequence expressionToJava( AtomicReal e ) {
+	def dispatch CharSequence expressionToJava( AtomicReal e ) {
 		'''«e.value»'''
 	}
 
-	def static dispatch CharSequence expressionToJava( AtomicRecord e ) {
+	def dispatch CharSequence expressionToJava( AtomicRecord e ) {
 		var record = e.fields.head.field.getContainerOfType(typeof(RecordDefinition))
 		if (record == null) {
 			'''null'''
 		} else {
-			var orderedArgs = record.fields.map[ field | e.fields.findFirst[ it.field==field ]]
-			'''new «record.name.recordClass»( «FOR fa:orderedArgs SEPARATOR ','»«fa.value.expressionToJava»«ENDFOR»)'''						
+			var orderedArgs = record.fields.map[ field | e.fields.findFirst[ it.field==field ]].map[ it.value ]
+			'''new «record.name.recordClass»( «orderedArgs.map[it.expressionToJava].invocationParameters( record.fields.map[ it.fieldType ] )» )'''
 		}		
 	}	
 
 
-	def static dispatch CharSequence expressionToJava( AtomicNow e ) {
+	def dispatch CharSequence expressionToJava( AtomicNow e ) {
 		'''now'''
 	}
 
-	def static dispatch CharSequence expressionToJava( SetComp	e ) {
-		//FIXME!!!!!		
+	def dispatch CharSequence expressionToJava( AtomicRnd e ) {
+		'''RandomGeneratorRegistry.rnd()'''
 	}
 
-	def static dispatch CharSequence expressionToJava( AtomicPi e ) {
+
+	def dispatch CharSequence expressionToJava( SetComp	e ) {
+		'''
+		system.measure( 
+			«e.variable.getComponentPredicate(e.predicate)»
+		)
+		'''
+	}
+	
+	def dispatch CharSequence expressionToJava( MaxMeasure	e ) {
+		'''
+		system.max( 
+			Measure<CarmaStore> m2 = new Measure<CarmaStore>() {
+
+				@Override
+				public double measure(CarmaStore store) {
+					«FOR a:e.globalAttributes»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::GLOBAL,"global")»
+					«ENDFOR»
+					«FOR a:e.senderAttributes»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::SENDER,"sender")»
+					«ENDFOR»
+					«FOR a:e.senderAttributes»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::RECEIVER,"receiver")»
+					«ENDFOR»
+					«FOR a:e.myAttributes»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::RECEIVER,"store")»
+					«ENDFOR»
+					«FOR a:e.referencedAttibutes»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::RECEIVER,"store")»
+					«ENDFOR»
+					return «e.value.expressionToJava»;
+				}
+			
+				@Override
+				public String getName() {
+					return "ANONYMOUS MEASURE";
+				}
+				
+			} , 
+			«e.guard.predicateOfAnExpression»
+		)
+		'''
+	}
+	
+	def dispatch CharSequence expressionToJava( MinMeasure	e ) {
+		'''
+		system.min( 
+			Measure<CarmaStore> m2 = new Measure<CarmaStore>() {
+
+				@Override
+				public double measure(CarmaStore store) {
+					«FOR a:e.globalAttributes»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::GLOBAL,"global")»
+					«ENDFOR»
+					«FOR a:e.senderAttributes»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::SENDER,"sender")»
+					«ENDFOR»
+					«FOR a:e.senderAttributes»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::RECEIVER,"receiver")»
+					«ENDFOR»
+					«FOR a:e.myAttributes»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::RECEIVER,"store")»
+					«ENDFOR»
+					«FOR a:e.referencedAttibutes»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::RECEIVER,"store")»
+					«ENDFOR»
+					return «e.value.expressionToJava»;
+				}
+			
+				@Override
+				public String getName() {
+					return "ANONYMOUS MEASURE";
+				}
+				
+			} , 
+			«e.guard.predicateOfAnExpression»
+		)
+		'''
+	}
+	
+	
+	def dispatch CharSequence expressionToJava( AverageMeasure	e ) {
+		'''
+		system.average( 
+			Measure<CarmaStore> m2 = new Measure<CarmaStore>() {
+
+				@Override
+				public double measure(CarmaStore store) {
+					«FOR a:e.globalAttributes»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::GLOBAL,"global")»
+					«ENDFOR»
+					«FOR a:e.senderAttributes»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::SENDER,"sender")»
+					«ENDFOR»
+					«FOR a:e.senderAttributes»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::RECEIVER,"receiver")»
+					«ENDFOR»
+					«FOR a:e.myAttributes»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::RECEIVER,"store")»
+					«ENDFOR»
+					«FOR a:e.referencedAttibutes»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::RECEIVER,"store")»
+					«ENDFOR»
+					return «e.value.expressionToJava»;
+				}
+			
+				@Override
+				public String getName() {
+					return "ANONYMOUS MEASURE";
+				}
+				
+			} , 
+			«e.guard.predicateOfAnExpression»
+		)
+		'''
+	}	
+	
+	def dispatch getComponentPredicate( AllComponents p , Expression e ) {
+		'''
+		new BasicComponentPredicate(
+			«e.predicateOfAnExpression»
+			«IF p.states != null»
+			«FOR n:p.states.stateNames»
+			, new CarmaProcessPredicate() {
+
+				//@Override
+				public boolean eval(CarmaProcess p) {
+					if (p instanceof CarmaSequentialProcess) {
+						CarmaSequentialProcess csp = (CarmaSequentialProcess) p;
+						return csp.getState().getName().equals("«n»");
+					}
+					return false;
+				}
+							
+			}
+			«ENDFOR» 			
+			«ENDIF»
+		)
+		'''		
+	}
+
+	def dispatch getComponentPredicate( AComponentAllStates p , Expression e ) {
+		'''
+		new BasicComponentPredicate(
+			«e.predicateOfAnExpression» , 
+			new CarmaProcessPredicate() {
+
+				//@Override
+				public boolean eval(CarmaProcess p) {
+					if (p instanceof CarmaSequentialProcess) {
+						CarmaSequentialProcess csp = (CarmaSequentialProcess) p;
+						return csp.getName().equals("«p.comp.name»");
+					}
+					return false;
+				}
+							
+			}
+			)
+		'''		
+	}
+
+	def dispatch getComponentPredicate( AComponentAState p , Expression e ) {
+		'''
+		new BasicComponentPredicate(
+			«e.predicateOfAnExpression»
+			«FOR n:p.state.stateNames»
+			, new CarmaProcessPredicate() {
+
+				//@Override
+				public boolean eval(CarmaProcess p) {
+					if (p instanceof CarmaSequentialProcess) {
+						CarmaSequentialProcess csp = (CarmaSequentialProcess) p;
+						return csp.getName().equals("«p.comp.name»")&&csp.getState().getName().equals("«n»");
+					}
+					return false;
+				}
+							
+			}
+			«ENDFOR» 
+			)
+		'''
+	}
+	
+	def predicateOfAnExpression( Expression e ) {
+		'''
+		«IF e != null»
+		new CarmaPredicate() {
+			
+			//Here we assume that the following "final" references are available (if needed):
+			//- global: reference to the global store;
+			//- sender: reference to the store of sender;
+			//- receiver: reference to the store of the receiver;				
+			//@Override
+			public boolean satisfy(CarmaStore store) {
+				«FOR a:e.globalAttributes»
+				«a.attributeTemporaryVariableDeclaration(ReferenceContext::GLOBAL,"global")»
+				«ENDFOR»
+				«FOR a:e.senderAttributes»
+				«a.attributeTemporaryVariableDeclaration(ReferenceContext::SENDER,"sender")»
+				«ENDFOR»
+				«FOR a:e.receiverAttributes»
+				«a.attributeTemporaryVariableDeclaration(ReferenceContext::RECEIVER,"receiver")»
+				«ENDFOR»
+				«FOR a:e.myAttributes»
+				«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"store")»
+				«ENDFOR»
+				«FOR a:e.referencedAttibutes»
+				«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
+				«ENDFOR»
+				return «e.expressionToJava»;
+			}
+		
+			
+		}
+		«ELSE»
+		CarmaPredicate.TRUE
+		«ENDIF»
+		'''
+	}
+
+	def dispatch Iterable<String> stateNames( ProcessReference p ) {
+		if (p.expression instanceof ProcessState) {
+			newLinkedList(p.expression.name)
+		} else {
+			newLinkedList()				
+		}
+	}
+	
+	def dispatch Iterable<String> stateNames( ParallelComposition p ) {
+		p.left.stateNames+p.right.stateNames
+	}
+	
+
+	def dispatch CharSequence expressionToJava( AtomicPi e ) {
 		'''Math.PI'''
 	}
 
-	def static dispatch CharSequence expressionToJava( AtomicExp e ) {
+	def dispatch CharSequence expressionToJava( AtomicExp e ) {
 		'''Math.E'''
 	}
 
-	def static dispatch getLitteral( Reference s , ReferenceContext c ) {
+	def getLitteral( Reference s , ReferenceContext c ) {
 		'''
-		«s.reference.getReference(c)»«IF s.isIsCall»(
+		«s.reference.getReference(c,currentComponent)»«IF s.isIsCall»(
 			«FOR p:s.args SEPARATOR ','»«p.expressionToJava»«ENDFOR»
 		)«ENDIF»
 		''' 
 	}
 
-	def static dispatch CharSequence expressionToJava( MyContext e ) {
-		e.reference.getLitteral( ReferenceContext::MY )
+	def dispatch CharSequence expressionToJava( MyContext e ) {
+		e.reference.getReference( ReferenceContext::MY , currentComponent )
 	}
 
-	def static dispatch CharSequence expressionToJava( ReceiverContext e ) {
-		e.reference.getLitteral( ReferenceContext::RECEIVER )
+	def dispatch CharSequence expressionToJava( ReceiverContext e ) {
+		e.reference.getReference( ReferenceContext::RECEIVER , currentComponent )
 	}
 
-	def static dispatch CharSequence expressionToJava( SenderContext e ) {
-		e.reference.getLitteral( ReferenceContext::SENDER )
+	def dispatch CharSequence expressionToJava( SenderContext e ) {
+		e.reference.getReference( ReferenceContext::SENDER , currentComponent )
 	}
 
-	def static dispatch CharSequence expressionToJava( GlobalContext e ) {
-		e.reference.getLitteral( ReferenceContext::GLOBAL )
+	def dispatch CharSequence expressionToJava( GlobalContext e ) {
+		e.reference.getReference( ReferenceContext::GLOBAL , currentComponent )
 	} 
 	
-	def static dispatch CharSequence expressionToJava( AbsFunction e ) {
+	def dispatch CharSequence expressionToJava( AbsFunction e ) {
 		'''Math.abs( «e.arg.expressionToJava» )'''	
 	} 	
 	
-	def static dispatch CharSequence expressionToJava( AcosFunction e ) {
+	def dispatch CharSequence expressionToJava( AcosFunction e ) {
 		'''Math.acos( «e.arg.expressionToJava» )'''	
 	} 	
 	
-	def static dispatch CharSequence expressionToJava( AsinFunction e ) {
+	def dispatch CharSequence expressionToJava( AsinFunction e ) {
 		'''Math.asin( «e.arg.expressionToJava» )'''	
 	} 	
 	
-	def static dispatch CharSequence expressionToJava( AtanFunction e ) {
+	def dispatch CharSequence expressionToJava( AtanFunction e ) {
 		'''Math.atan( «e.arg.expressionToJava» )'''	
 	} 	
 	
-	def static dispatch CharSequence expressionToJava( Atan2Function e ) {
+	def dispatch CharSequence expressionToJava( Atan2Function e ) {
 		'''Math.atan2( «e.first.expressionToJava» , «e.second.expressionToJava» )'''		
 	} 	
 	
-	def static dispatch CharSequence expressionToJava( CbrtFunction e ) {
+	def dispatch CharSequence expressionToJava( CbrtFunction e ) {
 		'''Math.cbrt( «e.arg.expressionToJava» )'''		
 	} 	
 	
-	def static dispatch CharSequence expressionToJava( CeilFunction e ) {
+	def dispatch CharSequence expressionToJava( CeilFunction e ) {
 		'''Math.ceil( «e.arg.expressionToJava» )'''	
 	} 	
 	
-	def static dispatch CharSequence expressionToJava( CosFunction e ) {
+	def dispatch CharSequence expressionToJava( CosFunction e ) {
 		'''Math.cos( «e.arg.expressionToJava» )'''	
 	} 	
 	
-	def static dispatch CharSequence expressionToJava( ExpFunction e ) {
+	def dispatch CharSequence expressionToJava( ExpFunction e ) {
 		'''Math.exp( «e.arg.expressionToJava» )'''	
 	} 	
 	
-	def static dispatch CharSequence expressionToJava( FloorFunction e ) {
+	def dispatch CharSequence expressionToJava( FloorFunction e ) {
 		'''Math.floor( «e.arg.expressionToJava» )'''	
 	} 	
 	
-	def static dispatch CharSequence expressionToJava( LogFunction e ) {
+	def dispatch CharSequence expressionToJava( LogFunction e ) {
 		'''Math.log( «e.arg.expressionToJava» )'''	
 	} 	
 	
-	def static dispatch CharSequence expressionToJava( Log10Function e ) {
+	def dispatch CharSequence expressionToJava( Log10Function e ) {
 		'''Math.log10( «e.arg.expressionToJava» )'''	
 	} 	
 	
-	def static dispatch CharSequence expressionToJava( MaxFunction e ) {
+	def dispatch CharSequence expressionToJava( MaxFunction e ) {
 		'''Math.max( «e.first.expressionToJava» , «e.second.expressionToJava» )'''	
 	} 	
 	
-	def static dispatch CharSequence expressionToJava( MinFunction e ) {
+	def dispatch CharSequence expressionToJava( MinFunction e ) {
 		'''Math.min( «e.first.expressionToJava» , «e.second.expressionToJava» )'''	
 	} 	
 	
-	def static dispatch CharSequence expressionToJava( PowFunction e ) {	
+	def dispatch CharSequence expressionToJava( PowFunction e ) {	
 		'''Math.pow( «e.first.expressionToJava» , «e.second.expressionToJava» )'''	
 	} 	
 	
-	def static dispatch CharSequence expressionToJava( SinFunction e ) {
+	def dispatch CharSequence expressionToJava( SinFunction e ) {
 		'''Math.sin( «e.arg.expressionToJava» )'''	
 	} 	
 	
-	def static dispatch CharSequence expressionToJava( SqrtFunction e ) {
+	def dispatch CharSequence expressionToJava( SqrtFunction e ) {
 		'''Math.sqrt( «e.arg.expressionToJava» )'''	
 	} 	
 	
-	def static dispatch CharSequence expressionToJava( TanFunction e ) {
+	def dispatch CharSequence expressionToJava( TanFunction e ) {
 		'''Math.tan( «e.arg.expressionToJava» )'''	
 	} 	
 	
-	def static dispatch CharSequence expressionToJava( UniformFunction e ) {
-		//FIXME!!!
+	def dispatch CharSequence expressionToJava( UniformFunction e ) {
+		'''RandomGeneratorRegistry.uniform(«FOR v:e.args SEPARATOR ','»«v.expressionToJava»«ENDFOR»)'''
+	}
+	
+	def invocationParameters( List<CharSequence> args , List<ValueType> parms ) {
+		var indexedArgs = args.indexed
+		'''
+		«FOR ip:indexedArgs SEPARATOR ','»
+		«ip.value.getParameterCode(parms.get(ip.key))»
+		«ENDFOR»
+		'''
+	}
+	
+	def getParameterCode( CharSequence code , ValueType vt ) {
+		switch vt {
+			RealType: '''Double.valueOf( «code» )'''
+			IntegerType: '''Integer.valueOf( «code» )'''
+			default: code		
+		}
 	}
 }

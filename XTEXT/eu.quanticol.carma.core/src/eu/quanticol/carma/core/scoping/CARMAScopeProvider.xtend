@@ -7,7 +7,6 @@ import eu.quanticol.carma.core.carma.ComponentDefinition
 import eu.quanticol.carma.core.carma.AttributeDeclaration
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import org.eclipse.xtext.scoping.Scopes
-import static extension eu.quanticol.carma.core.utils.Util.*
 import org.eclipse.emf.ecore.EObject
 import eu.quanticol.carma.core.carma.FunctionDefinition
 import org.eclipse.emf.ecore.EReference
@@ -31,6 +30,15 @@ import eu.quanticol.carma.core.carma.ReceiverContext
 import eu.quanticol.carma.core.carma.InputAction
 import eu.quanticol.carma.core.carma.Processes
 import eu.quanticol.carma.core.carma.AtomicRecord
+import eu.quanticol.carma.core.utils.Util
+import com.google.inject.Inject
+import eu.quanticol.carma.core.typing.TypeSystem
+import eu.quanticol.carma.core.carma.AllComponents
+import eu.quanticol.carma.core.carma.AComponentAState
+import eu.quanticol.carma.core.carma.ComponentBlockInstantiation
+import eu.quanticol.carma.core.carma.ComponentBlockForStatement
+import java.util.LinkedList
+import eu.quanticol.carma.core.carma.EnumDefinition
 
 /**
  * This class contains custom scoping description.
@@ -41,7 +49,8 @@ import eu.quanticol.carma.core.carma.AtomicRecord
  */
 class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider {
 
-
+	@Inject extension Util
+	@Inject extension TypeSystem
 
 	def scope_Reference_reference( AttributeDeclaration a , EReference r) {
 		var parentScope = a.getContainerOfType(typeof(Element)).referenceableElementScopeForElement
@@ -76,13 +85,13 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 		var m = a.getContainerOfType(typeof(Model))
 		if (m != null) {
 			var parentScope = a.referenceableElementScopeForElement
-			Scopes::scopeFor( m.attributes , parentScope )
+			Scopes::scopeFor( m.attributes  , parentScope )
 		} else {
 			IScope::NULLSCOPE		
 		}
 	}
 	
-	def scope_Reference_reference( MyContext a , EReference r ) {
+	def scope_AttributeDeclaration( MyContext a , EReference r ) {
 		var comp = a.getContainerOfType(typeof(ComponentDefinition))
 		if (comp != null) {
 			Scopes::scopeFor( comp.store.attributes )
@@ -110,7 +119,7 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 		}
 	}
 
-	def scope_Reference_reference( GlobalContext a , EReference r ) {
+	def scope_AttributeDeclaration( GlobalContext a , EReference r ) {
 		var env = a.getContainerOfType(typeof(Environment))
 		if (env != null) { //This is an access to the global store performed in the environment
 			if (env.store != null) {
@@ -128,7 +137,7 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 		}
 	}
 
-	def scope_Reference_reference( SenderContext a , EReference r ) {
+	def scope_AttributeDeclaration( SenderContext a , EReference r ) {
 		var env = a.getContainerOfType(typeof(Environment))
 		if (env != null) { //This is an access to the global store performed in the environment
 			var model = env.getContainerOfType(typeof(Model))
@@ -142,7 +151,7 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 		}
 	}
 
-	def scope_Reference_reference( ReceiverContext a , EReference r ) {
+	def scope_AttributeDeclaration( ReceiverContext a , EReference r ) {
 		var env = a.getContainerOfType(typeof(Environment))
 		if (env != null) { //This is an access to the global store performed in the environment
 			var model = env.getContainerOfType(typeof(Model))
@@ -191,8 +200,23 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 		}		
 	}
 	
-	def scope_ProcessReference_expression( Processes p ,EReference r ) {
+
+	def scope_ProcessExpressionReference_expression( Processes p ,EReference r ) {
 		Scopes::scopeFor( p.processes )
+	}
+
+	def scope_ProcessReference_expression( AllComponents all ,EReference r ) {
+		var model = all.getContainerOfType(typeof(Model))
+		Scopes::scopeFor(model.allProcesses)
+	}
+
+	def scope_ProcessReference_expression( AComponentAState acas ,EReference r ) {
+		var model = acas.getContainerOfType(typeof(Model))
+		var procs = model.globalProcesses
+		if (acas.comp != null) {
+			procs = acas.comp.processes.processes+procs 
+		} 
+		Scopes::scopeFor(procs)
 	}
 
 	def scope_ProcessReference_expression( ComponentDefinition c ,EReference r ) {
@@ -224,16 +248,30 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 			if (model != null) {
 				parentScope = Scopes::scopeFor( model.attributes , parentScope )
 			}			
-			if (m.ranges != null) {
-				Scopes::scopeFor( m.ranges.variables , parentScope )
-			} else {
-				parentScope
-			}
+			Scopes::scopeFor( m.variables , parentScope )
+		} else {
+			IScope::NULLSCOPE
+		}
+	}
+
+	def dispatch getReferenceableElementScopeForElement( SystemDefinition m ) {
+		if ( m != null ) {
+			m.referenceableElementsBefore 
 		} else {
 			IScope::NULLSCOPE
 		}
 	}
 	
+	
+	def addReferenceableElements( Element e , LinkedList<ReferenceableElement> references ) {
+		switch e {
+			FunctionDefinition:  references.add(e)
+			Processes: references.addAll( e.processes )
+			ConstantDefinition: references.add( e )			
+			EnumDefinition: references.addAll( e.values )
+			default: false			
+		}
+	}
 	
 	def getReferenceableElementsBefore( Element e ) {
 		var model = e.getContainerOfType(typeof(Model))
@@ -242,7 +280,9 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 			if (idx < 0) {
 				IScope::NULLSCOPE
 			} else {
-				Scopes::scopeFor( model.elements.subList(0,idx) )
+				val references = newLinkedList()
+				model.elements.subList(0,idx).forEach[ it.addReferenceableElements(references) ]
+				Scopes::scopeFor( references )
 			}
 		} else {
 			IScope::NULLSCOPE
@@ -257,5 +297,32 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 			IScope::NULLSCOPE
 		}
 	}
+	
+	def getContainerScope( EObject cbi ) {
+		var forVariables = newLinkedList()
+		var parent = cbi.getContainerOfType(typeof(ComponentBlockForStatement))
+		while ( parent != null ) {
+			forVariables.add( parent.variable )
+			parent = parent.eContainer ?. getContainerOfType(typeof(ComponentBlockForStatement))
+		}
+		var sys = cbi.getContainerOfType(typeof(SystemDefinition))
+		Scopes::scopeFor( forVariables , sys ?. getReferenceableElementScopeForElement ?: IScope::NULLSCOPE )
+	}
+	
+	def scope_Reference_reference( ComponentBlockInstantiation cbi , EReference r ) {
+		var parentScope = cbi.containerScope
+		var comp = cbi.name
+		if (comp != null) {
+			Scopes::scopeFor( comp.processes.processes , parentScope )
+		} else {
+			parentScope
+		}
+	}
+	
+	def scope_Reference_reference( ComponentBlockForStatement forBlock , EReference r ) {
+		var parentScope = forBlock.containerScope
+		Scopes::scopeFor( newLinkedList( forBlock.variable ) , parentScope )
+	}
+	
 
 }

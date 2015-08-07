@@ -6,10 +6,9 @@ package eu.quanticol.carma.core.validation
 import com.google.inject.Inject
 import eu.quanticol.carma.core.carma.CarmaPackage
 import eu.quanticol.carma.core.carma.Model
-import eu.quanticol.carma.core.carma.Process
 import eu.quanticol.carma.core.carma.Processes
 import eu.quanticol.carma.core.carma.ProcessesBlock
-import static extension eu.quanticol.carma.core.utils.Util.*
+import eu.quanticol.carma.core.utils.Util
 import java.util.ArrayList
 import org.eclipse.xtext.validation.Check
 
@@ -17,7 +16,7 @@ import org.eclipse.xtext.validation.Check
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import eu.quanticol.carma.core.carma.StoreBlock
 import eu.quanticol.carma.core.carma.FunctionDefinition
-import static extension eu.quanticol.carma.core.typing.TypeSystem.*
+import eu.quanticol.carma.core.typing.TypeSystem
 import eu.quanticol.carma.core.carma.RecordDefinition
 import eu.quanticol.carma.core.carma.FieldDefinition
 import eu.quanticol.carma.core.carma.ConstantDefinition
@@ -47,11 +46,13 @@ import eu.quanticol.carma.core.carma.UnaryPlus
 import eu.quanticol.carma.core.carma.FieldAssignment
 import eu.quanticol.carma.core.carma.AtomicRecord
 import eu.quanticol.carma.core.carma.IfThenElseExpression
+import eu.quanticol.carma.core.carma.Range
+import eu.quanticol.carma.core.carma.ProcessState
 
 class CARMAValidator extends AbstractCARMAValidator {
 	
-//	@Inject extension TypeSystem
-//	@Inject extension Util
+	@Inject extension TypeSystem
+	@Inject extension Util
 
 
 	public static val ERROR_FunctionDefinition_wrong_name 	= "ERROR_FunctionDefinition_wong_name"
@@ -155,12 +156,12 @@ class CARMAValidator extends AbstractCARMAValidator {
 	public static val ERROR_Process_multiple_definition 	= "ERROR_Process_multiple_definition"
 	
 	@Check
-	def check_ERROR_Process_multiple_definition(Process p) {
+	def check_ERROR_Process_multiple_definition(ProcessState p) {
 		
 		var model = p.getContainerOfType(typeof(Model))
 		if (model != null) {
 
-			var functions = model.processes.filter[ it.name == p.name ]
+			var functions = model.globalProcesses.filter[ it.name == p.name ]
 			if (functions.length > 1) {
 				error("Error: duplicated process declaration",CarmaPackage::eINSTANCE.referenceableElement_Name, ERROR_Process_multiple_definition);				
 			}
@@ -178,7 +179,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 		var model = c.getContainerOfType(typeof(Model))
 		if (model != null) {
 
-			var functions = model.processes.filter[ it.name == c.name ]
+			var functions = model.globalProcesses.filter[ it.name == c.name ]
 			if (functions.length > 1) {
 				error("Error: duplicated constant declaration",CarmaPackage::eINSTANCE.referenceableElement_Name, ERROR_ConstantDefinition_multiple_definition);				
 			}
@@ -196,7 +197,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 		var model = c.getContainerOfType(typeof(Model))
 		if (model != null) {
 
-			var functions = model.processes.filter[ it.name == c.name ]
+			var functions = model.globalProcesses.filter[ it.name == c.name ]
 			if (functions.length > 1) {
 				error("Error: duplicated component declaration",CarmaPackage::eINSTANCE.componentDefinition_Name, ERROR_ComponentDefinition_multiple_definition);				
 			}
@@ -251,7 +252,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 		var model = m.getContainerOfType(typeof(Model))
 		if (model != null) {
 
-			var functions = model.processes.filter[ it.name == m.name ]
+			var functions = model.globalProcesses.filter[ it.name == m.name ]
 			if (functions.length > 1) {
 				error("Error: duplicated measure declaration",CarmaPackage::eINSTANCE.measureDefinition_Name, ERROR_MeasureDefinition_multiple_definition);				
 			}
@@ -585,6 +586,36 @@ class CARMAValidator extends AbstractCARMAValidator {
 			var type = e.expression.typeOf
 			if ((type!=null)&&(!type.error)&&(!type.number)) {
 				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.unaryPlus_Expression,ERROR_Expression_type_error);			
+			}
+		}
+	}
+
+	@Check
+	def check_ERROR_Expression_type_error_Range_min( Range e ) {
+		if (e.min != null) {
+			var type = e.min.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.integer)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" is "+type,CarmaPackage::eINSTANCE.range_Min,ERROR_Expression_type_error);			
+			}
+		}
+	}
+
+	@Check
+	def check_ERROR_Expression_type_error_Range_max( Range e ) {
+		if (e.max != null) {
+			var type = e.max.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.integer)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" is "+type,CarmaPackage::eINSTANCE.range_Min,ERROR_Expression_type_error);			
+			}
+		}
+	}
+
+	@Check
+	def check_ERROR_Expression_type_error_Range_step( Range e ) {
+		if (e.step != null) {
+			var type = e.step.typeOf
+			if ((type!=null)&&(!type.error)&&(!type.integer)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" is "+type,CarmaPackage::eINSTANCE.range_Step,ERROR_Expression_type_error);			
 			}
 		}
 	}

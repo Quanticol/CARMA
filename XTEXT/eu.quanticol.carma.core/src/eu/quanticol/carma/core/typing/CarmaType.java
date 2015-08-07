@@ -130,18 +130,6 @@ public class CarmaType {
 		return (((this.code == TypeCode.INTEGER)&&(t.code==TypeCode.REAL))
 				||((this.code == TypeCode.REAL)&&(t.code == TypeCode.INTEGER)));
 	}
-	
-	public String toJavaType() {
-		switch (code) {
-			case BOOLEAN: return "Boolean";
-			case INTEGER: return "Integer";
-			case REAL: return "Double";
-			case PROCESS: return "Object";//FIXME!!!
-			case RECORD: return Util.recordClass(((RecordDefinition) reference).getName()).toString();
-			case ENUM: return Util.recordClass(((EnumDefinition) reference).getName()).toString();
-			case ERROR: return "Object";
-			default: return null;
-		}
-	}
+
 	
 }

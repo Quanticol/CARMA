@@ -1,11 +1,9 @@
 package eu.quanticol.carma.core.utils
 
 import com.google.inject.Inject
-import eu.quanticol.carma.core.carma.Process
 import java.util.HashSet
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import java.util.ArrayList
-import eu.quanticol.carma.core.carma.Process
 import eu.quanticol.carma.core.carma.ProcessComposition
 import eu.quanticol.carma.core.carma.ParallelComposition
 import eu.quanticol.carma.core.carma.ProcessReference
@@ -43,6 +41,15 @@ import org.eclipse.emf.common.util.EList
 import java.util.Set
 import java.util.LinkedList
 import eu.quanticol.carma.core.typing.CarmaType
+import eu.quanticol.carma.core.carma.Update
+import eu.quanticol.carma.core.carma.Expression
+import eu.quanticol.carma.core.carma.Reference
+import eu.quanticol.carma.core.carma.MyContext
+import eu.quanticol.carma.core.carma.GlobalContext
+import eu.quanticol.carma.core.carma.SenderContext
+import eu.quanticol.carma.core.carma.ReceiverContext
+import eu.quanticol.carma.core.carma.ProcessState
+import eu.quanticol.carma.core.carma.MeasureVariableDeclaration
 
 class Util {
 
@@ -60,8 +67,18 @@ class Util {
 	public static final String RECEIVER_PREFIX = "__RECEIVER__";
 	public static final String STATE_PREFIX = "__STATE__";
 	public static final String ACT_PREFIX = "__ACT__";
+	public static final String MEASURE_PREFIX = "__MEASURE__";
+	public static final String SYSTEM_PREFIX = "__SYSTEM__";
 	
-	def static getActivities( Model m ) {
+	def systemName( String name ) {
+		'''«SYSTEM_PREFIX»«name»'''
+	}
+	
+	def carmaProcessCreation( String component , String state ) {
+		'''new CarmaSequentialProcess( _COMP_«component» , «state.stateName(component)» )'''
+	}
+	
+	def  getActivities( Model m ) {
 		var activities = m.getAllContentsOfType(typeof(Activity))
 		val LinkedList<Activity> toReturn = newLinkedList()
 		activities.forEach[ a |
@@ -72,7 +89,7 @@ class Util {
 		toReturn
 	}	
 	
-	def static getActivities( Model m , boolean broadcast ) {
+	def  getActivities( Model m , boolean broadcast ) {
 		var activities = m.getAllContentsOfType(typeof(Activity)).filter[ it.isBroadacst==broadcast ]
 		val LinkedList<Activity> toReturn = newLinkedList()
 		activities.forEach[ a |
@@ -83,24 +100,24 @@ class Util {
 		toReturn
 	}
 	
-	def static getMessages( Model m , Activity a ) {
+	def  getMessages( Model m , Activity a ) {
 		m.getAllContentsOfType(typeof(OutputAction)).filter[ 
 			(it.activity.name == a.name)&&(it.activity.isIsBroadacst==a.isIsBroadacst)
 		].map[it.outputArguments]
 	}
 	
-	def static getAllAttributes( Model m ) {
+	def  getAllAttributes( Model m ) {
 		m.components.map[it.store.attributes].flatten
 		
 	}
 	
-	def static getAllGlobalAttributes( Model m ) {
+	def  getAllGlobalAttributes( Model m ) {
 		m.systems.filter[it.environment != null].
 			filter[ it.environment.store != null].
 				map[ it.environment.store.attributes ].flatten
 	}
 	
-	def static getGlobalAttributes( Model m ) {
+	def  getGlobalAttributes( Model m ) {
 		var sys = m.systems
 		val toReturn = newLinkedList()
 		sys.filter[it.environment != null].
@@ -111,7 +128,11 @@ class Util {
 		toReturn
 	}
 	
-	def static getAttributes( Model m ) {
+	def getEnums( Model m ) {
+		m.elements.filter(typeof(EnumDefinition))
+	}
+	
+	def  getAttributes( Model m ) {
 		var comps = m.components
 		val toReturn = newLinkedList()
 		comps.forEach[
@@ -120,55 +141,63 @@ class Util {
 		toReturn
 	}
 	
-	def static mergeAttributes( LinkedList<AttributeDeclaration> set , EList<AttributeDeclaration> attrs ) {
+	def  mergeAttributes( LinkedList<AttributeDeclaration> set , EList<AttributeDeclaration> attrs ) {
 		attrs.forEach[
 			a | if (set.forall[ !it.name.equals(a.name) ]) { set.add(a) }
 		]
 	}
 	
-	def static getFunctions( Model m ) {
+	def  getFunctions( Model m ) {
 		m.elements.filter(typeof(FunctionDefinition)) 		
 	}
 	
-	def static getRecords( Model m ) {
+	def  getRecords( Model m ) {
 		m.elements.filter(typeof(RecordDefinition)) 		
 	}
 	
-	def static getFields( Model m ) {
+	def  getFields( Model m ) {
 		m.elements.filter(typeof(RecordDefinition)).map[it.fields].flatten 		
 	}
 	
-	def static getProcesses( Model m ) {
+	def  getGlobalProcesses( Model m ) {
 		m.elements.filter(typeof(Processes)).map[it.processes].flatten	
 	}
+
+	def  getAllProcesses( Model m ) {
+		m.elements.filter(typeof(Processes)).map[it.processes].flatten	
+			+m.elements.filter(typeof(ComponentDefinition)).map[it.processes.processes].flatten
+	}
 	
-	def static getConstants( Model m ) {
+	def  getConstants( Model m ) {
 		m.elements.filter(typeof(ConstantDefinition))
 	}
 	
-	def static getComponents( Model m ) {
+	def  getComponents( Model m ) {
 		m.elements.filter(typeof(ComponentDefinition))
 	}
 	
-	def static getMeasures( Model m ) {
+	def  getMeasures( Model m ) {
 		m.elements.filter(typeof(MeasureDefinition))
 	}
 
-	def static getSystems( Model m ) {
+	def  getSystems( Model m ) {
 		m.elements.filter(typeof(SystemDefinition))
 	}
 	
 	
-	def static enumClass( String name ) {
+	def  enumClass( String name ) {
 		'''«ENUM_PREFIX»«name»'''
 	}
 	
-	def static recordClass( String name ) {
+	def  recordClass( String name ) {
 		'''«RECORD_PREFIX»«name»'''
 	}
 	
+	def measureName( String name ) {
+		'''«MEASURE_PREFIX»«name»'''
+	}
 	
-	def static customToJavaType( ReferenceableType t ) {
+	def  customToJavaType( ReferenceableType t ) {
 		switch t {
 			EnumDefinition: t.name.enumClass
 			RecordDefinition: t.name.recordClass
@@ -176,11 +205,11 @@ class Util {
 	}
 	
 	
-	def static toJavaDeclaration( Variable v ) {
+	def  toJavaDeclaration( Variable v ) {
 		'''«v.type.toJavaType» «v.name.variableName»'''
 	}
 	
-	def static toJavaType( ValueType ft ) {
+	def  toJavaType( ValueType ft ) {
 		switch ft {
 			IntegerType: '''Integer'''
 			RealType: '''Double'''
@@ -192,39 +221,39 @@ class Util {
 					EnumDefinition: ref.name.enumClass
 				}
 			}
-			ProcessType: '''Object'''
+			ProcessType: '''CarmaProcess'''
 		}
 	}
 	
-	def static fieldName( String name ) {
+	def  fieldName( String name ) {
 		'''«FIELD_PREFIX»«name»'''
 	}
 	
-	def static variableName( String name ) {
+	def  variableName( String name ) {
 		'''«VAR_PREFIX»«name»'''
 	}
 
-	def static functionName( String name ) {
+	def  functionName( String name ) {
 		'''«FUN_PREFIX»«name»'''
 	}
 
-	def static constantName( String name ) {
+	def  constantName( String name ) {
 		'''«FUN_PREFIX»«name»'''
 	}
 
-	def static enumCaseName( String name ) {
+	def  enumCaseName( String name ) {
 		'''«CONST_PREFIX»«name»'''
 	}
 
-	def static stateName( String name , String component ) {
+	def  stateName( String name , String component ) {
 		'''«STATE_PREFIX»_«component»_«name»'''
 	}
 
-	def static actionName( String name ) {
+	def  actionName( String name ) {
 		'''«ACT_PREFIX»«name»'''
 	}
 
-	def static attributeName( String name , ReferenceContext context ) {
+	def  attributeName( String name , ReferenceContext context ) {
 		switch context {
 			case NONE: '''«ATTR_PREFIX»«name»'''
 			case MY: '''«MY_PREFIX»«name»'''
@@ -234,17 +263,164 @@ class Util {
 		}
 	}
 	
-	def static getReference( ReferenceableElement element , ReferenceContext context ) {
+	def  getReference( ReferenceableElement element , ReferenceContext context , String component ) {
 		switch element {
 			Variable: element.name.variableName
 			UntypedVariable: element.name.variableName
 			AttributeDeclaration: element.name.attributeName(context)
 			FunctionDefinition: element.name.functionName
 			EnumCase: element.name.enumCaseName			
-			ConstantDefinition: element.name.constantName	
+			ConstantDefinition: element.name.constantName
+			ProcessState: component.carmaProcessCreation(element.name)
+			MeasureVariableDeclaration: element.name.variableName
 		}
 	}
 	
+	def  referencedAttibutes( Expression e ) {
+		val LinkedList<AttributeDeclaration> result = newLinkedList()
+		if (e instanceof Reference) {
+			if (e.reference instanceof AttributeDeclaration) {
+				result.add( e.reference as AttributeDeclaration )
+			}
+		}
+		e.getAllContentsOfType(typeof(Reference)).map[ 
+			it.reference
+		].filter(typeof(AttributeDeclaration)).forEach[ a |
+			if (result.forall[ it.name != a.name ]) {
+				result.add( a )
+			}
+		]
+		result
+	} 
+
+	def referencedAttibutes( Iterable<Expression> e ) {
+		val LinkedList<AttributeDeclaration> result = newLinkedList()
+		e.map[ it.referencedAttibutes ].flatten.forEach[ a |
+			if (result.forall[ it.name != a.name ]) {
+				result.add( a )
+			}
+		]
+		result
+	}
+	
+	def  referencedAttributes( Update e ) {
+		val LinkedList<AttributeDeclaration> result = newLinkedList()
+		e.updateAssignment.map[ it.expression ].map[ it.referencedAttibutes ].flatten.forEach[ a |
+			if (result.forall[ it.name != a.name ]) {
+				result.add( a )
+			}
+		]
+		result
+	}
+
+	def  myAttributes( Update e ) {
+		val LinkedList<AttributeDeclaration> result = newLinkedList()
+		e.updateAssignment.map[ 
+			it.expression
+		].map[ 
+			it.myAttributes
+		].flatten.forEach[ a |
+			if (result.forall[ it.name != a.name ]) {
+				result.add( a )
+			}
+		]
+		result
+	}
+	
+	def myAttributes( Iterable<Expression> e ) {
+		val LinkedList<AttributeDeclaration> result = newLinkedList()
+		e.map[ it.myAttributes ].flatten.forEach[ a |
+			if (result.forall[ it.name != a.name ]) {
+				result.add( a )
+			}
+		]
+		result
+	}
+	
+
+	def  myAttributes( Expression e ) {
+		val LinkedList<AttributeDeclaration> result = newLinkedList()
+		e.getAllContentsOfType(typeof(MyContext)).map[
+			it.reference
+		].forEach[ a |
+			if (result.forall[ it.name != a.name ]) {
+				result.add( a )
+			}
+		]
+		result
+	}
+	
+	
+	def globalAttributes( Iterable<Expression> e ) {
+		val LinkedList<AttributeDeclaration> result = newLinkedList()
+		e.map[ it.globalAttributes ].flatten.forEach[ a |
+			if (result.forall[ it.name != a.name ]) {
+				result.add( a )
+			}
+		]
+		result
+	}
+	
+	def  globalAttributes( Expression e ) {
+		val LinkedList<AttributeDeclaration> result = newLinkedList()
+		e.getAllContentsOfType(typeof(GlobalContext)).map[
+			it.reference
+		].forEach[ a |
+			if (result.forall[ it.name != a.name ]) {
+				result.add( a )
+			}
+		]
+		result
+	}
+	
+	def  senderAttributes( Expression e ) {
+		val LinkedList<AttributeDeclaration> result = newLinkedList()
+		e.getAllContentsOfType(typeof(SenderContext)).map[
+			it.reference
+		].forEach[ a |
+			if (result.forall[ it.name != a.name ]) {
+				result.add( a )
+			}
+		]
+		result
+	}
+	
+	def senderAttributes( Iterable<Expression> e ) {
+		val LinkedList<AttributeDeclaration> result = newLinkedList()
+		e.map[ it.senderAttributes ].flatten.forEach[ a |
+			if (result.forall[ it.name != a.name ]) {
+				result.add( a )
+			}
+		]
+		result
+	}
+	
+	
+	
+	def  receiverAttributes( Expression e ) {
+		val LinkedList<AttributeDeclaration> result = newLinkedList()
+		e.getAllContentsOfType(typeof(ReceiverContext)).map[
+			it.reference
+		].forEach[ a |
+			if (result.forall[ it.name != a.name ]) {
+				result.add( a )
+			}
+		]
+		result
+	}
+	
+	def receiverAttributes( Iterable<Expression> e ) {
+		val LinkedList<AttributeDeclaration> result = newLinkedList()
+		e.map[ it.receiverAttributes ].flatten.forEach[ a |
+			if (result.forall[ it.name != a.name ]) {
+				result.add( a )
+			}
+		]
+		result
+	}
+	
+	
+
 //	def boolean sameName(Name name1, Name name2){
 //		name1.name.equals(name2.name)
 //	}

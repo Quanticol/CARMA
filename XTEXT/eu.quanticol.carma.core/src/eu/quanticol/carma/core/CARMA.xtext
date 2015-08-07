@@ -71,7 +71,7 @@ UntypedVariable:
 ReferenceableElement:
 	UntypedVariable|Variable|AttributeDeclaration|FunctionDefinition|
 	EnumCase|
-	ConstantDefinition|Process|MeasureVariableDeclaration
+	ConstantDefinition|ProcessState|MeasureVariableDeclaration
 ;
 
 ////////////////////////////////////////////////////FUNCTIONS
@@ -107,8 +107,8 @@ FunctionDefinition:
 
 ////////////////////////////////////////////////////ASSIGNMENT
 
-UpdateAssignment returns Assignment hidden(ML_COMMENT,SL_COMMENT,WS):
-	{UpdateAssignment} reference=[AttributeDeclaration] ":=" expression=Expression
+UpdateAssignment hidden(ML_COMMENT,SL_COMMENT,WS):
+	reference=[AttributeDeclaration] ":=" expression=Expression
 ;
 
 ////////////////////////////////////////////////////STATE
@@ -138,18 +138,10 @@ SetComp hidden(ML_COMMENT,SL_COMMENT,WS):
 ; 
 
 ////////////////////////////////////////////////////COMPONENT COMPREHENSION
-ComponentComprehension returns ComponentComprehension hidden(ML_COMMENT,SL_COMMENT,WS):
-	ParallelComponentComprehension
-; 
-
-ParallelComponentComprehension returns ComponentComprehension  hidden(ML_COMMENT,SL_COMMENT,WS):
-	AtomicComponentComprehension ({ParallelComponentComprehension.left=current}  "&" right=AtomicComponentComprehension)*
-;
-
-AtomicComponentComprehension returns ComponentComprehension  hidden(ML_COMMENT,SL_COMMENT,WS):
-	 {AllComponents} 		"*" 											|
+ComponentComprehension returns ComponentComprehension  hidden(ML_COMMENT,SL_COMMENT,WS):
+	 {AllComponents} 		"*" ("[" states = ProcessComposition "]")?											|
 	 {AComponentAllStates}	comp=[ComponentDefinition] "[" "*" "]"		|
-	 {AComponentAState}		comp=[ComponentDefinition] "[" state=ProcessComposition "]" 
+	 {AComponentAState}		comp=[ComponentDefinition] "[" state = ProcessComposition "]" 
 ;
 
 ////////////////////////////////////////////////////SPAWN
@@ -198,7 +190,7 @@ ProcessesBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 	{ProcessesBlock}
 	"behaviour"
 	"{"
-		(processes+=Process ";" )*
+		(processes+=ProcessState ";" )*
 	"}"
 ;
 
@@ -243,7 +235,6 @@ ComponentBlockNew returns ComponentBlockInstantiation:
 ;
 
 ComponentBlockInstantiation hidden(ML_COMMENT,SL_COMMENT,WS):
-	{ComponentBlockSpawn}
 	"new"
 	name=[ComponentDefinition] 
 	'(' (arguments+=Range (',' arguments+=Range)* )? ')'
@@ -259,11 +250,11 @@ ComponentBlockForStatement hidden(ML_COMMENT,SL_COMMENT,WS):
 ////////////////////////////////////////////////////PROCESS
 Processes hidden(ML_COMMENT,SL_COMMENT,WS): {Processes}
 	"abstract" "{"
-		( processes+=Process ";" )*
+		( processes+=ProcessState ";" )*
 	"}"
 ;
 
-Process hidden(ML_COMMENT,SL_COMMENT,WS):
+ProcessState hidden(ML_COMMENT,SL_COMMENT,WS):
 	name=ID
 	"="
 	processExpression=ProcessExpression 
@@ -294,7 +285,7 @@ ProcessExpressionAction hidden(ML_COMMENT,SL_COMMENT,WS):
 ProcessExpressionNext:
 		{ProcessExpressionNil} "nil"
 	| {ProcessExpressionKill} "kill"
-	| {ProcessExpressionReference} expression=[Process]
+	| {ProcessExpressionReference} expression=[ProcessState]
 ;
 
 Guard hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -308,7 +299,7 @@ Activity:
 Action hidden(ML_COMMENT,SL_COMMENT,WS):
 	Activity (
 		{OutputAction.activity=current} 
-			("<" (outputArguments+=Expression ( "," outputArguments+=Expression )*)? ">")? 
+			(withData?="<" (outputArguments+=Expression ( "," outputArguments+=Expression )*)? ">")? 
 			(update=Update)?
 		| {InputAction.activity=current} 
 			"(" 
@@ -428,10 +419,10 @@ Atomic returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	| {AtomicPi} "PI"
 	| {AtomicExp} "E"
 	| BuiltInFunctions
-	| {MyContext} "my" "." reference=Reference
-	| {ReceiverContext} "receiver" "." reference=Reference
-	| {SenderContext} "sender" "." reference=Reference
-	| {GlobalContext} "global" "." reference=Reference
+	| {MyContext} "my" "." reference=[AttributeDeclaration]
+	| {ReceiverContext} "receiver" "." reference=[AttributeDeclaration]
+	| {SenderContext} "sender" "." reference=[AttributeDeclaration]
+	| {GlobalContext} "global" "." reference=[AttributeDeclaration]
 //	| {AtomicOutcome}				value=OutcomeProbability	THE ROLE OF THIS CASES IS NOT CLEAR FOR ME.
 //	| {AtomicProcessComposition}	value=ProcessComposition
 ;
@@ -492,14 +483,9 @@ Reference hidden(ML_COMMENT,SL_COMMENT,WS):
 ////////////////////////////////////////////////////MEASURES
 
 MeasureDefinition hidden(ML_COMMENT,SL_COMMENT,WS):
-	"measure" name=ID (ranges=MeasureVariableDeclarations)? "="  measure=Expression  ';'
-;
-
-MeasureVariableDeclarations hidden(ML_COMMENT,SL_COMMENT,WS):
-	"["
-	variables+=MeasureVariableDeclaration
-	("," variables+=MeasureVariableDeclaration+)*
-	"]"
+	"measure" name=ID 
+		("[" variables+=MeasureVariableDeclaration("," variables+=MeasureVariableDeclaration+)* "]" )?
+		"="  measure=Expression  ';'
 ;
 
 MeasureVariableDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -529,7 +515,7 @@ ProbabilityBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 	
 Probability hidden(ML_COMMENT,SL_COMMENT,WS):
-	guard=Guard stub=ActionStub ":" expression=Expression
+	(guard=Guard)? stub=ActionStub ":" expression=Expression
 ;
 
 RateBlock hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -543,7 +529,7 @@ RateBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 
 Rate hidden(ML_COMMENT,SL_COMMENT,WS):
 	{Rate}
-	guard=Guard stub=ActionStub ":" expression=Expression
+	(guard=Guard)? stub=ActionStub ":" expression=Expression
 ;
 	
 UpdateBlock hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -554,11 +540,12 @@ UpdateBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 	"}"
 ;
 
-EnvironmentUpdate returns EvolutionRule hidden(ML_COMMENT,SL_COMMENT,WS):
-	{EnvironmentUpdate}
-	guard=Guard stub=ActionStub ":" 
-	((update+=UpdateAssignment ("," expression+=UpdateAssignment+)*)? 
-	("," spawn=BlockSpawn)? | spawn=BlockSpawn)
+EnvironmentUpdate hidden(ML_COMMENT,SL_COMMENT,WS):
+	(guard=Guard)? stub=ActionStub ":" 
+	( 
+		(update+=UpdateAssignment ("," expression+=UpdateAssignment+)* (',' spawn=BlockSpawn)?)
+		| spawn=BlockSpawn
+	)
 ;
 
 ActionStub hidden(ML_COMMENT,SL_COMMENT,WS):

@@ -2,29 +2,24 @@ package eu.quanticol.carma.core.generator.ms.record
 
 import eu.quanticol.carma.core.carma.RecordDefinition
 
-import static extension eu.quanticol.carma.core.utils.Util.*
+import com.google.inject.Inject
+import eu.quanticol.carma.core.utils.Util
 
 class RecordHandler {
 	
-	def String getRecords(Iterable<RecordDefinition> records){
-		'''
-		«FOR recordDefinition : records»
-		«recordDefinition.getRecord»
-		«ENDFOR»
-		'''
-	}
+	@Inject extension Util
 	
-	def String getRecord(RecordDefinition recordDefinition){
+	def String recordToJava(RecordDefinition recordDefinition){
 		'''
 		public static class «recordDefinition.name.recordClass» {
 			
 			«FOR field : recordDefinition.fields»
-			public final «field.fieldType.toJavaType»;
+			public final «field.fieldType.toJavaType» «field.name.fieldName»;
 			«ENDFOR»
 			
 			public «recordDefinition.name.recordClass»( «FOR field:recordDefinition.fields SEPARATOR ','»«field.fieldType.toJavaType» «field.name.fieldName»«ENDFOR») {
 				«FOR field :  recordDefinition.fields»
-				this.«field.name.fieldName» = «field.name»;
+				this.«field.name.fieldName» = «field.name.fieldName»;
 				«ENDFOR»
 			}
 			

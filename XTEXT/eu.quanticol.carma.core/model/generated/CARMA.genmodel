@@ -42,7 +42,10 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//FunctionDefinition/parameters"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//FunctionDefinition/body"/>
     </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//Assignment"/>
+    <genClasses ecoreClass="CARMA.ecore#//UpdateAssignment">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//UpdateAssignment/reference"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//UpdateAssignment/expression"/>
+    </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//ProcessComposition"/>
     <genClasses ecoreClass="CARMA.ecore#//SetComp">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//SetComp/variable"/>
@@ -82,7 +85,10 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ComponentBlockConditionalStatement/thenBranch"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ComponentBlockConditionalStatement/elseBranch"/>
     </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//ComponentBlockInstantiation"/>
+    <genClasses ecoreClass="CARMA.ecore#//ComponentBlockInstantiation">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//ComponentBlockInstantiation/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ComponentBlockInstantiation/arguments"/>
+    </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//ComponentBlockForStatement">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ComponentBlockForStatement/variable"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ComponentBlockForStatement/expression"/>
@@ -92,8 +98,8 @@
     <genClasses ecoreClass="CARMA.ecore#//Processes">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Processes/processes"/>
     </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//Process">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Process/processExpression"/>
+    <genClasses ecoreClass="CARMA.ecore#//ProcessState">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ProcessState/processExpression"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//ProcessExpression"/>
     <genClasses ecoreClass="CARMA.ecore#//ProcessExpressionAction">
@@ -128,11 +134,8 @@
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//MeasureDefinition">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//MeasureDefinition/name"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//MeasureDefinition/ranges"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//MeasureDefinition/variables"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//MeasureDefinition/measure"/>
-    </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//MeasureVariableDeclarations">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//MeasureVariableDeclarations/variables"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//MeasureVariableDeclaration">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//MeasureVariableDeclaration/assign"/>
@@ -164,7 +167,13 @@
     <genClasses ecoreClass="CARMA.ecore#//UpdateBlock">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//UpdateBlock/updates"/>
     </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//EvolutionRule"/>
+    <genClasses ecoreClass="CARMA.ecore#//EnvironmentUpdate">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//EnvironmentUpdate/guard"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//EnvironmentUpdate/stub"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//EnvironmentUpdate/update"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//EnvironmentUpdate/expression"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//EnvironmentUpdate/spawn"/>
+    </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//ActionStub">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//ActionStub/activity"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//ActionStub/isBroadcast"/>
@@ -176,10 +185,6 @@
     <genClasses ecoreClass="CARMA.ecore#//CustomType">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//CustomType/reference"/>
     </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//UpdateAssignment">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//UpdateAssignment/reference"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//UpdateAssignment/expression"/>
-    </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//ParallelComposition">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ParallelComposition/left"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ParallelComposition/right"/>
@@ -187,11 +192,9 @@
     <genClasses ecoreClass="CARMA.ecore#//ProcessReference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//ProcessReference/expression"/>
     </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//ParallelComponentComprehension">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ParallelComponentComprehension/left"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ParallelComponentComprehension/right"/>
+    <genClasses ecoreClass="CARMA.ecore#//AllComponents">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AllComponents/states"/>
     </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//AllComponents"/>
     <genClasses ecoreClass="CARMA.ecore#//AComponentAllStates">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//AComponentAllStates/comp"/>
     </genClasses>
@@ -201,10 +204,6 @@
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//AttributeConstDeclaration"/>
     <genClasses ecoreClass="CARMA.ecore#//AttibuteVarDeclaration"/>
-    <genClasses ecoreClass="CARMA.ecore#//ComponentBlockSpawn">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//ComponentBlockSpawn/name"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ComponentBlockSpawn/arguments"/>
-    </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//ProcessExpressionChoice">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ProcessExpressionChoice/left"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ProcessExpressionChoice/right"/>
@@ -220,6 +219,7 @@
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//OutputAction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//OutputAction/activity"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//OutputAction/withData"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//OutputAction/outputArguments"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//OutputAction/update"/>
     </genClasses>
@@ -319,16 +319,16 @@
     <genClasses ecoreClass="CARMA.ecore#//AtomicPi"/>
     <genClasses ecoreClass="CARMA.ecore#//AtomicExp"/>
     <genClasses ecoreClass="CARMA.ecore#//MyContext">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//MyContext/reference"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//MyContext/reference"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//ReceiverContext">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ReceiverContext/reference"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//ReceiverContext/reference"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//SenderContext">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//SenderContext/reference"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//SenderContext/reference"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//GlobalContext">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//GlobalContext/reference"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//GlobalContext/reference"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//AbsFunction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AbsFunction/arg"/>
@@ -402,13 +402,6 @@
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//UniformFunction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//UniformFunction/args"/>
-    </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//EnvironmentUpdate">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//EnvironmentUpdate/guard"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//EnvironmentUpdate/stub"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//EnvironmentUpdate/update"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//EnvironmentUpdate/expression"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//EnvironmentUpdate/spawn"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

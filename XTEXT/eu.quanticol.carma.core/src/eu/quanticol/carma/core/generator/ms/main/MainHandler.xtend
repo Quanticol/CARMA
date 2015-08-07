@@ -1,7 +1,6 @@
 package eu.quanticol.carma.core.generator.ms.main
 
 import com.google.inject.Inject
-import eu.quanticol.carma.core.carma.MeasureVariableDeclarations
 import eu.quanticol.carma.core.carma.Model
 import eu.quanticol.carma.core.carma.Range
 import java.util.ArrayList
