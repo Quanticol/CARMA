@@ -90,11 +90,11 @@ class ExpressionHandler {
 	}
 	
 	def dispatch CharSequence expressionToJava( CastToReal e ) {
-		'''(double) ( «e.expressionToJava» )'''
+		'''(double) ( «e.arg.expressionToJava» )'''
 	}
 	
 	def dispatch CharSequence expressionToJava( CastToInteger e ) {
-		'''(int) ( «e.expressionToJava» )'''
+		'''(int) ( «e.arg.expressionToJava» )'''
 	}
 	
 	def dispatch CharSequence expressionToJava( Or e ) {

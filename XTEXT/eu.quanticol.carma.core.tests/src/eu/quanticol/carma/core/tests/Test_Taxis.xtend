@@ -84,7 +84,7 @@ fun real Takeprob( real taxisAtLoc ){
 		x_ := 0.8;
 	}
 	else{
-		x_ := 1/taxisAtLoc; 
+		x_ := 1.0/taxisAtLoc; 
 	}
 	return x_;
 }
@@ -170,7 +170,7 @@ system Taxi_Dispatch{
     	}
     	
     	prob{
-    		[true] take : Takeprob(#{Taxi[F] | (my.loc.x == sender.loc.x)&&(my.loc.y == sender.loc.y) });
+    		[true] take : Takeprob(real(#{Taxi[F] | (my.loc.x == sender.loc.x)&&(my.loc.y == sender.loc.y) }));
       		[true] call* : global.p_lost;
     		default : 1.0;
     	}

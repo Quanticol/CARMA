@@ -14,6 +14,7 @@ import eu.quanticol.carma.simulator.CarmaModel
 import org.cmg.ml.sam.sim.SimulationEnvironment
 import org.cmg.ml.sam.sim.sampling.StatisticSampling
 import eu.quanticol.carma.simulator.CarmaSystem
+import org.cmg.ml.sam.sim.sampling.SamplingCollection
 
 @RunWith(typeof(XtextRunner))
 @InjectWith(typeof(CARMAInjectorProviderCustom))
@@ -22,9 +23,7 @@ class Test_SIRS1 {
 	@Inject extension ValidationTestHelper	
 	@Inject extension CompilationTestHelper
 	
-	@Test
-	def void test_Parser(){
-	'''
+	CharSequence code = 	'''
 fun int Mover(int zone) {
 	if (zone == 4 || zone == 1) {
 		return U(2,zone,3); 
@@ -59,6 +58,8 @@ component Agent(int a, process Z){
 
 //FIXME
 measure Susceptibles = #{Agent[S]| true };
+measure Infected = #{Agent[I]| true };
+measure Recovered = #{Agent[R]| true };
 
 
 system Simple{
@@ -90,85 +91,27 @@ system Simple{
         }
     }
 }
-	'''.parse.assertNoErrors
+	'''
+	
+	@Test
+	def void test_Parser(){
+		code.parse.assertNoErrors
 	}
 
 	@Test
 	def void test_Compiler(){
-	'''
-fun int Mover(int zone) {
-	if (zone == 4 || zone == 1) {
-		return U(2,zone,3); 
-	} else {
-		return U(1,zone,4);
-	}
-}
-
-
-component Agent(int a, process Z){
-
-    store{
-        attrib zone := a;
-    }
-
-    behaviour{
-        S = contact*[z == my.zone](z).I +
-			move*{zone := Mover(zone)}.S;
-			
-		I = contact*<zone>.I +
-			move*{zone := Mover(zone)}.I +
-			recovery*.R;
-		
-		R = susceptible*.S +
-			move*{zone := Mover(zone)}.R;
-    }
-
-    init{
-        Z
-    }
-}
-
-//FIXME
-measure Susceptibles = #{Agent[S]| true };
-
-
-system Simple{
-
-    collective{
-    	new Agent(1:4,S);
-    	new Agent(1:4,I);
-    	new Agent(1:4,R);
-    }
-
-    environment{
-
-        store{
-        }
-
-        prob{
-			default : 1.0;
-        }
-
-        rate{
-        	[true] move* 		: 1.0;
-			[true] contact* 	: 0.03;
-			[true] recovery*	: 0.2;
-			[true] susceptible* : 0.2;
-			default : 1.0;
-        }
-
-        update{
-        }
-    }
-}
-'''.compile[ 
+		code.compile[ 
 		var m = getCompiledClass.newInstance as CarmaModel
 		var deadline = 100
 		var sim = new SimulationEnvironment( m.getFactory( "Simple" ) )
-		var stat = new StatisticSampling<CarmaSystem>(deadline+1, 1.0, m.getMeasure("Susceptibles") );
-		sim.sampling = stat
+		var stat1 = new StatisticSampling<CarmaSystem>(deadline+1, 1.0, m.getMeasure("Susceptibles") );
+		var stat2 = new StatisticSampling<CarmaSystem>(deadline+1, 1.0, m.getMeasure("Infected") );
+		var stat3 = new StatisticSampling<CarmaSystem>(deadline+1, 1.0, m.getMeasure("Recovered") );
+		sim.sampling = new SamplingCollection( stat1 , stat2 , stat3 );
 		sim.simulate(200,deadline)
-		stat.printTimeSeries(System.out)
+		stat1.printTimeSeries(System.out)
+		stat2.printTimeSeries(System.out)
+		stat3.printTimeSeries(System.out)
 	]
 }
 	

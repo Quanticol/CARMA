@@ -131,19 +131,19 @@ class TypeSystem {
 	}
 
 	def  dispatch CarmaType typeOf( Subtraction e ) {
-		e.left ?. typeOf.mostGeneral( e.right.typeOf )
+		e.left.typeOf.mostGeneral( e.right.typeOf ) 
 	}
 
 	def  dispatch CarmaType typeOf( Addition e ) {
-		e.left ?. typeOf.mostGeneral( e.right.typeOf )
+		e.left.typeOf.mostGeneral( e.right.typeOf )
 	}
 
 	def  dispatch CarmaType typeOf( Multiplication e ) {
-		e.left ?. typeOf.mostGeneral( e.right.typeOf )
+		e.left.typeOf.mostGeneral( e.right.typeOf )
 	}
 
 	def  dispatch CarmaType typeOf( Division e ) {
-		e.left ?. typeOf.mostGeneral( e.right.typeOf )
+		e.left.typeOf.mostGeneral( e.right.typeOf )
 	}
 
 	def  dispatch CarmaType typeOf( Modulo e ) {
@@ -155,19 +155,19 @@ class TypeSystem {
 	}
 
 	def  dispatch CarmaType typeOf( UnaryPlus e ) {
-		CarmaType::BOOLEAN_TYPE
+		e.expression.typeOf
 	}
 	
 	def  dispatch CarmaType typeOf( UnaryMinus e ) {
-		CarmaType::BOOLEAN_TYPE
+		e.expression.typeOf
 	}
 	
 	def  dispatch CarmaType typeOf( IfThenElseExpression e ) {
-		e.thenBranch ?. typeOf.mostGeneral( e.elseBranch.typeOf )
+		e.thenBranch.typeOf.mostGeneral( e.elseBranch.typeOf )
 	}
 	
 	def  dispatch CarmaType typeOf( Reference e ) {
-		e.reference ?. typeOf
+		e.reference.typeOf
 	}
 	
 	def dispatch CarmaType typeOf( IterationVariable v ) {
@@ -316,7 +316,7 @@ class TypeSystem {
 	}
 
 	def  dispatch CarmaType typeOf( AbsFunction e ) {
-		CarmaType::REAL_TYPE
+		e.arg.typeOf
 	}
 
 	def  dispatch CarmaType typeOf( AcosFunction e ) {

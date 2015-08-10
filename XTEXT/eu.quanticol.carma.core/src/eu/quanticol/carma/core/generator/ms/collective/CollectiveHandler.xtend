@@ -95,7 +95,7 @@ class CollectiveHandler {
 			var r = ranges.get(idx)
 			'''
 			for ( int i«r.key» = «r.value.min.expressionToJava» ; 
-				i«r.key» < «r.value.max.expressionToJava» ; 
+				i«r.key» <= «r.value.max.expressionToJava» ; 
 				«IF r.value.step == null» i«r.key»++ «ELSE» i«r.key» += «r.value.step.expressionToJava» «ENDIF» ) {					
 				«cbi.recursiveIntantiationCode(ranges,idx+1)»
 			}

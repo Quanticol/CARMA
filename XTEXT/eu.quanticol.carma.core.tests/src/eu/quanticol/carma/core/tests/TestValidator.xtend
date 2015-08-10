@@ -13,12 +13,12 @@ import org.eclipse.xtext.xbase.compiler.CompilationTestHelper
 
 @RunWith(typeof(XtextRunner))
 @InjectWith(typeof(CARMAInjectorProviderCustom))
-class ModelParserTest {
+class TestValidator {
 	@Inject extension ParseHelper<Model>
 	@Inject extension ValidationTestHelper	
 	@Inject extension CompilationTestHelper
 	
-		var code = '''
+	var code = '''
 record Position = [ int x, int y ];
 
 fun Position Roving(Position p) {
@@ -144,6 +144,7 @@ system Simple{
 }
 
 	'''
+	
 	@Test
 	def void test_Parser(){
 		code.parse.assertNoErrors
