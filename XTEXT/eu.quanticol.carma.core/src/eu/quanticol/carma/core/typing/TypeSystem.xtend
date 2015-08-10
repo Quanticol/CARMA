@@ -83,6 +83,12 @@ import eu.quanticol.carma.core.carma.AverageMeasure
 import org.eclipse.emf.ecore.EObject
 import com.google.inject.Inject
 import eu.quanticol.carma.core.utils.Util
+import eu.quanticol.carma.core.carma.IterationVariable
+import eu.quanticol.carma.core.carma.FieldAssignment
+import eu.quanticol.carma.core.carma.TargetAssignmentVariable
+import eu.quanticol.carma.core.carma.TargetAssignmentField
+import eu.quanticol.carma.core.carma.CastToReal
+import eu.quanticol.carma.core.carma.CastToInteger
 
 class TypeSystem {
 
@@ -164,12 +170,37 @@ class TypeSystem {
 		e.reference ?. typeOf
 	}
 	
+	def dispatch CarmaType typeOf( IterationVariable v ) {
+		CarmaType::INTEGER_TYPE
+	}
+	
+	def dispatch CarmaType typeOf( TargetAssignmentVariable v ) {
+		v.variable.typeOf
+	}
+
+	def dispatch CarmaType typeOf( TargetAssignmentField f ) {
+		f.field.typeOf
+	}
+	
+	
+	def dispatch CarmaType typeOf( FieldAssignment f ) {
+		f.field.typeOf
+	}
+	
 	def  dispatch CarmaType typeOf( Variable v ) {
 		if (v.type != null) {
 			v.type.toCarmaType		
 		} else {
 			CarmaType::ERROR_TYPE
 		}
+	}
+
+	def dispatch CarmaType typeOf( CastToReal e ) {
+		CarmaType::REAL_TYPE
+	}
+
+	def dispatch CarmaType typeOf( CastToInteger e ) {
+		CarmaType::INTEGER_TYPE
 	}
 
 	def  dispatch CarmaType typeOf( AttributeDeclaration a ) {
@@ -221,7 +252,11 @@ class TypeSystem {
 	
 	
 	def  dispatch CarmaType typeOf( RecordAccess e ) {
-		e.field ?. fieldType ?. toCarmaType ?: CarmaType::ERROR_TYPE
+		e.field.typeOf
+	}
+
+	def dispatch CarmaType typeOf( FieldDefinition f ) {
+		f.fieldType.toCarmaType 
 	}
 	
 	def  dispatch CarmaType typeOf( AtomicTrue e ) {

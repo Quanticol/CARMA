@@ -50,6 +50,12 @@ import eu.quanticol.carma.core.carma.SenderContext
 import eu.quanticol.carma.core.carma.ReceiverContext
 import eu.quanticol.carma.core.carma.ProcessState
 import eu.quanticol.carma.core.carma.MeasureVariableDeclaration
+import eu.quanticol.carma.core.carma.AssignmentCommand
+import eu.quanticol.carma.core.carma.ReturnCommand
+import eu.quanticol.carma.core.carma.IfThenElseCommand
+import eu.quanticol.carma.core.carma.ForCommand
+import eu.quanticol.carma.core.carma.BlockCommand
+import eu.quanticol.carma.core.carma.FunctionCommand
 
 class Util {
 
@@ -340,6 +346,9 @@ class Util {
 
 	def  myAttributes( Expression e ) {
 		val LinkedList<AttributeDeclaration> result = newLinkedList()
+		if (e instanceof MyContext) {
+			result.add( e.reference )
+		}
 		e.getAllContentsOfType(typeof(MyContext)).map[
 			it.reference
 		].forEach[ a |
@@ -363,6 +372,9 @@ class Util {
 	
 	def  globalAttributes( Expression e ) {
 		val LinkedList<AttributeDeclaration> result = newLinkedList()
+		if (e instanceof GlobalContext) {
+			result.add( e.reference )
+		}
 		e.getAllContentsOfType(typeof(GlobalContext)).map[
 			it.reference
 		].forEach[ a |
@@ -375,6 +387,9 @@ class Util {
 	
 	def  senderAttributes( Expression e ) {
 		val LinkedList<AttributeDeclaration> result = newLinkedList()
+		if (e instanceof SenderContext) {
+			result.add( e.reference )
+		}
 		e.getAllContentsOfType(typeof(SenderContext)).map[
 			it.reference
 		].forEach[ a |
@@ -399,6 +414,9 @@ class Util {
 	
 	def  receiverAttributes( Expression e ) {
 		val LinkedList<AttributeDeclaration> result = newLinkedList()
+		if (e instanceof ReceiverContext) {
+			result.add( e.reference )
+		}
 		e.getAllContentsOfType(typeof(ReceiverContext)).map[
 			it.reference
 		].forEach[ a |
@@ -420,6 +438,26 @@ class Util {
 	}
 	
 	
+	def dispatch boolean doReturn( ReturnCommand c ) {
+		true
+	}
+	
+	def dispatch boolean doReturn( IfThenElseCommand c ) {
+		(c.thenBlock !=null)&&(c.thenBlock.doReturn)&&(c.elseBlock != null)&&(c.elseBlock.doReturn)
+	}
+	
+	def dispatch boolean doReturn( ForCommand c ) {
+		(c.body != null)&&(c.body.doReturn)
+	}
+
+	def dispatch boolean doReturn( BlockCommand c ) {
+		c.commands.exists[ it.doReturn ]
+	}
+	
+	def dispatch boolean doReturn( FunctionCommand c ) {
+		false
+	}
+
 
 //	def boolean sameName(Name name1, Name name2){
 //		name1.name.equals(name2.name)

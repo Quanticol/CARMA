@@ -52,7 +52,6 @@ import eu.quanticol.carma.core.carma.UniformFunction
 import eu.quanticol.carma.core.utils.ReferenceContext
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.carma.FieldAssignment
 import eu.quanticol.carma.core.carma.RecordDefinition
 import eu.quanticol.carma.core.carma.IfThenElseExpression
 import eu.quanticol.carma.core.carma.Reference
@@ -69,8 +68,6 @@ import eu.quanticol.carma.core.carma.MaxMeasure
 import eu.quanticol.carma.core.carma.MinMeasure
 import eu.quanticol.carma.core.carma.AverageMeasure
 import eu.quanticol.carma.core.carma.ProcessState
-import org.eclipse.emf.common.util.EList
-import eu.quanticol.carma.core.carma.Variable
 import eu.quanticol.carma.core.carma.RealType
 import eu.quanticol.carma.core.carma.IntegerType
 import eu.quanticol.carma.core.carma.ReferenceableElement
@@ -78,6 +75,8 @@ import eu.quanticol.carma.core.carma.FunctionDefinition
 import java.util.List
 import eu.quanticol.carma.core.carma.ValueType
 import eu.quanticol.carma.core.carma.AtomicRnd
+import eu.quanticol.carma.core.carma.CastToReal
+import eu.quanticol.carma.core.carma.CastToInteger
 
 class ExpressionHandler {
 	
@@ -90,6 +89,13 @@ class ExpressionHandler {
 		currentComponent = current;
 	}
 	
+	def dispatch CharSequence expressionToJava( CastToReal e ) {
+		'''(double) ( «e.expressionToJava» )'''
+	}
+	
+	def dispatch CharSequence expressionToJava( CastToInteger e ) {
+		'''(int) ( «e.expressionToJava» )'''
+	}
 	
 	def dispatch CharSequence expressionToJava( Or e ) {
 		'''( «e.left.expressionToJava» )||( «e.right.expressionToJava» )'''

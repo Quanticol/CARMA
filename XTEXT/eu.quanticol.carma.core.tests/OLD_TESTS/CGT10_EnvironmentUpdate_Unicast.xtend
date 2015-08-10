@@ -21,6 +21,7 @@ class CGT10_EnvironmentUpdate_Unicast {
 	@Inject ParseHelper<Model> parseHelper 
 	@Inject IGenerator underTest
 	
+	
 	@Test
 	def void testGenerationCodeProducer(){
 		val model = parseHelper.parse('''

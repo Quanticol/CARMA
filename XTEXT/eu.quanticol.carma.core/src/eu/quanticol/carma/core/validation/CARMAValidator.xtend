@@ -4,50 +4,47 @@
 package eu.quanticol.carma.core.validation
 
 import com.google.inject.Inject
-import eu.quanticol.carma.core.carma.CarmaPackage
-import eu.quanticol.carma.core.carma.Model
-import eu.quanticol.carma.core.carma.Processes
-import eu.quanticol.carma.core.carma.ProcessesBlock
-import eu.quanticol.carma.core.utils.Util
-import java.util.ArrayList
-import org.eclipse.xtext.validation.Check
-
-
-import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.carma.StoreBlock
-import eu.quanticol.carma.core.carma.FunctionDefinition
-import eu.quanticol.carma.core.typing.TypeSystem
-import eu.quanticol.carma.core.carma.RecordDefinition
-import eu.quanticol.carma.core.carma.FieldDefinition
-import eu.quanticol.carma.core.carma.ConstantDefinition
-import eu.quanticol.carma.core.carma.ComponentDefinition
-import eu.quanticol.carma.core.carma.Variable
-import eu.quanticol.carma.core.carma.AttributeDeclaration
-import eu.quanticol.carma.core.carma.MeasureDefinition
-import eu.quanticol.carma.core.carma.UpdateAssignment
-import eu.quanticol.carma.core.carma.EnumDefinition
-import eu.quanticol.carma.core.carma.Or
-import eu.quanticol.carma.core.typing.CarmaType
+import eu.quanticol.carma.core.carma.Addition
 import eu.quanticol.carma.core.carma.And
-import eu.quanticol.carma.core.carma.Equality
+import eu.quanticol.carma.core.carma.AtomicRecord
+import eu.quanticol.carma.core.carma.AttributeDeclaration
+import eu.quanticol.carma.core.carma.CarmaPackage
+import eu.quanticol.carma.core.carma.ComponentDefinition
+import eu.quanticol.carma.core.carma.ConstantDefinition
 import eu.quanticol.carma.core.carma.DisEquality
-import eu.quanticol.carma.core.carma.Less
-import eu.quanticol.carma.core.carma.LessOrEqual
+import eu.quanticol.carma.core.carma.Division
+import eu.quanticol.carma.core.carma.EnumDefinition
+import eu.quanticol.carma.core.carma.Equality
+import eu.quanticol.carma.core.carma.FieldAssignment
+import eu.quanticol.carma.core.carma.FieldDefinition
+import eu.quanticol.carma.core.carma.FunctionDefinition
 import eu.quanticol.carma.core.carma.Greater
 import eu.quanticol.carma.core.carma.GreaterOrEqual
-import eu.quanticol.carma.core.carma.Addition
-import eu.quanticol.carma.core.carma.Subtraction
-import eu.quanticol.carma.core.carma.Multiplication
-import eu.quanticol.carma.core.carma.Division
+import eu.quanticol.carma.core.carma.IfThenElseExpression
+import eu.quanticol.carma.core.carma.Less
+import eu.quanticol.carma.core.carma.LessOrEqual
+import eu.quanticol.carma.core.carma.MeasureDefinition
+import eu.quanticol.carma.core.carma.Model
 import eu.quanticol.carma.core.carma.Modulo
+import eu.quanticol.carma.core.carma.Multiplication
 import eu.quanticol.carma.core.carma.Not
+import eu.quanticol.carma.core.carma.Or
+import eu.quanticol.carma.core.carma.ProcessState
+import eu.quanticol.carma.core.carma.Range
+import eu.quanticol.carma.core.carma.RecordDefinition
+import eu.quanticol.carma.core.carma.StoreBlock
+import eu.quanticol.carma.core.carma.Subtraction
 import eu.quanticol.carma.core.carma.UnaryMinus
 import eu.quanticol.carma.core.carma.UnaryPlus
-import eu.quanticol.carma.core.carma.FieldAssignment
-import eu.quanticol.carma.core.carma.AtomicRecord
-import eu.quanticol.carma.core.carma.IfThenElseExpression
-import eu.quanticol.carma.core.carma.Range
-import eu.quanticol.carma.core.carma.ProcessState
+import eu.quanticol.carma.core.carma.UpdateAssignment
+import eu.quanticol.carma.core.carma.Variable
+import eu.quanticol.carma.core.typing.CarmaType
+import eu.quanticol.carma.core.typing.TypeSystem
+import eu.quanticol.carma.core.utils.Util
+import org.eclipse.xtext.validation.Check
+
+import static extension org.eclipse.xtext.EcoreUtil2.*
+import eu.quanticol.carma.core.carma.ReturnCommand
 
 class CARMAValidator extends AbstractCARMAValidator {
 	
@@ -88,15 +85,29 @@ class CARMAValidator extends AbstractCARMAValidator {
 	public static val ERROR_FunctionDefinition_coherent_type 	= "ERROR_FunctionDefinition_coherent_type"
 	
 	@Check
-	def check_ERROR_FunctionDefinition_coherent_type(FunctionDefinition f){
-		var declaredType  = f.type.toCarmaType
-		var inferredType = f.body.typeOf
-		var generalType = declaredType.mostGeneral(inferredType)
-				
-		if (!inferredType.isError()&&(!declaredType.equals(generalType))) {
-			error("Type Error: Expected "+declaredType+" is "+inferredType,CarmaPackage::eINSTANCE.functionDefinition_Body,ERROR_FunctionDefinition_coherent_type);
+	def check_ERROR_FunctionDefinition_coherent_type( ReturnCommand c ){
+		var f = c.getContainerOfType(typeof(FunctionDefinition))
+		if ((f != null)&&(f.type != null)&&(c.expression != null)) {
+			var declaredType  = f.type.toCarmaType
+			var inferredType = f.body.typeOf
+			var generalType = declaredType.mostGeneral(inferredType)
+					
+			if (!inferredType.isError()&&(!declaredType.equals(generalType))) {
+				error("Type Error: Expected "+declaredType+" is "+inferredType,CarmaPackage::eINSTANCE.returnCommand_Expression,ERROR_FunctionDefinition_coherent_type);
+			}
 		}
 	}
+
+	//FunctionDefinition - must have same type of its body
+	public static val ERROR_FunctionDefinition_return_statement = "ERROR_FunctionDefinition_coherent_type"
+
+	@Check
+	def check_ERROR_FunctionDefinition_return_statement( FunctionDefinition f ){
+		if ((f.body != null)&&(!f.body.doReturn)) {
+			error("Error: This function must return a value!",CarmaPackage::eINSTANCE.functionDefinition_Body,ERROR_FunctionDefinition_return_statement);
+		}
+	}
+	
 	
 	//FunctionDefinition - duplicated function name
 	public static val ERROR_FunctionDefinition_multiple_definition 	= "ERROR_FunctionDefinition_multiple_definition"

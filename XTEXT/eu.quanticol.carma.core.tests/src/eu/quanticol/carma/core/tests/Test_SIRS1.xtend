@@ -25,7 +25,13 @@ class Test_SIRS1 {
 	@Test
 	def void test_Parser(){
 	'''
-fun int Mover(int zone) = ((zone == 4 || zone == 1) ? U(2,zone,3) : U(1,zone,4));
+fun int Mover(int zone) {
+	if (zone == 4 || zone == 1) {
+		return U(2,zone,3); 
+	} else {
+		return U(1,zone,4);
+	}
+}
 
 
 component Agent(int a, process Z){
@@ -90,7 +96,13 @@ system Simple{
 	@Test
 	def void test_Compiler(){
 	'''
-fun int Mover(int zone) = ((zone == 4 || zone == 1) ? U(2,zone,3) : U(1,zone,4));
+fun int Mover(int zone) {
+	if (zone == 4 || zone == 1) {
+		return U(2,zone,3); 
+	} else {
+		return U(1,zone,4);
+	}
+}
 
 
 component Agent(int a, process Z){

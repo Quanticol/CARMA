@@ -22,7 +22,10 @@ Require-Bundle: eu.quanticol.carma.core;visibility:=reexport,
  org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.eclipse.xtend,
- org.eclipse.xpand
+ org.eclipse.xpand,
+ org.eclipse.jdt;bundle-version="3.10.1",
+ org.eclipse.jdt.launching;bundle-version="3.7.102",
+ org.eclipse.jdt.core
 Import-Package: org.apache.log4j
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: eu.quanticol.carma.core.ui.quickfix,

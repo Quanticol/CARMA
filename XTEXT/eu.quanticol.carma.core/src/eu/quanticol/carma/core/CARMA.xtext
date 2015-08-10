@@ -52,11 +52,19 @@ ValueType hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 BasicType:
-		{IntegerType} "int" |
-		{RealType} "real" |
-		{BooleanType} "bool" |
-		{CustomType} reference=[ReferenceableType]
+		IntegerType|
+		RealType|
+		BooleanType |
+		CustomType
 ;
+
+IntegerType: {IntegerType} "int" ;
+
+RealType: {RealType} "real" ;
+
+BooleanType: {BooleanType} "bool";
+
+CustomType: {CustomType} reference=[ReferenceableType];
 
 ////////////////////////////////////////////////////VARIABLES AND REFERENCES
 
@@ -69,9 +77,15 @@ UntypedVariable:
 ;
 
 ReferenceableElement:
-	UntypedVariable|Variable|AttributeDeclaration|FunctionDefinition|
+	IterationVariable |
+	UntypedVariable|
+	Variable|
+	AttributeDeclaration|
+	FunctionDefinition|
 	EnumCase|
-	ConstantDefinition|ProcessState|MeasureVariableDeclaration
+	ConstantDefinition|
+	ProcessState|
+	MeasureVariableDeclaration
 ;
 
 ////////////////////////////////////////////////////FUNCTIONS
@@ -79,31 +93,59 @@ FunctionDefinition:
 	"fun" type=BasicType name=ID
 	'('
 	(parameters += Variable (',' parameters+=Variable)*)?
-	')' '=' body=Expression ';'
+	')' body=BlockCommand
 ;
 	
+FunctionCommand:
+	IfThenElseCommand 
+	| ReturnCommand 
+	| VariableDeclarationCommand 
+	| ForCommand 
+	| BlockCommand 
+	| AssignmentCommand
+;
 
+AssignmentCommand:
+	target=AssignmentTarget ':=' value=Expression ';'
+;
 
+AssignmentTarget:
+	TargetAssignmentVariable ({TargetAssignmentField.target=current} '.' field = [FieldDefinition])*
+;
 
-//VariableReference returns VariableReference hidden(ML_COMMENT,SL_COMMENT,WS):
-//	(
-//		{VariableReferencePure} 					ref=[Variable] |
-//		{VariableReferenceMy} 		"my" 		"." ref=[AttributeDeclaration] |
-//		{VariableReferenceReceiver}	"receiver" 	"." ref=[AttributeDeclaration] |
-//		{VariableReferenceSender}	"sender" 	"."	ref=[AttibuteVarDeclaration] |
-//		{VariableReferenceGlobal}	"global"	"." ref=[AttributeDeclaration] |
-//		{RecordReferencePure} 						ref=[Variable]
-//		"." field=[FieldDefinition]	|
-//		{RecordReferenceMy} 		"my" 		"." ref=[Variable]
-//		"." field=[FieldDefinition]	|
-//		{RecordReferenceReceiver}	"receiver" 	"." ref=[Variable]
-//		"." field=[FieldDefinition]	|
-//		{RecordReferenceSender}		"sender" 	"."	ref=[Variable]
-//		"." field=[FieldDefinition] |
-//		{RecordReferenceGlobal}		"global" 	"."	ref=[Variable]
-//		"." field=[FieldDefinition]
-//	)
-//;
+TargetAssignmentVariable returns AssignmentTarget: {TargetAssignmentVariable}
+	variable=[Variable]	
+;
+
+BlockCommand: {BlockCommand}
+	'{'
+		(commands += FunctionCommand)*
+	'}'	
+;
+
+ForCommand:
+	"for" "(" variable=IterationVariable ('=' start=Expression)? ";" end=Expression ";" step=Expression ")" 
+		body=FunctionCommand
+;
+
+IterationVariable:
+	name=ID
+;
+
+VariableDeclarationCommand:
+	variable = Variable (':=' value = Expression)? ';'
+;
+
+ReturnCommand:
+	'return' expression=Expression ';'
+;
+
+IfThenElseCommand:
+	'if' '(' condition=Expression ')'
+		thenBlock = FunctionCommand
+	(=> 'else' elseBlock = FunctionCommand)?
+;
+
 
 ////////////////////////////////////////////////////ASSIGNMENT
 
@@ -423,6 +465,8 @@ Atomic returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	| {ReceiverContext} "receiver" "." reference=[AttributeDeclaration]
 	| {SenderContext} "sender" "." reference=[AttributeDeclaration]
 	| {GlobalContext} "global" "." reference=[AttributeDeclaration]
+	| {CastToReal} "real" '(' arg=Expression ')'
+	| {CastToInteger} "int" '(' arg=Expression ')'
 //	| {AtomicOutcome}				value=OutcomeProbability	THE ROLE OF THIS CASES IS NOT CLEAR FOR ME.
 //	| {AtomicProcessComposition}	value=ProcessComposition
 ;

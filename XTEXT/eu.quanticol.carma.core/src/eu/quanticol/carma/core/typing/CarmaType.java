@@ -113,22 +113,24 @@ public class CarmaType {
 		if (this.equals(t)) {
 			return this;
 		}
-		if (((this.code == TypeCode.INTEGER)&&(t.code==TypeCode.REAL))
-			||((this.code == TypeCode.REAL)&&(t.code == TypeCode.INTEGER))) {
-			return REAL_TYPE;
-		}
+//		if (((this.code == TypeCode.INTEGER)&&(t.code==TypeCode.REAL))
+//			||((this.code == TypeCode.REAL)&&(t.code == TypeCode.INTEGER))) {
+//			return REAL_TYPE;
+//		}
 		return ERROR_TYPE;
 	}
 	
 	public boolean isCompatibleWith( CarmaType t ) {
 		if (t == null) {
 			return false;
+		} else {
+			return this.equals(t);
 		}
-		if (this.equals(t)) {
-			return true;
-		}
-		return (((this.code == TypeCode.INTEGER)&&(t.code==TypeCode.REAL))
-				||((this.code == TypeCode.REAL)&&(t.code == TypeCode.INTEGER)));
+//		if (this.equals(t)) {
+//			return true;
+//		}
+//		return (((this.code == TypeCode.INTEGER)&&(t.code==TypeCode.REAL))
+//				||((this.code == TypeCode.REAL)&&(t.code == TypeCode.INTEGER)));
 	}
 
 	

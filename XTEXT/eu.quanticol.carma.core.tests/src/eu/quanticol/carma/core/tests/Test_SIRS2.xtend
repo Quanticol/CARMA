@@ -17,72 +17,15 @@ class Test_SIRS2 {
 	@Inject extension ParseHelper<Model>
 	@Inject extension ValidationTestHelper	
 	@Inject extension CompilationTestHelper
-	
-	@Test
-	def void test_Parser(){
-	'''
-fun int Mover(int zone) = ((zone == 4 || zone == 1) ? U(2,zone,3) : U(1,zone,4));
 
-
-component Agent(int a, real b){
-
-    store{
-        attrib zone := a;
-        attrib state := b;
-    }
-
-    behaviour{
-        A = contact*[z == my.zone && state == 1](z){state := 2}.A +
-        	contact*<zone>.A +
-			recovery*{state := 3}.A +
-			susceptible*{state := 1}.A +
-			move*{zone := Mover(zone)}.A;
-    }
-
-    init{
-        A
-    }
-}
-
-measure Susceptibles = #{*| my.state == 1 };
-
-
-system Simple{
-
-    collective{
-    	new Agent(1:4,1);
-    	new Agent(1:4,2);
-    	new Agent(1:4,3);
-    }
-
-    environment{
-
-        store{
-        }
-
-        prob{
-			default : 1.0;
-        }
-
-        rate{
-        	[true] move* 		: 1.0;
-			[true] contact* 	: 0.03;
-			[true] recovery*	: 0.2;
-			[true] susceptible* : 0.2;
-			default : 1.0;
-        }
-
-        update{
-        }
-    }
-}
-	'''.parse.assertNoErrors
+	CharSequence code = 	'''
+fun int Mover(int zone) {
+	if (zone == 4 || zone == 1) {
+		return U(2,zone,3); 
+	} else {
+		return U(1,zone,4);
 	}
-
-	@Test
-	def void test_Compiler(){
-	'''
-fun int Mover(int zone) = ((zone == 4 || zone == 1) ? U(2,zone,3) : U(1,zone,4));
+}
 
 
 component Agent(int a, int b){
@@ -137,7 +80,16 @@ system Simple{
         }
     }
 }
-'''.compile[ getCompiledClass.newInstance ]
+	'''
+	
+	@Test
+	def void test_Parser(){
+		code.parse.assertNoErrors
+	}
+
+	@Test
+	def void test_Compiler(){
+		code.compile[ getCompiledClass.newInstance ]
 	}
 	
 }

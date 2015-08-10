@@ -21,11 +21,17 @@ class ModelParserTest {
 	@Test
 	def void test_Parser(){
 	'''
-record Position = [ real x, real y ];
+record Position = [ int x, int y ];
 
-fun Position Roving(Position p) = [ x := 0, y := 1 ] ;
+fun Position Roving(Position p) {
+	if (p.x > 0) {
+		return [ x := 0, y := 1 ] ;		
+	} else {
+		return [ x := 1 , y := 0 ];
+	}
+}
 
-component Rover(real a, real b,  process Z){
+component Rover(int a, int b,  process Z){
 
     store{
         attrib data := 0;
@@ -69,7 +75,7 @@ component Satelite(real a, real b){
     }
 }
 
-component Beacon(real a, real b){
+component Beacon(int a, int b){
 
     store{
         attrib myPosition := [ x := a, y := b ];
@@ -147,7 +153,13 @@ system Simple{
 	'''
 record Position = [ int x, int y ];
 
-fun Position Roving(Position p) = [ x := 0, y := 1 ] ;
+fun Position Roving(Position p) {
+	if (p.x > 0) {
+		return [ x := 0, y := 1 ] ;		
+	} else {
+		return [ x := 1 , y := 0 ];
+	}
+}
 
 component Rover(int a, int b,  process Z){
 
@@ -262,6 +274,7 @@ system Simple{
         }
     }
 }
+
 
 	'''.compile[ 
 		getCompiledClass.newInstance 
