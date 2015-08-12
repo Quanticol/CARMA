@@ -309,7 +309,7 @@ component ComputingServer(){
 
 system Simple{
     collective{
-    	new Learner(0:7, 0, 0.83);
+    	new Learner(0:7, 0.0, 0.83);
     	new ComputingServer();
     }
 

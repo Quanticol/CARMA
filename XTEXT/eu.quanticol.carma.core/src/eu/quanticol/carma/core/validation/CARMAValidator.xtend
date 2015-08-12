@@ -61,7 +61,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 	@Check
 	def check_ERROR_FunctionDefinition_wrong_name(FunctionDefinition f){
 		if ((f.name != null)&&(!f.name.empty)&&(!Character::isUpperCase( f.name.charAt(0) ) )) {
-			error("Name error: function names have to start with a capitalised letter!",CarmaPackage::eINSTANCE.referenceableElement_Name,ERROR_FunctionDefinition_wrong_name);
+			warning("Name error: function names should start with a capitalised letter!",CarmaPackage::eINSTANCE.referenceableElement_Name,ERROR_FunctionDefinition_wrong_name);
 		}
 	}
 
@@ -70,7 +70,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 	@Check
 	def check_ERROR_RecordDefinition_wrong_name(RecordDefinition f){
 		if ((f.name != null)&&(!f.name.empty)&&(!Character::isUpperCase( f.name.charAt(0) ) )) {
-			error("Name error: record names have to start with a capitalised letter!",CarmaPackage::eINSTANCE.recordDefinition_Name,ERROR_RecordDefinition_wong_name);
+			warning("Name error: record names should start with a capitalised letter!",CarmaPackage::eINSTANCE.recordDefinition_Name,ERROR_RecordDefinition_wong_name);
 		}
 	}
 

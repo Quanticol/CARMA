@@ -161,7 +161,7 @@
         eType="#//Expression" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentBlockForStatement" eSuperTypes="#//ComponentBlockDeclaration">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="variable" eType="#//UntypedVariable"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="variable" eType="#//IterationVariable"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="expression" eType="#//Expression"
         containment="true"/>

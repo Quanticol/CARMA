@@ -284,7 +284,7 @@ ComponentBlockInstantiation hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 ComponentBlockForStatement hidden(ML_COMMENT,SL_COMMENT,WS):
-	"for" "(" variable=UntypedVariable ";" expression=Expression ";" afterThought=Expression ")" '{'
+	"for" "(" variable=IterationVariable ";" expression=Expression ";" afterThought=Expression ")" '{'
 			(collective += ComponentBlockDeclaration)*			
 	'}'
 ;

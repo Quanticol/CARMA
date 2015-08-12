@@ -89,6 +89,8 @@ import eu.quanticol.carma.core.carma.TargetAssignmentVariable
 import eu.quanticol.carma.core.carma.TargetAssignmentField
 import eu.quanticol.carma.core.carma.CastToReal
 import eu.quanticol.carma.core.carma.CastToInteger
+import eu.quanticol.carma.core.carma.Range
+import eu.quanticol.carma.core.carma.ProcessState
 
 class TypeSystem {
 
@@ -319,6 +321,10 @@ class TypeSystem {
 		e.arg.typeOf
 	}
 
+	def  dispatch CarmaType typeOf( Range e ) {
+		CarmaType::INTEGER_TYPE
+	}
+
 	def  dispatch CarmaType typeOf( AcosFunction e ) {
 		CarmaType::REAL_TYPE
 	}
@@ -397,6 +403,10 @@ class TypeSystem {
 
 	def  dispatch CarmaType typeOf( TanFunction e ) {
 		CarmaType::REAL_TYPE
+	}
+
+	def  dispatch CarmaType typeOf( ProcessState e ) {
+		CarmaType::PROCESS_TYPE
 	}
 
 	def  dispatch CarmaType typeOf( UniformFunction e ) {

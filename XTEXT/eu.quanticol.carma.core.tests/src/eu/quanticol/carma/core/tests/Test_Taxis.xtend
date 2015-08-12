@@ -68,7 +68,7 @@ fun int Atime(real time, Position l1, int r_a){
 		if(time < 20)
 			r := 3 * r_a / 4;
 		else{
-			r := r_a / 4;
+			r := r_a / 4; 
 		}
 	}
 	return r;

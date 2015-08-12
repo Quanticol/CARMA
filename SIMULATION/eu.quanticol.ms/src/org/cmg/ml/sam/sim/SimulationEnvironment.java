@@ -48,22 +48,33 @@ public class SimulationEnvironment<S extends ModelI> {
 	}
 
 	public synchronized void simulate(int iterations, double deadline) {
+		RandomGeneratorRegistry rgi = RandomGeneratorRegistry.getInstance();
+		rgi.register(random);
 		for (int i = 0; i < iterations; i++) {
 			System.out.print('<');
 			if ((i + 1) % 50 == 0) {
 				System.out.print(i + 1);
 			}
 			System.out.flush();
-			simulate(deadline);
+			doSimulate(deadline);
 			System.out.print('>');
 			if ((i + 1) % 50 == 0) {
 				System.out.print("\n");
 			}
 			System.out.flush();
 		}
+		rgi.unregister();
 	}
 
 	public synchronized double simulate(double deadline) {
+		RandomGeneratorRegistry rgi = RandomGeneratorRegistry.getInstance();
+		rgi.register(random);
+		double result = doSimulate(deadline);
+		rgi.unregister();
+		return result;
+	}
+	
+	private double doSimulate(double deadline) {
 		this.model = this.factory.getModel();
 		double time = 0.0;
 		if (sampling_function != null) {

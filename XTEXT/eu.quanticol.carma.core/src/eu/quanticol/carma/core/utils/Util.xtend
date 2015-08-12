@@ -56,6 +56,7 @@ import eu.quanticol.carma.core.carma.IfThenElseCommand
 import eu.quanticol.carma.core.carma.ForCommand
 import eu.quanticol.carma.core.carma.BlockCommand
 import eu.quanticol.carma.core.carma.FunctionCommand
+import eu.quanticol.carma.core.carma.IterationVariable
 
 class Util {
 
@@ -272,6 +273,7 @@ class Util {
 	def  getReference( ReferenceableElement element , ReferenceContext context , String component ) {
 		switch element {
 			Variable: element.name.variableName
+			IterationVariable: element.name.variableName
 			UntypedVariable: element.name.variableName
 			AttributeDeclaration: element.name.attributeName(context)
 			FunctionDefinition: element.name.functionName
