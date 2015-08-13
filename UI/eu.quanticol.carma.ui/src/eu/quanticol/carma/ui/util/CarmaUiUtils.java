@@ -27,9 +27,9 @@ public class CarmaUiUtils {
 		
 		LinkedList<Model> models = new LinkedList<>();
 		for (IEditorReference iEditorReference : references) {
-			if (iEditorReference instanceof XtextEditor) {
+			if (iEditorReference.getEditor(false) instanceof XtextEditor) {
                 
-                EList<EObject> values = ((XtextEditor) iEditorReference).getDocument().readOnly(new IUnitOfWork<EList<EObject>, XtextResource>(){
+                EList<EObject> values = ((XtextEditor) iEditorReference.getEditor(false)).getDocument().readOnly(new IUnitOfWork<EList<EObject>, XtextResource>(){
 
                         @Override
                         public EList<EObject> exec(XtextResource state) throws Exception {
