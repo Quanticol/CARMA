@@ -60,9 +60,10 @@ class SystemHandler {
 			@Override
 			public double broadcastProbability( CarmaStore sender , CarmaStore receiver , int action ) {
 				return 1.0;
+			}
 				
 			@Override
-			public abstract double unicastProbability( CarmaStore sender , CarmaStore receiver , int action ) {
+			public double unicastProbability( CarmaStore sender , CarmaStore receiver , int action ) {
 				return 1.0;
 			}
 			«ENDIF»
