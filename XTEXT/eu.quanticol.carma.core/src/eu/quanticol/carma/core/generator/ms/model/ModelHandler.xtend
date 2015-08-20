@@ -10,6 +10,8 @@ import eu.quanticol.carma.core.generator.ms.function.FunctionHandler
 import eu.quanticol.carma.core.generator.ms.collective.CollectiveHandler
 import eu.quanticol.carma.core.generator.ms.system.SystemHandler
 import eu.quanticol.carma.core.generator.ms.measure.MeasureHandler
+import eu.quanticol.carma.core.generator.ms.expression.ExpressionHandler
+import eu.quanticol.carma.core.typing.TypeSystem
 
 class ModelHandler {
 	
@@ -21,6 +23,8 @@ class ModelHandler {
 	@Inject extension CollectiveHandler
 	@Inject extension SystemHandler
 	@Inject extension MeasureHandler
+	@Inject extension ExpressionHandler
+	@Inject extension TypeSystem
 	
 	def modelToJava( Model model , String className , String packageName ) {
 		'''
@@ -53,7 +57,7 @@ class ModelHandler {
 			«ENDFOR»
 		
 			«FOR c:model.constants»
-			
+			public static final «c.value.typeOf.toJavaType» «c.name.constantName» = «c.value.expressionToJava»;
 			«ENDFOR»
 		
 			«FOR f:model.functions»

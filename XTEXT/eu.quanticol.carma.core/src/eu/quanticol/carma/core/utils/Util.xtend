@@ -245,7 +245,7 @@ class Util {
 	}
 
 	def  constantName( String name ) {
-		'''«FUN_PREFIX»«name»'''
+		'''«CONST_PREFIX»«name»'''
 	}
 
 	def  enumCaseName( String name ) {

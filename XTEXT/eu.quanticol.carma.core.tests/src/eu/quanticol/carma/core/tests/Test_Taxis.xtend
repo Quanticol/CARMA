@@ -21,6 +21,16 @@ class Test_Taxis {
 //This is the taxi model implemented according to the senario 2 in the paper.
 //There are some slightly change in the fun Mrate and Takeprob
 
+const SIZE = 3;
+const K = 5;
+
+const R_T = 12.0;
+const R_C = 6.0;
+const R_A = 1.0;
+const R_STEP = 1.0;
+
+const P_LOST = 0.2;
+
 record Position =  [ int x , int y ];
 
 fun Position Roving(){
@@ -44,31 +54,31 @@ fun Position DestLoc(real time, Position g){
     return q;
 }
 
-fun int Mrate(real time, Position l1, Position l2, int r_step){
-	int t := abs(l1.x - l2.x) + abs(l1.y - l2.y);
-	int r := 0;
-	if(t > 1){
-		r := r_step / t;
+fun real Mrate(real time, Position l1, Position l2){
+	real t := real( abs(l1.x - l2.x) + abs(l1.y - l2.y) );
+	real r := 0.0;
+	if(t > 1.0){
+		r := R_STEP / t;
 	} else{
-		r := r_step;
+		r := R_STEP;
 	}
 	return r;
 }
 
-fun int Atime(real time, Position l1, int r_a){
-	int r := 0;
+fun real Arate(real time, Position l1){
+	real r := 0.0;
 	if ((l1.x == 1)&&(l1.y==1)) {
 		if(time < 20)
-			r := r_a / 4;
+			r := R_A / 4.0;
 		else{
-			r := 3 * r_a / 4;
+			r := 3.0 * R_A / 4.0;
 		}
 	}
 	else{
 		if(time < 20)
-			r := 3 * r_a / 4;
+			r := 3.0 * R_A / 4.0;
 		else{
-			r := r_a / 4; 
+			r := R_A / 4.0; 
 		}
 	}
 	return r;
@@ -81,16 +91,12 @@ fun real Takeprob( real taxisAtLoc ){
 	// return 1/x directly, there will be some error when the programme is executed.
 	real x_:= 0.0;
 	if (taxisAtLoc == 0){
-		x_ := 0.8;
+		x_ := 0.0;
 	}
 	else{
 		x_ := 1.0/taxisAtLoc; 
 	}
 	return x_;
-}
-
-fun real Mtime( real time , Position senderLoc , Position destinationLoc , int r_a ) {
-	return 1.0;
 }
 
 component User(Position g, Position h, process Z){
@@ -152,34 +158,61 @@ component Arrival(int a, int b){
 	measure Taxi_Relocating[ i := 1 ] = #{Taxi[G] | my.occupancy == 0};
 	measure All_User[ i := 1 ] = #{User[*] | true };
 
-
-
-system Taxi_Dispatch{
+system Scenario1{
 
     collective{
-         new Arrival(0:2,0:2);
-         new Taxi(0:2,0:2,3,3,0,F);
+    	for( i ; i<K ; i+1 ) {
+          new Taxi(0:SIZE,0:SIZE,3,3,0,F);
+        }
+	    new Arrival(0:SIZE,0:SIZE);
     }
 
     environment{
     	
-    	store{
-    		attrib p_lost := 0.2;
-    		attrib r_c := 6;
-    		attrib r_t := 12;
-    	}
     	
     	prob{
     		[true] take : Takeprob(real(#{Taxi[F] | (my.loc.x == sender.loc.x)&&(my.loc.y == sender.loc.y) }));
-      		[true] call* : global.p_lost;
+      		[true] call* : 1.0 - P_LOST;
     		default : 1.0;
     	}
     	
         rate{
-        	[true] take : global.r_t;
-    		[true] call* : global.r_c;
-    		[true] move* : Mtime(now,sender.loc,sender.dest,6);
-    		[true] arrival* : Atime(now,sender.loc,1);
+        	[true] take : R_T;
+    		[true] call* : R_C;
+    		[true] move* : Mrate(now,sender.loc,sender.dest);
+    		[true] arrival* : Arate(now,sender.loc);
+    		default : 0.0;
+        }
+        
+        update{
+        	[true] arrival* : new User(sender.loc,DestLoc(now,sender.loc), Wait);
+        }
+    }
+    
+}
+
+system Scenario2{
+
+    collective{
+    	for( i ; i<K ; i+1 ) {
+          new Taxi(0:SIZE,0:SIZE,3,3,0,F);
+        }
+	    new Arrival(0:SIZE,0:SIZE);
+    }
+
+    environment{
+    	
+    	prob{
+    		[true] take : Takeprob(real(#{Taxi[F] | (my.loc.x == sender.loc.x)&&(my.loc.y == sender.loc.y) }));
+      		[true] call* : 1.0 - P_LOST;
+    		default : 1.0;
+    	}
+    	
+        rate{
+        	[true] take : R_T;
+    		[true] call* : R_C;
+    		[true] move* : Mrate(now,sender.loc,sender.dest);
+    		[true] arrival* : Arate(now,sender.loc);
     		default : 0.0;
         }
         
