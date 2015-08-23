@@ -9,6 +9,8 @@ import org.eclipse.xtext.junit4.validation.ValidationTestHelper
 import org.eclipse.xtext.xbase.compiler.CompilationTestHelper
 import org.junit.Test
 import org.junit.runner.RunWith
+import static extension org.junit.Assert.*
+import eu.quanticol.carma.simulator.CarmaModel
 
 @RunWith(typeof(XtextRunner))
 @InjectWith(typeof(CARMAInjectorProviderCustom))
@@ -231,7 +233,15 @@ system Scenario2{
 
 	@Test
 	def void test_Compiler(){
-		code.compile[ getCompiledClass.newInstance ]
+		code.compile[ 
+					var o = getCompiledClass.newInstance 
+			assertNotNull( o )
+			assertTrue( o instanceof CarmaModel )
+			var m = o as CarmaModel
+			assertEquals( 2 , m.systems.length )
+			assertEquals( 8 , m.measures.length )					
+
+	]
 	}
 	
 }

@@ -28,8 +28,9 @@ Require-Bundle: eu.quanticol.carma.core;visibility:=reexport,
  org.eclipse.jdt.core
 Import-Package: org.apache.log4j
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Export-Package: eu.quanticol.carma.core.ui.quickfix,
+Export-Package: eu.quanticol.carma.core.ui,
  eu.quanticol.carma.core.ui.contentassist,
  eu.quanticol.carma.core.ui.contentassist.antlr,
- eu.quanticol.carma.core.ui.internal
+ eu.quanticol.carma.core.ui.internal,
+ eu.quanticol.carma.core.ui.quickfix
 Bundle-Activator: eu.quanticol.carma.core.ui.internal.CARMAActivator

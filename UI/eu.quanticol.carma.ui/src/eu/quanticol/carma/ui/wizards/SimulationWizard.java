@@ -15,7 +15,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 
 import eu.quanticol.carma.core.carma.Model;
-import eu.quanticol.carma.ui.util.CarmaUiUtils;
+import eu.quanticol.carma.core.ui.CarmaUiUtil;
 
 /**
  * @author loreti

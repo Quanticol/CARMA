@@ -15,6 +15,7 @@ import org.cmg.ml.sam.sim.SimulationEnvironment
 import org.cmg.ml.sam.sim.sampling.StatisticSampling
 import eu.quanticol.carma.simulator.CarmaSystem
 import org.cmg.ml.sam.sim.sampling.SamplingCollection
+import static extension org.junit.Assert.*
 
 @RunWith(typeof(XtextRunner))
 @InjectWith(typeof(CARMAInjectorProviderCustom))
@@ -102,6 +103,8 @@ system Simple{
 	def void test_Compiler(){
 		code.compile[ 
 		var m = getCompiledClass.newInstance as CarmaModel
+		assertEquals( 1 , m.systems.length )
+		assertEquals( 3 , m.measures.length )
 		var deadline = 100
 		var sim = new SimulationEnvironment( m.getFactory( "Simple" ) )
 		var stat1 = new StatisticSampling<CarmaSystem>(deadline+1, 1.0, m.getMeasure("Susceptibles") );

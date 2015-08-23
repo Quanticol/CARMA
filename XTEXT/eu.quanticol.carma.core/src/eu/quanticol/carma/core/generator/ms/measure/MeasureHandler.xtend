@@ -67,7 +67,10 @@ class MeasureHandler {
 					}
 				'''
 			} else {
-				'''int v«idx» = «value.expressionToJava»;'''				
+				'''
+				int v«idx» = «value.expressionToJava»;
+				«name.measureBuilderBody(vars,idx+1)»
+				'''				
 			}
 		} else {
 			'''measures.put( 

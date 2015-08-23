@@ -11,7 +11,7 @@ import eu.quanticol.carma.simulator.CarmaModel;
  */
 public class Util {
 
-	public CarmaModel loadModel( String packageName , String className ) 
+	public static CarmaModel loadModel( String packageName , String className ) 
 			  	throws ClassNotFoundException, InstantiationException, IllegalAccessException {
 
 		ClassLoader classLoader = CarmaModel.class.getClassLoader();

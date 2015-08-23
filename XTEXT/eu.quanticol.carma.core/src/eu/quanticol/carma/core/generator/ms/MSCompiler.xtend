@@ -71,7 +71,7 @@ class MSCompiler implements Compiler {
 		var Model model = resource.allContents.toIterable.filter(Model).get(0)
 		var HashMap<String,CharSequence> toReturn = new HashMap<String,CharSequence>()
 		
-		var className = model.name
+		var className = model.className
 		var packageName = MSCompiler.PACK
 		var fileName = MSCompiler.PATH + className + ".java"
 		
@@ -81,8 +81,8 @@ class MSCompiler implements Compiler {
 		
 	}
 	
-	def getClassName( Resource resource ) {
-		
+	def getClassName( Model model ) {
+		model.name
 	}
 	
 	def getPackageName( Resource resource ) {
