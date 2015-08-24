@@ -20,13 +20,14 @@ public class SimulationHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-//	    WizardDialog wizardDialog = new WizardDialog(HandlerUtil.getActiveShell(event),
-//	    	      new SimulationWizard());
-//	    	    if (wizardDialog.open() == Window.OK) {
-//	    	      System.out.println("Ok pressed");
-//	    	    } else {
-//	    	      System.out.println("Cancel pressed");
-//	    	      }
+		
+	    WizardDialog wizardDialog = new WizardDialog(HandlerUtil.getActiveShell(event),
+	    	      new SimulationWizard());
+	    	    if (wizardDialog.open() == Window.OK) {
+	    	      System.out.println("Ok pressed");
+	    	    } else {
+	    	      System.out.println("Cancel pressed");
+	    	      }
 	    return true;
 	}
 	
