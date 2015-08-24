@@ -249,7 +249,11 @@ class ExpressionHandler {
 					«FOR a:e.referencedAttibutes»
 					«a.attributeTemporaryVariableDeclaration(ReferenceContext::RECEIVER,"store")»
 					«ENDFOR»
-					return «e.value.expressionToJava»;
+					try{
+						return «e.value.expressionToJava»;
+					} catch (NullPointerException e) {
+						return false;
+					}
 				}
 			
 				@Override
@@ -285,7 +289,11 @@ class ExpressionHandler {
 					«FOR a:e.referencedAttibutes»
 					«a.attributeTemporaryVariableDeclaration(ReferenceContext::RECEIVER,"store")»
 					«ENDFOR»
-					return «e.value.expressionToJava»;
+					try{
+						return «e.value.expressionToJava»;
+					} catch (NullPointerException e) {
+						return false;
+					}
 				}
 			
 				@Override
@@ -322,7 +330,11 @@ class ExpressionHandler {
 					«FOR a:e.referencedAttibutes»
 					«a.attributeTemporaryVariableDeclaration(ReferenceContext::RECEIVER,"store")»
 					«ENDFOR»
-					return «e.value.expressionToJava»;
+					try{
+						return «e.value.expressionToJava»;
+					} catch (NullPointerException e) {
+						return false;
+					}
 				}
 			
 				@Override
@@ -348,7 +360,11 @@ class ExpressionHandler {
 				public boolean eval(CarmaProcess p) {
 					if (p instanceof CarmaSequentialProcess) {
 						CarmaSequentialProcess csp = (CarmaSequentialProcess) p;
-						return csp.getState().getName().equals("«n»");
+						try{
+							return csp.getState().getName().equals("«n»");
+						} catch (NullPointerException e) {
+							return false;
+						}
 					}
 					return false;
 				}
@@ -370,7 +386,11 @@ class ExpressionHandler {
 				public boolean eval(CarmaProcess p) {
 					if (p instanceof CarmaSequentialProcess) {
 						CarmaSequentialProcess csp = (CarmaSequentialProcess) p;
-						return csp.getName().equals("«p.comp.name»");
+						try{
+							return csp.getName().equals("«p.comp.name»");
+						} catch (NullPointerException e) {
+							return false;
+						}	
 					}
 					return false;
 				}
@@ -391,7 +411,11 @@ class ExpressionHandler {
 				public boolean eval(CarmaProcess p) {
 					if (p instanceof CarmaSequentialProcess) {
 						CarmaSequentialProcess csp = (CarmaSequentialProcess) p;
-						return csp.getName().equals("«p.comp.name»")&&csp.getState().getName().equals("«n»");
+						try{
+							return csp.getName().equals("«p.comp.name»")&&csp.getState().getName().equals("«n»");
+						} catch (NullPointerException e) {
+							return false;
+						}
 					}
 					return false;
 				}
@@ -428,7 +452,11 @@ class ExpressionHandler {
 				«FOR a:e.referencedAttibutes»
 				«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
 				«ENDFOR»
-				return «e.expressionToJava»;
+				try{
+					return «e.expressionToJava»;
+				} catch (NullPointerException e) {
+					return false;
+				}
 			}
 		
 			
