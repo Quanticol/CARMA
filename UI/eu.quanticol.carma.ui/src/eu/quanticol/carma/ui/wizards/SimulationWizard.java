@@ -7,10 +7,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -40,6 +42,7 @@ import org.eclipse.swt.widgets.TableColumn;
 
 import eu.quanticol.carma.core.carma.Model;
 import eu.quanticol.carma.core.ui.CarmaUiUtil;
+import eu.quanticol.carma.simulator.CarmaModel;
 
 /**
  * @author loreti
@@ -58,11 +61,14 @@ public class SimulationWizard extends Wizard {
 	protected SelectSystemPage systemPage;
 	
 	protected int modelChoice = -1;
-	protected LinkedList<Model> models;
+	protected HashMap<IResource, CarmaModel> models;
+	protected LinkedList<CarmaModel> carmaModels;
+	
+	protected CarmaUiUtil util = new CarmaUiUtil();
 	
 	public SimulationWizard() {
 		super();
-		this.models = null;//CarmaUiUtils.getActiveModels();
+		this.models = util.getActiveModels();
 		setNeedsProgressMonitor(true);
 	}
 	
@@ -125,8 +131,10 @@ public class SimulationWizard extends Wizard {
 		    label1.setText("Model:");
 		    checkPage();
 		    Combo combo = new Combo(container, SWT.NONE);
-		    for (Model model : models) {
-				combo.add(model.eResource().getURI().lastSegment().split("\\.")[0]);
+		    carmaModels = new LinkedList<CarmaModel>();
+		    for (IResource model : models.keySet()) {
+				combo.add(model.getName());
+				carmaModels.add(models.get(model));
 			}
 		    combo.addListener(SWT.Selection, new Listener() {
 				public void handleEvent(Event event) {
@@ -151,44 +159,45 @@ public class SimulationWizard extends Wizard {
 		
 		public void setupClass(){
 			
-			Model model = models.get(modelChoice);
-			String[] classPathEntries;
-			String projectName = model.eResource().getURI().segments()[1];
-			
-			IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
-			for(IProject project: projects){
-				if(projectName.equals(project.getName())){
-					
-					try{
-						project.open(null /* IProgressMonitor */);
-						IJavaProject javaProject = JavaCore.create(project);
-						classPathEntries = JavaRuntime.computeDefaultRuntimeClassPath(javaProject);
-						
-						
-						
-						List<URL> urlList = new ArrayList<URL>();
-						for (int i = 0; i < classPathEntries.length; i++) {
-							System.out.println(classPathEntries[i]);
-							String entry = classPathEntries[i];
-							IPath path = new Path(entry);
-							URL url = path.toFile().toURI().toURL();
-							urlList.add(url);
-						}
-						
-						parentClassLoader = project.getClass().getClassLoader();
-						URL[] urls = (URL[]) urlList.toArray(new URL[urlList.size()]);
-						classLoader = new URLClassLoader(urls, parentClassLoader);
-						
-						clazz = classLoader.loadClass("ms."+model.eResource().getURI().lastSegment().split("\\.")[0]);
-						carmaModel = (Object) clazz.newInstance();
-						
-					} catch (CoreException | MalformedURLException | ClassNotFoundException | InstantiationException | IllegalAccessException | ClassCastException e){
-						System.out.println(e);
-					}
-				}
-			}
-			
-
+			carmaModel = carmaModels.get(modelChoice);
+//			Model model = models.get(modelChoice);
+//			String[] classPathEntries;
+//			String projectName = model.eResource().getURI().segments()[1];
+//			
+//			IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+//			for(IProject project: projects){
+//				if(projectName.equals(project.getName())){
+//					
+//					try{
+//						project.open(null /* IProgressMonitor */);
+//						IJavaProject javaProject = JavaCore.create(project);
+//						classPathEntries = JavaRuntime.computeDefaultRuntimeClassPath(javaProject);
+//						
+//						
+//						
+//						List<URL> urlList = new ArrayList<URL>();
+//						for (int i = 0; i < classPathEntries.length; i++) {
+//							System.out.println(classPathEntries[i]);
+//							String entry = classPathEntries[i];
+//							IPath path = new Path(entry);
+//							URL url = path.toFile().toURI().toURL();
+//							urlList.add(url);
+//						}
+//						
+//						parentClassLoader = project.getClass().getClassLoader();
+//						URL[] urls = (URL[]) urlList.toArray(new URL[urlList.size()]);
+//						classLoader = new URLClassLoader(urls, parentClassLoader);
+//						
+//						clazz = classLoader.loadClass("ms."+model.eResource().getURI().lastSegment().split("\\.")[0]);
+//						carmaModel = (Object) clazz.newInstance();
+//						
+//					} catch (CoreException | MalformedURLException | ClassNotFoundException | InstantiationException | IllegalAccessException | ClassCastException e){
+//						System.out.println(e);
+//					}
+//				}
+//			}
+//			
+//
 		}
 		
 	}
