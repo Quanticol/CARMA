@@ -6,6 +6,8 @@ package eu.quanticol.carma.ui.wizards;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import laboratory.ExperimentJob;
+
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
@@ -74,7 +76,18 @@ public class SimulationWizard extends Wizard {
 
 	@Override
 	public boolean performFinish() {
-		return false;
+		
+		ExperimentJob experiment = new ExperimentJob(this.deadlineAndIterations.getDeadline(), 
+				this.deadlineAndIterations.getIterations(), 
+				this.deadlineAndIterations.getSimulations(), 
+				this.modelAndSystemPage.getSystem(), 
+				this.measuresPage.getMeasures(), 
+				this.modelAndSystemPage.getModel());
+		
+		experiment.setUser(true);
+		experiment.schedule();
+		
+		return true;
 	}
 	
 	@Override
@@ -190,6 +203,14 @@ public class SimulationWizard extends Wizard {
 			measuresPage.updatePage();
 		}
 		
+		public String getSystem(){
+			return labels[systemChoice];
+		}
+		
+		public CarmaModel getModel(){
+			return models.get(resources.get(modelChoice));
+		}
+		
 	}
 	
 	public class SelectMeasuresPage extends WizardPage {
@@ -255,6 +276,7 @@ public class SimulationWizard extends Wizard {
 				}
 
 			});
+			checkPage();
 			parent.pack();
 		}
 		
@@ -275,7 +297,18 @@ public class SimulationWizard extends Wizard {
 				return;
 			}
 			setPageComplete(true);
-		}  
+		} 
+		
+		public String[] getMeasures(){
+			
+			String[] measures = new String[viewer.getCheckedElements().length];
+			
+			for(int i = 0; i < viewer.getCheckedElements().length; i++){
+				measures[i] = (String) viewer.getCheckedElements()[i];
+			}
+			
+			return measures; 
+		}
 		
 	}
 	
@@ -284,9 +317,10 @@ public class SimulationWizard extends Wizard {
 		private Composite container;
 		private PositiveIntegerConfigurationText deadline;
 		private PositiveIntegerConfigurationText iterations;
+		private PositiveIntegerConfigurationText simulations;
 		private Label deadlineLabel;
 		private Label iterationsLabel;
-		
+		private Label simulationsLabel;
 		
 		public class PositiveIntegerConfigurationText {
 			
@@ -370,11 +404,34 @@ public class SimulationWizard extends Wizard {
 			iterations = new PositiveIntegerConfigurationText("100");
 			iterations.createControl(container);
 			
+			simulationsLabel = new Label(container, SWT.NONE);
+			simulationsLabel.setText("Simulations:");
+			simulations = new PositiveIntegerConfigurationText("10");
+			simulations.createControl(container);
+			
 		}
 		
 		public void checkPage(){
+			if(!deadline.isValid() || !iterations.isValid()){
+				setPageComplete(false);
+				setErrorMessage("Configuration not valid");
+				return;
+			}
+			setErrorMessage(null);
 			setPageComplete(true);
-		}  
+		} 
+		
+		public int getDeadline(){
+			return (int) this.deadline.getValue();
+		}
+		
+		public int getIterations(){
+			return (int) this.iterations.getValue();
+		}
+		
+		public int getSimulations(){
+			return (int) this.simulations.getValue();
+		}
 		
 	}
 	

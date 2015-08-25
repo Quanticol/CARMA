@@ -30,5 +30,19 @@
          </menu>
       </menuContribution>
    </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            id="eu.quanticol.carma.ui"
+            name="CARMA">
+      </category>
+      <view
+            category="eu.quanticol.carma.ui"
+            class="eu.quanticol.carma.ui.views.SimulationLaboratoryView"
+            icon="icons/sample.gif"
+            id="eu.quanticol.carma.ui.views.SimulationLaboratoryView"
+            name="Simulation Laboratory View">
+      </view>
+   </extension>
 
 </plugin>
