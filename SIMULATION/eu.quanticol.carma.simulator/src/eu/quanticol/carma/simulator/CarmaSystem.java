@@ -85,8 +85,11 @@ public abstract class CarmaSystem implements ModelI {
 		int counter = 0;
 		
 		for (CarmaComponent caspaComponent : collective) {
-			if (p.satisfy(caspaComponent.store)) {
-				counter++;
+			try {
+				if (p.satisfy(caspaComponent.store)) {
+					counter++;
+				}
+			} catch (NullPointerException e) {				
 			}
 		}
 		
@@ -138,11 +141,14 @@ public abstract class CarmaSystem implements ModelI {
 	public double min( Measure<CarmaStore> m , CarmaPredicate guard ) {
 		double value = Double.MAX_VALUE;
 		for (CarmaComponent carmaComponent : collective) {
-			if (guard.satisfy(carmaComponent.store)) {
-				double v = m.measure(carmaComponent.store);
-				if (v<value) {
-					value = v;
+			try {
+				if (guard.satisfy(carmaComponent.store)) {
+					double v = m.measure(carmaComponent.store);
+					if (v<value) {
+						value = v;
+					}
 				}
+			} catch (NullPointerException e) {				
 			}
 		}		
 		return value;
@@ -151,11 +157,14 @@ public abstract class CarmaSystem implements ModelI {
 	public double max( Measure<CarmaStore> m , CarmaPredicate guard ) {
 		double value = Double.MIN_VALUE;
 		for (CarmaComponent carmaComponent : collective) {
-			if (guard.satisfy(carmaComponent.store)) {
-				double v = m.measure(carmaComponent.store);
-				if (v>value) {
-					value = v;
+			try {
+				if (guard.satisfy(carmaComponent.store)) {
+					double v = m.measure(carmaComponent.store);
+					if (v>value) {
+						value = v;
+					}
 				}
+			} catch (NullPointerException e ){				
 			}
 		}
 		return value;
@@ -165,9 +174,12 @@ public abstract class CarmaSystem implements ModelI {
 		double value = 0.0;
 		int count = 0;
 		for (CarmaComponent carmaComponent : collective) {
-			if (guard.satisfy(carmaComponent.store)) {
-				value += m.measure(carmaComponent.store);
-				count++;
+			try {
+				if (guard.satisfy(carmaComponent.store)) {
+					value += m.measure(carmaComponent.store);
+					count++;
+				}
+			} catch (NullPointerException e) {
 			}
 		}
 		return value/count;

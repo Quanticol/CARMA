@@ -249,11 +249,7 @@ class ExpressionHandler {
 					«FOR a:e.referencedAttibutes»
 					«a.attributeTemporaryVariableDeclaration(ReferenceContext::RECEIVER,"store")»
 					«ENDFOR»
-					try{
-						return «e.value.expressionToJava»;
-					} catch (NullPointerException e) {
-						return false;
-					}
+					return «e.value.expressionToJava»;
 				}
 			
 				@Override
@@ -289,11 +285,7 @@ class ExpressionHandler {
 					«FOR a:e.referencedAttibutes»
 					«a.attributeTemporaryVariableDeclaration(ReferenceContext::RECEIVER,"store")»
 					«ENDFOR»
-					try{
-						return «e.value.expressionToJava»;
-					} catch (NullPointerException e) {
-						return false;
-					}
+					return «e.value.expressionToJava»;
 				}
 			
 				@Override
@@ -330,11 +322,7 @@ class ExpressionHandler {
 					«FOR a:e.referencedAttibutes»
 					«a.attributeTemporaryVariableDeclaration(ReferenceContext::RECEIVER,"store")»
 					«ENDFOR»
-					try{
-						return «e.value.expressionToJava»;
-					} catch (NullPointerException e) {
-						return false;
-					}
+					return «e.value.expressionToJava»;
 				}
 			
 				@Override
