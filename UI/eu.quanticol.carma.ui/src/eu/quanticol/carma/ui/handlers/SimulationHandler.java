@@ -10,12 +10,9 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-<<<<<<< HEAD
 import eu.quanticol.carma.core.carma.Model;
 import eu.quanticol.carma.core.ui.CarmaUiUtil;
 import eu.quanticol.carma.simulator.CarmaModel;
-=======
->>>>>>> refs/remotes/origin/WIZARD
 import eu.quanticol.carma.ui.wizards.SimulationWizard;
 
 /**
@@ -50,7 +47,6 @@ public class SimulationHandler extends AbstractHandler {
 	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-<<<<<<< HEAD
 
 //		System.out.println("HANDLER EXECUTION!!!!!");
 //		HashMap<IResource,CarmaModel> map = util.getActiveModels();
@@ -70,15 +66,15 @@ public class SimulationHandler extends AbstractHandler {
 //		}
 //
 		
-	    WizardDialog wizardDialog = new WizardDialog(HandlerUtil.getActiveShell(event),
-	    	      new SimulationWizard());
-	    	    if (wizardDialog.open() == Window.OK) {
-	    	      System.out.println("Ok pressed");
-	    	    } else {
-	    	      System.out.println("Cancel pressed");
-	    	      }
-
-=======
+//	    WizardDialog wizardDialog = new WizardDialog(HandlerUtil.getActiveShell(event),
+//	    	      new SimulationWizard());
+//	    	    if (wizardDialog.open() == Window.OK) {
+//	    	      System.out.println("Ok pressed");
+//	    	    } else {
+//	    	      System.out.println("Cancel pressed");
+//	    	      }
+//
+//=======
 		
 	    WizardDialog wizardDialog = new WizardDialog(HandlerUtil.getActiveShell(event),
 	    	      new SimulationWizard());
@@ -87,7 +83,6 @@ public class SimulationHandler extends AbstractHandler {
 	    	    } else {
 	    	      System.out.println("Cancel pressed");
 	    	      }
->>>>>>> refs/remotes/origin/WIZARD
 	    return true;
 	}
 	
