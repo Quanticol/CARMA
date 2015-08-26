@@ -9,15 +9,13 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import com.google.inject.Inject;
-
 import eu.quanticol.carma.simulator.CarmaModel;
 import eu.quanticol.carma.simulator.CarmaSystem;
+import eu.quanticol.carma.ui.views.ExperimentResultsView;
 import eu.quanticol.carma.ui.views.SimulationLaboratoryView;
 
 public class ExperimentJob extends Job {
@@ -44,7 +42,7 @@ public class ExperimentJob extends Job {
 		this.sc = new SamplingCollection<CarmaSystem>();
 		
 		for(String measure : this.measures){
-			this.sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(1+samplings , deadline/samplings , this.model.getMeasure(measure)));
+			this.sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(1+this.samplings , this.deadline/this.samplings , this.model.getMeasure(measure)));
 		}
 		
 		this.sim.setSampling(sc);
@@ -70,6 +68,8 @@ public class ExperimentJob extends Job {
 				monitor.worked(1);
 			}
 		} , iterations,deadline);
+		
+		updateView();
 	}
 	
 	public SamplingCollection<CarmaSystem> getCollection(){
@@ -85,8 +85,8 @@ public class ExperimentJob extends Job {
 		{ 
 			public void run() {
 				try {
-					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("eu.quanticol.carma.ui.views.SimulationLaboratoryView");
-					SimulationLaboratoryView.update(getMeasures(),getCollection());
+					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ExperimentResultsView.ID);
+					ExperimentResultsView.update(getMeasures(),getCollection(),samplings);
 				} catch (PartInitException e) {
 					e.printStackTrace();
 				}

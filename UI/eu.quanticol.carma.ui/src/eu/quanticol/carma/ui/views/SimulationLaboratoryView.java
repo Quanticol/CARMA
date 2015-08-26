@@ -1,9 +1,12 @@
 package eu.quanticol.carma.ui.views;
 
 
+import laboratory.ExperimentJob;
+
 import org.cmg.ml.sam.sim.sampling.SamplingCollection;
 import org.cmg.ml.sam.sim.sampling.StatisticSampling;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.part.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Image;
@@ -35,10 +38,19 @@ import eu.quanticol.carma.simulator.CarmaSystem;
  */
 
 public class SimulationLaboratoryView extends ViewPart {
+	
+	/**
+	 * The ID of the view as specified by the extension.
+	 */
+	public static final String ID = "eu.quanticol.carma.ui.views.SimulationLaboratoryView";
+	
 	private TableViewer viewer;
 	private Action action1;
 	private Action action2;
 	private Action doubleClickAction;
+	
+	private String[] titles;
+	private int[] bounds;
 
 	/*
 	 * The content provider class is responsible for
@@ -87,7 +99,8 @@ public class SimulationLaboratoryView extends ViewPart {
 	public void createPartControl(Composite parent) {
 		viewer = new TableViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL| SWT.FULL_SELECTION | SWT.BORDER);
 		
-		createColumns(parent, viewer);
+		titles = new String[] { "measure name", "  "};
+		bounds = new int[] { 100, 100 };
 		
 		viewer.setContentProvider(new ViewContentProvider());
 		viewer.setLabelProvider(new ViewLabelProvider());
@@ -99,10 +112,7 @@ public class SimulationLaboratoryView extends ViewPart {
 		contributeToActionBars();
 	}
 	
-	private void createColumns(final Composite parent, final TableViewer viewer) {
-		
-	}
-
+	
 	private void hookContextMenu() {
 		MenuManager menuMgr = new MenuManager("#PopupMenu");
 		menuMgr.setRemoveAllWhenShown(true);
@@ -189,11 +199,10 @@ public class SimulationLaboratoryView extends ViewPart {
 	public void setFocus() {
 		viewer.getControl().setFocus();
 	}
-	
-	public static void update(String[] measures, SamplingCollection<CarmaSystem> collection){
-		for(int i = 0; i < measures.length; i++){
-			((StatisticSampling<CarmaSystem>) collection.get(i)).printlnName(System.out);
-			((StatisticSampling<CarmaSystem>) collection.get(i)).printTimeSeries(System.out);
-		}
+
+	public static void update(ExperimentJob experiment) {
+		// TODO Auto-generated method stub
+		
 	}
+
 }
