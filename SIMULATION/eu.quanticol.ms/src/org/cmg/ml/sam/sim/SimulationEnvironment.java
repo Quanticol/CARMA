@@ -47,23 +47,33 @@ public class SimulationEnvironment<S extends ModelI> {
 		this.sampling_function = sampling_function;
 	}
 
-	public synchronized void simulate(int iterations, double deadline) {
+	public synchronized void simulate(SimulationMonitor monitor , int iterations, double deadline) {
 		RandomGeneratorRegistry rgi = RandomGeneratorRegistry.getInstance();
 		rgi.register(random);
-		for (int i = 0; i < iterations; i++) {
+		for (int i = 0; (!monitor.isCancelled())&&(i < iterations) ; i++) {
+			if (monitor != null) {
+				monitor.startIteration( i );
+			}
 			System.out.print('<');
 			if ((i + 1) % 50 == 0) {
 				System.out.print(i + 1);
 			}
 			System.out.flush();
-			doSimulate(deadline);
+			doSimulate(monitor,deadline);
+			if (monitor != null) {
+				monitor.endSimulation( i );
+			}
 			System.out.print('>');
 			if ((i + 1) % 50 == 0) {
 				System.out.print("\n");
 			}
 			System.out.flush();
 		}
-		rgi.unregister();
+		rgi.unregister();		
+	}
+	
+	public synchronized void simulate(int iterations, double deadline) {
+		simulate( null , iterations , deadline );
 	}
 
 	public synchronized double simulate(double deadline) {
@@ -73,15 +83,15 @@ public class SimulationEnvironment<S extends ModelI> {
 		rgi.unregister();
 		return result;
 	}
-	
-	private double doSimulate(double deadline) {
+
+	private double doSimulate(SimulationMonitor monitor , double deadline) {
 		this.model = this.factory.getModel();
 		double time = 0.0;
 		if (sampling_function != null) {
 			sampling_function.start();
 			sampling_function.sample(time, model);
 		}
-		while (time < deadline) {
+		while (((monitor == null)||(!monitor.isCancelled()))&&(time < deadline)) {
 			double dt = doAStep();
 			if (dt <= 0) {
 				if (sampling_function != null) {
@@ -98,7 +108,11 @@ public class SimulationEnvironment<S extends ModelI> {
 		if (sampling_function != null) {
 			sampling_function.end(time);
 		}
-		return time;
+		return time;	
+	}
+	
+	private double doSimulate(double deadline) {
+		return doSimulate(null,deadline);
 	}
 
 	private double doAStep() {
