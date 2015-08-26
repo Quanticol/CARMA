@@ -78,8 +78,8 @@ public class SimulationWizard extends Wizard {
 	public boolean performFinish() {
 		
 		ExperimentJob experiment = new ExperimentJob(this.deadlineAndIterations.getDeadline(), 
+				this.deadlineAndIterations.getSamplings(), 
 				this.deadlineAndIterations.getIterations(), 
-				this.deadlineAndIterations.getSimulations(), 
 				this.modelAndSystemPage.getSystem(), 
 				this.measuresPage.getMeasures(), 
 				this.modelAndSystemPage.getModel());
@@ -317,10 +317,10 @@ public class SimulationWizard extends Wizard {
 		private Composite container;
 		private PositiveIntegerConfigurationText deadline;
 		private PositiveIntegerConfigurationText iterations;
-		private PositiveIntegerConfigurationText simulations;
+		private PositiveIntegerConfigurationText samplings;
 		private Label deadlineLabel;
 		private Label iterationsLabel;
-		private Label simulationsLabel;
+		private Label samplingsLabel;
 		
 		public class PositiveIntegerConfigurationText {
 			
@@ -404,10 +404,10 @@ public class SimulationWizard extends Wizard {
 			iterations = new PositiveIntegerConfigurationText("100");
 			iterations.createControl(container);
 			
-			simulationsLabel = new Label(container, SWT.NONE);
-			simulationsLabel.setText("Simulations:");
-			simulations = new PositiveIntegerConfigurationText("10");
-			simulations.createControl(container);
+			samplingsLabel = new Label(container, SWT.NONE);
+			samplingsLabel.setText("Samplings:");
+			samplings = new PositiveIntegerConfigurationText("10");
+			samplings.createControl(container);
 			
 		}
 		
@@ -429,8 +429,8 @@ public class SimulationWizard extends Wizard {
 			return (int) this.iterations.getValue();
 		}
 		
-		public int getSimulations(){
-			return (int) this.simulations.getValue();
+		public int getSamplings(){
+			return (int) this.samplings.getValue();
 		}
 		
 	}

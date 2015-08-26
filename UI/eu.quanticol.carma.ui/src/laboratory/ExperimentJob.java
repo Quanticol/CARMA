@@ -2,6 +2,7 @@ package laboratory;
 
 
 import org.cmg.ml.sam.sim.SimulationEnvironment;
+import org.cmg.ml.sam.sim.SimulationMonitor;
 import org.cmg.ml.sam.sim.sampling.SamplingCollection;
 import org.cmg.ml.sam.sim.sampling.StatisticSampling;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -14,20 +15,20 @@ import eu.quanticol.carma.simulator.CarmaSystem;
 
 public class ExperimentJob extends Job {
 	
-	private int deadline;
+	private double deadline;
 	private int iterations;
-	private int simulations;
+	private int samplings;
 	private String system;
 	private String[] measures;
 	private SimulationEnvironment<CarmaSystem> sim;
 	private SamplingCollection<CarmaSystem> sc;
 	private CarmaModel model;
 	
-	public ExperimentJob(int deadline, int iterations, int simulations, String system, String[] measures, CarmaModel model) {
+	public ExperimentJob(double deadline, int samplings, int iterations, String system, String[] measures, CarmaModel model) {
 		super("Simulation");
 		this.deadline = deadline;
+		this.samplings = samplings;
 		this.iterations = iterations;
-		this.simulations = simulations;
 		this.system = system;
 		this.measures = measures;
 		this.model = model;
@@ -36,7 +37,7 @@ public class ExperimentJob extends Job {
 		this.sc = new SamplingCollection<CarmaSystem>();
 		
 		for(String measure : this.measures){
-			this.sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(this.deadline+1, 1.0, this.model.getMeasure(measure)));
+			this.sc.addSamplingFunction(new StatisticSampling<CarmaSystem>(1+samplings , deadline/samplings , this.model.getMeasure(measure)));
 		}
 		
 		this.sim.setSampling(sc);
@@ -44,11 +45,24 @@ public class ExperimentJob extends Job {
 	}
 	
 	public void simulate(IProgressMonitor monitor){
-		monitor.beginTask("simulation", simulations);
-		for(int i = 0; i < simulations; i++){
-			monitor.worked(1);
-			this.sim.simulate(iterations,deadline);
-		}
+		monitor.beginTask("Simulation...", iterations);
+		this.sim.simulate( new SimulationMonitor() {
+			
+			@Override
+			public void startIteration(int i) {
+				monitor.subTask("Iteration "+i);
+			}
+			
+			@Override
+			public boolean isCancelled() {
+				return monitor.isCanceled();
+			}
+			
+			@Override
+			public void endSimulation(int i) {
+				monitor.worked(1);
+			}
+		} , iterations,deadline);
 	}
 	
 	public SamplingCollection<CarmaSystem> getCollection(){
