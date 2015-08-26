@@ -1,6 +1,8 @@
 package eu.quanticol.carma.ui.views;
 
 
+import org.cmg.ml.sam.sim.sampling.SamplingCollection;
+import org.cmg.ml.sam.sim.sampling.StatisticSampling;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.*;
 import org.eclipse.jface.viewers.*;
@@ -10,6 +12,8 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.*;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.SWT;
+
+import eu.quanticol.carma.simulator.CarmaSystem;
 
 
 /**
@@ -81,7 +85,10 @@ public class SimulationLaboratoryView extends ViewPart {
 	 * to create the viewer and initialize it.
 	 */
 	public void createPartControl(Composite parent) {
-		viewer = new TableViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+		viewer = new TableViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL| SWT.FULL_SELECTION | SWT.BORDER);
+		
+		createColumns(parent, viewer);
+		
 		viewer.setContentProvider(new ViewContentProvider());
 		viewer.setLabelProvider(new ViewLabelProvider());
 		viewer.setSorter(new NameSorter());
@@ -90,6 +97,10 @@ public class SimulationLaboratoryView extends ViewPart {
 		hookContextMenu();
 		hookDoubleClickAction();
 		contributeToActionBars();
+	}
+	
+	private void createColumns(final Composite parent, final TableViewer viewer) {
+		
 	}
 
 	private void hookContextMenu() {
@@ -177,5 +188,12 @@ public class SimulationLaboratoryView extends ViewPart {
 	 */
 	public void setFocus() {
 		viewer.getControl().setFocus();
+	}
+	
+	public static void update(String[] measures, SamplingCollection<CarmaSystem> collection){
+		for(int i = 0; i < measures.length; i++){
+			((StatisticSampling<CarmaSystem>) collection.get(i)).printlnName(System.out);
+			((StatisticSampling<CarmaSystem>) collection.get(i)).printTimeSeries(System.out);
+		}
 	}
 }

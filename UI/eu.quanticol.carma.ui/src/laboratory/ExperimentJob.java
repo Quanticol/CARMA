@@ -8,9 +8,16 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+
+import com.google.inject.Inject;
 
 import eu.quanticol.carma.simulator.CarmaModel;
 import eu.quanticol.carma.simulator.CarmaSystem;
+import eu.quanticol.carma.ui.views.SimulationLaboratoryView;
 
 public class ExperimentJob extends Job {
 	
@@ -49,6 +56,7 @@ public class ExperimentJob extends Job {
 			monitor.worked(1);
 			this.sim.simulate(iterations,deadline);
 		}
+		updateView();
 	}
 	
 	public SamplingCollection<CarmaSystem> getCollection(){
@@ -57,6 +65,20 @@ public class ExperimentJob extends Job {
 	
 	public String[] getMeasures(){
 		return this.measures;
+	}
+	
+	public void updateView(){
+		Display.getDefault().asyncExec(new Runnable() 
+		{ 
+			public void run() {
+				try {
+					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("eu.quanticol.carma.ui.views.SimulationLaboratoryView");
+					SimulationLaboratoryView.update(getMeasures(),getCollection());
+				} catch (PartInitException e) {
+					e.printStackTrace();
+				}
+			}
+		});
 	}
 
 	@Override
