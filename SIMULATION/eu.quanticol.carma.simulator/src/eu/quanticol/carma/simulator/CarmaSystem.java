@@ -139,7 +139,7 @@ public abstract class CarmaSystem implements ModelI {
 	}
 	
 	public double min( Measure<CarmaStore> m , CarmaPredicate guard ) {
-		double value = Double.MAX_VALUE;
+		double value = Double.POSITIVE_INFINITY;
 		for (CarmaComponent carmaComponent : collective) {
 			try {
 				if (guard.satisfy(carmaComponent.store)) {
@@ -155,7 +155,7 @@ public abstract class CarmaSystem implements ModelI {
 	}
 
 	public double max( Measure<CarmaStore> m , CarmaPredicate guard ) {
-		double value = Double.MIN_VALUE;
+		double value = Double.NEGATIVE_INFINITY;
 		for (CarmaComponent carmaComponent : collective) {
 			try {
 				if (guard.satisfy(carmaComponent.store)) {

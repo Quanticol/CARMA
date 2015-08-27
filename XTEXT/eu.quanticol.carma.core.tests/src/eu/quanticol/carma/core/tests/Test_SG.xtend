@@ -11,6 +11,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import static extension org.junit.Assert.*
 import eu.quanticol.carma.simulator.CarmaModel
+import eu.quanticol.carma.simulator.CarmaSystem
+import org.cmg.ml.sam.sim.sampling.StatisticSampling
+import org.cmg.ml.sam.sim.sampling.SamplingCollection
+import org.cmg.ml.sam.sim.SimulationEnvironment
 
 @RunWith(typeof(XtextRunner))
 @InjectWith(typeof(CARMAInjectorProviderCustom))
@@ -277,6 +281,7 @@ component Learner(int index, real power, real rnd){
 
 component ComputingServer(){
 	store{
+		attrib converge := 0;
 		attrib a := 0;
 		attrib rcvnum := 0;
 		attrib alphas := [ l10:=Alpha(), l13:=Alpha(), l14:=Alpha(), l20:=Alpha(), l23:=Alpha(), l24:=Alpha(), l03:=Alpha(), l04:=Alpha() ];
@@ -296,7 +301,7 @@ component ComputingServer(){
 				
 		NewPA = newpayoffAlphas*{a := Greater(my.newpayoffs, alphas)}.FS; 		
 		
-		FS = [a == 1]stablestate*{payoffs := newpayoffs, powers := newpowers}.nil + [a == 0]continue*.NewPP;
+		FS = [a == 1]stablestate*{payoffs := newpayoffs, powers := newpowers,converge := 1}.nil + [a == 0]continue*.NewPP;
 		
 		NewPP = newpayoffpayoff*{a := Greater(my.newpayoffs, payoffs)}.DC; 
 				
@@ -309,25 +314,26 @@ component ComputingServer(){
 	}
 }
 
+//measure payoffs[ i := 0:8 ] = max{ ReturnVal(my.payoffs,i)  | true };
+//measure powers[ i := 0:8 ] = max{ ReturnVal(my.powers,i)  | true };
+//measure alpha[ i := 0:8 ] = max{ ReturnVal(my.alphas,i)  | true };
+measure debug = #{ ComputingServer[FS] | my.a==1 };
+
 system Simple{
     collective{
-    	new Learner(0:7, 0.0, 0.83);
+    	new Learner(0:8, 0.0, 0.83);
     	new ComputingServer();
     }
 
     environment{
     	
-    	store{
-	  	}
-    	
-    	prob{
-    	}
-    	
-        rate{
-        }
-        
-        update{
-        }
+	    	prob{
+	    		default: 1.0;
+	    	}
+	    	
+	    rate{
+	    		default: 1.0;
+	    }
     }
 }
 	'''
@@ -343,10 +349,16 @@ system Simple{
 			var o = getCompiledClass.newInstance 
 			assertNotNull( o )
 			assertTrue( o instanceof CarmaModel )
-			var m = o as CarmaModel
-			assertEquals( 1 , m.systems.length )
-			assertEquals( 0 , m.measures.length )					
-
+			val m = o as CarmaModel
+			val samplings = 10000
+			val dt = 1
+			val deadline = samplings*dt
+			var statistics = m.measures.map[  new StatisticSampling<CarmaSystem>(samplings+1, dt,m.getMeasure(it)) ]
+			var sim = new SimulationEnvironment( m.getFactory( "Simple" ) )
+			sim.sampling  = new SamplingCollection( statistics )
+			sim.simulate(deadline)
+			var data = sim.timeSeries
+			data.forEach[ it.printTimeSeries(System.out) ] 
 		]
 	}
 	
