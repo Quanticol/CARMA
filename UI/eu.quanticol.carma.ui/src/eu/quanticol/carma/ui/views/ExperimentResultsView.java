@@ -9,6 +9,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -48,6 +49,7 @@ public class ExperimentResultsView extends ViewPart {
 	private static SamplingCollection<CarmaSystem> collection;
 	private static int samples;
 	private static String[] measures;
+	private static Composite container;
 	private static Composite parent;
 	
 	/**
@@ -61,35 +63,49 @@ public class ExperimentResultsView extends ViewPart {
 	 * to create the viewer and initialise it.
 	 */
 	public void createPartControl(Composite parent) {
-		GridLayout layout = new GridLayout(2, false);
-		parent.setLayout(layout);
+		FillLayout parentLayout = new FillLayout();
 		ExperimentResultsView.parent = parent;
+		parent.setLayout(parentLayout);
+		
+		GridLayout containerLayout = new GridLayout(2, false);
+		ExperimentResultsView.container = new Composite(ExperimentResultsView.parent, SWT.NONE);
+		container.setLayout(containerLayout);
+		
 		results = new ArrayList<ResultViewerWidget>();
 		
 		if(measures != null){
 			for(int i = 0; i < measures.length; i++){
-				results.add(new ResultViewerWidget(parent, ((StatisticSampling<CarmaSystem>) collection.get(i)), samples));
+				results.add(new ResultViewerWidget(container, ((StatisticSampling<CarmaSystem>) collection.get(i)), samples));
 			}
 		}
 
 	}
 	
 	public static void update(){
+		
+		ExperimentResultsView.container.dispose();
+		
+		GridLayout containerLayout = new GridLayout(2, false);
+		ExperimentResultsView.container = new Composite(ExperimentResultsView.parent, SWT.NONE);
+		container.setLayout(containerLayout);
+		
 		if(results != null){
 			results = new ArrayList<ResultViewerWidget>();
 		}
 		
 		if(ExperimentResultsView.measures != null){
 			for(int i = 0; i < measures.length; i++){
-				results.add(new ResultViewerWidget(parent, ((StatisticSampling<CarmaSystem>) collection.get(i)), samples));
+				results.add(new ResultViewerWidget(container, ((StatisticSampling<CarmaSystem>) collection.get(i)), samples));
 			}
 		}
 		
+		container.layout();
 		parent.layout();
 	}
 	
 	public static void update(String[] measures, SamplingCollection<CarmaSystem> collection, int samples){
 		ExperimentResultsView.measures = measures;
+		
 		ExperimentResultsView.collection = collection;
 		ExperimentResultsView.samples = samples;
 		update();
