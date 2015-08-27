@@ -230,9 +230,8 @@ class ExpressionHandler {
 	def dispatch CharSequence expressionToJava( MaxMeasure	e ) {
 		'''
 		system.max( 
-			Measure<CarmaStore> m2 = new Measure<CarmaStore>() {
+			new Measure<CarmaStore>() {
 
-				@Override
 				public double measure(CarmaStore store) {
 					«FOR a:e.globalAttributes»
 					«a.attributeTemporaryVariableDeclaration(ReferenceContext::GLOBAL,"global")»
@@ -244,15 +243,14 @@ class ExpressionHandler {
 					«a.attributeTemporaryVariableDeclaration(ReferenceContext::RECEIVER,"receiver")»
 					«ENDFOR»
 					«FOR a:e.myAttributes»
-					«a.attributeTemporaryVariableDeclaration(ReferenceContext::RECEIVER,"store")»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"store")»
 					«ENDFOR»
 					«FOR a:e.referencedAttibutes»
-					«a.attributeTemporaryVariableDeclaration(ReferenceContext::RECEIVER,"store")»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
 					«ENDFOR»
 					return «e.value.expressionToJava»;
 				}
 			
-				@Override
 				public String getName() {
 					return "ANONYMOUS MEASURE";
 				}
@@ -266,9 +264,8 @@ class ExpressionHandler {
 	def dispatch CharSequence expressionToJava( MinMeasure	e ) {
 		'''
 		system.min( 
-			Measure<CarmaStore> m2 = new Measure<CarmaStore>() {
+			new Measure<CarmaStore>() {
 
-				@Override
 				public double measure(CarmaStore store) {
 					«FOR a:e.globalAttributes»
 					«a.attributeTemporaryVariableDeclaration(ReferenceContext::GLOBAL,"global")»
@@ -280,15 +277,14 @@ class ExpressionHandler {
 					«a.attributeTemporaryVariableDeclaration(ReferenceContext::RECEIVER,"receiver")»
 					«ENDFOR»
 					«FOR a:e.myAttributes»
-					«a.attributeTemporaryVariableDeclaration(ReferenceContext::RECEIVER,"store")»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"store")»
 					«ENDFOR»
 					«FOR a:e.referencedAttibutes»
-					«a.attributeTemporaryVariableDeclaration(ReferenceContext::RECEIVER,"store")»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
 					«ENDFOR»
 					return «e.value.expressionToJava»;
 				}
 			
-				@Override
 				public String getName() {
 					return "ANONYMOUS MEASURE";
 				}
@@ -305,7 +301,6 @@ class ExpressionHandler {
 		system.average( 
 			Measure<CarmaStore> m2 = new Measure<CarmaStore>() {
 
-				@Override
 				public double measure(CarmaStore store) {
 					«FOR a:e.globalAttributes»
 					«a.attributeTemporaryVariableDeclaration(ReferenceContext::GLOBAL,"global")»
@@ -317,15 +312,14 @@ class ExpressionHandler {
 					«a.attributeTemporaryVariableDeclaration(ReferenceContext::RECEIVER,"receiver")»
 					«ENDFOR»
 					«FOR a:e.myAttributes»
-					«a.attributeTemporaryVariableDeclaration(ReferenceContext::RECEIVER,"store")»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"store")»
 					«ENDFOR»
 					«FOR a:e.referencedAttibutes»
-					«a.attributeTemporaryVariableDeclaration(ReferenceContext::RECEIVER,"store")»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
 					«ENDFOR»
 					return «e.value.expressionToJava»;
 				}
 			
-				@Override
 				public String getName() {
 					return "ANONYMOUS MEASURE";
 				}

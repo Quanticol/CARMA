@@ -13,9 +13,11 @@
 package org.cmg.ml.sam.sim;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import org.apache.commons.math3.random.RandomGenerator;
 import org.cmg.ml.sam.sim.sampling.SamplingFunction;
+import org.cmg.ml.sam.sim.sampling.SimulationTimeSeries;
 import org.cmg.ml.sam.sim.util.WeightedElement;
 import org.cmg.ml.sam.sim.util.WeightedStructure;
 
@@ -139,4 +141,10 @@ public class SimulationEnvironment<S extends ModelI> {
 		return random.nextInt(zones);
 	}
 
+	public LinkedList<SimulationTimeSeries> getTimeSeries() {
+		if (sampling_function == null) {
+			return null;
+		}
+		return sampling_function.getSimulationTimeSeries();
+	}
 }

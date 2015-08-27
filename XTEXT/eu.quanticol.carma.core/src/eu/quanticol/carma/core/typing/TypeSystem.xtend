@@ -91,6 +91,7 @@ import eu.quanticol.carma.core.carma.CastToReal
 import eu.quanticol.carma.core.carma.CastToInteger
 import eu.quanticol.carma.core.carma.Range
 import eu.quanticol.carma.core.carma.ProcessState
+import eu.quanticol.carma.core.carma.MeasureVariableDeclaration
 
 class TypeSystem {
 
@@ -246,6 +247,10 @@ class TypeSystem {
 		} else {
 			CarmaType::ERROR_TYPE
 		}
+	}
+	
+	def dispatch CarmaType typeOf( MeasureVariableDeclaration v ) {
+		CarmaType::INTEGER_TYPE
 	}
 	
 	def  dispatch CarmaType typeOf( UntypedVariable v ) {

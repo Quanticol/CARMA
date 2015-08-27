@@ -4,7 +4,7 @@
     editorDirectory="/eu.quanticol.carma.core.editor/src" modelPluginID="eu.quanticol.carma.core"
     forceOverwrite="true" modelName="CARMA" updateClasspath="false" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
     complianceLevel="6.0" copyrightFields="false" editPluginID="eu.quanticol.carma.core.edit"
-    editorPluginID="eu.quanticol.carma.core.editor" runtimeVersion="2.10">
+    editorPluginID="eu.quanticol.carma.core.editor" runtimeVersion="2.11">
   <genPackages prefix="Carma" basePackage="eu.quanticol.carma.core" disposableProviderFactory="true"
       fileExtensions="carma" ecorePackage="CARMA.ecore#/">
     <genClasses ecoreClass="CARMA.ecore#//Model">
