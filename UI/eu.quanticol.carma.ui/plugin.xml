@@ -43,6 +43,13 @@
             id="eu.quanticol.carma.ui.views.SimulationLaboratoryView"
             name="Simulation Laboratory View">
       </view>
+      <view
+            category="eu.quanticol.carma.ui"
+            class="eu.quanticol.carma.ui.views.ExperimentResultsView"
+            icon="icons/sample.gif"
+            id="eu.quanticol.carma.ui.views.ExperimentResultsView"
+            name="Experiment Results View">
+      </view>
    </extension>
 
 </plugin>

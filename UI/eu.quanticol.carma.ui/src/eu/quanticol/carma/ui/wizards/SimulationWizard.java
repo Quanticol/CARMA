@@ -24,13 +24,18 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 
 import eu.quanticol.carma.core.ui.CarmaUiUtil;
 import eu.quanticol.carma.simulator.CarmaModel;
+import eu.quanticol.carma.ui.views.ExperimentResultsView;
+import eu.quanticol.carma.ui.views.SimulationLaboratoryView;
 
 /**
  * @author loreti, williams
@@ -41,6 +46,7 @@ public class SimulationWizard extends Wizard {
 	CarmaUiUtil util = new CarmaUiUtil();
 	
 	private ArrayList<WizardPage> wizardPageList = new ArrayList<WizardPage>();
+	private ExperimentJob experiment;
 	
 	protected SelectModelAndSystemPage modelAndSystemPage;
 	protected SelectMeasuresPage measuresPage;
@@ -77,12 +83,14 @@ public class SimulationWizard extends Wizard {
 	@Override
 	public boolean performFinish() {
 		
-		ExperimentJob experiment = new ExperimentJob(this.deadlineAndIterations.getDeadline(), 
+		experiment = new ExperimentJob(this.deadlineAndIterations.getDeadline(), 
 				this.deadlineAndIterations.getSamplings(), 
 				this.deadlineAndIterations.getIterations(), 
 				this.modelAndSystemPage.getSystem(), 
 				this.measuresPage.getMeasures(), 
 				this.modelAndSystemPage.getModel());
+		
+		updateView();
 		
 		experiment.setUser(true);
 		experiment.schedule();
@@ -433,6 +441,20 @@ public class SimulationWizard extends Wizard {
 			return (int) this.samplings.getValue();
 		}
 		
+	}
+	
+	public void updateView(){
+		Display.getDefault().asyncExec(new Runnable() 
+		{ 
+			public void run() {
+				try {
+					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(SimulationLaboratoryView.ID);
+					SimulationLaboratoryView.update(experiment);
+				} catch (PartInitException e) {
+					e.printStackTrace();
+				}
+			}
+		});
 	}
 	
 }
