@@ -5,38 +5,25 @@ import java.util.ArrayList;
 
 import org.cmg.ml.sam.sim.sampling.SamplingCollection;
 import org.cmg.ml.sam.sim.sampling.StatisticSampling;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.part.*;
-import org.eclipse.jface.viewers.*;
-import org.eclipse.swt.graphics.Image;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.wizard.IWizard;
+import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.jface.action.*;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.ui.*;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.IWorkbenchWizard;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.ViewPart;
 
 import eu.quanticol.carma.simulator.CarmaSystem;
-
-
-/**
- * This sample class demonstrates how to plug-in a new
- * workbench view. The view shows data obtained from the
- * model. The sample creates a dummy model on the fly,
- * but a real implementation would connect to the model
- * available either in this or another plug-in (e.g. the workspace).
- * The view is connected to the model using a content provider.
- * <p>
- * The view uses a label provider to define how model
- * objects should be presented in the view. Each
- * view can present the same model objects using
- * different labels and icons, if needed. Alternatively,
- * a single label provider can be shared between views
- * in order to ensure that objects of the same type are
- * presented in the same way everywhere.
- * <p>
- */
+import eu.quanticol.carma.ui.laboratory.ExperimentJob;
+import eu.quanticol.carma.ui.wizards.SaveAsCSVWizard;
 
 public class ExperimentResultsView extends ViewPart {
 
@@ -45,12 +32,14 @@ public class ExperimentResultsView extends ViewPart {
 	 */
 	public static final String ID = "eu.quanticol.carma.ui.views.ExperimentResultsView";
 
+	private static ExperimentJob experimentJob;
 	private static ArrayList<ResultViewerWidget> results;
 	private static SamplingCollection<CarmaSystem> collection;
 	private static int samples;
 	private static String[] measures;
 	private static Composite container;
 	private static Composite parent;
+	private Action action1;
 	
 	/**
 	 * The constructor.
@@ -67,31 +56,72 @@ public class ExperimentResultsView extends ViewPart {
 		ExperimentResultsView.parent = parent;
 		parent.setLayout(parentLayout);
 		
+		update(false);
+		makeActions();
+		contributeToActionBars();
+
+	}
+	
+	private void makeActions() {
+		action1 = new Action() {
+			public void run() {
+				startWizard();
+			}
+		};
+		action1.setText("Save as CSV...");
+		action1.setToolTipText("Save these tables to a CSV file");
+		action1.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
+			getImageDescriptor(ISharedImages.IMG_ETOOL_SAVE_EDIT));
+	}
+	
+	private void contributeToActionBars() {
+		IActionBars bars = getViewSite().getActionBars();
+		fillLocalPullDown(bars.getMenuManager());
+		fillLocalToolBar(bars.getToolBarManager());
+	}
+	
+	private void fillLocalPullDown(IMenuManager manager) {
+		manager.add(action1);
+	}
+	
+	private void fillLocalToolBar(IToolBarManager manager) {
+		manager.add(action1);
+	}
+	
+	private void startWizard() {
+		try {
+			IWizard wizard = new SaveAsCSVWizard(ExperimentResultsView.experimentJob);
+			WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard);
+			dialog.open();
+		} catch (NullPointerException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	//The experimentJob contains all the meta data
+	public static void update(ExperimentJob experimentJob){
+		ExperimentResultsView.experimentJob = experimentJob;
+		update(experimentJob.getMeasures(), experimentJob.getCollection(), experimentJob.getSamples());
+		
+	}
+	
+	public static void update(String[] measures, SamplingCollection<CarmaSystem> collection, int samples){
+		ExperimentResultsView.measures = measures;
+		ExperimentResultsView.collection = collection;
+		ExperimentResultsView.samples = samples;
+		update(true);
+		
+	}
+	
+	public static void update(boolean flag){
+		
+		if(flag)
+			ExperimentResultsView.container.dispose();
 		GridLayout containerLayout = new GridLayout(2, false);
 		ExperimentResultsView.container = new Composite(ExperimentResultsView.parent, SWT.NONE);
 		container.setLayout(containerLayout);
 		
 		results = new ArrayList<ResultViewerWidget>();
-		
-		if(measures != null){
-			for(int i = 0; i < measures.length; i++){
-				results.add(new ResultViewerWidget(container, ((StatisticSampling<CarmaSystem>) collection.get(i)), samples));
-			}
-		}
-
-	}
-	
-	public static void update(){
-		
-		ExperimentResultsView.container.dispose();
-		
-		GridLayout containerLayout = new GridLayout(2, false);
-		ExperimentResultsView.container = new Composite(ExperimentResultsView.parent, SWT.NONE);
-		container.setLayout(containerLayout);
-		
-		if(results != null){
-			results = new ArrayList<ResultViewerWidget>();
-		}
 		
 		if(ExperimentResultsView.measures != null){
 			for(int i = 0; i < measures.length; i++){
@@ -99,17 +129,10 @@ public class ExperimentResultsView extends ViewPart {
 			}
 		}
 		
+		//refresh with new data
 		container.layout();
+		//need to refresh the parent too
 		parent.layout();
-	}
-	
-	public static void update(String[] measures, SamplingCollection<CarmaSystem> collection, int samples){
-		ExperimentResultsView.measures = measures;
-		
-		ExperimentResultsView.collection = collection;
-		ExperimentResultsView.samples = samples;
-		update();
-		
 	}
 	
 

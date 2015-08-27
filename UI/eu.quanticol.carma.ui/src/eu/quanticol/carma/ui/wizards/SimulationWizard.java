@@ -6,8 +6,6 @@ package eu.quanticol.carma.ui.wizards;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import laboratory.ExperimentJob;
-
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
@@ -34,7 +32,7 @@ import org.eclipse.ui.PlatformUI;
 
 import eu.quanticol.carma.core.ui.CarmaUiUtil;
 import eu.quanticol.carma.simulator.CarmaModel;
-import eu.quanticol.carma.ui.views.ExperimentResultsView;
+import eu.quanticol.carma.ui.laboratory.ExperimentJob;
 import eu.quanticol.carma.ui.views.SimulationLaboratoryView;
 
 /**
@@ -42,6 +40,8 @@ import eu.quanticol.carma.ui.views.SimulationLaboratoryView;
  *
  */
 public class SimulationWizard extends Wizard {
+	
+	public static final String ID = "eu.quanticol.carma.ui.views.SimulationWizard";
 
 	CarmaUiUtil util = new CarmaUiUtil();
 	
@@ -88,7 +88,8 @@ public class SimulationWizard extends Wizard {
 				this.deadlineAndIterations.getIterations(), 
 				this.modelAndSystemPage.getSystem(), 
 				this.measuresPage.getMeasures(), 
-				this.modelAndSystemPage.getModel());
+				this.modelAndSystemPage.getModel(),
+				this.modelAndSystemPage.getModelName());
 		
 		updateView();
 		
@@ -217,6 +218,10 @@ public class SimulationWizard extends Wizard {
 		
 		public CarmaModel getModel(){
 			return models.get(resources.get(modelChoice));
+		}
+		
+		public String getModelName(){
+			return resources.get(modelChoice).getName().split("\\.")[0];
 		}
 		
 	}

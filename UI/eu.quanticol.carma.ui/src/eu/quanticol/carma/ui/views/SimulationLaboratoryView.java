@@ -1,8 +1,6 @@
 package eu.quanticol.carma.ui.views;
 
 
-import laboratory.ExperimentJob;
-
 import org.cmg.ml.sam.sim.sampling.SamplingCollection;
 import org.cmg.ml.sam.sim.sampling.StatisticSampling;
 import org.eclipse.swt.widgets.Composite;
@@ -17,6 +15,7 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.SWT;
 
 import eu.quanticol.carma.simulator.CarmaSystem;
+import eu.quanticol.carma.ui.laboratory.ExperimentJob;
 
 
 /**

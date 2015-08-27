@@ -39,6 +39,7 @@ public class ResultViewerWidget {
 		gridData.grabExcessVerticalSpace = true;
 		gridData.horizontalAlignment = GridData.FILL;
 		viewer.getControl().setLayoutData(gridData);
+		
 	}
 	
 	private void createColumns(final Composite parent, StatisticSampling<CarmaSystem> ss, final TableViewer viewer) {

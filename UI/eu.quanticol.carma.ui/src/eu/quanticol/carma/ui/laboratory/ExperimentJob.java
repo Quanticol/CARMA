@@ -1,4 +1,4 @@
-package laboratory;
+package eu.quanticol.carma.ui.laboratory;
 
 
 import org.cmg.ml.sam.sim.SimulationEnvironment;
@@ -16,7 +16,6 @@ import org.eclipse.ui.PlatformUI;
 import eu.quanticol.carma.simulator.CarmaModel;
 import eu.quanticol.carma.simulator.CarmaSystem;
 import eu.quanticol.carma.ui.views.ExperimentResultsView;
-import eu.quanticol.carma.ui.views.SimulationLaboratoryView;
 
 public class ExperimentJob extends Job {
 	
@@ -24,12 +23,13 @@ public class ExperimentJob extends Job {
 	private int iterations;
 	private int samplings;
 	private String system;
+	private String modelName;
 	private String[] measures;
 	private SimulationEnvironment<CarmaSystem> sim;
 	private SamplingCollection<CarmaSystem> sc;
 	private CarmaModel model;
 	
-	public ExperimentJob(double deadline, int samplings, int iterations, String system, String[] measures, CarmaModel model) {
+	public ExperimentJob(double deadline, int samplings, int iterations, String system, String[] measures, CarmaModel model, String modelName) {
 		super("Simulation");
 		this.deadline = deadline;
 		this.samplings = samplings;
@@ -37,6 +37,7 @@ public class ExperimentJob extends Job {
 		this.system = system;
 		this.measures = measures;
 		this.model = model;
+		this.modelName = modelName;
 		
 		this.sim = new SimulationEnvironment<CarmaSystem>( this.model.getFactory( this.system ) );
 		this.sc = new SamplingCollection<CarmaSystem>();
@@ -72,6 +73,10 @@ public class ExperimentJob extends Job {
 		updateView();
 	}
 	
+	public String getModelName(){
+		return this.modelName;
+	}
+	
 	public SamplingCollection<CarmaSystem> getCollection(){
 		return this.sc;
 	}
@@ -80,13 +85,19 @@ public class ExperimentJob extends Job {
 		return this.measures;
 	}
 	
+	public int getSamples(){
+		return this.samplings;
+	}
+	
 	public void updateView(){
+		
+		ExperimentJob job = this;
 		Display.getDefault().asyncExec(new Runnable() 
 		{ 
 			public void run() {
 				try {
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ExperimentResultsView.ID);
-					ExperimentResultsView.update(getMeasures(),getCollection(),samplings);
+					ExperimentResultsView.update(job);
 				} catch (PartInitException e) {
 					e.printStackTrace();
 				}
