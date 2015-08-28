@@ -89,6 +89,18 @@ public class ExperimentJob extends Job {
 		return this.samplings;
 	}
 	
+	public double getDeadline(){
+		return this.deadline;
+	}
+	
+	public int getIterations(){
+		return this.iterations;
+	}
+	
+	public String toCSVString(){
+		return "Model;"+this.modelName+";deadline;"+this.getDeadline()+";iterations;"+this.getIterations()+";samples;"+this.getSamples();
+	}
+	
 	public void updateView(){
 		
 		ExperimentJob job = this;

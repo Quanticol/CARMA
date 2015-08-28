@@ -47,4 +47,8 @@ public class Result {
 		this.name = name;
 	}
 
+	public String toCSVString() {
+		return getT() +";"+ getM() +";"+ getSd();
+	}
+
 }

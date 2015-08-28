@@ -34,8 +34,6 @@ public class ExperimentResultsView extends ViewPart {
 
 	private static ExperimentJob experimentJob;
 	private static ArrayList<ResultViewerWidget> results;
-	private static SamplingCollection<CarmaSystem> collection;
-	private static int samples;
 	private static String[] measures;
 	private static Composite container;
 	private static Composite parent;
@@ -90,7 +88,7 @@ public class ExperimentResultsView extends ViewPart {
 	
 	private void startWizard() {
 		try {
-			IWizard wizard = new SaveAsCSVWizard(ExperimentResultsView.experimentJob);
+			IWizard wizard = new SaveAsCSVWizard(experimentJob);
 			WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard);
 			dialog.open();
 		} catch (NullPointerException e) {
@@ -101,31 +99,24 @@ public class ExperimentResultsView extends ViewPart {
 	//The experimentJob contains all the meta data
 	public static void update(ExperimentJob experimentJob){
 		ExperimentResultsView.experimentJob = experimentJob;
-		update(experimentJob.getMeasures(), experimentJob.getCollection(), experimentJob.getSamples());
-		
-	}
-	
-	public static void update(String[] measures, SamplingCollection<CarmaSystem> collection, int samples){
-		ExperimentResultsView.measures = measures;
-		ExperimentResultsView.collection = collection;
-		ExperimentResultsView.samples = samples;
+		ExperimentResultsView.measures = experimentJob.getMeasures();
 		update(true);
-		
 	}
 	
 	public static void update(boolean flag){
 		
 		if(flag)
-			ExperimentResultsView.container.dispose();
+			container.dispose();
 		GridLayout containerLayout = new GridLayout(2, false);
-		ExperimentResultsView.container = new Composite(ExperimentResultsView.parent, SWT.NONE);
+		container = new Composite(ExperimentResultsView.parent, SWT.NONE);
 		container.setLayout(containerLayout);
 		
 		results = new ArrayList<ResultViewerWidget>();
-		
 		if(ExperimentResultsView.measures != null){
 			for(int i = 0; i < measures.length; i++){
-				results.add(new ResultViewerWidget(container, ((StatisticSampling<CarmaSystem>) collection.get(i)), samples));
+				results.add(new ResultViewerWidget(container, 
+						((StatisticSampling<CarmaSystem>) experimentJob.getCollection().get(i)),
+						experimentJob.getSamples()));
 			}
 		}
 		
