@@ -24,7 +24,7 @@ class RecordHandler {
 			}
 			
 			public String toString() {
-				return "["«FOR field:recordDefinition.fields»+«field.name.fieldName»«ENDFOR»+"]";
+				return "[ "«FOR field:recordDefinition.fields SEPARATOR "+\" , \""»+"«field.name»="+«field.name.fieldName»«ENDFOR»+" ]";
 			}
 			
 			public boolean equals( Object o ) {

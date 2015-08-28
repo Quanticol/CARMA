@@ -206,4 +206,17 @@ public abstract class CarmaSystem implements ModelI {
 		return args[idx];
 	}
 	
+	public LinkedList<Object[]> areYouJocking( CarmaPredicate guard , String[] attributes  ) {
+		LinkedList<Object[]> toReturn = new LinkedList<>();
+		for (CarmaComponent carmaComponent : collective) {
+			if (guard.satisfy(carmaComponent.store)) {
+				Object[] data = new Object[attributes.length];
+				for( int i=0 ; i<data.length ; i++ ) {
+					data[i] = carmaComponent.get(attributes[i], Object.class );
+				}
+				toReturn.add(data);
+			}
+		}		
+		return toReturn;
+	}
 }

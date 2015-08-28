@@ -15,6 +15,9 @@ import eu.quanticol.carma.simulator.CarmaSystem
 import org.cmg.ml.sam.sim.sampling.StatisticSampling
 import org.cmg.ml.sam.sim.sampling.SamplingCollection
 import org.cmg.ml.sam.sim.SimulationEnvironment
+import org.cmg.ml.sam.sim.sampling.SamplingFunction
+import eu.quanticol.carma.simulator.CarmaPredicate
+import eu.quanticol.carma.simulator.CarmaStore
 
 @RunWith(typeof(XtextRunner))
 @InjectWith(typeof(CARMAInjectorProviderCustom))
@@ -281,9 +284,9 @@ component Learner(int index, real power, real rnd){
 
 component ComputingServer(){
 	store{
-		attrib converge := 0;
 		attrib a := 0;
 		attrib rcvnum := 0;
+		attrib stable := 0;
 		attrib alphas := [ l10:=Alpha(), l13:=Alpha(), l14:=Alpha(), l20:=Alpha(), l23:=Alpha(), l24:=Alpha(), l03:=Alpha(), l04:=Alpha() ];
 		attrib newpowers := [ l10:=0.0, l13:=0.0, l14:=0.0, l20:=0.0, l23:=0.0, l24:=0.0, l03:=0.0, l04:=0.0 ];
 		attrib powers :=[ l10:=0.0, l13:=0.0, l14:=0.0, l20:=0.0, l23:=0.0, l24:=0.0, l03:=0.0, l04:=0.0 ];
@@ -301,11 +304,11 @@ component ComputingServer(){
 				
 		NewPA = newpayoffAlphas*{a := Greater(my.newpayoffs, alphas)}.FS; 		
 		
-		FS = [a == 1]stablestate*{payoffs := newpayoffs, powers := newpowers,converge := 1}.nil + [a == 0]continue*.NewPP;
+		FS = [a == 1]stablestate*{payoffs := newpayoffs, powers := newpowers, stable := 1}.nil + [a == 0]continue*.NewPP;
 		
 		NewPP = newpayoffpayoff*{a := Greater(my.newpayoffs, payoffs)}.DC; 
 				
-		DC = [a == 1]updatepower*<newpowers, newpayoffs>{payoffs := newpayoffs, powers := newpowers}.RP 
+		DC = [a == 1]updatepower*<newpowers, newpayoffs>{payoffs := newpayoffs, powers := newpowers, newpayoffs := [ l10:=0.0, l13:=0.0, l14:=0.0, l20:=0.0, l23:=0.0, l24:=0.0, l03:=0.0, l04:=0.0 ] , newpowers := [ l10:=0.0, l13:=0.0, l14:=0.0, l20:=0.0, l23:=0.0, l24:=0.0, l03:=0.0, l04:=0.0 ] }.RP 
 				+ [a == 0]updatepower*<powers, payoffs>.RP;
 	}
 	
@@ -314,14 +317,14 @@ component ComputingServer(){
 	}
 }
 
-//measure payoffs[ i := 0:8 ] = max{ ReturnVal(my.payoffs,i)  | true };
-//measure powers[ i := 0:8 ] = max{ ReturnVal(my.powers,i)  | true };
-//measure alpha[ i := 0:8 ] = max{ ReturnVal(my.alphas,i)  | true };
+//measure payoffs[ i := 0:7 ] = max{ ReturnVal(my.payoffs,i)  | true };
+//measure powers[ i := 0:7 ] = max{ ReturnVal(my.powers,i)  | true };
+//measure alpha[ i := 0:7] = max{ ReturnVal(my.alphas,i)  | true };
 measure debug = #{ ComputingServer[FS] | my.a==1 };
 
 system Simple{
     collective{
-    	new Learner(0:8, 0.0, 0.83);
+    	new Learner(0:7, 0.0, 0.0);
     	new ComputingServer();
     }
 
@@ -336,6 +339,8 @@ system Simple{
 	    }
     }
 }
+
+
 	'''
 	
 	@Test
@@ -350,15 +355,47 @@ system Simple{
 			assertNotNull( o )
 			assertTrue( o instanceof CarmaModel )
 			val m = o as CarmaModel
-			val samplings = 10000
+			val samplings = 1000
 			val dt = 1
 			val deadline = samplings*dt
-			var statistics = m.measures.map[  new StatisticSampling<CarmaSystem>(samplings+1, dt,m.getMeasure(it)) ]
+			//var statistics = m.measures.map[  new StatisticSampling<CarmaSystem>(samplings+1, dt,m.getMeasure(it)) ]
 			var sim = new SimulationEnvironment( m.getFactory( "Simple" ) )
-			sim.sampling  = new SamplingCollection( statistics )
+			//sim.sampling  = new SamplingCollection( statistics )
+			sim.sampling = new SamplingFunction<CarmaSystem>() {
+				
+				override end(double time) {
+					print("SIMULATION COMNPLETED")
+					println()
+				}
+				
+				override getSimulationTimeSeries() {
+					return null;
+				}
+				
+				override sample(double time, CarmaSystem context) {
+					var data = context.areYouJocking( 
+						new CarmaPredicate() {
+							
+							override satisfy(CarmaStore store) {
+								store.get("payoffs",typeof(Object)) != null
+							}
+						
+						} , 
+						newArrayList( "stable" , "powers" , "newpowers" , "payoffs" , "newpayoffs" , "rcvnum" ) //
+					)						
+					print(time+" -> "+data.map[ it.toString ].join(" - "))
+					println()
+				}
+				
+				override start() {
+					print("SIMULATION STARTED")
+					System.out.println( )
+				}
+				
+			}
 			sim.simulate(deadline)
-			var data = sim.timeSeries
-			data.forEach[ it.printTimeSeries(System.out) ] 
+//			var data = sim.timeSeries
+//			data.forEach[ it.printTimeSeries(System.out) ] 
 		]
 	}
 	
