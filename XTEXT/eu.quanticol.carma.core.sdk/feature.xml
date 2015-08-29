@@ -2,7 +2,7 @@
 <feature
       id="eu.quanticol.carma.core.sdk"
       label="CARMA SDK Feature "
-      version="0.1.2.beta">
+      version="0.2.0.beta">
 
    <includes
          id="org.eclipse.xtext.redist"
@@ -69,6 +69,13 @@
 
    <plugin
          id="eu.quanticol.ms"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="eu.quanticol.carma.ui"
          download-size="0"
          install-size="0"
          version="0.0.0"
