@@ -1,5 +1,7 @@
 package eu.quanticol.carma.ui.views;
 
+import java.util.ArrayList;
+
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
@@ -17,7 +19,7 @@ public class ExperimentJobWidget {
 	
 
 	private TableViewer viewer;
-	private ExperimentJobProvider ejp;
+	private ArrayList<ExperimentJob> ejbs;
 	
 	public ExperimentJobWidget(Composite parent, ExperimentJob experimentJob) {
 		
@@ -32,10 +34,11 @@ public class ExperimentJobWidget {
 		table.setHeaderVisible(true);
 		table.setLinesVisible(true);
 
-		ejp = new ExperimentJobProvider(experimentJob);
+		ejbs = new ArrayList<ExperimentJob>();
+		ejbs.add(experimentJob);
 		
 		viewer.setContentProvider(new ArrayContentProvider());
-		viewer.setInput(ejp.getResults());
+		viewer.setInput(ejbs);
 
 		GridData gridData = new GridData();
 		gridData.verticalAlignment = GridData.FILL;
@@ -49,8 +52,12 @@ public class ExperimentJobWidget {
 	
 	private String getList(String[] strings){
 		String toReturn = "";
-		for(int i = 0; i < strings.length; i++)
-			toReturn = toReturn + strings[i] + " \n";
+		if(strings.length > 0)
+			toReturn = strings[0];
+		if(strings.length > 1)
+			toReturn = toReturn + " \n";
+			for(int i = 1; i < strings.length; i++)
+				toReturn = toReturn + strings[i] + " \n";
 		return toReturn;
 	}
 	
