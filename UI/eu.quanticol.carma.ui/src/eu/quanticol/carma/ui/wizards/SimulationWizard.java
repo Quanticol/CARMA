@@ -91,6 +91,7 @@ public class SimulationWizard extends Wizard {
 				this.modelAndSystemPage.getModel(),
 				this.modelAndSystemPage.getModelName());
 		
+		//update the Lab View
 		updateView();
 		
 		experiment.setUser(true);

@@ -81,6 +81,10 @@ public class ExperimentJob extends Job {
 		return this.sc;
 	}
 	
+	public String getSystem(){
+		return this.system;
+	}
+	
 	public String[] getMeasures(){
 		return this.measures;
 	}
