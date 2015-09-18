@@ -97,6 +97,10 @@ class TypeSystem {
 
 	@Inject extension Util
 	
+	def dispatch CarmaType typeOf( Object e ) {
+		CarmaType::ERROR_TYPE
+	}
+	
 	def  dispatch CarmaType typeOf( EObject e ) {
 		CarmaType::ERROR_TYPE	
 	}
@@ -507,11 +511,23 @@ class TypeSystem {
 	}
 	
 		
-	def toJavaType( CarmaType t ) {
+	def toJavaType( CarmaType t , boolean isElementary ) {
 		switch (t.code) {
-			case BOOLEAN: "Boolean"
-			case INTEGER: "Integer"
-			case REAL: "Double"
+			case BOOLEAN: if (isElementary) {
+				"boolean"
+			} else {
+				"Boolean"
+			}
+			case INTEGER: if (isElementary) {
+				"int"
+			} else {
+				"Integer"
+			}
+			case REAL: if (isElementary) {
+				"double"
+			} else {
+				"Double"				
+			}
 			case PROCESS: "CarmaProcessAutomaton.State"
 			case RECORD: (t.reference as RecordDefinition).name.recordClass
 			case ENUM: (t.reference as EnumDefinition).name.enumClass

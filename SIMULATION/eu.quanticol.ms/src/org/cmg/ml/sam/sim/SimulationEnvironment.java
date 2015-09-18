@@ -52,7 +52,7 @@ public class SimulationEnvironment<S extends ModelI> {
 	public synchronized void simulate(SimulationMonitor monitor , int iterations, double deadline) {
 		RandomGeneratorRegistry rgi = RandomGeneratorRegistry.getInstance();
 		rgi.register(random);
-		for (int i = 0; (!monitor.isCancelled())&&(i < iterations) ; i++) {
+		for (int i = 0; (((monitor == null)||(!monitor.isCancelled()))&&(i < iterations)) ; i++) {
 			if (monitor != null) {
 				monitor.startIteration( i );
 			}
@@ -107,12 +107,12 @@ public class SimulationEnvironment<S extends ModelI> {
 				sampling_function.sample(time, model);
 			}
 		}
+		
 		if (sampling_function != null) {
 			sampling_function.end(time);
 		}
 		return time;	
 	}
-	
 	private double doSimulate(double deadline) {
 		return doSimulate(null,deadline);
 	}

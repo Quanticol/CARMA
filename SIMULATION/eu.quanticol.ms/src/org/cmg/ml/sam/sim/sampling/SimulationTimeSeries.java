@@ -3,6 +3,8 @@
  */
 package org.cmg.ml.sam.sim.sampling;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.PrintStream;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
@@ -53,6 +55,13 @@ public class SimulationTimeSeries {
 		for( int i=0 ; i<data.length ; i++ ) {
 			out.println(getTime(i)+"\t"+getMean(i));
 		}
+	}
+	
+	public void saveTo( String path ) throws FileNotFoundException {
+		File output = new File( path+"/"+name+".dat");
+		PrintStream ps = new PrintStream(output);
+		printTimeSeries(ps);
+		ps.close();
 	}
 	
 }

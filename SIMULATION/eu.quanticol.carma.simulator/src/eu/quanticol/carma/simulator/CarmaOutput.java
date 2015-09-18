@@ -15,6 +15,11 @@ import org.cmg.ml.sam.sim.util.WeightedStructure;
  */
 public abstract class CarmaOutput implements CarmaAction {
 	
+	@Override
+	public String toString() {
+		return action+(broadcast?"*":"");
+	}
+
 	private int action;
 	private boolean broadcast;
 

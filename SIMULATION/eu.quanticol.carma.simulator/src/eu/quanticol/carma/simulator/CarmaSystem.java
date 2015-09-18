@@ -3,7 +3,9 @@
  */
 package eu.quanticol.carma.simulator;
 
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 import org.apache.commons.math3.random.RandomGenerator;
 import org.cmg.ml.sam.sim.Activity;
@@ -206,13 +208,16 @@ public abstract class CarmaSystem implements ModelI {
 		return args[idx];
 	}
 	
-	public LinkedList<Object[]> areYouJocking( CarmaPredicate guard , String[] attributes  ) {
-		LinkedList<Object[]> toReturn = new LinkedList<>();
+	public LinkedList<Map<String,Object>> retrieve( CarmaPredicate guard , String[] attributes  ) {
+		LinkedList<Map<String,Object>> toReturn = new LinkedList<>();
 		for (CarmaComponent carmaComponent : collective) {
 			if (guard.satisfy(carmaComponent.store)) {
-				Object[] data = new Object[attributes.length];
-				for( int i=0 ; i<data.length ; i++ ) {
-					data[i] = carmaComponent.get(attributes[i], Object.class );
+				HashMap<String,Object> data = new HashMap<>();
+				for( int i=0 ; i<attributes.length ; i++ ) {
+					Object foo = carmaComponent.get(attributes[i], Object.class );
+					if (foo != null) {
+						data.put( attributes[i] , foo );
+					}
 				}
 				toReturn.add(data);
 			}

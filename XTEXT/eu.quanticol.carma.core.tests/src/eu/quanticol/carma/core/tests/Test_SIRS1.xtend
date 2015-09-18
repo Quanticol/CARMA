@@ -105,16 +105,16 @@ system Simple{
 		var m = getCompiledClass.newInstance as CarmaModel
 		assertEquals( 1 , m.systems.length )
 		assertEquals( 3 , m.measures.length )
-		var deadline = 100
-		var sim = new SimulationEnvironment( m.getFactory( "Simple" ) )
-		var stat1 = new StatisticSampling<CarmaSystem>(deadline+1, 1.0, m.getMeasure("Susceptibles") );
-		var stat2 = new StatisticSampling<CarmaSystem>(deadline+1, 1.0, m.getMeasure("Infected") );
-		var stat3 = new StatisticSampling<CarmaSystem>(deadline+1, 1.0, m.getMeasure("Recovered") );
-		sim.sampling = new SamplingCollection( stat1 , stat2 , stat3 );
-		sim.simulate(200,deadline)
-		stat1.printTimeSeries(System.out)
-		stat2.printTimeSeries(System.out)
-		stat3.printTimeSeries(System.out)
+//		var deadline = 100
+//		var sim = new SimulationEnvironment( m.getFactory( "Simple" ) )
+//		var stat1 = new StatisticSampling<CarmaSystem>(deadline+1, 1.0, m.getMeasure("Susceptibles") );
+//		var stat2 = new StatisticSampling<CarmaSystem>(deadline+1, 1.0, m.getMeasure("Infected") );
+//		var stat3 = new StatisticSampling<CarmaSystem>(deadline+1, 1.0, m.getMeasure("Recovered") );
+//		sim.sampling = new SamplingCollection( stat1 , stat2 , stat3 );
+//		sim.simulate(200,deadline)
+//		stat1.printTimeSeries(System.out)
+//		stat2.printTimeSeries(System.out)
+//		stat3.printTimeSeries(System.out)
 	]
 }
 	

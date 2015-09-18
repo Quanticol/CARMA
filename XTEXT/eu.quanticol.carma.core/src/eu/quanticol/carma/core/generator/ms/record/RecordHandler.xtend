@@ -11,7 +11,7 @@ class RecordHandler {
 	
 	def String recordToJava(RecordDefinition recordDefinition){
 		'''
-		public static class «recordDefinition.name.recordClass» {
+		public static class «recordDefinition.name.recordClass» implements Cloneable {
 			
 			«FOR field : recordDefinition.fields»
 			public «field.fieldType.toJavaType» «field.name.fieldName»;
@@ -20,6 +20,12 @@ class RecordHandler {
 			public «recordDefinition.name.recordClass»( «FOR field:recordDefinition.fields SEPARATOR ','»«field.fieldType.toJavaType» «field.name.fieldName»«ENDFOR») {
 				«FOR field :  recordDefinition.fields»
 				this.«field.name.fieldName» = «field.name.fieldName»;
+				«ENDFOR»
+			}
+
+			public «recordDefinition.name.recordClass»( «recordDefinition.name.recordClass» record ) {
+				«FOR field :  recordDefinition.fields»
+				this.«field.name.fieldName» = record.«field.name.fieldName»;
 				«ENDFOR»
 			}
 			
@@ -37,6 +43,9 @@ class RecordHandler {
 				return false;
 			}
 			
+			public «recordDefinition.name.recordClass» clone() {
+				return new «recordDefinition.name.recordClass»( this );
+			}
 		}
 		'''
 	}

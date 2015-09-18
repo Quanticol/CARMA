@@ -23,6 +23,14 @@ import java.util.LinkedList;
  */
 public class ComposedWeightedStructure<S> implements WeightedStructure<S> {
 
+	@Override
+	public String toString() {
+		if (total_weight == 0) {
+			return "0";
+		}
+		return left+" - "+right;
+	}
+
 	private double total_weight;
 	private WeightedStructure<S> left;
 	private WeightedStructure<S> right;

@@ -160,7 +160,7 @@ system Simple{
 			assertTrue( o instanceof CarmaModel )
 			var m = o as CarmaModel
 			assertEquals( 1 , m.systems.length )
-			assertEquals( 4 , m.measures.length )					
+			assertEquals( 9 , m.measures.length )					
 		]
 	}
 	

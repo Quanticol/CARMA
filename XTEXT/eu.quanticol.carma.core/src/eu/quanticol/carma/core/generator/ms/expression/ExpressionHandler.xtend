@@ -77,11 +77,13 @@ import eu.quanticol.carma.core.carma.ValueType
 import eu.quanticol.carma.core.carma.AtomicRnd
 import eu.quanticol.carma.core.carma.CastToReal
 import eu.quanticol.carma.core.carma.CastToInteger
+import eu.quanticol.carma.core.typing.TypeSystem
 
 class ExpressionHandler {
 	
 	@Inject extension Util
 	@Inject extension AttributeHandler
+	@Inject extension TypeSystem
 	
 	String currentComponent = ""
 	
@@ -106,7 +108,11 @@ class ExpressionHandler {
 	}
 
 	def dispatch CharSequence expressionToJava( Equality e ) {
-		'''( «e.left.expressionToJava» )==( «e.right.expressionToJava» )'''
+		if (e.typeOf.isRecord) {
+			'''( «e.left.expressionToJava» ).equals( «e.right.expressionToJava» )'''
+		} else {
+			'''( «e.left.expressionToJava» )==( «e.right.expressionToJava» )'''
+		}
 	}
 	
 	def dispatch CharSequence expressionToJava( DisEquality e ) {
@@ -164,7 +170,7 @@ class ExpressionHandler {
 	def dispatch CharSequence expressionToJava( Reference e ) {
 		'''«e.reference.getReference( ReferenceContext::NONE , currentComponent  )»«IF e.isIsCall»( 
 			«e.args.map[it.expressionToJava].invocationParameters( e.reference.functionArguments.map[it.type] )»
-		)«ENDIF»'''		
+		)«ENDIF»«IF e.typeOf.isRecord».clone()«ENDIF»'''		
 	}
 
 	def getFunctionArguments( ReferenceableElement e ) {
@@ -345,6 +351,7 @@ class ExpressionHandler {
 						try{
 							return csp.getState().getName().equals("«n»");
 						} catch (NullPointerException e) {
+							e.printStackTrace();
 							return false;
 						}
 					}
@@ -371,6 +378,7 @@ class ExpressionHandler {
 						try{
 							return csp.getName().equals("«p.comp.name»");
 						} catch (NullPointerException e) {
+							e.printStackTrace();
 							return false;
 						}	
 					}
@@ -437,6 +445,7 @@ class ExpressionHandler {
 				try{
 					return «e.expressionToJava»;
 				} catch (NullPointerException e) {
+					e.printStackTrace();
 					return false;
 				}
 			}

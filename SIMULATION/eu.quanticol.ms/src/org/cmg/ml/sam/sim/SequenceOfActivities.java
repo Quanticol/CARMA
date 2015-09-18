@@ -23,6 +23,15 @@ import org.apache.commons.math3.random.RandomGenerator;
  */
 public class SequenceOfActivities implements Activity {
 
+	@Override
+	public String toString() {
+		if (activities.length > 0) {
+			return activities[0].toString();
+		} else {
+			return "...";
+		}
+	}
+
 	private Activity[] activities;
 
 	public SequenceOfActivities(Activity... activities) {

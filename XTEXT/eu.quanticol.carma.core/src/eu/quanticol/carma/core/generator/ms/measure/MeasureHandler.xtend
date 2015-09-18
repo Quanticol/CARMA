@@ -56,7 +56,7 @@ class MeasureHandler {
 				'''
 					for( 
 						int v«idx» = «value.min.expressionToJava» ; 
-						v«idx» < «value.max.expressionToJava» ; 
+						v«idx» <= «value.max.expressionToJava» ; 
 						«IF value.step != null»
 						v«idx» = v«idx» + «value.step.expressionToJava»
 						«ELSE»
@@ -102,7 +102,7 @@ class MeasureHandler {
 
 				//@Override
 				public String getName() {
-					return "«m.name»";
+					return "«m.name»"«FOR v:m.variables»+"_"+«v.name.variableName»«ENDFOR»;
 				}
 			
 			};

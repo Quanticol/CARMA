@@ -207,7 +207,7 @@ class CollectiveHandler {
 				«IF act.update != null»
 				LinkedList<Object> message = (LinkedList<Object>) value;
 				«FOR idv:idxVar»
-				final «t.get(idv.key).toJavaType» «idv.value.name.variableName» = («t.get(idv.key).toJavaType») message.get(«idv.key»);
+				final «t.get(idv.key).toJavaType(true)» «idv.value.name.variableName» = («t.get(idv.key).toJavaType(false)») message.get(«idv.key»);
 				«ENDFOR»
 				return new CarmaStoreUpdate() {
 					
@@ -239,7 +239,7 @@ class CollectiveHandler {
 				«IF act.activity.predicate != null»				
 				LinkedList<Object> message = (LinkedList<Object>) value;
 				«FOR idv:idxVar»
-				final «t.get(idv.key).toJavaType» «idv.value.name.variableName» = («t.get(idv.key).toJavaType») message.get(«idv.key»);
+				final «t.get(idv.key).toJavaType(true)» «idv.value.name.variableName» = («t.get(idv.key).toJavaType(false)») message.get(«idv.key»);
 				«ENDFOR»
 				«FOR a:act.activity.predicate.guard.myAttributes»
 				«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"myStore")»

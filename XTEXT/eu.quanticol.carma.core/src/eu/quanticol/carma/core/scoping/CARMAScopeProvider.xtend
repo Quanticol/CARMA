@@ -353,7 +353,7 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 			Processes: e.processes 
 			ConstantDefinition: newLinkedList( e )			
 			EnumDefinition: e.values
-			SystemDefinition: e.environment.store.attributes
+			SystemDefinition: e.environment ?. store ?. attributes ?: newLinkedList()
 			default: newLinkedList()			
 		}
 	}

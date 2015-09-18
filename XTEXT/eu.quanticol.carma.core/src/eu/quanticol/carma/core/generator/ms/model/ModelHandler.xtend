@@ -57,7 +57,7 @@ class ModelHandler {
 			«ENDFOR»
 		
 			«FOR c:model.constants»
-			public static final «c.value.typeOf.toJavaType» «c.name.constantName» = «c.value.expressionToJava»;
+			public static final «c.value.typeOf.toJavaType(true)» «c.name.constantName» = «c.value.expressionToJava»;
 			«ENDFOR»
 		
 			«FOR f:model.functions»
