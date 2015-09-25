@@ -169,8 +169,21 @@ public class SimulationWizard extends Wizard {
 
 		    modelCombo.addListener(SWT.Selection, new Listener() {
 				public void handleEvent(Event event) {
-					modelChoice = modelCombo.getSelectionIndex();
-					refreshPage();
+					int newChoice = modelCombo.getSelectionIndex();
+					if (newChoice != modelChoice) {
+						modelChoice = newChoice;
+						systemCombo.removeAll();
+						if (modelChoice >= 0) {
+							labels = models.get(resources.get(modelChoice)).getSystems();
+						    for (String label : labels) {
+						    	systemCombo.add(label);
+							}						    
+						    systemCombo.redraw();
+						    systemCombo.update();
+						    container.layout();
+						}
+					}
+					//refreshPage();
 					checkPage();
 				}
 			});
@@ -388,9 +401,9 @@ public class SimulationWizard extends Wizard {
 		}
 
 		protected SetDeadlineAndIterations() {
-			super("Set deadline and iterations");
-			setTitle("Set deadline and iterations");
-			setDescription("Set deadline and iterations");
+			super("Set simulation parameters");
+			setTitle("Set simulation parameters");
+			setDescription("Set simulation parameters");
 		}
 
 		@Override
@@ -409,12 +422,12 @@ public class SimulationWizard extends Wizard {
 		public void drawPage(Composite container){
 			
 			deadlineLabel = new Label(container, SWT.NONE);
-			deadlineLabel.setText("Deadline:");
+			deadlineLabel.setText("Simulation time:");
 			deadline = new PositiveIntegerConfigurationText("50");
 			deadline.createControl(container);
 			
 			iterationsLabel = new Label(container, SWT.NONE);
-			iterationsLabel.setText("Iterations:");
+			iterationsLabel.setText("Replications:");
 			iterations = new PositiveIntegerConfigurationText("100");
 			iterations.createControl(container);
 			
