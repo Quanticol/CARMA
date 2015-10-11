@@ -20,9 +20,6 @@ class Test_Taxis {
 	@Inject extension CompilationTestHelper
 	
 	CharSequence code = 	'''
-//This is the taxi model implemented according to the senario 2 in the paper.
-//There are some slightly change in the fun Mrate and Takeprob
-
 const SIZE = 3;
 const K = 5;
 
@@ -56,7 +53,7 @@ fun Position DestLoc(real time, Position g){
     return q;
 }
 
-fun real Mrate(real time, Position l1, Position l2){
+fun real Mrate( Position l1, Position l2){
 	real t := real( abs(l1.x - l2.x) + abs(l1.y - l2.y) );
 	real r := 0.0;
 	if(t > 1.0){
@@ -86,17 +83,13 @@ fun real Arate(real time, Position l1){
 	return r;
 }
 
-fun real Takeprob( real taxisAtLoc ){
-	// taxisAtLoc := #{Taxi[F] | my.loc == l1 }; 
-	// This x wants to count how many taxis are in the grid from which the user sent the message.
-	// But it seems that the x is alway equal to 0,because after remove the if-esle structure and
-	// return 1/x directly, there will be some error when the programme is executed.
+fun real Takeprob( int taxisAtLoc ){
 	real x_:= 0.0;
 	if (taxisAtLoc == 0){
 		x_ := 0.0;
 	}
 	else{
-		x_ := 1.0/taxisAtLoc; 
+		x_ := 1.0/real(taxisAtLoc); 
 	}
 	return x_;
 }
@@ -151,38 +144,33 @@ component Arrival(int a, int b){
 	}
 }
 
-	measure WaitingUser_00[ i := 0 ] = #{User[Wait] | my.loc.x == 0 && my.loc.y == 0 };
-	measure WaitingUser_02[ i := 0 ] = #{User[Wait] | my.loc.x == 0 && my.loc.y == 2 };
-	measure WaitingUser_11[ i := 0 ] = #{User[Wait] | my.loc.x == 1 && my.loc.y == 1 };
-	measure FreeTaxi_00[ i := 0 ] = #{Taxi[F] | my.loc.x == 0 && my.loc.y == 0 };
-	measure FreeTaxi_02[ i := 0 ] = #{Taxi[F] | my.loc.x == 0 && my.loc.y == 2 };
-	measure FreeTaxi_11[ i := 0 ] = #{Taxi[F] | my.loc.x == 1 && my.loc.y == 1 };
-	measure Taxi_Relocating[ i := 1 ] = #{Taxi[G] | my.occupancy == 0};
-	measure All_User[ i := 1 ] = #{User[*] | true };
+	measure WaitingUser[ i := 0:SIZE-1 , j := 0:SIZE-1 ] = #{User[Wait] | my.loc.x == i && my.loc.y == j };
+	measure FreeTaxi[ i := 0:SIZE-1 , j := 0:SIZE-1 ] = #{Taxi[F] | my.loc.x == 0 && my.loc.y == 0 };
+	measure All_User = #{User[*] | true };
 
 system Scenario1{
 
     collective{
     	for( i ; i<K ; i+1 ) {
-          new Taxi(0:SIZE,0:SIZE,3,3,0,F);
+          new Taxi(0:SIZE-1,0:SIZE-1,3,3,0,F);
         }
-	    new Arrival(0:SIZE,0:SIZE);
+	    new Arrival(0:SIZE-1,0:SIZE-1);
     }
 
     environment{
     	
     	
     	prob{
-    		[true] take : Takeprob(real(#{Taxi[F] | (my.loc.x == sender.loc.x)&&(my.loc.y == sender.loc.y) }));
-      		[true] call* : 1.0 - P_LOST;
-    		default : 1.0;
+              [true] take : Takeprob(#{Taxi[F] | my.loc == sender.loc });
+              [true] call* : 1-P_LOST;
+              default : 1.0;
     	}
     	
         rate{
         	[true] take : R_T;
     		[true] call* : R_C;
-    		[true] move* : Mrate(now,sender.loc,sender.dest);
-    		[true] arrival* : Arate(now,sender.loc);
+    		[true] move* : Mrate(sender.loc,sender.dest);
+    		[true] arrival* : R_A * (1.0 / real( SIZE * SIZE )) ;
     		default : 0.0;
         }
         
@@ -197,23 +185,23 @@ system Scenario2{
 
     collective{
     	for( i ; i<K ; i+1 ) {
-          new Taxi(0:SIZE,0:SIZE,3,3,0,F);
+          new Taxi(0:SIZE-1,0:SIZE-1,3,3,0,F);
         }
-	    new Arrival(0:SIZE,0:SIZE);
+	    new Arrival(0:SIZE-1,0:SIZE-1);
     }
 
     environment{
     	
     	prob{
-    		[true] take : Takeprob(real(#{Taxi[F] | (my.loc.x == sender.loc.x)&&(my.loc.y == sender.loc.y) }));
-      		[true] call* : 1.0 - P_LOST;
-    		default : 1.0;
+              [true] take : Takeprob(#{Taxi[F] | my.loc == sender.loc });
+              [true] call* : 1-P_LOST;
+              default : 1.0;
     	}
     	
         rate{
         	[true] take : R_T;
     		[true] call* : R_C;
-    		[true] move* : Mrate(now,sender.loc,sender.dest);
+    		[true] move* : Mrate(sender.loc,sender.dest);
     		[true] arrival* : Arate(now,sender.loc);
     		default : 0.0;
         }
@@ -239,7 +227,7 @@ system Scenario2{
 			assertTrue( o instanceof CarmaModel )
 			var m = o as CarmaModel
 			assertEquals( 2 , m.systems.length )
-			assertEquals( 8 , m.measures.length )					
+			assertEquals( 19 , m.measures.length )					
 
 	]
 	}

@@ -2,7 +2,7 @@
 <feature
       id="eu.quanticol.carma.core.sdk"
       label="CARMA SDK Feature "
-      version="0.2.0.beta">
+      version="0.2.6.beta">
 
    <includes
          id="org.eclipse.xtext.redist"
@@ -38,7 +38,6 @@
       <import plugin="org.eclipse.core.resources"/>
       <import plugin="org.eclipse.xtend"/>
       <import plugin="org.eclipse.xpand"/>
-      <import plugin="org.apache.commons.math"/>
       <import plugin="org.eclipse.jdt.core"/>
       <import plugin="org.eclipse.jdt.launching"/>
       <import plugin="org.eclipse.ui.workbench"/>
