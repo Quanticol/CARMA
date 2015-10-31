@@ -8,8 +8,11 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import eu.quanticol.carma.core.ui.CarmaUiUtil;
 import eu.quanticol.carma.ui.wizards.SimulationWizard;
 
 /**
@@ -50,14 +53,25 @@ public class SimulationHandler extends AbstractHandler {
 //	    	      }
 //
 		
-	    WizardDialog wizardDialog = new WizardDialog(HandlerUtil.getActiveShell(event),
-	    	      new SimulationWizard());
-	    	    if (wizardDialog.open() == Window.OK) {
-	    	      System.out.println("Ok pressed");
-	    	    } else {
-	    	      System.out.println("Cancel pressed");
-	    	      }
-	    return true;
+		CarmaUiUtil util = new CarmaUiUtil();
+		System.out.println("MAREMMA GATTA!!!!");
+		if (util.getActiveModels().size() == 0) {
+			 MessageBox messageBox = new MessageBox(HandlerUtil.getActiveShell(event), SWT.ICON_ERROR | SWT.OK );
+			 messageBox.setText("Error...");
+	        messageBox.setMessage("Please open a CARMA specification file!");
+	        messageBox.open();
+			return false;
+		} else {
+		    WizardDialog wizardDialog = new WizardDialog(HandlerUtil.getActiveShell(event),
+		    	      new SimulationWizard());
+		    	    if (wizardDialog.open() == Window.OK) {
+		    	      System.out.println("Ok pressed");
+		    	    } else {
+		    	      System.out.println("Cancel pressed");
+		    	      }
+    	    return true;
+		}
+		
 	}
 	
 }

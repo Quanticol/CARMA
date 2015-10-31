@@ -20,9 +20,6 @@ class Test_Taxis {
 	@Inject extension CompilationTestHelper
 	
 	CharSequence code = 	'''
-//This is the taxi model implemented according to the senario 2 in the paper.
-//There are some slightly change in the fun Mrate and Takeprob
-
 const SIZE = 3;
 const K = 5;
 
