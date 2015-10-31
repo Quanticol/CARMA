@@ -46,17 +46,17 @@ public class GroupiesCelebritiesDefinitions {
 		CarmaAction spreadAction = new CarmaOutput( ACTION_ID , true ) {
 			
 			@Override
-			protected Object getValue(CarmaStore store) {
+			protected Object getValue(CarmaStore store, double now) {
 				return store.get("kind", Integer.class);
 			}
 			
 			@Override
-			protected CarmaStoreUpdate getUpdate() {
+			protected CarmaStoreUpdate getUpdate(double now) {
 				return null;
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store) {
+			protected CarmaPredicate getPredicate(CarmaStore store, double now) {
 				return CarmaPredicate.TRUE;
 			}
 		};
@@ -64,12 +64,12 @@ public class GroupiesCelebritiesDefinitions {
 		CarmaInput inputAction = new CarmaInput( ACTION_ID , true ) {
 
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, Object value) {
+			protected CarmaPredicate getPredicate(CarmaStore store, Object value, double now) {
 				return CarmaPredicate.TRUE;
 			}
 
 			@Override
-			protected CarmaStoreUpdate getUpdate(final Object value) {
+			protected CarmaStoreUpdate getUpdate(final Object value, double now) {
 				return new CarmaStoreUpdate() {
 					
 					@Override
@@ -98,17 +98,17 @@ public class GroupiesCelebritiesDefinitions {
 		CarmaAction spreadAction = new CarmaOutput( ACTION_ID , true ) {
 			
 			@Override
-			protected Object getValue(CarmaStore store) {
+			protected Object getValue(CarmaStore store, double now) {
 				return store.get("kind", Integer.class);
 			}
 			
 			@Override
-			protected CarmaStoreUpdate getUpdate() {
+			protected CarmaStoreUpdate getUpdate(double now) {
 				return null;
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store) {
+			protected CarmaPredicate getPredicate(CarmaStore store, double now) {
 				return CarmaPredicate.TRUE;
 			}
 		};
@@ -116,7 +116,7 @@ public class GroupiesCelebritiesDefinitions {
 		CarmaInput inputAction = new CarmaInput( ACTION_ID , true ) {
 
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore localStore, Object value) {
+			protected CarmaPredicate getPredicate(CarmaStore localStore, Object value, double now) {
 				final int kind = localStore.get(KIND_ATTRIBUTE, Integer.class).intValue();
 				return new CarmaPredicate() {
 
@@ -129,7 +129,7 @@ public class GroupiesCelebritiesDefinitions {
 			}
 
 			@Override
-			protected CarmaStoreUpdate getUpdate(final Object value) {
+			protected CarmaStoreUpdate getUpdate(final Object value, double now) {
 				return new CarmaStoreUpdate() {
 					
 					@Override

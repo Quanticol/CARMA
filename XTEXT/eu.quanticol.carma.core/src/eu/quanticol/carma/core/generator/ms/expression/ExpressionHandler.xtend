@@ -108,11 +108,13 @@ class ExpressionHandler {
 	}
 
 	def dispatch CharSequence expressionToJava( Equality e ) {
-		if (e.left.typeOf.isRecord) {
-			'''( «e.left.expressionToJava» ).equals( «e.right.expressionToJava» )'''
-		} else {
-			'''( «e.left.expressionToJava» )==( «e.right.expressionToJava» )'''
-		}
+//		var eType = e.left.typeOf
+//		if (eType.isRecord) {
+//			'''( «e.left.expressionToJava» ).equals( «e.right.expressionToJava» )'''
+//		} else {
+//			'''( «e.left.expressionToJava» )==( «e.right.expressionToJava» )'''
+//		}
+		'''carmaEquals( «e.left.expressionToJava» , «e.right.expressionToJava» )'''
 	}
 	
 	def dispatch CharSequence expressionToJava( DisEquality e ) {

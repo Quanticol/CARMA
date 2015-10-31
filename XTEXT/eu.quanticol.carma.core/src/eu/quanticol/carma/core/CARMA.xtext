@@ -587,7 +587,7 @@ UpdateBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 EnvironmentUpdate hidden(ML_COMMENT,SL_COMMENT,WS):
 	(guard=Guard)? stub=ActionStub ":" 
 	( 
-		(update+=UpdateAssignment ("," expression+=UpdateAssignment+)* (',' spawn=BlockSpawn)?)
+		(update+=UpdateAssignment ("," update+=UpdateAssignment+)* (',' spawn=BlockSpawn)?)
 		| spawn=BlockSpawn
 	)
 ;

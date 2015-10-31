@@ -12,7 +12,7 @@ class AttributeHandler {
 	@Inject extension TypeSystem
 	
 	def attributeTemporaryVariableDeclaration( AttributeDeclaration a , ReferenceContext c , String storeName ) {
-		'''final «a.typeOf.toJavaType(true)» «a.name.attributeName(c)» = «storeName».get( "«a.name»" , «a.typeOf.toJavaType(false)».class );'''		
+		'''final «a.typeOf.toJavaType(false)» «a.name.attributeName(c)» = «storeName».get( "«a.name»" , «a.typeOf.toJavaType(false)».class );'''		
 	}
 	
 	

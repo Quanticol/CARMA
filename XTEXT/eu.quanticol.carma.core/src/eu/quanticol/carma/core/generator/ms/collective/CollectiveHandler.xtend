@@ -202,7 +202,7 @@ class CollectiveHandler {
 		) {
 			
 			@Override
-			protected CarmaStoreUpdate getUpdate(final Object value) {
+			protected CarmaStoreUpdate getUpdate(final Object value, double now) {
 				
 				«IF act.update != null»
 				LinkedList<Object> message = (LinkedList<Object>) value;
@@ -235,7 +235,7 @@ class CollectiveHandler {
 			}	
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore myStore, Object value) {
+			protected CarmaPredicate getPredicate(CarmaStore myStore, Object value, double now) {
 				«IF act.activity.predicate != null»				
 				LinkedList<Object> message = (LinkedList<Object>) value;
 				«FOR idv:idxVar»
@@ -273,7 +273,7 @@ class CollectiveHandler {
 		) {
 			
 			@Override
-			protected Object getValue(CarmaStore store) {
+			protected Object getValue(CarmaStore store, double now) {
 				LinkedList<Object> toReturn = new LinkedList<Object>();
 				«FOR a:act.outputArguments.referencedAttibutes»
 				«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
@@ -288,7 +288,7 @@ class CollectiveHandler {
 			}
 			
 			@Override
-			protected CarmaStoreUpdate getUpdate() {
+			protected CarmaStoreUpdate getUpdate( double now ) {
 				«IF act.update != null»
 				return new CarmaStoreUpdate() {
 					
@@ -315,7 +315,7 @@ class CollectiveHandler {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(final CarmaStore myStore) {
+			protected CarmaPredicate getPredicate(final CarmaStore myStore, double now) {
 				«IF isSpontaneous»
 				return CarmaPredicate.FALSE;
 				«ELSE»

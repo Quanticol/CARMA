@@ -491,8 +491,8 @@ system Simple{
 //			}
 			sim.simulate(deadline)
 			var data = sim.timeSeries
-			data.forEach[ it.saveTo( "/Users/loreti/tmp/SG") ] 
-			//data.forEach[ it.printTimeSeries(System::out)]			
+//			data.forEach[ it.saveTo( "/Users/loreti/tmp/SG") ] 
+			data.forEach[ it.printTimeSeries(System::out)]			
 		]
 	}
 	

@@ -21,24 +21,28 @@ public class BasicComponentPredicate implements ComponentPredicate {
 	
 	@Override
 	public boolean eval(CarmaComponent c) {
-		if (this.guard.satisfy(c.store)) {
-			boolean[] foo = new boolean[c.processes.size()];
-			for( int i=0 ; i<states.length ; i++ ) {
-				boolean flag = false;
-				for( int j=0 ; (j<c.processes.size())&&!flag ; j++ ) {
-					if ((!foo[j])&&
-						states[i].eval( c.processes.get(j) )) {
-							foo[j] = true;
-							flag = true;
+		try {
+			if (this.guard.satisfy(c.store)) {
+				boolean[] foo = new boolean[c.processes.size()];
+				for( int i=0 ; i<states.length ; i++ ) {
+					boolean flag = false;
+					for( int j=0 ; (j<c.processes.size())&&!flag ; j++ ) {
+						if ((!foo[j])&&
+							states[i].eval( c.processes.get(j) )) {
+								foo[j] = true;
+								flag = true;
+						}
+					}
+					if (!flag) {
+						return false;
 					}
 				}
-				if (!flag) {
-					return false;
-				}
+				return true;
 			}
-			return true;
+			return false;
+		} catch (NullPointerException e) {
+			return false;
 		}
-		return false;
 	}
 
 }

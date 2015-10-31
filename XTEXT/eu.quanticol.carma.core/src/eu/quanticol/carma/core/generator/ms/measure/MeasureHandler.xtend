@@ -7,11 +7,14 @@ import eu.quanticol.carma.core.generator.ms.expression.ExpressionHandler
 import eu.quanticol.carma.core.carma.Expression
 import eu.quanticol.carma.core.carma.Range
 import eu.quanticol.carma.core.carma.MeasureVariableDeclaration
+import eu.quanticol.carma.core.generator.ms.attribute.AttributeHandler
+import eu.quanticol.carma.core.utils.ReferenceContext
 
 class MeasureHandler {
 
 	@Inject extension Util	
 	@Inject extension ExpressionHandler
+	@Inject extension AttributeHandler
 	
 	public static final String SetUpMeasureMethodName = "setUpMeasures()"
 	
@@ -97,6 +100,10 @@ class MeasureHandler {
 				//@Override
 				public double measure(final CarmaSystem system) {
 					final CarmaStore global = system.getGlobalStore();
+					final double now = system.now();
+					«FOR a:m.measure.globalAttributes»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::GLOBAL,"global")»
+					«ENDFOR»
 					return «m.measure.expressionToJava»;
 				}
 

@@ -54,7 +54,6 @@ public class SimulationHandler extends AbstractHandler {
 //
 		
 		CarmaUiUtil util = new CarmaUiUtil();
-		System.out.println("MAREMMA GATTA!!!!");
 		if (util.getActiveModels().size() == 0) {
 			 MessageBox messageBox = new MessageBox(HandlerUtil.getActiveShell(event), SWT.ICON_ERROR | SWT.OK );
 			 messageBox.setText("Error...");

@@ -46,12 +46,12 @@ public abstract class CarmaOutput implements CarmaAction {
 	/**
 	 * @return the predicate
 	 */
-	protected abstract CarmaPredicate getPredicate( CarmaStore store );
+	protected abstract CarmaPredicate getPredicate( CarmaStore store , double now );
 
 	/**
 	 * @return the update
 	 */
-	protected abstract CarmaStoreUpdate getUpdate( );
+	protected abstract CarmaStoreUpdate getUpdate( double now );
 
 	protected double getRate(CarmaSystem caspaSystem, CarmaComponent caspaComponent) {
 		if (broadcast) {
@@ -70,17 +70,17 @@ public abstract class CarmaOutput implements CarmaAction {
 			@Override
 			public boolean execute(RandomGenerator r) {
 				if (broadcast) {
-					Object value = getValue( caspaComponent.store );
-					caspaSystem.broadcastOutput(r, caspaComponent, action, getPredicate(caspaComponent.store), value );
-					CarmaStoreUpdate update = getUpdate();
+					Object value = getValue( caspaComponent.store , caspaSystem.now );
+					caspaSystem.broadcastOutput(r, caspaComponent, action, getPredicate(caspaComponent.store,caspaSystem.now ), value );
+					CarmaStoreUpdate update = getUpdate(caspaSystem.now );
 					if (update != null) {
 						update.update( r , caspaComponent.store );
 					}
 					caspaSystem.broadcastUpdate(r,caspaComponent.store, action, value );
 					return true;
 				} else {
-					if (caspaSystem.unicastOutput(r, caspaComponent, action, getPredicate(caspaComponent.store), getValue( caspaComponent.store))) {
-						getUpdate().update( r , caspaComponent.store );
+					if (caspaSystem.unicastOutput(r, caspaComponent, action, getPredicate(caspaComponent.store,caspaSystem.now ), getValue( caspaComponent.store,caspaSystem.now ))) {
+						getUpdate(caspaSystem.now ).update( r , caspaComponent.store );
 						//N.B. The update of a unicast is triggered inside input action!!!!
 						return true;
 					}
@@ -95,7 +95,7 @@ public abstract class CarmaOutput implements CarmaAction {
 		return new WeightedElement<Activity>(getRate(caspaSystem, caspaComponent), actionActivity);
 	}
 
-	protected abstract Object getValue(CarmaStore store);
+	protected abstract Object getValue(CarmaStore store, double now);
 
 	@Override
 	public WeightedStructure<Activity> receive(CarmaSystem caspaSystem,
