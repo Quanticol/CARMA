@@ -108,7 +108,7 @@ class ExpressionHandler {
 	}
 
 	def dispatch CharSequence expressionToJava( Equality e ) {
-		if (e.typeOf.isRecord) {
+		if (e.left.typeOf.isRecord) {
 			'''( «e.left.expressionToJava» ).equals( «e.right.expressionToJava» )'''
 		} else {
 			'''( «e.left.expressionToJava» )==( «e.right.expressionToJava» )'''

@@ -355,24 +355,25 @@ class CARMAValidator extends AbstractCARMAValidator {
 	}
 	
 	@Check
-	def check_ERROR_Expression_type_error_Relations_left( Equality e ) {
-		if (e.left != null) {
-			var type = e.left.typeOf
-			if ((type!=null)&&(!type.error)&&(!type.number)) {
-				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.equality_Left,ERROR_Expression_type_error);			
+	def check_ERROR_Expression_type_error_Relations( Equality e ) {
+		if ((e.left != null)&&(e.right != null)) {
+			var type1 = e.left.typeOf
+			var type2 = e.right.typeOf
+			if ((type1!=null)&&(type2!=null)&&(!type1.error)&&(!type2.error)&&(!type1.equals(type2))) {
+				error("Type Error: Expected "+type1+" is "+type2,CarmaPackage::eINSTANCE.equality_Right,ERROR_Expression_type_error);			
 			}
 		}
 	}
 	
-	@Check
-	def check_ERROR_Expression_type_error_Relations_right( Equality e ) {
-		if (e.right != null) {
-			var type = e.left.typeOf
-			if ((type!=null)&&(!type.error)&&(!type.number)) {
-				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.equality_Right,ERROR_Expression_type_error);			
-			}
-		}
-	}
+//	@Check
+//	def check_ERROR_Expression_type_error_Relations_right( Equality e ) {
+//		if (e.right != null) {
+//			var type = e.left.typeOf
+//			if ((type!=null)&&(!type.error)&&(!type.number)) {
+//				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.equality_Right,ERROR_Expression_type_error);			
+//			}
+//		}
+//	}
 
 	@Check
 	def check_ERROR_Expression_type_error_Relations_left( DisEquality e ) {
