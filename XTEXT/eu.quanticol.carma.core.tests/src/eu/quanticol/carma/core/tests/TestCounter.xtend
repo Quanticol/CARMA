@@ -30,10 +30,11 @@ class Test_Counter {
 component Agent(){
 	store{
 		attrib localCounter := 0;
+		attrib fire := 0.0;
 	}
 	
 	behaviour{
-		A = [localCounter < 10] step*{ localCounter := localCounter+1 }.A;
+		A = [localCounter < 10] step*{ localCounter := localCounter+1 , fire := now }.A;
 	}
 	
 	init{

@@ -148,6 +148,9 @@ class EnvironmentHandler {
 	
 	def updateBody( Iterable<EnvironmentUpdate> updates ) {
 		'''
+		«FOR a:updates.map[it.getAllContentsOfType(typeof(Expression))].flatten.referencedAttibutes»
+		«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"global")»
+		«ENDFOR»
 		«FOR a:updates.map[it.getAllContentsOfType(typeof(Expression))].flatten.globalAttributes»
 		«a.attributeTemporaryVariableDeclaration(ReferenceContext::GLOBAL,"global")»
 		«ENDFOR»
