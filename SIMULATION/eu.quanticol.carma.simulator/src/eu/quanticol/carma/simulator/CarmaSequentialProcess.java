@@ -31,6 +31,12 @@ public class CarmaSequentialProcess extends CarmaProcess {
 		this(component,automaton,automaton.getState(initialState));
 	}
 
+	public CarmaSequentialProcess(CarmaProcessAutomaton automaton, State initialState) {
+		super( null , automaton.getName() );
+		this.automaton = automaton;
+		this.currenstate = initialState;
+	}
+
 	public CarmaSequentialProcess(CarmaComponent component,
 			CarmaProcessAutomaton automaton, State initialState) {
 		super( component , automaton.getName() );
@@ -54,8 +60,6 @@ public class CarmaSequentialProcess extends CarmaProcess {
 		}
 		LinkedList<CarmaProcessAutomaton.Transition> transitions = currenstate.getTransitions();
 		CarmaStore store = getComponent().store;
-		
-		
 		for (CarmaProcessAutomaton.Transition transition : transitions) {
 			CarmaPredicate guard = transition.getGuard();
 			CarmaAction action = transition.getAction();

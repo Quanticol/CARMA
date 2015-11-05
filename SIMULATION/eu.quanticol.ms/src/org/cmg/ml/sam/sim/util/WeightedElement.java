@@ -67,4 +67,10 @@ public class WeightedElement<S> implements WeightedStructure<S> {
 		return new ComposedWeightedStructure<S>(this, s);
 	}
 
+	@Override
+	public String toString() {
+		return s+":"+w;
+	}
+
+
 }

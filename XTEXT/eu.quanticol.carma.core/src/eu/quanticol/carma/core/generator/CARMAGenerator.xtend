@@ -9,11 +9,9 @@ import org.eclipse.xtext.generator.IGenerator
 import eu.quanticol.carma.core.generator.ms.MSCompiler
 import eu.quanticol.carma.core.carma.Model
 import com.google.inject.Inject
-import eu.quanticol.carma.core.utils.LabelUtil
 
 class CARMAGenerator implements IGenerator {
 	
-	@Inject extension LabelUtil
 	@Inject extension MSCompiler
 	
 	override void doGenerate(Resource resource, IFileSystemAccess fsa) {
@@ -24,10 +22,11 @@ class CARMAGenerator implements IGenerator {
 		var files = resource.extractJava
 		
 		
-		if(files != null)
+		if(files != null) {
 			for(key : files.keySet){
 					fsa.generateFile(key,files.get(key))
-			}
+			}			
+		}
 	}
 	
 }

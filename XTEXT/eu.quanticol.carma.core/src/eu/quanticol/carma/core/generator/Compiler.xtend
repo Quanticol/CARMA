@@ -5,6 +5,6 @@ import java.util.HashMap
 
 interface Compiler {
 	
-	def HashMap<String,String> extractJava(Resource resource);
+	def HashMap<String,CharSequence> extractJava(Resource resource);
 	
 }

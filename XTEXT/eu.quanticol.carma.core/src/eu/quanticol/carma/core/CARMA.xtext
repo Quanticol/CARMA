@@ -2,377 +2,155 @@ grammar eu.quanticol.carma.core.CARMA with org.eclipse.xtext.common.Terminals
 
 generate carma "http://www.quanticol.eu/carma/core/CARMA"
 
+import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 
-Model:
-	(functions=Functions)?
-	(records=Records)?
-	components=ComponentStyle
+
+Model: {Model}
+	(elements += Element)*
 ;
 
-////////////////////////////////////////////////////PRIMITIVES
-
-PrimitiveTypes returns PrimitiveTypes hidden(ML_COMMENT,SL_COMMENT,WS):
-	CarmaDouble |
-	CarmaInteger|
-	CarmaBoolean|
-	Range	
+Element: 
+	FunctionDefinition 
+	| RecordDefinition 
+	| Processes 
+	| ConstantDefinition 
+	| ComponentDefinition 
+	| EnumDefinition
+	| MeasureDefinition
+	| SystemDefinition
 ;
 
-CarmaDouble returns PrimitiveTypes hidden(ML_COMMENT,SL_COMMENT,WS):
-	{CarmaDouble} (negative="-")? left=INT "." right=INT (exponent=CarmaExponent)?
+////////////////////////////////////////////////////RECORDS, ENUMS AND TYPES
+
+EnumDefinition:
+	'enum' name=ID '=' values += EnumCase (',' values += EnumCase ) ';'
 ;
 
-CarmaExponent returns CarmaExponent hidden(ML_COMMENT,SL_COMMENT,WS):
-	 "*" (negative="-")? base=INT '^' exponent=INT
+RecordDefinition returns RecordDefinition hidden(ML_COMMENT,SL_COMMENT,WS):
+	'record' name=ID '=' '[' fields += FieldDefinition (','  fields += FieldDefinition)* ']' ';'
 ;
 
-
-CarmaInteger returns PrimitiveTypes hidden(ML_COMMENT,SL_COMMENT,WS):
-	{CarmaInteger} (negative="-")? value=INT
+FieldDefinition:
+	fieldType=BasicType name=ID
 ;
 
-CarmaBoolean returns PrimitiveTypes hidden(ML_COMMENT,SL_COMMENT,WS):
-	{CarmaBoolean} value=BOOLEANVALUE
+ReferenceableType:
+	EnumDefinition|RecordDefinition
 ;
 
-Range returns PrimitiveTypes hidden(ML_COMMENT,SL_COMMENT,WS):
-	{Range} min=INT ".." max=INT
+EnumCase:
+	name=ID
 ;
 
-OutcomeProbability returns PrimitiveTypes hidden(ML_COMMENT,SL_COMMENT,WS):
-	{OutcomeProbability} outcome=(CarmaInteger|VariableReference) ":" probability=CarmaDouble
+ConstantDefinition:
+	'const' name=ID '=' value=Expression ';'
 ;
 
-Now returns PrimitiveTypes hidden(ML_COMMENT,SL_COMMENT,WS):
-	{Now} "now"
+ValueType hidden(ML_COMMENT,SL_COMMENT,WS):
+		{ProcessType} "process"	|
+		BasicType
 ;
 
-////////////////////////////////////////////////////RECORDS
-
-Records returns Records hidden(ML_COMMENT,SL_COMMENT,WS): 
-	"records""{"
-	recordDefinitions+=RecordDefinition
-	(recordDefinitions+=RecordDefinition+)*
-	"}"
+BasicType:
+		IntegerType|
+		RealType|
+		BooleanType |
+		CustomType
 ;
 
-RecordDefinition returns RecordDefinition hidden(ML_COMMENT,SL_COMMENT,WS): 
-	recordSignature=RecordSignature
-	recordDefinitionStatementBlock=RecordDefinitionStatementBlock
+IntegerType: {IntegerType} "int" ;
+
+RealType: {RealType} "real" ;
+
+BooleanType: {BooleanType} "bool";
+
+CustomType: {CustomType} reference=[ReferenceableType];
+
+////////////////////////////////////////////////////VARIABLES AND REFERENCES
+
+Variable:
+	type=ValueType name=ID
 ;
 
-RecordSignature  returns RecordSignature hidden(ML_COMMENT,SL_COMMENT,WS):
-	"record" type=RecordTypeName 
-	recordDefinitionParameters=RecordParameters
-; 
-
-RecordParameters returns Parameters hidden(ML_COMMENT,SL_COMMENT,WS): 
-	{RecordParameters} "("
-	(parameters+=AttribParameter
-	( "," parameters+=AttribParameter )*)?
-	")"
+UntypedVariable:
+	name=ID
 ;
 
-RecordDefinitionStatementBlock hidden(ML_COMMENT,SL_COMMENT,WS): 
-	"{"
-		  feilds+=FeildDeclaration ";"
-		  (feilds+=FeildDeclaration ";")*
-	"}"
+ReferenceableElement:
+	IterationVariable |
+	UntypedVariable|
+	Variable|
+	AttributeDeclaration|
+	FunctionDefinition|
+	EnumCase|
+	ConstantDefinition|
+	ProcessState|
+	MeasureVariableDeclaration
 ;
 
-InstantiateRecord hidden(ML_COMMENT,SL_COMMENT,WS): 
-	"new" type=RecordType arguments=RecordArguments 
+////////////////////////////////////////////////////FUNCTIONS
+FunctionDefinition:
+	"fun" type=BasicType name=ID
+	'('
+	(parameters += Variable (',' parameters+=Variable)*)?
+	')' body=BlockCommand
+;
+	
+FunctionCommand:
+	IfThenElseCommand 
+	| ReturnCommand 
+	| VariableDeclarationCommand 
+	| ForCommand 
+	| BlockCommand 
+	| AssignmentCommand
 ;
 
-////////////////////////////////////////////////////NAMES
-
-VariableName returns Name hidden(ML_COMMENT,SL_COMMENT,WS):
-	{VariableName} name=LOWERST
+AssignmentCommand:
+	target=AssignmentTarget ':=' value=Expression ';'
 ;
 
-FeildName returns Name hidden(ML_COMMENT,SL_COMMENT,WS):
-	{FeildName} name=LOWERST
+AssignmentTarget:
+	TargetAssignmentVariable ({TargetAssignmentField.target=current} '.' field = [FieldDefinition])*
 ;
 
-ActionName returns Name hidden(ML_COMMENT,SL_COMMENT,WS):
-	{ActionName} name=LOWERST  
+TargetAssignmentVariable returns AssignmentTarget: {TargetAssignmentVariable}
+	variable=[Variable]	
 ;
 
-ProcessName returns Name  hidden(ML_COMMENT,SL_COMMENT,WS):
-	{ProcessName} name=UPPERST
+BlockCommand: {BlockCommand}
+	'{'
+		(commands += FunctionCommand)*
+	'}'	
 ;
 
-ComponentName returns Name  hidden(ML_COMMENT,SL_COMMENT,WS):
-	{ComponentName} name=UPPERST
+ForCommand:
+	"for" "(" variable=IterationVariable ('=' start=Expression)? ";" end=Expression ";" step=Expression ")" 
+		body=FunctionCommand
 ;
 
-FunctionName returns Name  hidden(ML_COMMENT,SL_COMMENT,WS):
-	{FunctionName} name=UPPERST
+IterationVariable:
+	name=ID
 ;
 
-MeasureName returns Name  hidden(ML_COMMENT,SL_COMMENT,WS):
-	{MeasureName} name=UPPERST
+VariableDeclarationCommand:
+	variable = Variable (':=' value = Expression)? ';'
 ;
 
-SystemName returns Name hidden(ML_COMMENT,SL_COMMENT,WS):
-	{SystemName} name=UPPERST
+ReturnCommand:
+	'return' expression=Expression ';'
 ;
 
-RecordTypeName returns Name hidden(ML_COMMENT,SL_COMMENT,WS):
-	{RecordTypeName} name=UPPERST
+IfThenElseCommand:
+	'if' '(' condition=Expression ')'
+		thenBlock = FunctionCommand
+	(=> 'else' elseBlock = FunctionCommand)?
 ;
 
-////////////////////////////////////////////////////PARAMS
-
-AttribParameter returns Parameter hidden(ML_COMMENT,SL_COMMENT,WS):
-	{AttribParameter} type=AttribType	name=VariableName
-;
-
-InputActionParameter returns Parameter hidden(ML_COMMENT,SL_COMMENT,WS):
-	{InputActionParameter} name=VariableName
-;
-
-RecordParameter returns Parameter hidden(ML_COMMENT,SL_COMMENT,WS):
-	{RecordParameter} type=RecordType name=VariableName
-;
-
-DoubleParameter returns Parameter hidden(ML_COMMENT,SL_COMMENT,WS):
-	{DoubleParameter} type=DoubleType	name=VariableName
-;
-
-IntgerParameter returns Parameter hidden(ML_COMMENT,SL_COMMENT,WS):
-	{IntgerParameter} type=IntgerType	name=VariableName
-;
-
-ProcessParameter returns Parameter hidden(ML_COMMENT,SL_COMMENT,WS):
-	{ProcessParameter} type=ProcessType name=ProcessName
-;
-
-FunctionParameter hidden(ML_COMMENT,SL_COMMENT,WS):
-	(
-		AttribParameter |
-		RecordParameter |
-		DoubleParameter	|
-		IntgerParameter
-	)
-;
-
-CompParameter hidden(ML_COMMENT,SL_COMMENT,WS):
-	(
-		AttribParameter |
-		RecordParameter |
-		ProcessParameter
-	)
-;
-
-////////////////////////////////////////////////////TYPE
-
-Types returns Types hidden(ML_COMMENT,SL_COMMENT,WS):
-	(
-		type=DoubleType |
-		type=IntgerType	|
-		type=AttribType	|
-		type=RecordType
-	)
-;
-
-DoubleType returns Type hidden(ML_COMMENT,SL_COMMENT,WS):
-	{DoubleType} name="double"
-;
-
-IntgerType returns Type hidden(ML_COMMENT,SL_COMMENT,WS):
-	{IntgerType} name="int"
-;
-
-AttribType returns Type hidden(ML_COMMENT,SL_COMMENT,WS):
-	{AttribType} name="attrib"
-;
-
-RecordType returns Type hidden(ML_COMMENT,SL_COMMENT,WS):
-	{RecordType} name=[RecordTypeName|UPPERST]
-;
-
-ProcessType returns Type hidden(ML_COMMENT,SL_COMMENT,WS):
-	{ProcessType} name="process"
-;
-
-
-////////////////////////////////////////////////////ARGUMENTS
-
-PreArgument returns Argument hidden(ML_COMMENT,SL_COMMENT,WS):
-		{PreArgument} value=
-		(
-			Expression
-		)	
-;
-
-CompArgument returns Argument hidden(ML_COMMENT,SL_COMMENT,WS):
-		{CompArgument} value=
-		(
-			Expression
-		)
-;
-
-FunctionArgument returns Argument hidden(ML_COMMENT,SL_COMMENT,WS):
-		{FunctionArgument} value=
-		(
-			Expression
-		)
-;
-
-OutputActionArgument returns Argument hidden(ML_COMMENT,SL_COMMENT,WS):
-	{OutputActionArgument} value=
-		(
-			VariableReference 	|	
-			CarmaInteger
-		)
-;
-
-RecordArgument returns Argument hidden(ML_COMMENT,SL_COMMENT,WS): 
-	{RecordArgument} value=
-		(
-			Expression	
-		)
-;
-
-PredFunctionCallArguments returns Arguments hidden(ML_COMMENT,SL_COMMENT,WS):
-	{PredFunctionCallArguments} 
-	"("
-	(arguments+=PreArgument
-	( "," arguments+=PreArgument )*)?
-	")"
-;
-
-//Process, reference, instantiate new record, CarmaInteger, Range
-ComponentBlockArguments returns Arguments hidden(ML_COMMENT,SL_COMMENT,WS):
-	{ComponentBlockArguments}
-	"("
-	(arguments+=CompArgument
-	( "," arguments+=CompArgument )*)?
-	")"
-;
-
-FunctionCallArguments returns Arguments hidden(ML_COMMENT,SL_COMMENT,WS):
-	{FunctionCallArguments}
-	"("
-	(arguments+=FunctionArgument
-	( "," arguments+=FunctionArgument )*)?
-	")"
-;
-
-OutputActionArguments returns Arguments hidden(ML_COMMENT,SL_COMMENT,WS):
-	{OutputActionArguments}
-	"<"
-	(outputArguments+=OutputActionArgument
-	( "," outputArguments+=OutputActionArgument )*)?
-	">"
-;
-
-RecordArguments returns Arguments hidden(ML_COMMENT,SL_COMMENT,WS): 
-	{RecordArguments} "("
-	(arguments+=RecordArgument
-	( "," arguments+=RecordArgument )*)?
-	")"
-;
-
-////////////////////////////////////////////////////REFERENCE
-
-VariableReference returns VariableReference hidden(ML_COMMENT,SL_COMMENT,WS):
-	(
-		{VariableReferencePure} 					name=[VariableName|LOWERST] |
-		{VariableReferenceMy} 		"my" 		"." name=[VariableName|LOWERST] |
-		{VariableReferenceReceiver}	"receiver" 	"." name=[VariableName|LOWERST] |
-		{VariableReferenceSender}	"sender" 	"."	name=[VariableName|LOWERST] |
-		{VariableReferenceGlobal}	"global"	"." name=[VariableName|LOWERST] |
-		{RecordReferencePure} 						name=[VariableName|LOWERST]
-		"." feild=[FeildName|LOWERST]	|
-		{RecordReferenceMy} 		"my" 		"." name=[VariableName|LOWERST]
-		"." feild=[FeildName|LOWERST]	|
-		{RecordReferenceReceiver}	"receiver" 	"." name=[VariableName|LOWERST]
-		"." feild=[FeildName|LOWERST]	|
-		{RecordReferenceSender}		"sender" 	"."	name=[VariableName|LOWERST]
-		"." feild=[FeildName|LOWERST] |
-		{RecordReferenceGlobal}		"global" 	"."	name=[VariableName|LOWERST]
-		"." feild=[FeildName|LOWERST]
-	)
-;
-
-////////////////////////////////////////////////////DECLARATION
-
-AttribVariableDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	{AttribVariableDeclaration} type=AttribType	name=VariableName	":="	assign=Expression
-;
-
-ComponentForVariableDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	{ComponentForVariableDeclaration} type=AttribType name=VariableName	":="	assign=(
-		CarmaInteger
-	) 
-;
-
-FeildDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	{FeildDeclaration} type=AttribType name=FeildName	":="	assign=(
-		VariableReference |
-		CarmaInteger
-	)
-;
-
-MeasureVariableDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	{MeasureVariableDeclaration} type=AttribType name=VariableName	":="	assign=(
-		Range |
-		CarmaInteger
-	)
-;
-
-IntgerVariableDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	{IntgerVariableDeclaration} type=IntgerType	name=VariableName	":="	assign=Expression
-;
-
-DoubleVariableDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	{DoubleVariableDeclaration} type=DoubleType	name=VariableName	":="	assign=Expression
-;
-
-RecordDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	{RecordDeclaration} type=RecordType name=VariableName ":=" assign=Expression
-;
-
-FunctionDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	(
-		AttribVariableDeclaration |
-		IntgerVariableDeclaration |
-		DoubleVariableDeclaration |
-		RecordDeclaration
-	)
-;
-
-StoreDeclaration returns Declaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	(AttribVariableDeclaration | RecordDeclaration)
-;
 
 ////////////////////////////////////////////////////ASSIGNMENT
 
-UpdateAssignment returns Assignment hidden(ML_COMMENT,SL_COMMENT,WS):
-	{UpdateAssignment} reference=VariableReference ":=" expression=UpdateExpression
-;
-
-FunctionAssignment returns Assignment hidden(ML_COMMENT,SL_COMMENT,WS):
-	{FunctionAssignment} reference=VariableReference ":=" expression=FunctionExpression
-;
-
-ComponentAssignment returns Assignment hidden(ML_COMMENT,SL_COMMENT,WS):
-	{ComponentAssignment} reference=VariableReference ":=" expression=ComponentExpression
-;
-
-EnvironmentUpdateAssignment returns Assignment hidden(ML_COMMENT,SL_COMMENT,WS):
-	{EnvironmentUpdateAssignment} reference=VariableReference ":=" expression=EnvironmentUpdateExpression
-;
-
-////////////////////////////////////////////////////CALLS
-
-Calls hidden(ML_COMMENT,SL_COMMENT,WS):
-	(
-		{FunctionReferenceMan}	ref=FunctionCall |
-		{FunctionReferencePre}	ref=PreFunctionCall
-	)
+UpdateAssignment hidden(ML_COMMENT,SL_COMMENT,WS):
+	reference=[AttributeDeclaration] ":=" expression=Expression
 ;
 
 ////////////////////////////////////////////////////STATE
@@ -386,7 +164,7 @@ ParallelComposition returns ProcessComposition hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 ProcessReference returns ProcessComposition hidden(ML_COMMENT,SL_COMMENT,WS):
-	 {ProcessReference} expression=[ProcessName|UPPERST]
+	 {ProcessReference} expression=[ReferenceableElement]
 ;
 
 ////////////////////////////////////////////////////SET COMPREHENSION
@@ -397,187 +175,64 @@ SetComp hidden(ML_COMMENT,SL_COMMENT,WS):
 	"{" 
 	variable=ComponentComprehension
 	"|"
-	predicate=BooleanExpression
+	predicate=Expression
 	"}"
 ; 
 
 ////////////////////////////////////////////////////COMPONENT COMPREHENSION
-ComponentComprehension returns ComponentComprehension hidden(ML_COMMENT,SL_COMMENT,WS):
-	ParallelComponentComprehension
-; 
-
-ParallelComponentComprehension returns ComponentComprehension  hidden(ML_COMMENT,SL_COMMENT,WS):
-	AtomicComponentComprehension ({ParallelComponentComprehension.left=current}  "&" right=AtomicComponentComprehension)*
-;
-
-AtomicComponentComprehension returns ComponentComprehension  hidden(ML_COMMENT,SL_COMMENT,WS):
-	 {AllComponents} 		"*" 											|
-	 {AComponentAllStates}	comp=[ComponentName|UPPERST] "[" "*" "]"		|
-	 {AComponentAState}		comp=[ComponentName|UPPERST] "[" state=ProcessComposition "]"
+ComponentComprehension returns ComponentComprehension  hidden(ML_COMMENT,SL_COMMENT,WS):
+	 {AllComponents} 		"*" ("[" states = ProcessComposition "]")?											|
+	 {AComponentAllStates}	comp=[ComponentDefinition] "[" "*" "]"		|
+	 {AComponentAState}		comp=[ComponentDefinition] "[" state = ProcessComposition "]" 
 ;
 
 ////////////////////////////////////////////////////SPAWN
-Spawn hidden(ML_COMMENT,SL_COMMENT,WS):
-	{Spawn} spawn=BlockSpawn
-;
-
 BlockSpawn hidden(ML_COMMENT,SL_COMMENT,WS):
-	{BlockSpawn} comp+=ComponentBlockSpawn ("," comp+=ComponentBlockSpawn+)*
+	{BlockSpawn} comp+=ComponentBlockInstantiation ("," comp+=ComponentBlockInstantiation+)*
 ;
 
-////////////////////////////////////////////////////FUNCTIONS
-Functions returns Functions hidden(ML_COMMENT,SL_COMMENT,WS):
-	functions+=FunctionDefinition+
-;
-
-FunctionDefinition hidden(ML_COMMENT,SL_COMMENT,WS):
-	{FunctionDefinition}
-	"fun"
-	type=Types
-	name=FunctionName
-	functionParameters=FunctionDefinitionParameters
-	functionBody=FunctionBody
-;
-	
-FunctionDefinitionParameters returns Parameters hidden(ML_COMMENT,SL_COMMENT,WS):
-	{FunctionDefinitionParameters}
-	"("
-	(parameters+=FunctionParameter
-	( "," parameters+=FunctionParameter )*)?
-	")"
-;
-	
-FunctionBody hidden(ML_COMMENT,SL_COMMENT,WS):
-	{FunctionBody} 
-	"{" 
-	statements+=FunctionStatement*
-	methodReturn=FunctionReturn
-	"}"
-;
-	
-FunctionStatement hidden(ML_COMMENT,SL_COMMENT,WS):
-	(
-		FunctionDeclaration 			|
-		FunctionAssignment		 		|
-		FunctionIfStatement 			|
-		FunctionForStatement
-	)
-	";"
-;
-
-
-FunctionIfStatement hidden(ML_COMMENT,SL_COMMENT,WS):
-	"if" "(" expression=BooleanExpression ")"
-	thenBlock=FunctionIfBlock
-	(=>"else" elseBlock=FunctionIfBlock)?
-;
-	
-
-FunctionIfBlock hidden(ML_COMMENT,SL_COMMENT,WS):
-	statements += FunctionStatement |
- '{' statements += FunctionStatement+ '}'
-;
-	
-
-FunctionForStatement hidden(ML_COMMENT,SL_COMMENT,WS):
-	"for" "(" variable=AttribVariableDeclaration ";" expression=BooleanExpression ";" afterThought=FunctionAfterThought")" 
-	functionForBlock=FunctionForBlock
-;
-	
-
-FunctionAfterThought hidden(ML_COMMENT,SL_COMMENT,WS):
-	{FunctionAfterThought}
-	functionAssignment=FunctionAssignment
-;
-	
-FunctionForBlock hidden(ML_COMMENT,SL_COMMENT,WS):
-	statements += FunctionStatement |
- 	'{' 
- 	statements += FunctionStatement+ 
- 	'}'
-;	
-
-FunctionCall hidden(ML_COMMENT,SL_COMMENT,WS):
-	{FunctionCall} name=[FunctionName|UPPERST]
-	arguments=FunctionCallArguments 
-;	 
-
-FunctionReturn hidden(ML_COMMENT,SL_COMMENT,WS):
-	"return" expression=FunctionExpression ";"
-;
-
-////////////////////////////////////////////////////PREDEFINED METHODS	
-PreFunctionCall returns PreFunctionCall hidden(ML_COMMENT,SL_COMMENT,WS):
-	(	
-	{PDFunction} 		name="PDF"		| 
-	{UniformFunction} 	name="Uniform"	| 
-	{CeilingFunction} 	name="Ceiling"	|
-	{FloorFunction} 	name="Floor"	|
-	{MaxFunction}		name="Max"		|
-	{MinFunction}		name="Min"		|
-	{PowFunction}		name="Pow"		|
-	{AbsFunction}		name="Abs"		|
-	{RanFunction}		name="Ran"
-	)
-	arguments=PredFunctionCallArguments 
-;
+//////////////////////////////////////////////////////PREDEFINED METHODS	
+//PreFunctionCall returns PreFunctionCall hidden(ML_COMMENT,SL_COMMENT,WS):
+//	(	
+//	{PDFunction} 		name="PDF"		| 
+//	{UniformFunction} 	name="Uniform"	| 
+//	{CeilingFunction} 	name="Ceiling"	|
+//	{FloorFunction} 	name="Floor"	|
+//	{MaxFunction}		name="Max"		|
+//	{MinFunction}		name="Min"
+//	)
+//	arguments=PredFunctionCallArguments 
+//;
 
 
 ////////////////////////////////////////////////////COMPONENT
-ComponentStyle returns ComponentStyle hidden(ML_COMMENT,SL_COMMENT,WS):
-	(  
-	{BlockStyle}
-	definitions+=ComponentBlockDefinition+
-	(processes=Processes)?
-	(measures=MeasureBlock)?
-	system+=BlockSystem+
-	)
-;
-	
-ComponentBlockDefinition returns Component hidden(ML_COMMENT,SL_COMMENT,WS):
-	{ComponentBlockDefinition}
-	componentSignature=ComponentBlockSignature
-	componentBlock=ComponentBlock
-	
-;
-
-ComponentBlockSignature returns ComponentSignature hidden(ML_COMMENT,SL_COMMENT,WS):
-	"component"
-	name=ComponentName
-	componentParameters=ComponentParameters
-;
-	
-ComponentParameters returns Parameters hidden(ML_COMMENT,SL_COMMENT,WS):
-	{ComponentParameters}
-	"("
-	(parameters+=CompParameter
-	( "," parameters+=CompParameter )*)?
-	")"
-;
-	
-ComponentBlock hidden(ML_COMMENT,SL_COMMENT,WS):
+ComponentDefinition hidden(ML_COMMENT,SL_COMMENT,WS):
+	"component" name=ID '(' (parameters += Variable (',' parameters +=Variable )*)? ')'
 	"{"
 	store=StoreBlock
-	processes+=ProcessesBlock
+	processes=ProcessesBlock
 	initBlock=InitBlock
 	"}"
 ;
-	
+
 StoreBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 	{StoreBlock}
 	"store" 
 	"{" 
-	(attributes+=StoreDeclaration ";"
-	(attributes+=StoreDeclaration ";" )*)?
+		(attributes+=AttributeDeclaration ";" )*
 	"}"
+;
+
+AttributeDeclaration:
+	{AttributeConstDeclaration} "const" name=ID ":=" value=Expression
+	| {AttibuteVarDeclaration} "attrib" name=ID  ":=" value=Expression
 ;
 	
 ProcessesBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 	{ProcessesBlock}
 	"behaviour"
 	"{"
-	(processes+=Process ";"
-	(processes+=Process ";" )*)?
+		(processes+=ProcessState ";" )*
 	"}"
 ;
 
@@ -585,74 +240,64 @@ InitBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 	{InitBlock}
 	"init" 
 	"{" 
-	init=ProcessComposition
-	";"
+		init=ProcessComposition
 	"}"
 ;
 
-BlockSystem returns System:
-	{BlockSystem}
-	"system" name=SystemName "{"
-	collective=BlockCollective
-	(environment=Environment)?
-	"}"
+SystemDefinition:
+	"system" name=ID '{'
+		'collective' '{'
+			collective += ComponentBlockDeclaration (collective+=ComponentBlockDeclaration)*			
+		'}'
+		(environment=Environment)?
+		
+	'}'
 ;
 
-BlockCollective hidden(ML_COMMENT,SL_COMMENT,WS):
-	"collective" "{"
-	declarations+=ComponentBlockDeclaration+
-	"}"
-;
-	
-ComponentBlockDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
+ComponentBlockDeclaration :
 	(  
 		ComponentBlockNew |  
-		ComponentBlockForStatement
+		ComponentBlockForStatement |
+		ComponentBlockConditionalStatement 
 	)
 ;
+
+ComponentBlockConditionalStatement:
+	"if" '(' guard=Expression ')' '{'
+		(thenBranch += ComponentBlockDeclaration)*
+	'}' (=> 'else' '{'
+		(elseBranch += ComponentBlockDeclaration)*
+	'}'	
+	)?
+;
 	
-ComponentBlockNew returns CBND hidden(ML_COMMENT,SL_COMMENT,WS):
-	{ComponentBlockNew}
-	"new"
-	name=[ComponentName|UPPERST] 
-	arguments=ComponentBlockArguments
-//	("["population=INT"]")?
+ComponentBlockNew returns ComponentBlockInstantiation:
+	ComponentBlockInstantiation
 	";"
 ;
 
-ComponentBlockSpawn returns CBND hidden(ML_COMMENT,SL_COMMENT,WS):
-	{ComponentBlockSpawn}
+ComponentBlockInstantiation hidden(ML_COMMENT,SL_COMMENT,WS):
 	"new"
-	name=[ComponentName|UPPERST] 
-	arguments=ComponentBlockArguments
+	name=[ComponentDefinition] 
+	'(' (arguments+=Range (',' arguments+=Range)* )? ')'
 //	("["population=INT"]")?
 ;
 
 ComponentBlockForStatement hidden(ML_COMMENT,SL_COMMENT,WS):
-	"for" "(" variable=ComponentForVariableDeclaration ";" expression=BooleanExpression ";" afterThought=ComponentAfterThought")" 
-	componentBlockForBlock=ComponentBlockForBlock
+	"for" "(" variable=IterationVariable ";" expression=Expression ";" afterThought=Expression ")" '{'
+			(collective += ComponentBlockDeclaration)*			
+	'}'
 ;
 
-ComponentBlockForBlock hidden(ML_COMMENT,SL_COMMENT,WS):
-	"{"
-	component=ComponentBlockNew
-	"}" ";"
-;
-	
-ComponentAfterThought hidden(ML_COMMENT,SL_COMMENT,WS):
-	{ComponentAfterThought}
-	componentAssignment=ComponentAssignment
-;
 ////////////////////////////////////////////////////PROCESS
-Processes hidden(ML_COMMENT,SL_COMMENT,WS):
+Processes hidden(ML_COMMENT,SL_COMMENT,WS): {Processes}
 	"abstract" "{"
-	processes+=Process ";"
-	( processes+=Process ";" )*
+		( processes+=ProcessState ";" )*
 	"}"
 ;
 
-Process hidden(ML_COMMENT,SL_COMMENT,WS):
-	name=ProcessName
+ProcessState hidden(ML_COMMENT,SL_COMMENT,WS):
+	name=ID
 	"="
 	processExpression=ProcessExpression 
 ;
@@ -662,265 +307,259 @@ ProcessExpression returns ProcessExpression hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 ProcessExpressionChoice returns ProcessExpression hidden(ML_COMMENT,SL_COMMENT,WS):
-	ProcessExpressionPrimary ({ProcessExpressionChoice.left=current}  "+" right=ProcessExpressionPrimary)*
+	ProcessExpressionGuard ({ProcessExpressionChoice.left=current}  "+" right=ProcessExpressionGuard)*
+;
+
+ProcessExpressionGuard returns ProcessExpression hidden(ML_COMMENT,SL_COMMENT,WS):
+	{ProcessExpressionGuard} guard=Guard expression=ProcessExpressionGuard
+	| ProcessExpressionPrimary
 ;
 
 ProcessExpressionPrimary returns ProcessExpression hidden(ML_COMMENT,SL_COMMENT,WS):
 	"(" ProcessExpression ")" |
-	ProcessExpressionAtomic
+	ProcessExpressionAction
 ;
 
-ProcessExpressionAtomic returns ProcessExpression hidden(ML_COMMENT,SL_COMMENT,WS):
-	ProcessExpressionLeaf					|
-	ProcessExpressionGuard 					|
-	ProcessExpressionAction 				|
-	ProcessExpressionReference 
+ProcessExpressionAction hidden(ML_COMMENT,SL_COMMENT,WS):
+	action=Action "." next=ProcessExpressionNext	
 ;
 
-ProcessExpressionGuard returns ProcessExpression hidden(ML_COMMENT,SL_COMMENT,WS):
-	{ProcessExpressionGuard} expression=Guard
-	reference=ProcessExpressionPrimary
-;
-
-ProcessExpressionAction returns ProcessExpression hidden(ML_COMMENT,SL_COMMENT,WS):
-	{ProcessExpressionAction} expression=Action
-	"."
-	reference=ProcessExpressionPrimary
-;
-
-ProcessExpressionReference returns ProcessExpression hidden(ML_COMMENT,SL_COMMENT,WS):
-	{ProcessExpressionReference} expression=[ProcessName|UPPERST]
-;
-
-ProcessExpressionLeaf returns ProcessExpression hidden(ML_COMMENT,SL_COMMENT,WS):
-//	{ProcessExpressionLeaf} (expression="nil" |	expression="kill")
-	{ProcessExpressionNil} "nil"
+ProcessExpressionNext:
+		{ProcessExpressionNil} "nil"
 	| {ProcessExpressionKill} "kill"
+	| {ProcessExpressionReference} expression=[ProcessState]
 ;
 
 Guard hidden(ML_COMMENT,SL_COMMENT,WS):
-	{Guard} "[" booleanExpression=BooleanExpression "]"
+	"[" booleanExpression=Expression "]"
+;
+
+Activity:
+	name=ID (isBroadacst?='*')? (predicate=ActionGuard)? 	
 ;
 
 Action hidden(ML_COMMENT,SL_COMMENT,WS):
-	{Action}
-	name=ActionName
-	(
-		action=MultiCast | action=UniCast		
+	Activity (
+		{OutputAction.activity=current} 
+			(withData?="<" (outputArguments+=Expression ( "," outputArguments+=Expression )*)? ">")? 
+			(update=Update)?
+		| {InputAction.activity=current} 
+			"(" 
+				(parameters+=UntypedVariable
+				( "," parameters+=UntypedVariable )* )?
+			")"
+			(update=Update)?
 	)
 ;
 
-MultiCast returns Cast hidden(ML_COMMENT,SL_COMMENT,WS):
-	{MultiCast}
-	"*" 
-	(
-		predicate=ActionGuard io=IO | 
-		io=IO | 
-		spont=SpontaneousAction
-	)
-;
+//IO hidden(ML_COMMENT,SL_COMMENT,WS):
+//	( 
+//		InputAction			|
+//		OutputAction
+//	)
+//;
+//
+//InputAction returns IO  hidden(ML_COMMENT,SL_COMMENT,WS):
+//	{InputAction}  "(" 
+//	(parameters+=UntypedVariable
+//	( "," parameters+=UntypedVariable )* )?
+//	")"
+//;
+//
+//OutputAction returns IO hidden(ML_COMMENT,SL_COMMENT,WS):
+//	{OutputAction} "<"
+//	(outputArguments+=Expression
+//	( "," outputArguments+=Expression )*)?
+//	">"
+//;
 
-UniCast returns Cast hidden(ML_COMMENT,SL_COMMENT,WS):
-	{UniCast}
-	(
-		predicate=ActionGuard io=IO |
-		io=IO
-	)
-;
 
-IO hidden(ML_COMMENT,SL_COMMENT,WS):
-	( 
-		InputAction			|
-		OutputAction
-	)
-;
-
-SpontaneousAction hidden(ML_COMMENT,SL_COMMENT,WS):
-	{SpontaneousAction} (update=Update)?
-;
-
-InputAction returns IO  hidden(ML_COMMENT,SL_COMMENT,WS):
-	{InputAction}  inputActionParameters=InputActionParameters (update=Update)?
-;
-
-InputActionParameters returns Parameters hidden(ML_COMMENT,SL_COMMENT,WS):
-	{InputActionParameters}
-	"(" 
-	(parameters+=InputActionParameter
-	( "," parameters+=InputActionParameter )* )?
-	")"
-;
-
-OutputAction returns IO hidden(ML_COMMENT,SL_COMMENT,WS):
-	{OutputAction} outputActionArguments=OutputActionArguments (update=Update)?
-;
 
 Update hidden(ML_COMMENT,SL_COMMENT,WS):
 	{Update} "{" (updateAssignment+=UpdateAssignment ( "," updateAssignment+=UpdateAssignment)*)? "}"
 ;
 
-
 ActionGuard hidden(ML_COMMENT,SL_COMMENT,WS):
-	{ActionGuard} "[" booleanExpression=BooleanExpression "]"
+	{ActionGuard} "[" guard=Expression "]"
 ;
-////////////////////////////////////////////////////EXPRESSIONS
-BooleanExpression hidden(ML_COMMENT,SL_COMMENT,WS):
-	{BooleanExpression} expression=Expression
+////////////////////////////////////////////////////Expression
+
+Range returns Expression:
+	Expression ({Range.min=current} ":" max=Expression (":" step=Expression)?)?
 ;
 
-UpdateExpression hidden(ML_COMMENT,SL_COMMENT,WS):
-	{UpdateExpression} expression=Expression
-;
 
-FunctionExpression hidden(ML_COMMENT,SL_COMMENT,WS):
-	{FunctionExpression} expression=Expression
-;
 
-EnvironmentProbExpression hidden(ML_COMMENT,SL_COMMENT,WS):
-	{EnvironmentProbExpression} expression=Expression
-;
-
-EnvironmentRateExpression hidden(ML_COMMENT,SL_COMMENT,WS):
-	{EnvironmentRateExpression} expression=Expression
-;
-
-EnvironmentUpdateExpression hidden(ML_COMMENT,SL_COMMENT,WS):
-	{EnvironmentUpdateExpression} expression=Expression
-;
-
-ComponentExpression hidden(ML_COMMENT,SL_COMMENT,WS):
-	{ComponentExpression} expression=Expression
-;
-
-Expression returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
+Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	Or
 ;
 
-Or returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
+Or returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	And ({Or.left=current} "||" 
 		right=And
 	)*
 ;
 
-And returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
-	Equality ({And.left=current} "&&" 
-		right=Equality
+And returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
+	Relation ({And.left=current} "&&" 
+		right=Relation
 	)*
 ;
 	
-Equality returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
-	Comparison (
-		{Equality.left=current} op=("=="|"!=")
-		right=Comparison
+Relation returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
+	SumDiff (
+		{Equality.left=current} '==' right=SumDiff
+		| {DisEquality.left=current} '!=' right=SumDiff
+		| {Less.left=current} '<' right=SumDiff
+		| {LessOrEqual.left=current} '<=' right=SumDiff
+		| {Greater.left=current} '>' right=SumDiff
+		| {GreaterOrEqual.left=current} '>=' right=SumDiff
+	)?
+;
+
+SumDiff returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
+	MulDiv (
+		{Subtraction.left=current} '-' right=MulDiv
+		| {Addition.left=current} '+' right=MulDiv
 	)*
 ;
 
-Comparison returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
-	Subtraction ({Comparison.left=current} op=(">="|"<="|">"|"<") 
-		right=Subtraction
+MulDiv returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
+	Modulo ({Multiplication.left=current} '*' right=Modulo
+		| {Division.left=current} '/' right=Modulo
 	)*
 ;
 
-Subtraction returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
-	Addition ({Subtraction.left=current} '-' 
-		right=Addition
-	)*
-;
-
-Addition returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
-	Multiplication ({Addition.left=current} '+' 
-		right=Multiplication
-	)*
-;
-
-Multiplication returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
-	Modulo ({Multiplication.left=current} '*' 
-		right=Modulo
-	)*
-;
-
-Modulo returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS): 
-	Division ({Modulo.left=current} '%' 
-		right=Division
-	)*
-;
-
-Division returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS): 
-	Primary ({Division.left=current} '/' 
+Modulo returns Expression hidden(ML_COMMENT,SL_COMMENT,WS): 
+	Primary ({Modulo.left=current} '%' 
 		right=Primary
-	)*
+	)?
 ;
 
-Primary returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
-	'(' Expression ')' | 
+Primary returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
+	'(' Expression 	({IfThenElseExpression.guard=current} "?" thenBranch=Expression ":" elseBranch=Expression)? ")" | 
 	{Not} "!" expression=Primary |
-	Atomic
+	{UnaryPlus} '+' expression=Primary |
+	{UnaryMinus} '-' expression=Primary | 
+	RecordAccess 	
 ;
 
-Atomic returns Expressions hidden(ML_COMMENT,SL_COMMENT,WS):
-	{AtomicPrimitive}			value=PrimitiveTypes 		|
-	{AtomicVariable}			value=VariableReference 	|
-	{AtomicCalls}				value=Calls					|
-	{AtomicNow}					value=Now					|
-	{AtomicMeasure}				value=SetComp				|
-	{AtomicRecord}				value=InstantiateRecord		|
-	{AtomicOutcome}				value=OutcomeProbability	|
-	{AtomicProcessComposition}	value=ProcessComposition
+RecordAccess returns Expression:
+	Atomic ( {RecordAccess.source=current} '.' field=[FieldDefinition] )*
+;
+
+Atomic returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
+	Reference 
+	| {AtomicTrue} "true"
+	| {AtomicFalse} "false"
+	| {AtomicInteger} value=INT 
+	| {AtomicReal} value=REAL 
+	| {AtomicRecord} '[' fields += FieldAssignment (',' fields += FieldAssignment)* ']' 
+	| {AtomicNow} "now" 
+	| SetComp				
+	| {AtomicRnd} "RND"
+	| {AtomicPi} "PI"
+	| {AtomicExp} "E"
+	| BuiltInFunctions
+	| {MyContext} "my" "." reference=[AttributeDeclaration]
+	| {ReceiverContext} "receiver" "." reference=[AttributeDeclaration]
+	| {SenderContext} "sender" "." reference=[AttributeDeclaration]
+	| {GlobalContext} "global" "." reference=[AttributeDeclaration]
+	| {CastToReal} "real" '(' arg=Expression ')'
+	| {CastToInteger} "int" '(' arg=Expression ')'
+//	| {AtomicOutcome}				value=OutcomeProbability	THE ROLE OF THIS CASES IS NOT CLEAR FOR ME.
+//	| {AtomicProcessComposition}	value=ProcessComposition
+;
+
+BuiltInFunctions returns Expression :
+	{AbsFunction} "abs" '(' arg=Expression ')' 
+			//The absolute value of arg.
+	| {AcosFunction} "acos" '(' arg=Expression ')' 
+			//The arc cosine of arg; the returned angle is in the range 0.0 through pi.
+	| {AsinFunction} "asin" '(' arg=Expression ')' 
+			//The arc sine of a value; the returned angle is in the range -pi/2 through pi/2.
+	| {AtanFunction} "atan" '(' arg=Expression ')' 
+			//Returns the arc tangent arg; the returned angle is in the range -pi/2 through pi/2.
+	| {Atan2Function} "atan2" '(' first=Expression ',' second=Expression ')'
+			//The angle theta from the conversion of rectangular coordinates (first, second) to polar coordinates (r, theta).
+	| {CbrtFunction} "cbrt" '(' arg=Expression ')'
+			//The cube root of arg.
+	| {CeilFunction} "ceil" '(' arg=Expression ')'
+			//The smallest (closest to negative infinity) double value that is greater than or equal to the argument and is equal to a mathematical integer.
+	| {CosFunction} "cos" '(' arg=Expression ')'
+			//Returns the trigonometric cosine of an angle.
+	| {ExpFunction} "exp" '(' arg=Expression ')'
+			//Returns Euler's number e raised to the power of a double value.
+	| {FloorFunction} "floor" '(' arg=Expression ')'
+			//Returns the largest (closest to positive infinity) double value that is less than or equal to the argument and is equal to a mathematical integer.
+	| {LogFunction} "log" '(' arg=Expression ')'
+			//Returns the natural logarithm (base e) of a double value.
+	| {Log10Function} "log10" '(' arg=Expression ')'
+			//Returns the base 10 logarithm of a double value.
+	| "max" ({MaxFunction} '(' first=Expression ',' second=Expression ')'
+		| {MaxMeasure} '{' value=Expression ('|' guard=Expression)? '}'
+	)
+	| "min" ({MinFunction} '(' first=Expression ',' second=Expression ')'
+		| {MinMeasure} '{' value=Expression ('|' guard=Expression)? '}'
+	)
+	| "avg" {AverageMeasure} '{' value=Expression ('|' guard=Expression)? '}'
+	| {PowFunction} "pow" '(' first=Expression ',' second=Expression ')'
+	| {SinFunction} "sin" '(' arg=Expression ')'
+			//Returns the trigonometric sine of an angle.
+	| {SqrtFunction} "sqrt" '(' arg=Expression ')'
+			//Returns the correctly rounded positive square root of a double value.
+	| {TanFunction} "tan" '(' arg=Expression ')'
+			//Returns the trigonometric tangent of an angle.
+	| {UniformFunction} "U" '(' args+=Expression (',' args+=Expression)* ')' 
+;
+
+FieldAssignment:
+	field=[FieldDefinition] ':=' value=Expression
+;
+
+////////////////////////////////////////////////////REFERENCE
+
+
+Reference hidden(ML_COMMENT,SL_COMMENT,WS):
+	reference=[ReferenceableElement] ( isCall ?= '(' ( args+=Expression ( ',' args+=Expression )* )? ')' )?
 ;
 
 ////////////////////////////////////////////////////MEASURES
 
-MeasureBlock returns MeasureBlock hidden(ML_COMMENT,SL_COMMENT,WS):
-	"measures" "{"
-	measures+=Measure ";"
-	(measures+=Measure+ ";")*
-	"}"
+MeasureDefinition hidden(ML_COMMENT,SL_COMMENT,WS):
+	"measure" name=ID 
+		("[" variables+=MeasureVariableDeclaration("," variables+=MeasureVariableDeclaration+)* "]" )?
+		"="  measure=Expression  ';'
 ;
 
-Measure returns Measure hidden(ML_COMMENT,SL_COMMENT,WS):
-	"measure" name=MeasureName ranges=MeasureVariableDeclarations "="  measure=SetComp 
+MeasureVariableDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
+	{MeasureVariableDeclaration} name=ID	":="	assign= Range
 ;
 
-MeasureVariableDeclarations hidden(ML_COMMENT,SL_COMMENT,WS):
-	"["
-	variables+=MeasureVariableDeclaration
-	("," variables+=MeasureVariableDeclaration+)*
-	"]"
-;
 	
 ////////////////////////////////////////////////////ENVIRONMENT	
 Environment hidden(ML_COMMENT,SL_COMMENT,WS):
 	{Environment}
 	"environment" 
 	"{"
-	(stores=GlobalStoreBlock)?
+	(store=StoreBlock)?
 	(probabilityBlock=ProbabilityBlock)?
 	(rateBlock=RateBlock)?
 	(updateBlock=UpdateBlock)?
 	"}"
 ;
 
-GlobalStoreBlock hidden(ML_COMMENT,SL_COMMENT,WS):
-	{GlobalStoreBlock}
-	"store" 
-	"{" 
-	(attributes+=StoreDeclaration ";"
-	( attributes+=StoreDeclaration ";" )*)?
-	"}"
-;
-	
 ProbabilityBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 	{ProbabilityBlock}
 	"prob" 
 	"{"
-		(probabilities+=Probability+ ";")*
-		("default" ":" value=CarmaDouble ";")?
+		(probabilities+=Probability ";")*
+		("default" ":" value=Expression ";")?
 	"}"
 ;
 	
-Probability returns EvolutionRule hidden(ML_COMMENT,SL_COMMENT,WS):
-	{Probability}
-	guard=EnvironmentGuard stub=ActionStub ":" expression=EnvironmentProbExpression
+Probability hidden(ML_COMMENT,SL_COMMENT,WS):
+	(guard=Guard)? stub=ActionStub ":" expression=Expression
 ;
 
 RateBlock hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -928,13 +567,13 @@ RateBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 	"rate"
 	"{"
 		(rates+=Rate+ ";")*
-		("default" ":" value=CarmaDouble ";")?
+		("default" ":" value=Expression ";")?
 	"}"
 ;
 
-Rate returns EvolutionRule hidden(ML_COMMENT,SL_COMMENT,WS):
+Rate hidden(ML_COMMENT,SL_COMMENT,WS):
 	{Rate}
-	guard=EnvironmentGuard stub=ActionStub ":" expression=EnvironmentRateExpression
+	(guard=Guard)? stub=ActionStub ":" expression=Expression
 ;
 	
 UpdateBlock hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -945,26 +584,17 @@ UpdateBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 	"}"
 ;
 
-EnvironmentUpdate returns EvolutionRule hidden(ML_COMMENT,SL_COMMENT,WS):
-	{EnvironmentUpdate}
-	guard=EnvironmentGuard stub=ActionStub ":" 
-	((expression+=EnvironmentUpdateAssignment ("," expression+=EnvironmentUpdateAssignment+)*)? 
-	("," spawn=Spawn)? | spawn=Spawn)
-;
-
-EnvironmentGuard hidden(ML_COMMENT,SL_COMMENT,WS):
-	{EnvironmentGuard} "[" booleanExpression=BooleanExpression "]"
+EnvironmentUpdate hidden(ML_COMMENT,SL_COMMENT,WS):
+	(guard=Guard)? stub=ActionStub ":" 
+	( 
+		(update+=UpdateAssignment ("," update+=UpdateAssignment+)* (',' spawn=BlockSpawn)?)
+		| spawn=BlockSpawn
+	)
 ;
 
 ActionStub hidden(ML_COMMENT,SL_COMMENT,WS):
-	{ActionStub} name=[ActionName|LOWERST] (type=BroadCast)?
-;
-
-BroadCast:
-	"*"
+	{ActionStub} activity=[Activity] (isBroadcast?='*')?
 ;
 
 
-terminal BOOLEANVALUE: 		('true' | 'false');
-terminal LOWERST: 			("a".."z") ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*;
-terminal UPPERST: 			("A".."Z") ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*;
+terminal REAL returns ecore::EDouble: (('0'..'9')+ '.' ('0' .. '9')+)|('.'('0' .. '9')*);

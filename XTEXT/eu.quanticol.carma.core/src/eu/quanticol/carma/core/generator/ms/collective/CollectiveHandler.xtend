@@ -1,652 +1,374 @@
 package eu.quanticol.carma.core.generator.ms.collective
 
-import com.google.inject.Inject
-import eu.quanticol.carma.core.carma.Action
-import eu.quanticol.carma.core.carma.ActionGuard
-import eu.quanticol.carma.core.carma.AttribParameter
-import eu.quanticol.carma.core.carma.AttribType
-import eu.quanticol.carma.core.carma.AttribVariableDeclaration
-import eu.quanticol.carma.core.carma.BlockCollective
-import eu.quanticol.carma.core.carma.BlockStyle
-import eu.quanticol.carma.core.carma.BooleanExpression
-import eu.quanticol.carma.core.carma.CBND
-import eu.quanticol.carma.core.carma.ComponentAssignment
-import eu.quanticol.carma.core.carma.ComponentBlockArguments
-import eu.quanticol.carma.core.carma.ComponentBlockDeclaration
-import eu.quanticol.carma.core.carma.ComponentBlockDefinition
-import eu.quanticol.carma.core.carma.ComponentBlockForStatement
-import eu.quanticol.carma.core.carma.ComponentBlockNew
-import eu.quanticol.carma.core.carma.ComponentForVariableDeclaration
-import eu.quanticol.carma.core.carma.Declaration
-import eu.quanticol.carma.core.carma.DoubleParameter
-import eu.quanticol.carma.core.carma.DoubleType
-import eu.quanticol.carma.core.carma.GlobalStoreBlock
-import eu.quanticol.carma.core.carma.InputActionParameters
-import eu.quanticol.carma.core.carma.IntgerParameter
-import eu.quanticol.carma.core.carma.IntgerType
-import eu.quanticol.carma.core.carma.OutputActionArgument
-import eu.quanticol.carma.core.carma.OutputActionArguments
-import eu.quanticol.carma.core.carma.Parameter
-import eu.quanticol.carma.core.carma.ProcessComposition
-import eu.quanticol.carma.core.carma.ProcessParameter
-import eu.quanticol.carma.core.carma.Processes
-import eu.quanticol.carma.core.carma.RecordDeclaration
-import eu.quanticol.carma.core.carma.RecordParameter
-import eu.quanticol.carma.core.carma.RecordReferenceGlobal
-import eu.quanticol.carma.core.carma.RecordReferenceMy
-import eu.quanticol.carma.core.carma.RecordReferencePure
-import eu.quanticol.carma.core.carma.RecordReferenceReceiver
-import eu.quanticol.carma.core.carma.RecordReferenceSender
-import eu.quanticol.carma.core.carma.RecordType
-import eu.quanticol.carma.core.carma.Type
-import eu.quanticol.carma.core.carma.Update
-import eu.quanticol.carma.core.carma.UpdateAssignment
-import eu.quanticol.carma.core.carma.VariableName
-import eu.quanticol.carma.core.carma.VariableReference
-import eu.quanticol.carma.core.carma.VariableReferenceGlobal
-import eu.quanticol.carma.core.carma.VariableReferenceMy
-import eu.quanticol.carma.core.carma.VariableReferencePure
-import eu.quanticol.carma.core.carma.VariableReferenceReceiver
-import eu.quanticol.carma.core.carma.VariableReferenceSender
-import eu.quanticol.carma.core.generator.ms.MSSystemCompiler
-import eu.quanticol.carma.core.generator.ms.SharedJavaniser
-import eu.quanticol.carma.core.typing.TypeProvider
-import eu.quanticol.carma.core.utils.Tree
 import eu.quanticol.carma.core.utils.Util
-import java.util.ArrayList
-import java.util.HashMap
-import java.util.HashSet
+import eu.quanticol.carma.core.typing.TypeSystem
+import eu.quanticol.carma.core.generator.ms.expression.ExpressionHandler
 
+import eu.quanticol.carma.core.carma.ProcessExpressionAction
+import eu.quanticol.carma.core.carma.ProcessExpressionNext
+import eu.quanticol.carma.core.carma.ProcessExpressionNil
+import eu.quanticol.carma.core.carma.ProcessExpressionKill
+import eu.quanticol.carma.core.carma.ProcessExpressionReference
+import eu.quanticol.carma.core.carma.ComponentDefinition
+import eu.quanticol.carma.core.carma.InputAction
+import eu.quanticol.carma.core.carma.OutputAction
+import eu.quanticol.carma.core.utils.ReferenceContext
+import com.google.inject.Inject
+import eu.quanticol.carma.core.generator.ms.attribute.AttributeHandler
+import eu.quanticol.carma.core.carma.ProcessExpressionChoice
+import eu.quanticol.carma.core.carma.ProcessExpressionGuard
+import eu.quanticol.carma.core.carma.ParallelComposition
+import eu.quanticol.carma.core.carma.ProcessReference
+import eu.quanticol.carma.core.carma.ReferenceableElement
+import eu.quanticol.carma.core.carma.Variable
+import eu.quanticol.carma.core.carma.ProcessState
+import eu.quanticol.carma.core.carma.ComponentBlockInstantiation
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.carma.CarmaInteger
+import eu.quanticol.carma.core.carma.Range
+import eu.quanticol.carma.core.carma.Expression
+import eu.quanticol.carma.core.carma.ComponentBlockForStatement
+import eu.quanticol.carma.core.carma.ComponentBlockConditionalStatement
 
 class CollectiveHandler {
 
-	@Inject extension SharedJavaniser
+	@Inject extension TypeSystem
+	@Inject extension ExpressionHandler
 	@Inject extension Util
-	@Inject extension TypeProvider
+	@Inject extension AttributeHandler
 
-	def String constructor(BlockCollective collective, GlobalStoreBlock globalStoreBlock) {
-		var declarations = collective.declarations
-		'''
-			public «MSSystemCompiler.SYSTEMNAME»(){
-				«FOR declaration : declarations»
-					«declaration.addComponent»
-				«ENDFOR»
-				«IF globalStoreBlock != null»
-					«FOR attribute : globalStoreBlock.attributes»
-					«attribute.addGlobalStores»
-					«ENDFOR»
-				«ENDIF»
-			}
-		'''
+	def CharSequence methofForComponentBehaviourCreation( ComponentDefinition comp ) {
+		'''generate«comp.name»Behaviour( )'''
 	}
 
-	def String addComponent(ComponentBlockDeclaration componentBlockDeclaration) {
-		switch (componentBlockDeclaration) {
-			ComponentBlockNew: addComponent(componentBlockDeclaration)
-			ComponentBlockForStatement: addComponent(componentBlockDeclaration)
-		}
-	}
-
-	def String addComponent(ComponentBlockNew componentBlockDeclaration) {
-		var products = new ArrayList<ArrayList<String>>()
-		(componentBlockDeclaration.arguments as ComponentBlockArguments).product.cartesianProduct(products)
-		var name = (componentBlockDeclaration as ComponentBlockNew).name.name
+	def CharSequence componentBehaviour( ComponentDefinition comp , Iterable<ProcessState> global ) {
 		'''
-			«IF products.size > 0»
-			«FOR args : products»
-				addComponent(get«name.toFirstUpper»(«args.asArguments»));
+		
+		/* START COMPONENT: «comp.name»         */
+		
+		/* DEFINITIONS OF PROCESSES */
+		public final CarmaProcessAutomaton _COMP_«comp.name» = new CarmaProcessAutomaton("«comp.name»");
+		«FOR p:global»
+		public final CarmaProcessAutomaton.State «p.name.stateName(comp.name)» = _COMP_«comp.name».newState("«p.name»");
+		«ENDFOR»
+		
+		«FOR p:comp.processes.processes»
+		public final CarmaProcessAutomaton.State «p.name.stateName(comp.name)» = _COMP_«comp.name».newState("«p.name»");		
+		«ENDFOR»
+
+		private void «comp.methofForComponentBehaviourCreation» {
+			
+			«FOR p:global»			
+			«p.processExpression.componentTransitions(p.name,comp.name,newLinkedList(),0)»
 			«ENDFOR»
-			«ELSE»
-				addComponent(get«name.toFirstUpper»());
+			
+			«FOR p:comp.processes.processes»
+			«p.processExpression.componentTransitions(p.name,comp.name,newLinkedList(),0)»
+			«ENDFOR»
+			
+		}
+		
+		public CarmaComponent createComponent«comp.name»( 
+			«FOR v:comp.parameters SEPARATOR ','»«v.type.toJavaType» «v.name.variableName» «ENDFOR» 
+		) {
+			CarmaComponent c = new CarmaComponent();
+			«IF comp.store != null»
+			«FOR a:comp.store.attributes»
+			c.set( "«a.name»" ,  «a.value.expressionToJava» );
+			«ENDFOR»
 			«ENDIF»
-		'''
-	}
-
-	def String asArguments(ArrayList<String> args) {
-		var String toReturn = ""
-		if (args.size > 0) {
-			toReturn = args.get(0)
-			for (var i = 1; i < args.size; i++)
-				toReturn = toReturn + ", " + args.get(i)
-		}
-		return toReturn
-	}
-
-	def String addComponent(ComponentBlockForStatement componentBlockDeclaration) {
-		'''
-		for(«(componentBlockDeclaration.variable as ComponentForVariableDeclaration).cjavanise» ; «componentBlockDeclaration.expression.javanise» ; «(componentBlockDeclaration.afterThought.componentAssignment as ComponentAssignment).javanise»){
-		«componentBlockDeclaration.componentBlockForBlock.component.addComponent»			
-		}'''
-	}
-	
-	def String cjavanise(ComponentForVariableDeclaration componentForVariableDeclaration){
-		'''«(componentForVariableDeclaration.type as Type).type.javanise» attrib_«componentForVariableDeclaration.name.name» = «componentForVariableDeclaration.assign.javanise»'''
-	}
-
-	def String addGlobalStores(Declaration storeDeclaration) {
-		'''global_store.set(«storeDeclaration.setStore»);'''
-	}
-
-	def String getComponents(BlockStyle blockStyle) {
-		'''
-			«FOR definition : blockStyle.definitions»
-				«(definition as ComponentBlockDefinition).getComponent»
-			«ENDFOR»
-		'''
-	}
-
-	def String getComponent(ComponentBlockDefinition componentBlockDefinition) {
-		var String componentName = componentBlockDefinition.componentSignature.name.name
-		var ArrayList<Parameter> parameters = new ArrayList<Parameter>(
-			componentBlockDefinition.componentSignature.componentParameters.eAllOfType(Parameter))
-		var boolean hasBehaviour = componentBlockDefinition.componentSignature.componentParameters.eAllOfType(
-			ProcessParameter).size > 0
-		var String behaviour = ""
-		if (hasBehaviour) {
-			behaviour = componentBlockDefinition.componentSignature.componentParameters.eAllOfType(ProcessParameter).
-				get(0).name.name
-		}
-		var attributes = componentBlockDefinition.componentBlock.store.attributes
-		'''
-			private CarmaComponent get«componentName»( «parameters.getCParameters» ){
-				CarmaComponent component_«componentName» = new CarmaComponent();
-				«FOR attribute : attributes»
-					«attribute.setStore(componentName)»
-				«ENDFOR»
-				«setBehaviour(behaviour, componentBlockDefinition.componentBlock.initBlock.init, componentName)»
-				return component_«componentName»;
-			}
+			«comp.initBlock.init.processInstantiation(comp.name)»
+			return c;
+		}	
+		
+		/* END COMPONENT: «comp.name» */
 			
 		'''
 	}
-
-	def  String getCParameters(ArrayList<Parameter> parameters){
-		var String toReturn = ""
-		if(parameters.size > 0){
-			toReturn = parameters.get(0).getCParameter
-			for(var i = 1; i < parameters.size; i++){
-				toReturn = toReturn + ", " + parameters.get(i).getCParameter
+	
+	def dispatch instantiationCode( ComponentBlockInstantiation cbi ) {
+		var ranges = cbi.getAllContentsOfType(typeof(Range)).indexed;
+		cbi.recursiveIntantiationCode(ranges,0) 
+	}
+	
+	def CharSequence recursiveIntantiationCode( ComponentBlockInstantiation cbi , Iterable<Pair<Integer,Range>> ranges , int idx ) {
+		if (idx<ranges.size) {
+			var r = ranges.get(idx)
+			'''
+			for ( int i«r.key» = «r.value.min.expressionToJava» ; 
+				i«r.key» <= «r.value.max.expressionToJava» ; 
+				«IF r.value.step == null» i«r.key»++ «ELSE» i«r.key» += «r.value.step.expressionToJava» «ENDIF» ) {					
+				«cbi.recursiveIntantiationCode(ranges,idx+1)»
 			}
+			'''
+		} else {
+			cbi.name.name.setCurrentComponent
+			'''
+			system.addComponent( 
+				createComponent«cbi.name.name»(					
+					«cbi.arguments.map[it.argumentCode(ranges)].invocationParameters(cbi.name.parameters.map[it.type])»
+				) 
+			);
+			'''		
 		}
-		return toReturn
 	}
 	
-	def  String getCParameter(Parameter parameter){
-		switch(parameter){
-			AttribParameter: '''«(parameter.type as AttribType).type.javanise» attrib_«parameter.name.name»'''
-			RecordParameter: '''«(parameter.type as RecordType).type.javanise» attrib_«parameter.name.name»'''
-			DoubleParameter: '''«(parameter.type as DoubleType).type.javanise» attrib_«parameter.name.name»'''
-			IntgerParameter: '''«(parameter.type as IntgerType).type.javanise» attrib_«parameter.name.name»'''
-			ProcessParameter: '''ArrayList<String> behaviour'''
+	def argumentCode( Expression e , Iterable<Pair<Integer,Range>> ranges ) {
+		if (e instanceof Range) {
+			'''i«ranges.findFirst[ it.value == e ].key»'''
+		} else {
+			e.expressionToJava
+		}
+	}
+	
+	def dispatch CharSequence processInstantiation( ParallelComposition p , String component ) {
+		'''
+		«p.left.processInstantiation(component)»
+		«p.right.processInstantiation(component)»
+		'''
+	}
+
+	def dispatch CharSequence processInstantiation( ProcessReference p , String component ) {
+		'''
+		c.addAgent( «p.expression.processReferenceCode(component)»);
+		'''
+	}
+	
+	def CharSequence processReferenceCode( ReferenceableElement e , String component ) {
+		switch e {
+			Variable: e.name.variableName
+			ProcessState: '''new CarmaSequentialProcess( c , _COMP_«component» , «e.name.stateName(component)» )'''
+			default: "null"
 		}
 	}
 
-	def String setStore(Declaration storeDeclaration, String name) {
-		'''component_«name».set(«storeDeclaration.setStore»);'''
+	def dispatch CharSequence componentTransitions( ProcessExpressionChoice p , String state , String component , Iterable<String> guards , int guardCounter ) {
+		'''
+		«p.left.componentTransitions(state,component,guards,guardCounter)»
+		«p.right.componentTransitions(state,component,guards,guardCounter)»
+		'''
 	}
 	
-	def String setStore(Declaration declaration){
-		switch(declaration){
-			AttribVariableDeclaration	: declaration.setStore
-			RecordDeclaration			: declaration.setStore
-		}
-	}
-	
-	def  String setStore(AttribVariableDeclaration attribVariableDeclaration){
-		'''"«attribVariableDeclaration.name.name»", «attribVariableDeclaration.assign.javanise»'''
-	}
-	
-	def  String setStore(RecordDeclaration recordDeclaration){
-		'''"«recordDeclaration.name.name»", «recordDeclaration.assign.javanise»'''
-	}
+	def dispatch CharSequence componentTransitions( ProcessExpressionGuard p , String state , String component , Iterable<String> guards , int guardCounter ) {		
+		var guardVar = '''_FOO_predicate«guardCounter»'''
+		'''
+		{
+			CarmaPredicate «guardVar» = new CarmaPredicate() {
 
-	def String setBehaviour(String behaviour, ProcessComposition processComposition, String componentName) {
-		var ArrayList<String> states = new ArrayList<String>()
-		processComposition.array(states)
-		var boolean hasBehaviour = states.contains(behaviour)
-		if (hasBehaviour) {
-			states.remove(behaviour)
+				//@Override
+				public boolean satisfy(CarmaStore store) {
+					«FOR a:p.guard.booleanExpression.referencedAttibutes»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
+					«ENDFOR»
+					«FOR a:p.guard.booleanExpression.myAttributes»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"store")»
+					«ENDFOR»
+					return «p.guard.booleanExpression.expressionToJava»;
+				}
+					
+			};
+			«p.expression.componentTransitions(state,component,guards+newLinkedList( guardVar ),guardCounter+1)»
 		}
 		'''
-			«IF hasBehaviour»
-				ArrayList<String> processes = new ArrayList<String>(Arrays.asList( «states.javanise» ));
-				processes.addAll(behaviour);
+	}
+	
+	def dispatch CharSequence componentTransitions( ProcessExpressionAction p , String state , String component , Iterable<String> guards , int guardCounter ) {
+		'''
+		{
+			«p.action.actionCode»
+			
+			«IF guards.empty»			
+			_COMP_«component».addTransition( «state.stateName(component)» , action , «p.next.nextCode(component)» );			
 			«ELSE»
-				ArrayList<String> processes = new ArrayList<String>(Arrays.asList( «processComposition.javanise» ));
+			_COMP_«component».addTransition( «state.stateName(component)» , new CarmaPredicate.Conjunction( «FOR s:guards SEPARATOR ','» «s» «ENDFOR» ) , action , «p.next.nextCode(component)» );			
 			«ENDIF»
-			for(int i = 0; i < processes.size(); i++){
-				component_«componentName».addAgent( new CarmaSequentialProcess(component_«componentName»,create«componentName.toFirstUpper»Process(),create«componentName.toFirstUpper»Process().getState("state_"+processes.get(i))));
+		}
+		'''
+	}
+	
+	def nextCode( ProcessExpressionNext next , String component ) {
+		switch next {
+			ProcessExpressionNil: '''null'''
+			ProcessExpressionKill: '''null'''
+			ProcessExpressionReference: '''«next.expression.name.stateName(component)»'''
+		}
+	}
+	
+	def dispatch CharSequence actionCode( InputAction act ) {
+		var t = act.activity.inferActivityType
+		var idxVar = act.parameters.indexed
+		'''
+		CarmaAction action = new CarmaInput( 
+			«act.activity.name.actionName» , «act.activity.isIsBroadacst»  		
+		) {
+			
+			@Override
+			protected CarmaStoreUpdate getUpdate(final Object value, final double now) {
+				
+				«IF act.update != null»
+				LinkedList<Object> message = (LinkedList<Object>) value;
+				«FOR idv:idxVar»
+				final «t.get(idv.key).toJavaType(true)» «idv.value.name.variableName» = («t.get(idv.key).toJavaType(false)») message.get(«idv.key»);
+				«ENDFOR»
+				return new CarmaStoreUpdate() {
+					
+					//@Override
+					public void update(RandomGenerator r, CarmaStore store) {
+						«FOR a:act.update.referencedAttributes»
+						«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
+						«ENDFOR»
+						«FOR a:act.update.myAttributes»
+						«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"store")»
+						«ENDFOR»
+						«FOR u:act.update.updateAssignment»
+						store.set( "«u.reference.name»", «u.expression.expressionToJava» );
+						«ENDFOR»
+					}
+				};
+				«ELSE»
+				return new CarmaStoreUpdate() {					
+					//@Override
+					public void update(RandomGenerator r, CarmaStore store) {
+					}
+				};
+				«ENDIF»
+							
+			}	
+			
+			@Override
+			protected CarmaPredicate getPredicate(CarmaStore myStore, Object value, final double now) {
+				«IF act.activity.predicate != null»				
+				LinkedList<Object> message = (LinkedList<Object>) value;
+				«FOR idv:idxVar»
+				final «t.get(idv.key).toJavaType(true)» «idv.value.name.variableName» = («t.get(idv.key).toJavaType(false)») message.get(«idv.key»);
+				«ENDFOR»
+				«FOR a:act.activity.predicate.guard.myAttributes»
+				«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"myStore")»
+				«ENDFOR»
+				return new CarmaPredicate() {
+
+					//@Override
+					public boolean satisfy(CarmaStore store) {
+						«FOR a:act.activity.predicate.guard.referencedAttibutes»
+						«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
+						«ENDFOR»
+						return «act.activity.predicate.guard.expressionToJava»;
+					}
+					
+				};
+				«ELSE»
+				return CarmaPredicate.TRUE;
+				«ENDIF»
+				
 			}
-		'''
+						
+		};		
+		'''		
 	}
 
-	def String createProcesses(BlockStyle blockStyle) {
-		var Processes processes = blockStyle.processes
-		var cbnds = blockStyle.eAllOfType(CBND)
-		var HashSet<String> toReturn = new HashSet<String>()
-		for (cbnd : cbnds)
-			toReturn.add(cbnd.createProcess(processes))
+	def dispatch CharSequence actionCode( OutputAction act ) {
+		var isSpontaneous = (act.activity.predicate == null)&&(!act.withData)
 		'''
-			«FOR item : toReturn»
-				«item»
-			«ENDFOR»
-		'''
-	}
-
-	def String createProcess(CBND declaration, Processes processes) {
-		var String componentName = declaration.name.name
-		var Tree tree = declaration.getTree
-		'''
-			private CarmaProcessAutomaton create«componentName»Process() {
-				CarmaProcessAutomaton toReturn = new CarmaProcessAutomaton("«componentName»");
-				«tree.createStates»
-				«tree.createActions»
-				«tree.createGuards»
-				«tree.createTransitions»
+		CarmaAction action = new CarmaOutput(
+			«act.activity.name.actionName» , «act.activity.isIsBroadacst»  		
+		) {
+			
+			@Override
+			protected Object getValue(CarmaStore store, final double now) {
+				LinkedList<Object> toReturn = new LinkedList<Object>();
+				«FOR a:act.outputArguments.referencedAttibutes»
+				«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
+				«ENDFOR»
+				«FOR a:act.outputArguments.myAttributes»
+				«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"store")»
+				«ENDFOR»
+				«FOR e:act.outputArguments»
+				toReturn.add( «e.expressionToJava» );
+				«ENDFOR»
 				return toReturn;
 			}
-		'''
-	}
-
-	def String createStates(Tree tree) {
-		var HashSet<String> states = new HashSet<String>();
-		tree.getStates(states)
-		'''
-			«FOR state : states»
-				«IF !state.equals("null")»
-					CarmaProcessAutomaton.State «state» = toReturn.newState("«state»");
-				«ENDIF»
-			«ENDFOR»
-		'''
-	}
-
-	def String createActions(Tree tree) {
-		var HashMap<String, Action> actions = new HashMap<String, Action>()
-		tree.getActions(actions)
-		'''
-			«FOR key : actions.keySet»
-				«key.getAction(actions.get(key))»
-			«ENDFOR»
-		'''
-	}
-
-	def String getAction(String name, Action action) {
-		'''
-			«IF (action.type.parent.equals("output"))»
-				«name.getActionOutput(action.type.me.equals("broad"),action)»
-			«ELSE»
-				«name.getActionInput(action.type.me.equals("broad"),action)»
-			«ENDIF»
-		'''
-	}
-
-	def String getActionOutput(String actionName, boolean isBroadcast, Action action) {
-
-		'''
-			CarmaOutput «actionName» = new CarmaOutput( «action.name.convertName», «isBroadcast» ) {
-				«action.outputActionPredicate»
-				«action.getOutputUpdate»
-				«action.getValues»
-			};
-		'''
-	}
-
-	def String getOutputActionPredicate(Action action) {
-		if (action.eAllOfType(ActionGuard).size > 0) {
-			'''
-				@Override
-				protected CarmaPredicate getPredicate(final CarmaStore my_store) {
-					return new CarmaPredicate() {
-						@Override
-						public boolean satisfy(CarmaStore their_store) {
-							«getOutputSatisfyBlock(action.eAllOfType(ActionGuard).get(0).booleanExpression)»
-						}
-					};
-				}
-			'''
-		} else {
-			'''
-				@Override
-				protected CarmaPredicate getPredicate(final CarmaStore my_store) {
-					return new CarmaPredicate() {
-						@Override
-						public boolean satisfy(CarmaStore their_store) {
-							return true;
-						}
-					};
-				}
-			'''
-		}
-	}
-
-	def String getOutputSatisfyBlock(BooleanExpression bes) {
-		var vrs = bes.eAllOfType(VariableReference)
-		var vrsh = new HashMap<String, VariableReference>()
-		for (vr : vrs) {
-			vrsh.put(vr.variableName, vr)
-		}
-		'''
-		try {
-			«FOR key : vrsh.keySet»
-			«vrsh.get(key).storeOutputPredicate»
-			«ENDFOR»
-			return «bes.javanise»;
-		} catch (NullPointerException exception) {
-			return false;
-		}
-		'''
-	}
-
-	def String getStoreOutputPredicate(VariableReference vr) {
-		switch (vr) {
-			VariableReferencePure: '''«vr.name.type.javanise» attrib_«vr.name.name» = their_store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
-			VariableReferenceMy: '''«vr.name.type.javanise» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
-			RecordReferencePure: '''«vr.name.type.javanise» attrib_«vr.name.name» = their_store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
-			RecordReferenceMy: '''«vr.name.type.javanise» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
-		}
-	}
-
-	def String getOutputUpdate(Action action) {
-		if (action.eAllOfType(Update).size > 0) {
-			'''
-				@Override
-				protected CarmaStoreUpdate getUpdate() {
-					return new CarmaStoreUpdate() {
-						
-						@Override
-						public void update(RandomGenerator r, CarmaStore my_store) {
-							«action.outputUpdateBlock»
-						}
-					};
-				}
-			'''
-		} else {
-			'''
-				@Override
-				protected CarmaStoreUpdate getUpdate() {
-					return null;
-				}
-			'''
-		}
-	}
-
-	def String outputUpdateBlock(Action action) {
-		var update = action.eAllOfType(Update).get(0)
-		var updateAssignments = update.eAllOfType(UpdateAssignment)
-		var vrs = new HashMap<String, VariableReference>()
-		for (updateAssignment : updateAssignments)
-			for (vr : updateAssignment.eAllOfType(VariableReference))
-				vrs.put(vr.variableName, vr)
-		'''
-		try{
-			«FOR key : vrs.keySet»
-			«vrs.get(key).storeOutput»
-			«ENDFOR»
-			«FOR updateAssignment : updateAssignments»
-			attrib_«updateAssignment.reference.name.name» = «updateAssignment.expression.javanise»;
-			«ENDFOR»
-			«FOR updateAssignment : updateAssignments»
-			my_store.set("«updateAssignment.reference.name.name»",attrib_«updateAssignment.reference.name.name»);
-			«ENDFOR»
-		} catch (NullPointerException exception) {
-				
-		}
-		'''
-	}
-
-	def String getStoreOutput(VariableReference vr) {
-		switch (vr) {
-			VariableReferencePure: '''«vr.name.type.javanise» attrib_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.classJavanise»);'''
-			VariableReferenceMy: '''«vr.name.type.javanise» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.classJavanise»);'''
-			RecordReferencePure: '''«vr.name.type.javanise» attrib_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.classJavanise»);'''
-			RecordReferenceMy: '''«vr.name.type.javanise» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.classJavanise»);'''
-		}
-	}
-
-	def String getValues(Action action) {
-		if (action.eAllOfType(OutputActionArguments).size > 0) {
-			'''
-				@Override
-				protected Object getValue(CarmaStore my_store) {
-					«action.eAllOfType(OutputActionArguments).get(0).defineValueBlock»
-				}
-			'''
-		} else {
-			'''
-				@Override
-				protected Object getValue(CarmaStore my_store) {
-					return new Object();
-				}
-			'''
-		}
-	}
-
-	def String defineValueBlock(OutputActionArguments arguments) {
-		var args = arguments.outputArguments
-		var vrs = arguments.eAllOfType(VariableReference)
-		var vrsh = new HashMap<String, VariableReference>()
-		for (vr : vrs) {
-			vrsh.put(vr.variableName, vr)
-		}
-		'''
-			ArrayList<Object> output = new ArrayList<Object>();
-			try {
-				«FOR key : vrsh.keySet»
-				«vrsh.get(key).getStoreOutputValue»
-				«ENDFOR»
-				«FOR arg : args»
-				«switch((arg as OutputActionArgument).value){
-					VariableReference : '''output.add(«(arg as OutputActionArgument).javanise»);'''
-					CarmaInteger : '''output.add(«(arg as OutputActionArgument).javanise»);'''
-				}»
-				«ENDFOR»
-				return output;
-			} catch (NullPointerException exception) {
-				return new Object();
+			
+			@Override
+			protected CarmaStoreUpdate getUpdate( final double now ) {
+				«IF act.update != null»
+				return new CarmaStoreUpdate() {
+					
+					//@Override
+					public void update(RandomGenerator r, CarmaStore store) {
+						«FOR a:act.update.referencedAttributes»
+						«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
+						«ENDFOR»
+						«FOR a:act.update.myAttributes»
+						«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"store")»
+						«ENDFOR»
+						«FOR u:act.update.updateAssignment»
+						store.set( "«u.reference.name»", «u.expression.expressionToJava» );
+						«ENDFOR»
+					}
+				};
+				«ELSE»
+				return new CarmaStoreUpdate() {					
+					//@Override
+					public void update(RandomGenerator r, CarmaStore store) {
+					}
+				};
+				«ENDIF»			
 			}
+			
+			@Override
+			protected CarmaPredicate getPredicate(final CarmaStore myStore, final double now) {
+				«IF isSpontaneous»
+				return CarmaPredicate.FALSE;
+				«ELSE»
+				«IF act.activity.predicate != null»				
+				«FOR a:act.activity.predicate.guard.myAttributes»
+				«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"myStore")»
+				«ENDFOR»
+				return new CarmaPredicate() {
+
+					//@Override
+					public boolean satisfy(CarmaStore store) {
+						
+						«FOR a:act.activity.predicate.guard.referencedAttibutes»
+						«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
+						«ENDFOR»
+						return «act.activity.predicate.guard.expressionToJava»;
+						
+					}
+					
+				};
+				«ELSE»
+				return CarmaPredicate.TRUE;
+				«ENDIF»
+				«ENDIF»
+				
+			}
+		};		
 		'''
 	}
 	
-	def String getStoreOutputValue(VariableReference vr) {
-		switch (vr) {
-			VariableReferencePure: '''«vr.name.type.javanise» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
-			VariableReferenceMy: '''«vr.name.type.javanise» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
-			RecordReferencePure: '''«vr.name.type.javanise» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
-			RecordReferenceMy: '''«vr.name.type.javanise» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
-		}
-	}
-
-	def String getActionInput(String actionName, boolean isBroadcast, Action action) {
+	def dispatch CharSequence instantiationCode( ComponentBlockForStatement block ) {
+		var varName = block.variable.name.variableName
 		'''
-			CarmaInput «actionName» = new CarmaInput( «action.name.convertName», «isBroadcast» ) {
-				«getInputActionPredicate(action)»
-				«getInputUpdate(action)»
-			};
-		'''
-	}
-
-	def String getInputActionPredicate(Action action) {
-		if (action.eAllOfType(ActionGuard).size > 0) {
-			'''
-				@Override
-				protected CarmaPredicate getPredicate(final CarmaStore my_store, final Object value) {
-					if (value instanceof ArrayList<?>){
-						return new CarmaPredicate() {
-							@Override
-							public boolean satisfy(CarmaStore their_store) {
-								«getInputSatisfyBlock(action)»
-							}
-						};
-					}
-					return null;
-				}
-			'''
-		} else {
-			'''
-				@Override
-				protected CarmaPredicate getPredicate(final CarmaStore my_store, final Object value) {
-					if (value instanceof ArrayList<?>){
-						return new CarmaPredicate() {
-							@Override
-							public boolean satisfy(CarmaStore their_store) {
-								return true;
-							}
-						};
-					}
-					return null;
-				}
-			'''
-		}
-	}
-
-	def String getInputSatisfyBlock(Action action) {
-		var BooleanExpression bes = action.eAllOfType(ActionGuard).get(0).booleanExpression
-		var vrs = bes.eAllOfType(VariableReference)
-		var vrsh = new HashMap<String, VariableReference>()
-		for (vr : vrs) {
-			vrsh.put(vr.variableName, vr)
+		for( int «varName» = 0; «block.expression.expressionToJava» ; «varName» = «varName» + «block.afterThought.expressionToJava» ) {
+			«FOR c:block.collective»
+			«c.instantiationCode»
+			«ENDFOR»			
 		}
 		'''
-			try {
-				«setupInputArguments(action.eAllOfType(InputActionParameters).get(0))»
-				«FOR key : vrsh.keySet»
-				«vrsh.get(key).storeInput»
-				«ENDFOR»
-				return «bes.javanise»;
-			} catch (NullPointerException exception) {
-				return false;
-			}
-		'''
 	}
 
-	def String getStoreInput(VariableReference vr) {
-		switch (vr) {
-			VariableReferencePure: {
-				if (vr.getContainerOfType(InputActionParameters) != null) 
-					'''«vr.name.type.javanise» attrib_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.classJavanise»);''' 
-				else 
-					''''''
-			}
-			VariableReferenceMy: '''«vr.name.type.javanise» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.classJavanise»);'''
-			RecordReferencePure: {
-				if (vr.getContainerOfType(InputActionParameters) != null) 
-					'''«vr.name.type.javanise» attrib_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.classJavanise»);''' 
-				else 
-					''''''
-			}
-			RecordReferenceMy: '''«vr.name.type.javanise» my_«vr.name.name» = my_store.get("«vr.name.name»",«vr.type.classJavanise»);'''
+	def dispatch CharSequence instantiationCode( ComponentBlockConditionalStatement block ) {
+		'''
+		if ( «block.guard.expressionToJava» ) {
+			«FOR c:block.thenBranch»
+			«c.instantiationCode»
+			«ENDFOR»			
+		}«IF block.elseBranch != null» else {
+			«FOR c:block.elseBranch»
+			«c.instantiationCode»
+			«ENDFOR»			
 		}
-	}
-
-	def String getInputUpdate(Action action) {
-		if (action.eAllOfType(Update).size > 0) {
-			'''
-				@Override
-				protected CarmaStoreUpdate getUpdate(final Object value) {
-					
-					return new CarmaStoreUpdate() {
-						@Override
-						public void update(RandomGenerator r, CarmaStore my_store) {
-							if (value instanceof ArrayList<?>){
-								«action.inputUpdateBlock»
-							};
-						};
-					
-					};
-				};
-			'''
-		} else {
-			'''
-				@Override
-				protected CarmaStoreUpdate getUpdate(final Object value) {
-					return null;
-				};
-			'''
-		}
-	}
-
-	def String inputUpdateBlock(Action action) {
-		var update = action.eAllOfType(Update).get(0)
-		var updateAssignments = update.eAllOfType(UpdateAssignment)
-		var vrs = new HashMap<String, VariableReference>()
-		for (updateAssignment : updateAssignments)
-			for (vr : updateAssignment.eAllOfType(VariableReference))
-				vrs.put(vr.name.name, vr)
-		'''
-			try{
-				«setupInputArguments(action.eAllOfType(InputActionParameters).get(0))»
-				«FOR key : vrs.keySet»
-				«vrs.get(key).storeInput»
-				«ENDFOR»
-				«FOR updateAssignment : updateAssignments»
-				«updateAssignment.reference.type.javanise» attrib_«updateAssignment.reference.name.name» = my_store.get("«updateAssignment.reference.name.name»",«updateAssignment.reference.type.classJavanise»);
-				attrib_«updateAssignment.reference.name.name» = «updateAssignment.expression.javanise»;
-				«ENDFOR»
-				«FOR updateAssignment : updateAssignments»
-				my_store.set("«updateAssignment.reference.name.name»",attrib_«updateAssignment.reference.name.name»);
-				«ENDFOR»
-			} catch (NullPointerException exception){
-				
-			}
-		'''
-	}
-
-	def String setupInputArguments(InputActionParameters parameters) {
-		var ArrayList<VariableName> vns = new ArrayList<VariableName>(parameters.eAllOfType(VariableName))
-		'''
-			«FOR vn : vns»
-				«vn.type.javanise» attrib_«vn.name» = («vn.type.javanise»)((ArrayList<?>) value).get(«vns.indexOf(vn)»);
-			«ENDFOR»
-		'''
-	}
-
-	def String createGuards(Tree tree) {
-		var HashMap<String, BooleanExpression> guardExpressions = new HashMap<String, BooleanExpression>();
-		tree.getGuards(guardExpressions);
-		'''
-			«FOR key : guardExpressions.keySet»
-				«key.getGuardPredicate(guardExpressions.get(key))»
-			«ENDFOR»
-		'''
-	}
-
-	def String getGuardPredicate(String name, BooleanExpression bes) {
-		'''
-			CarmaPredicate «name» = new CarmaPredicate() {
-				@Override
-				public boolean satisfy(CarmaStore my_store) {
-					«bes.getGuardSatisfyBlock»
-				}
-			};
-		'''
-	}
-
-	def String getGuardSatisfyBlock(BooleanExpression bes) {
-		var vrs = newHashMap()
-		for (vr : bes.eAllOfType(VariableReference)) {
-			vrs.put(vr.name.name, vr)
-		}
-		'''
-			try{
-				«FOR key : vrs.keySet»
-				«vrs.get(key).storeOutput»
-				«ENDFOR»
-				return «bes.javanise»;
-			} catch (NullPointerException exception) {
-				return false;
-			}
-		'''
-	}
-
-	def String createTransitions(Tree tree) {
-		var ArrayList<String> transitions = new ArrayList<String>()
-		tree.getTransitions(transitions)
-		'''
-			«FOR transition : transitions»
-				«transition»
-			«ENDFOR»
+		«ENDIF»
 		'''
 	}
 

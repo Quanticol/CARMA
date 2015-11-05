@@ -3,11 +3,14 @@
  */
 package eu.quanticol.carma.simulator;
 
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 import org.apache.commons.math3.random.RandomGenerator;
 import org.cmg.ml.sam.sim.Activity;
 import org.cmg.ml.sam.sim.ModelI;
+import org.cmg.ml.sam.sim.sampling.Measure;
 import org.cmg.ml.sam.sim.util.ComposedWeightedStructure;
 import org.cmg.ml.sam.sim.util.WeightedStructure;
 
@@ -19,12 +22,12 @@ public abstract class CarmaSystem implements ModelI {
 
 	protected LinkedList<CarmaComponent> collective;
 	
-	protected static CarmaStore global_store;
+	protected CarmaStore global;
 	
 	protected double now;
 
 	public CarmaSystem() {
-		this.global_store = new CarmaStore();
+		this.global = new CarmaStore();
 		this.collective = new LinkedList<CarmaComponent>();
 		this.now = 0.0;
 	}
@@ -36,6 +39,15 @@ public abstract class CarmaSystem implements ModelI {
 				c.inputBroadcast(r , this , sender , action , predicate , value );
 			}
 		}
+		
+	}
+	
+	public void setGLobalAttribute( String attribute , Object value ) {
+		global.set(attribute, value);
+	}
+	
+	public <T> T getGlobalAttribute( String attribute, Class<T> clazz ) {
+		return global.get(attribute, clazz);
 	}
 	
 	public boolean unicastOutput( RandomGenerator r , CarmaComponent sender, int action,
@@ -75,8 +87,11 @@ public abstract class CarmaSystem implements ModelI {
 		int counter = 0;
 		
 		for (CarmaComponent caspaComponent : collective) {
-			if (p.satisfy(caspaComponent.store)) {
-				counter++;
+			try {
+				if (p.satisfy(caspaComponent.store)) {
+					counter++;
+				}
+			} catch (NullPointerException e) {				
 			}
 		}
 		
@@ -124,17 +139,89 @@ public abstract class CarmaSystem implements ModelI {
 		}
 		return count;
 	}
+	
+	public double min( Measure<CarmaStore> m , CarmaPredicate guard ) {
+		double value = Double.POSITIVE_INFINITY;
+		for (CarmaComponent carmaComponent : collective) {
+			try {
+				if (guard.satisfy(carmaComponent.store)) {
+					double v = m.measure(carmaComponent.store);
+					if (v<value) {
+						value = v;
+					}
+				}
+			} catch (NullPointerException e) {				
+			}
+		}		
+		return value;
+	}
+
+	public double max( Measure<CarmaStore> m , CarmaPredicate guard ) {
+		double value = Double.NEGATIVE_INFINITY;
+		for (CarmaComponent carmaComponent : collective) {
+			try {
+				if (guard.satisfy(carmaComponent.store)) {
+					double v = m.measure(carmaComponent.store);
+					if (v>value) {
+						value = v;
+					}
+				}
+			} catch (NullPointerException e ){				
+			}
+		}
+		return value;
+	}
+
+	public double average( Measure<CarmaStore> m , CarmaPredicate guard ) {
+		double value = 0.0;
+		int count = 0;
+		for (CarmaComponent carmaComponent : collective) {
+			try {
+				if (guard.satisfy(carmaComponent.store)) {
+					value += m.measure(carmaComponent.store);
+					count++;
+				}
+			} catch (NullPointerException e) {
+			}
+		}
+		return value/count;
+	}
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
-		return global_store.toString()+"|-"+this.collective.toString();
+		return global.toString()+"|-"+this.collective.toString();
 	}
 
 	public Iterable<CarmaComponent> components() {
 		return collective;
 	}
 	
+	public CarmaStore getGlobalStore() {
+		return global;
+	}
+	
+	public static <T> T uniform( RandomGenerator rg , T ... args ) {
+		int idx = rg.nextInt(args.length);
+		return args[idx];
+	}
+	
+	public LinkedList<Map<String,Object>> retrieve( CarmaPredicate guard , String[] attributes  ) {
+		LinkedList<Map<String,Object>> toReturn = new LinkedList<>();
+		for (CarmaComponent carmaComponent : collective) {
+			if (guard.satisfy(carmaComponent.store)) {
+				HashMap<String,Object> data = new HashMap<>();
+				for( int i=0 ; i<attributes.length ; i++ ) {
+					Object foo = carmaComponent.get(attributes[i], Object.class );
+					if (foo != null) {
+						data.put( attributes[i] , foo );
+					}
+				}
+				toReturn.add(data);
+			}
+		}		
+		return toReturn;
+	}
 }

@@ -1,213 +1,122 @@
 package eu.quanticol.carma.core.generator.ms.measure
 
 import com.google.inject.Inject
-import eu.quanticol.carma.core.carma.AComponentAState
-import eu.quanticol.carma.core.carma.AComponentAllStates
-import eu.quanticol.carma.core.carma.AllComponents
-import eu.quanticol.carma.core.carma.ComponentComprehension
-import eu.quanticol.carma.core.carma.Model
-import eu.quanticol.carma.core.carma.ParallelComponentComprehension
-import eu.quanticol.carma.core.carma.SetComp
-import java.util.ArrayList
-import java.util.HashMap
-import java.util.HashSet
-
-import static extension org.eclipse.xtext.EcoreUtil2.*
-import eu.quanticol.carma.core.carma.ComponentBlockDefinition
-import eu.quanticol.carma.core.carma.ProcessComposition
 import eu.quanticol.carma.core.utils.Util
-import eu.quanticol.carma.core.carma.CBND
-import eu.quanticol.carma.core.carma.VariableReference
-import eu.quanticol.carma.core.carma.VariableReferenceMy
-import eu.quanticol.carma.core.carma.RecordReferenceMy
-import eu.quanticol.carma.core.typing.TypeProvider
-import eu.quanticol.carma.core.carma.Measure
-import eu.quanticol.carma.core.generator.ms.SharedJavaniser
-import eu.quanticol.carma.core.carma.ParallelComposition
-import eu.quanticol.carma.core.carma.ProcessReference
+import eu.quanticol.carma.core.carma.MeasureDefinition
+import eu.quanticol.carma.core.generator.ms.expression.ExpressionHandler
+import eu.quanticol.carma.core.carma.Expression
+import eu.quanticol.carma.core.carma.Range
+import eu.quanticol.carma.core.carma.MeasureVariableDeclaration
+import eu.quanticol.carma.core.generator.ms.attribute.AttributeHandler
+import eu.quanticol.carma.core.utils.ReferenceContext
 
 class MeasureHandler {
+
+	@Inject extension Util	
+	@Inject extension ExpressionHandler
+	@Inject extension AttributeHandler
 	
-	@Inject extension Util
-	@Inject extension TypeProvider
-	@Inject extension SharedJavaniser
+	public static final String SetUpMeasureMethodName = "setUpMeasures()"
+	
+	def measureBuilderMethod( String name ) {
+		'''buildMeasure«name»( )'''
+	}
+
+	def collectMeasures( Iterable<MeasureDefinition> measures ) {
+
+		'''
 		
-	def String getMeasures(ArrayList<SetComp> setcomps){
-		'''
-		«FOR setcomp : setcomps»
-		«setcomp.measureFunction»
-		«setcomp.measurePredicatePredicate»
-		«setcomp.measureVariablePredicate»
-		«ENDFOR»
-		'''
-	}
-	
-	
-	/**
-	 * sender. receiver. global. and 'pure' should become parameters
-	 * my. should be the store of the Component under evaluation IE found in the predicate, and compared against the input arguments
-	 */
-	def String getMeasureFunction(SetComp setcomp){
-		'''
-		public Measure<CarmaSystem> getMeasure«setcomp.javanise»(final String name, «setcomp.predicate.disarmParameters»){
-			
-			return new Measure<CarmaSystem>(){
-			
-				ComponentPredicate predicate = getMeasure«setcomp.javanise»_predicate_Predicate(«setcomp.predicate.disarmOut»);
-				String myName = setName(name+"«setcomp.javanise»",«setcomp.predicate.disarmOut»);
+		private HashMap<String,Measure<CarmaSystem>> measures;
 				
-				public String setName(String name, «setcomp.predicate.disarmParameters»){
-					return ""+name+" : "+«setcomp.predicate.disarmString»;
-				}
-			
-				@Override
-				public double measure(CarmaSystem t){
-					return t.measure(predicate);
-			
-				};
-			
-				@Override
-				public String getName() {
-					return myName;
-				}
-			};
-		}
-		'''
-	}
-	
-	def String getMeasurePredicatePredicate(SetComp setcomp){
-		'''
-		protected CarmaPredicate getPredicate«setcomp.javanise»(«setcomp.predicate.disarmParameters») {
-			return new CarmaPredicate() {
-				@Override
-				public boolean satisfy(CarmaStore store) {
-					«setcomp.getMeasureSatisfyBlock»
-				}
-			};
+		public String[] getMeasures() {
+			TreeSet<String> sortedSet = new TreeSet<String>( measures.keySet() );
+			return sortedSet.toArray( new String[ sortedSet.size() ] );
 		}
 		
-		public ComponentPredicate getMeasure«setcomp.javanise»_predicate_Predicate(«setcomp.predicate.disarmParameters»){
-			return new ComponentPredicate() {
-				
-				@Override
-				public boolean eval(CarmaComponent c){
-					return getPredicate«setcomp.javanise»(«setcomp.predicate.disarmOut»).satisfy(c.getStore()) && (c.isRunning(getMeasure«setcomp.javanise»_Variable_Predicate()));
-				}
-			};
+		public Measure<CarmaSystem> getMeasure( String name ) {
+			return measures.get( name );
 		}
-		'''
-	}
-	
-	def String getMeasureSatisfyBlock(SetComp setcomp){
-		var vrs =  new ArrayList<VariableReference>(setcomp.predicate.eAllOfType(VariableReference))
-		vrs = vrs.reverseClean
-		var vrsh = new HashMap<String,VariableReference>()
-		for(vr : vrs){
-			vrsh.put(vr.name.name,vr)
-		}
-		'''
-		try{
-			«FOR key : vrsh.keySet»
-			«vrsh.get(key).storePredicate»
+
+		protected void «SetUpMeasureMethodName» {
+			measures = new HashMap<String,Measure<CarmaSystem>>();
+			«FOR m:measures»
+			«m.name.measureBuilderMethod»;
 			«ENDFOR»
-			return «setcomp.predicate.javanise»;
-		} catch (NullPointerException exception) {
-			return false;
-		}
-		'''
-	}
-	
-	def String checkStorePredicate(VariableReference vr){
-		switch (vr) {
-			VariableReferenceMy: 		'''my_variables.put("«vr.name.name»",«vr.name.type.classJavanise»);'''
-			RecordReferenceMy: 			'''my_variables.put("«vr.name.name»",«vr.name.type.classJavanise»);'''
-		}
-	}
-	
-	def String getStorePredicate(VariableReference vr){
-		switch (vr) {
-			VariableReferenceMy: 		'''«vr.name.type.javanise» my_«vr.name.name» = store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
-			RecordReferenceMy: 			'''«vr.name.type.javanise» my_«vr.name.name» = store.get("«vr.name.name»",«vr.name.type.classJavanise»);'''
-		}
-	}
-	
-	def String getMeasureVariablePredicate(SetComp setcomp){
-		'''
-		public CarmaProcessPredicate getMeasure«setcomp.javanise»_Variable_Predicate(){
-			return new CarmaProcessPredicate() {
-				
-				@Override
-				public boolean eval(CarmaProcess p) {
-					return «setcomp.variable.expressComponentComprehension»
-				}
-			};
-		}
-		'''
-	}
-	
-	def String expressComponentComprehension(ComponentComprehension cc){
-		//sanity
-		if(cc == null){
-			return '''false;'''
-		} 
+		}	
 		
-		return '''«cc.componentState»;'''
+		«FOR m:measures»
+		«m.measureToJava»
+		«ENDFOR»
+		
+		'''
 	}
 
-	def String getComponentState(ComponentComprehension comp){
-		switch(comp){
-			ParallelComponentComprehension: '''(«comp.left.getComponentState» || «comp.right.getComponentState»)''' 
-			AllComponents:					'''true'''
-			AComponentAllStates:			'''(«comp.aComponentAllStates»)'''
-			AComponentAState:				'''(«comp.aComponentAState»)'''
-		}
-	}
-
-	def String aComponentAllStates(AComponentAllStates comp){
-		var name = comp.comp.getContainerOfType(ComponentBlockDefinition).componentSignature.name.name
-		var component = comp.comp.getContainerOfType(ComponentBlockDefinition)
-		'''((CarmaSequentialProcess) p).automaton().getName().equals(create«name»Process().getName())
-		&& («FOR state : component.allStates SEPARATOR '||'» «state» «ENDFOR»)'''
-	}
-	
-	def ArrayList<String> allStates(ComponentBlockDefinition component){
-		var output = new ArrayList<String>()
-		var HashSet<String> states = new HashSet<String>()
-		var tree = component.getCBND.getTree
-		tree.getStates(states)
-		for(state : states)
-			if(state.equals("null")){
-				output.add('''(((CarmaSequentialProcess) p).getState() ==  null)''')
+	def CharSequence measureBuilderBody( String name , Iterable<Pair<Integer,MeasureVariableDeclaration>> vars , int idx ) {
+		if (vars.size>idx) {
+			var v = vars.get(idx)
+			var value = v.value.assign
+			if (value instanceof Range) {
+				'''
+					for( 
+						int v«idx» = «value.min.expressionToJava» ; 
+						v«idx» <= «value.max.expressionToJava» ; 
+						«IF value.step != null»
+						v«idx» = v«idx» + «value.step.expressionToJava»
+						«ELSE»
+						v«idx»++
+						«ENDIF»
+					) {
+						«name.measureBuilderBody(vars,idx+1)»
+					}
+				'''
 			} else {
-				output.add('''((((CarmaSequentialProcess) p).getState() !=  null) && 
-				((CarmaSequentialProcess) p).getState().getName().equals("«state»"))''')
+				'''
+				int v«idx» = «value.expressionToJava»;
+				«name.measureBuilderBody(vars,idx+1)»
+				'''				
 			}
+		} else {
+			'''measures.put( 
+				"«name»«IF vars.size>0»[«ENDIF»"«FOR v:vars»+v«v.key»«ENDFOR»«IF vars.size>0»+"]"«ENDIF» ,
+				getMeasure«name»( «FOR v:vars SEPARATOR ','»v«v.key»«ENDFOR»)
+			);'''
+		}
+	}
+
+	def measureToJava( MeasureDefinition m ) {
+		'''
+		
+		private void «m.name.measureBuilderMethod» {
+			«m.name.measureBuilderBody( m.variables.indexed , 0 )»
+		}
+		
+		
+		private Measure<CarmaSystem> getMeasure«m.name»( 
+			«FOR v:m.variables SEPARATOR ','»final Integer «v.name.variableName»«ENDFOR»
+		) {
+
+			return new Measure<CarmaSystem>() {
 			
-		return output
-	}
-	
-	def String aComponentAState(AComponentAState comp){
-		var name = comp.comp.getContainerOfType(ComponentBlockDefinition).componentSignature.name.name
-		var processComposition = comp.state
-		'''((CarmaSequentialProcess) p).automaton().getName().equals(create«name»Process().getName()) && 
-		«processComposition.processCompositionState»'''
-	}
-	
-	def String getProcessCompositionState(ProcessComposition process){
-		switch(process){
-			ParallelComposition: '''(«process.left.getProcessCompositionState» || «process.right.getProcessCompositionState»)'''  
-			ProcessReference:	 '''(((CarmaSequentialProcess) p).getState() !=  null) && 
-			(((CarmaSequentialProcess) p).getState().getName().equals("state_«(process as ProcessReference).expression.name»"))'''
+				//@Override
+				public double measure(final CarmaSystem system) {
+					final CarmaStore global = system.getGlobalStore();
+					final double now = system.now();
+					«FOR a:m.measure.globalAttributes»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::GLOBAL,"global")»
+					«ENDFOR»
+					return «m.measure.expressionToJava»;
+				}
+
+				//@Override
+				public String getName() {
+					return "«m.name»"«FOR v:m.variables»+"_"+«v.name.variableName»«ENDFOR»;
+				}
+			
+			};
+			
 		}
-	}
-	
-	def CBND getCBND(ComponentBlockDefinition component){
-		var CBND toReturn = null
-		for(cbnd : component.getContainerOfType(Model).eAllOfType(CBND)){
-			if(cbnd.name.sameName(component.componentSignature.name))
-				toReturn = cbnd			
-		}
-		return toReturn
-	}
+		
+		'''
+	}	
 	
 }

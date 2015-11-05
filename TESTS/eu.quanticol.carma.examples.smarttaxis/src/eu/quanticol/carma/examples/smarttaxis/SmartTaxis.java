@@ -1,5 +1,6 @@
 package eu.quanticol.carma.examples.smarttaxis;
 
+
 import org.apache.commons.math3.random.RandomGenerator;
 import org.cmg.ml.sam.sim.SimulationEnvironment;
 import org.cmg.ml.sam.sim.sampling.SamplingCollection;
@@ -19,6 +20,7 @@ public class SmartTaxis extends CarmaSystem {
 	
 	public SmartTaxis( int taxis , int users ) {
 		
+				
 		for( int l=0 ; l<SmartTaxisDefinitions.NUMBER_OF_LOCATIONS ; l++ ) {
 			for( int i=0 ; i<taxis ; i++ ) {
 				CarmaComponent taxi = getTaxi( l );

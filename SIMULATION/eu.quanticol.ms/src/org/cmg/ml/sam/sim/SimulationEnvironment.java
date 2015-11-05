@@ -13,9 +13,11 @@
 package org.cmg.ml.sam.sim;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import org.apache.commons.math3.random.RandomGenerator;
 import org.cmg.ml.sam.sim.sampling.SamplingFunction;
+import org.cmg.ml.sam.sim.sampling.SimulationTimeSeries;
 import org.cmg.ml.sam.sim.util.WeightedElement;
 import org.cmg.ml.sam.sim.util.WeightedStructure;
 
@@ -47,30 +49,51 @@ public class SimulationEnvironment<S extends ModelI> {
 		this.sampling_function = sampling_function;
 	}
 
-	public synchronized void simulate(int iterations, double deadline) {
-		for (int i = 0; i < iterations; i++) {
+	public synchronized void simulate(SimulationMonitor monitor , int iterations, double deadline) {
+		RandomGeneratorRegistry rgi = RandomGeneratorRegistry.getInstance();
+		rgi.register(random);
+		for (int i = 0; (((monitor == null)||(!monitor.isCancelled()))&&(i < iterations)) ; i++) {
+			if (monitor != null) {
+				monitor.startIteration( i );
+			}
 			System.out.print('<');
 			if ((i + 1) % 50 == 0) {
 				System.out.print(i + 1);
 			}
 			System.out.flush();
-			simulate(deadline);
+			doSimulate(monitor,deadline);
+			if (monitor != null) {
+				monitor.endSimulation( i );
+			}
 			System.out.print('>');
 			if ((i + 1) % 50 == 0) {
 				System.out.print("\n");
 			}
 			System.out.flush();
 		}
+		rgi.unregister();		
+	}
+	
+	public synchronized void simulate(int iterations, double deadline) {
+		simulate( null , iterations , deadline );
 	}
 
 	public synchronized double simulate(double deadline) {
+		RandomGeneratorRegistry rgi = RandomGeneratorRegistry.getInstance();
+		rgi.register(random);
+		double result = doSimulate(deadline);
+		rgi.unregister();
+		return result;
+	}
+
+	private double doSimulate(SimulationMonitor monitor , double deadline) {
 		this.model = this.factory.getModel();
 		double time = 0.0;
 		if (sampling_function != null) {
 			sampling_function.start();
 			sampling_function.sample(time, model);
 		}
-		while (time < deadline) {
+		while (((monitor == null)||(!monitor.isCancelled()))&&(time < deadline)) {
 			double dt = doAStep();
 			if (dt <= 0) {
 				if (sampling_function != null) {
@@ -84,10 +107,14 @@ public class SimulationEnvironment<S extends ModelI> {
 				sampling_function.sample(time, model);
 			}
 		}
+		
 		if (sampling_function != null) {
 			sampling_function.end(time);
 		}
-		return time;
+		return time;	
+	}
+	private double doSimulate(double deadline) {
+		return doSimulate(null,deadline);
 	}
 
 	private double doAStep() {
@@ -114,4 +141,10 @@ public class SimulationEnvironment<S extends ModelI> {
 		return random.nextInt(zones);
 	}
 
+	public LinkedList<SimulationTimeSeries> getTimeSeries() {
+		if (sampling_function == null) {
+			return null;
+		}
+		return sampling_function.getSimulationTimeSeries();
+	}
 }
