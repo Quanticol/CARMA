@@ -46,7 +46,7 @@ public class SamplingLog<S> implements SamplingFunction<S> {
 	}
 
 	@Override
-	public LinkedList<SimulationTimeSeries> getSimulationTimeSeries() {
+	public LinkedList<SimulationTimeSeries> getSimulationTimeSeries( int replications ) {
 		return new LinkedList<>();
 	}
 

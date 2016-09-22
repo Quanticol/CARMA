@@ -4,7 +4,6 @@ import com.google.inject.Inject
 import eu.quanticol.carma.core.carma.FunctionDefinition
 
 import eu.quanticol.carma.core.utils.Util
-import org.eclipse.xtend.expression.TypeSystem
 import eu.quanticol.carma.core.generator.ms.expression.ExpressionHandler
 import eu.quanticol.carma.core.carma.IfThenElseCommand
 import eu.quanticol.carma.core.carma.ReturnCommand
@@ -16,11 +15,15 @@ import eu.quanticol.carma.core.carma.AssignmentTarget
 import eu.quanticol.carma.core.carma.FieldAssignment
 import eu.quanticol.carma.core.carma.TargetAssignmentVariable
 import eu.quanticol.carma.core.carma.TargetAssignmentField
+import eu.quanticol.carma.core.carma.ForEach
+import eu.quanticol.carma.core.typing.TypeSystem
+import eu.quanticol.carma.core.typing.CarmaType
 
 class FunctionHandler {
 	
 	@Inject extension Util
 	@Inject extension ExpressionHandler
+	@Inject extension TypeSystem
 		
 	def String printFunctions(Iterable<FunctionDefinition> functions){
 		'''
@@ -69,9 +72,23 @@ class FunctionHandler {
 
 	def dispatch CharSequence functionBodyToJava( ForCommand  c ) {
 		'''
-		for( int «c.variable.name.variableName» = «IF c.start==null»0«ELSE»«c.start.expressionToJava»«ENDIF» ; «c.variable.name.variableName» < «c.end» ; «c.variable.name.variableName» += «c.step.expressionToJava» ) 
+		for( int «c.variable.name.variableName» = «IF c.start==null»0«ELSE»«c.start.expressionToJava»«ENDIF» ; «c.variable.name.variableName» < «c.end.expressionToJava» ; «c.variable.name.variableName» += «IF c.step==null»1«ELSE»«c.step.expressionToJava»«ENDIF» ) 
 			«c.body.functionBodyToJava»
 		'''
+	}
+
+	def dispatch CharSequence functionBodyToJava( ForEach  c ) {
+		var eType = c.iteration.typeOf
+		if (eType.isNone) {
+			'''
+			//ERROR!!!
+			'''
+		} else {
+			'''
+			for( «eType.toJavaType(false)» «c.iteration.name.variableName»:  «c.iteration.value.expressionToJava» ) 
+				«c.body.functionBodyToJava»
+			'''
+		}
 	}
 
 	def dispatch CharSequence functionBodyToJava( BlockCommand  b ) {

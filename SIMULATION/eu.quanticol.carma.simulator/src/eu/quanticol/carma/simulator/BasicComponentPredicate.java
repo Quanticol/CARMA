@@ -20,9 +20,9 @@ public class BasicComponentPredicate implements ComponentPredicate {
 	}
 	
 	@Override
-	public boolean eval(CarmaComponent c) {
+	public boolean eval(double now,CarmaComponent c) {
 		try {
-			if (this.guard.satisfy(c.store)) {
+			if (this.guard.satisfy(now,c.store)) {
 				boolean[] foo = new boolean[c.processes.size()];
 				for( int i=0 ; i<states.length ; i++ ) {
 					boolean flag = false;

@@ -18,12 +18,158 @@ Element:
 	| EnumDefinition
 	| MeasureDefinition
 	| SystemDefinition
+	| CollectiveDefinition
+	| SpaceDefinition
+;
+
+SpaceDefinition:
+	'space' name=ID '(' (parameters += Variable (',' parameters +=Variable )*)? ')' '{'
+		('universe' '<' universe += UniverseElement (',' universe += UniverseElement )* '>')?
+		'nodes' '{'
+			(nodes += NodeBodyCommand)*
+		'}'
+		'connections' '{' 
+			(edges += ConnectionExpression ';')*
+		'}' 
+		('areas' '{'
+			(labels += LabelDefinition)*
+		'}')?	
+		(features += LocationFeature)*
+	'}'
+;
+
+UniverseElement:
+	type=ValueType name=ID
+;
+
+NodeBodyCommand:
+	NodeDeclaration|NodeIfThenElseCommand|NodeForLoop|NodeBlockCommand
+;
+
+NodeForLoop:
+	"for" ({NodeForCommand} variable=IterationVariable 'from' start=Expression ('by' step=Expression)? 'to' end=Expression  
+		body=NodeBodyCommand
+		| {NodeForEach} iteration=LoopingVariable body=NodeBodyCommand
+	)
+;
+
+
+NodeBlockCommand: {NodeBlockCommand}
+	'{'
+			(nodes += NodeBodyCommand)*
+	'}'	
+;
+
+NodeIfThenElseCommand:
+	'if' '(' condition=Expression ')'
+		thenBlock = NodeBodyCommand
+	(=> 'else' elseBlock = NodeBodyCommand)?	
+;
+
+NodeDeclaration: 
+	NamedNode | UnNamedNode
+;
+
+NamedNode:
+	name=ID ('[' values += Expression (',' values += Expression )*']')? ';'
+;
+
+UnNamedNode:
+	'[' values += Expression (',' values += Expression )* ']' ';'
+;
+
+LocationFeature:
+	'feature' type=BasicType name=ID '(' (parameters += Variable (',' parameters+=Variable)*)? ')' 
+		body=FunctionCommand
+;
+
+LabelDefinition:
+	name=ID '{' ( patterns+=AreaDefinitionCase ';' )* 
+	'}' (':' '{'
+		(features += AreaFeature ';')*
+	'}')?
+;
+
+AreaFeature:
+	name=ID '=' value=Expression
+;
+
+AreaDefinitionCase:
+	pattern=NodePattern (':' guard=Expression )?
+;
+
+ConnectionExpression:
+	source=NodePattern (':' guard=Expression)? direction=Direction trg=LocationExpression ':' edgeProperties += EdgeProperty (',' edgeProperties += EdgeProperty)*
+;
+
+EdgeProperty:
+	name=ID '=' value=Expression
+;
+
+Direction:
+	{DirectedEdge} '->'
+	| {UnDirectedEdge} '<->'
+;
+
+NodePattern:
+	NamedPattern|UnNamedPattern
+;
+
+NamedPattern returns NodePattern:
+	ref=[NamedNode] ('[' elements += PatternElement (',' elements += PatternElement)* ']')?
+;
+
+UnNamedPattern returns NodePattern:
+	'[' elements += PatternElement (',' elements += PatternElement)* ']'
+;
+
+
+LocationExpression:
+	NamedLocationExpression
+	| 
+	UnNamedLocationExpression
+;
+
+NamedLocationExpression:
+	ref=[NamedNode] ('[' values += Expression (',' values+=Expression )* ']')?
+;	
+
+UnNamedLocationExpression:
+	'[' values += Expression (',' values+=Expression )* ']'
+;
+
+LocationExpressionValue:
+	value=Expression
+;
+
+LocationVariable:
+	'?' name=ID
+;
+
+PatternElement:
+	//LocationIntegerValue|LocationReference|
+	LocationExpressionValue|LocationVariable|AnyValue
+;
+
+AnyValue: {AnyValye}
+	'_'
+;
+
+CollectiveDefinition:
+	'collective' name=ID 
+		block = CollectiveBlock
+;
+
+CollectiveBlock: {CollectiveBlock} '{'
+			//collective += ComponentBlockDeclaration 
+			(collective+=ComponentBlockDeclaration)*
+	'}'
 ;
 
 ////////////////////////////////////////////////////RECORDS, ENUMS AND TYPES
 
 EnumDefinition:
-	'enum' name=ID '=' values += EnumCase (',' values += EnumCase ) ';'
+	'enum' name=ID '=' values += EnumCase (',' values += EnumCase )* ';'
 ;
 
 RecordDefinition returns RecordDefinition hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -55,16 +201,28 @@ BasicType:
 		IntegerType|
 		RealType|
 		BooleanType |
-		CustomType
+		CustomType |
+		ArrayType |
+		ListType |
+		SetType |
+		LocationType 
 ;
 
-IntegerType: {IntegerType} "int" ;
+IntegerType: {IntegerType} "int" ('[' min=Expression '..' max=Expression ']')?;
+
+LocationType: {LocationType} "node";
 
 RealType: {RealType} "real" ;
 
 BooleanType: {BooleanType} "bool";
 
 CustomType: {CustomType} reference=[ReferenceableType];
+
+ArrayType: 'array' '<' arg=BasicType '>';
+
+ListType: 'list' '<' arg=BasicType '>';
+
+SetType: 'set' '<' arg=BasicType '>';
 
 ////////////////////////////////////////////////////VARIABLES AND REFERENCES
 
@@ -78,6 +236,7 @@ UntypedVariable:
 
 ReferenceableElement:
 	IterationVariable |
+	LoopingVariable |
 	UntypedVariable|
 	Variable|
 	AttributeDeclaration|
@@ -85,7 +244,15 @@ ReferenceableElement:
 	EnumCase|
 	ConstantDefinition|
 	ProcessState|
-	MeasureVariableDeclaration
+//	MeasureVariableDeclaration|
+	NamedNode|
+	LocationVariable|
+	FieldDefinition|
+	LabelDefinition|
+	LocationFeature|
+	LabelDefinition|	
+	UniverseElement|
+	MeasureDefinition
 ;
 
 ////////////////////////////////////////////////////FUNCTIONS
@@ -100,13 +267,13 @@ FunctionCommand:
 	IfThenElseCommand 
 	| ReturnCommand 
 	| VariableDeclarationCommand 
-	| ForCommand 
+	| ForLoop 
 	| BlockCommand 
 	| AssignmentCommand
 ;
 
 AssignmentCommand:
-	target=AssignmentTarget ':=' value=Expression ';'
+	target=AssignmentTarget (':='|'=') value=Expression ';'
 ;
 
 AssignmentTarget:
@@ -123,9 +290,17 @@ BlockCommand: {BlockCommand}
 	'}'	
 ;
 
-ForCommand:
-	"for" "(" variable=IterationVariable ('=' start=Expression)? ";" end=Expression ";" step=Expression ")" 
+
+
+ForLoop:
+	"for" ({ForCommand} variable=IterationVariable 'from' start=Expression ('by' step=Expression)? 'to' end=Expression  
 		body=FunctionCommand
+		| {ForEach} iteration=LoopingVariable body=FunctionCommand
+	)
+;
+
+LoopingVariable:
+	name=ID 'in' value=Expression
 ;
 
 IterationVariable:
@@ -133,7 +308,7 @@ IterationVariable:
 ;
 
 VariableDeclarationCommand:
-	variable = Variable (':=' value = Expression)? ';'
+	variable = Variable ((':='|'=') value = Expression)? ';'
 ;
 
 ReturnCommand:
@@ -149,10 +324,25 @@ IfThenElseCommand:
 
 ////////////////////////////////////////////////////ASSIGNMENT
 
-UpdateAssignment hidden(ML_COMMENT,SL_COMMENT,WS):
-	reference=[AttributeDeclaration] ":=" expression=Expression
+UpdateCommand hidden(ML_COMMENT,SL_COMMENT,WS):
+	('my' '.')? AttributeReference (
+		{UpdateAssignment.reference=current} (":="|"="|'<-') expression=Expression ";" 
+		| {UpdateCollectionAdd.reference=current} "." "add" "(" arg=Expression ")" ";"
+		| {UpdateCollectionRmove.reference=current} "." "remove" "(" arg=Expression ")" ";"
+	)
 ;
 
+AttributeReference:
+	StoreAttribute|LocAttribute
+;
+
+StoreAttribute:
+	reference = [AttributeDeclaration]
+;
+
+LocAttribute: {LocAttribute}
+	'loc'
+;
 ////////////////////////////////////////////////////STATE
 
 ProcessComposition returns ProcessComposition hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -224,8 +414,8 @@ StoreBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 AttributeDeclaration:
-	{AttributeConstDeclaration} "const" name=ID ":=" value=Expression
-	| {AttibuteVarDeclaration} "attrib" name=ID  ":=" value=Expression
+	{AttributeConstDeclaration} "const" name=ID (":="|"=") value=Expression
+	| {AttibuteVarDeclaration} ("attrib")? (type=BasicType)? name=ID  (":="|"=") value=Expression
 ;
 	
 ProcessesBlock hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -246,18 +436,31 @@ InitBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 
 SystemDefinition:
 	"system" name=ID '{'
-		'collective' '{'
-			collective += ComponentBlockDeclaration (collective+=ComponentBlockDeclaration)*			
-		'}'
+		('space' space=[SpaceDefinition] '(' (args += Expression ( ',' args+= Expression )*)? ')')?
+		'collective' collective=SystemCollective
 		(environment=Environment)?
 		
 	'}'
 ;
 
+//'{'
+//			collective += ComponentBlockDeclaration (collective+=ComponentBlockDeclaration)*			
+//		'}'
+
+SystemCollective: 
+	CollectiveBlock |
+	CollectiveReference	
+;
+
+CollectiveReference:
+	reference=[CollectiveDefinition] 
+;
+
 ComponentBlockDeclaration :
 	(  
+		UpdateCommand|
 		ComponentBlockNew |  
-		ComponentBlockForStatement |
+		ComponentBlockFor |
 		ComponentBlockConditionalStatement 
 	)
 ;
@@ -280,13 +483,18 @@ ComponentBlockInstantiation hidden(ML_COMMENT,SL_COMMENT,WS):
 	"new"
 	name=[ComponentDefinition] 
 	'(' (arguments+=Range (',' arguments+=Range)* )? ')'
-//	("["population=INT"]")?
+	('@' location=Atomic )?
+	("<"population=Atomic ">")?
 ;
 
-ComponentBlockForStatement hidden(ML_COMMENT,SL_COMMENT,WS):
-	"for" "(" variable=IterationVariable ";" expression=Expression ";" afterThought=Expression ")" '{'
+ComponentBlockFor hidden(ML_COMMENT,SL_COMMENT,WS):
+	"for" ({ComponentBlockForStatement} "(" variable=IterationVariable ";" expression=Expression ";" afterThought=Expression ")" '{'
 			(collective += ComponentBlockDeclaration)*			
-	'}'
+			'}'
+			|{ComponentBlockIteratorStatement} iteration=LoopingVariable '{'
+				(collective += ComponentBlockDeclaration)*			
+			'}'
+			)
 ;
 
 ////////////////////////////////////////////////////PROCESS
@@ -376,7 +584,7 @@ Action hidden(ML_COMMENT,SL_COMMENT,WS):
 
 
 Update hidden(ML_COMMENT,SL_COMMENT,WS):
-	{Update} "{" (updateAssignment+=UpdateAssignment ( "," updateAssignment+=UpdateAssignment)*)? "}"
+	{Update} "{" (updateAssignment+=UpdateCommand ( updateAssignment+=UpdateCommand)*)? "}"
 ;
 
 ActionGuard hidden(ML_COMMENT,SL_COMMENT,WS):
@@ -391,8 +599,11 @@ Range returns Expression:
 
 
 Expression hidden(ML_COMMENT,SL_COMMENT,WS):
+	{LambdaExpression} 'lambda' variables+=Variable (',' variables+=Variable )* '->' body = Or |
 	Or
 ;
+
+
 
 Or returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	And ({Or.left=current} "||" 
@@ -407,13 +618,14 @@ And returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 	
 Relation returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
-	SumDiff (
+	SumDiff => (
 		{Equality.left=current} '==' right=SumDiff
 		| {DisEquality.left=current} '!=' right=SumDiff
 		| {Less.left=current} '<' right=SumDiff
 		| {LessOrEqual.left=current} '<=' right=SumDiff
 		| {Greater.left=current} '>' right=SumDiff
 		| {GreaterOrEqual.left=current} '>=' right=SumDiff
+		| {IsIn.left=current} 'in' right=SumDiff
 	)?
 ;
 
@@ -437,39 +649,60 @@ Modulo returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 Primary returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
-	'(' Expression 	({IfThenElseExpression.guard=current} "?" thenBranch=Expression ":" elseBranch=Expression)? ")" | 
+	'(' Expression 	
+		({IfThenElseExpression.guard=current} "?" thenBranch=Expression ":" elseBranch=Expression)? 
+			")" | 
 	{Not} "!" expression=Primary |
 	{UnaryPlus} '+' expression=Primary |
 	{UnaryMinus} '-' expression=Primary | 
-	RecordAccess 	
+	ArrayRecordAccess 	
 ;
 
-RecordAccess returns Expression:
-	Atomic ( {RecordAccess.source=current} '.' field=[FieldDefinition] )*
+  ArrayRecordAccess returns Expression:
+	Atomic => ( 
+		{FieldAccess.source=current} '.' field=[ReferenceableElement]
+		| 
+		{NodeExpressionOrArrayAccess.source=current} '[' values += Expression (',' values += Expression)* ']'
+		| 
+		{PreSetExpression.source=current} "." "pre"
+		| 
+		{PoSetExpression.source=current} "." "post"
+	)*
 ;
 
 Atomic returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	Reference 
+	| CollectionAtomicExpression
+	| {Locations} "locations"
+	| {MyLocation} "loc"
 	| {AtomicTrue} "true"
 	| {AtomicFalse} "false"
 	| {AtomicInteger} value=INT 
 	| {AtomicReal} value=REAL 
 	| {AtomicRecord} '[' fields += FieldAssignment (',' fields += FieldAssignment)* ']' 
-	| {AtomicNow} "now" 
+	| {AtomicNow} "now"
+	| {None} "none" 
 	| SetComp				
 	| {AtomicRnd} "RND"
 	| {AtomicPi} "PI"
 	| {AtomicExp} "E"
 	| BuiltInFunctions
-	| {MyContext} "my" "." reference=[AttributeDeclaration]
-	| {ReceiverContext} "receiver" "." reference=[AttributeDeclaration]
-	| {SenderContext} "sender" "." reference=[AttributeDeclaration]
+	| {MyContext} "my" "." attribute=AttributeReference
+	| {ReceiverContext} "receiver" "." attribute=AttributeReference
+	| {SenderContext} "sender" "." attribute=AttributeReference
 	| {GlobalContext} "global" "." reference=[AttributeDeclaration]
 	| {CastToReal} "real" '(' arg=Expression ')'
 	| {CastToInteger} "int" '(' arg=Expression ')'
+	| {TupleExpression} '[' values += Primary (',' values += Primary )* ']'
 //	| {AtomicOutcome}				value=OutcomeProbability	THE ROLE OF THIS CASES IS NOT CLEAR FOR ME.
 //	| {AtomicProcessComposition}	value=ProcessComposition
 ;
+
+CollectionAtomicExpression returns Expression:
+	  {SetExpression} '{:' (values += Expression (',' values += Expression )*)? ':}'
+	| {ListExpression} '[:' (values += Expression (',' values += Expression )*)? ':]'		
+;
+
 
 BuiltInFunctions returns Expression :
 	{AbsFunction} "abs" '(' arg=Expression ')' 
@@ -510,11 +743,31 @@ BuiltInFunctions returns Expression :
 			//Returns the correctly rounded positive square root of a double value.
 	| {TanFunction} "tan" '(' arg=Expression ')'
 			//Returns the trigonometric tangent of an angle.
-	| {UniformFunction} "U" '(' args+=Expression (',' args+=Expression)* ')' 
+	| UniformFunction	
+	//Fuctions on Graphs
+	| {PreFunction} "pre" "(" arg=Expression ")"
+	| {PostFunction} "post" "(" arg=Expression ")"
+	| {AccessToEdgeValue} "edgeValues" "(" src=Expression "," label=[EdgeProperty] "," trg=Expression ")"
+	//Functions on Collections
+	| {MapFunction} "map" "(" arg1=Expression "," arg2=Expression ")"
+//	| {FilterFunction} "filter" "(" arg1=Expression "," arg2=Expression ")"
+//	| {FindFunction} "find" "(" arg1=Expression "," arg2=Expression ")"
+//	| {ExistsFunction} "exist" "(" arg1=Expression "," arg2=Expression ")"
+//	| {ForAllFunction} "forall" "(" arg1=Expression "," arg2=Expression ")"
+	| {NewListFunction} "newList" "(" arg1=BasicType ")"
+	| {NewSetFunction} "newSet" "(" arg2=BasicType ")"
+	| {SizeFunction} "size" "(" arg1 = Expression ")"
+;
+
+UniformFunction: 
+	"U" (
+		 ('(' args+=Expression (',' args+=Expression)* ')' )
+		| ( args +=	CollectionAtomicExpression )		
+	)
 ;
 
 FieldAssignment:
-	field=[FieldDefinition] ':=' value=Expression
+	field=[FieldDefinition] (':='|'<-'|'=') value=Expression
 ;
 
 ////////////////////////////////////////////////////REFERENCE
@@ -528,13 +781,20 @@ Reference hidden(ML_COMMENT,SL_COMMENT,WS):
 
 MeasureDefinition hidden(ML_COMMENT,SL_COMMENT,WS):
 	"measure" name=ID 
-		("[" variables+=MeasureVariableDeclaration("," variables+=MeasureVariableDeclaration+)* "]" )?
+		("(" variables+=Variable ("," variables+=Variable+)* ")" )?
 		"="  measure=Expression  ';'
 ;
 
-MeasureVariableDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
-	{MeasureVariableDeclaration} name=ID	":="	assign= Range
-;
+//MeasureDefinition hidden(ML_COMMENT,SL_COMMENT,WS):
+//	"measure" name=ID 
+//		("[" variables+=MeasureVariableDeclaration("," variables+=MeasureVariableDeclaration+)* "]" )?
+//		"="  measure=Expression  ';'
+//;
+
+
+//MeasureVariableDeclaration hidden(ML_COMMENT,SL_COMMENT,WS):
+//	{MeasureVariableDeclaration} name=ID	":="	assign= Range
+//;
 
 	
 ////////////////////////////////////////////////////ENVIRONMENT	
@@ -544,6 +804,7 @@ Environment hidden(ML_COMMENT,SL_COMMENT,WS):
 	"{"
 	(store=StoreBlock)?
 	(probabilityBlock=ProbabilityBlock)?
+	(weightBlock=WeightBlock)?
 	(rateBlock=RateBlock)?
 	(updateBlock=UpdateBlock)?
 	"}"
@@ -551,45 +812,60 @@ Environment hidden(ML_COMMENT,SL_COMMENT,WS):
 
 ProbabilityBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 	{ProbabilityBlock}
-	"prob" 
+	("prob") 
 	"{"
-		(probabilities+=Probability ";")*
-		("default" ":" value=Expression ";")?
+		(probabilities+=Probability )*
+		("default"  value=BlockCommand)?
 	"}"
 ;
-	
+
+WeightBlock hidden(ML_COMMENT,SL_COMMENT,WS):
+	{WeightBlock}
+	("weight") 
+	"{"
+		(weights+=Weight )*
+		("default"  value=BlockCommand)?
+	"}"
+;
+
+
+//Probability hidden(ML_COMMENT,SL_COMMENT,WS):
+//	(guard=Guard)? stub=ActionStub ":" expression=Expression
+//;
+
+
 Probability hidden(ML_COMMENT,SL_COMMENT,WS):
-	(guard=Guard)? stub=ActionStub ":" expression=Expression
+	activity=[Activity] '*' expression=BlockCommand 
+;
+
+Weight hidden(ML_COMMENT,SL_COMMENT,WS):
+	activity=[Activity] expression=BlockCommand 
 ;
 
 RateBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 	{RateBlock}
 	"rate"
 	"{"
-		(rates+=Rate+ ";")*
-		("default" ":" value=Expression ";")?
+		(rates+=Rate)*
+		("default"  value=BlockCommand)?
 	"}"
 ;
 
 Rate hidden(ML_COMMENT,SL_COMMENT,WS):
 	{Rate}
-	(guard=Guard)? stub=ActionStub ":" expression=Expression
+	stub=ActionStub expression=BlockCommand 
 ;
 	
 UpdateBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 	{UpdateBlock}
 	"update"
 	"{"
-		(updates+=EnvironmentUpdate+ ";")*
+		(updates+=EnvironmentUpdate)*
 	"}"
 ;
 
 EnvironmentUpdate hidden(ML_COMMENT,SL_COMMENT,WS):
-	(guard=Guard)? stub=ActionStub ":" 
-	( 
-		(update+=UpdateAssignment ("," update+=UpdateAssignment+)* (',' spawn=BlockSpawn)?)
-		| spawn=BlockSpawn
-	)
+	stub=ActionStub command=CollectiveBlock
 ;
 
 ActionStub hidden(ML_COMMENT,SL_COMMENT,WS):

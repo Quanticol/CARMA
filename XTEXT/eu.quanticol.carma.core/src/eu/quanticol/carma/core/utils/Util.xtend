@@ -49,7 +49,6 @@ import eu.quanticol.carma.core.carma.GlobalContext
 import eu.quanticol.carma.core.carma.SenderContext
 import eu.quanticol.carma.core.carma.ReceiverContext
 import eu.quanticol.carma.core.carma.ProcessState
-import eu.quanticol.carma.core.carma.MeasureVariableDeclaration
 import eu.quanticol.carma.core.carma.AssignmentCommand
 import eu.quanticol.carma.core.carma.ReturnCommand
 import eu.quanticol.carma.core.carma.IfThenElseCommand
@@ -57,6 +56,27 @@ import eu.quanticol.carma.core.carma.ForCommand
 import eu.quanticol.carma.core.carma.BlockCommand
 import eu.quanticol.carma.core.carma.FunctionCommand
 import eu.quanticol.carma.core.carma.IterationVariable
+import java.nio.channels.SeekableByteChannel
+import eu.quanticol.carma.core.carma.SetType
+import eu.quanticol.carma.core.carma.ListType
+import eu.quanticol.carma.core.carma.LocationVariable
+import eu.quanticol.carma.core.carma.UpdateAssignment
+import eu.quanticol.carma.core.carma.UpdateCommand
+import eu.quanticol.carma.core.carma.UpdateCollectionAdd
+import eu.quanticol.carma.core.carma.VariableDeclarationCommand
+import eu.quanticol.carma.core.carma.LabelDefinition
+import eu.quanticol.carma.core.carma.AttributeReference
+import eu.quanticol.carma.core.carma.StoreAttribute
+import com.sun.xml.internal.bind.v2.schemagen.xmlschema.LocalAttribute
+import eu.quanticol.carma.core.carma.LocationType
+import eu.quanticol.carma.core.carma.SpaceDefinition
+import eu.quanticol.carma.core.carma.LocationFeature
+import eu.quanticol.carma.core.carma.LocAttribute
+import eu.quanticol.carma.core.carma.LoopingVariable
+import eu.quanticol.carma.core.carma.ForEach
+import eu.quanticol.carma.core.carma.NodePattern
+import eu.quanticol.carma.core.carma.NamedNode
+import eu.quanticol.carma.core.carma.UniverseElement
 
 class Util {
 
@@ -95,6 +115,19 @@ class Util {
 		]
 		toReturn
 	}	
+	
+	def featureName( LocationFeature f ) {
+		var space = f.getContainerOfType(typeof(SpaceDefinition))
+		'''_FEATURE_«f.name»_«space ?. name ?: "NONE"»'''
+	}
+	
+	def spaceName( SpaceDefinition s ) {
+		'''get_SPACE_«s.name»'''
+	}
+	
+	def getLabelsAndFeatures( Model m ) {
+		m.elements.filter(typeof(SpaceDefinition)).map[ it.labels+it.features+it.universe ].flatten
+	}
 	
 	def  getActivities( Model m , boolean broadcast ) {
 		var activities = m.getAllContentsOfType(typeof(Activity)).filter[ it.isBroadacst==broadcast ]
@@ -137,6 +170,10 @@ class Util {
 	
 	def getEnums( Model m ) {
 		m.elements.filter(typeof(EnumDefinition))
+	}
+	
+	def getSpaceModels( Model m ) {
+		m.elements.filter(typeof(SpaceDefinition))
 	}
 	
 	def  getAttributes( Model m ) {
@@ -216,11 +253,14 @@ class Util {
 		'''«v.type.toJavaType» «v.name.variableName»'''
 	}
 	
-	def  toJavaType( ValueType ft ) {
+	def CharSequence  toJavaType( ValueType ft ) {
 		switch ft {
 			IntegerType: '''Integer'''
 			RealType: '''Double'''
 			BooleanType: '''Boolean'''
+			SetType: '''HashSet<«ft.arg.toJavaType»>'''
+			ListType: '''HashSet<«ft.arg.toJavaType»>'''
+			LocationType: '''Node'''
 			CustomType: {
 				var ref = ft.reference
 				switch ref {
@@ -249,7 +289,7 @@ class Util {
 	}
 
 	def  enumCaseName( String name ) {
-		'''«CONST_PREFIX»«name»'''
+		'''«ENUM_CASE_PREFIX»«name»'''
 	}
 
 	def  stateName( String name , String component ) {
@@ -258,6 +298,13 @@ class Util {
 
 	def  actionName( String name ) {
 		'''«ACT_PREFIX»«name»'''
+	}
+
+	def attributeName( AttributeReference r ) {
+		switch r {
+			StoreAttribute: r.reference.name
+			LocalAttribute: "loc"
+		}
 	}
 
 	def  attributeName( String name , ReferenceContext context ) {
@@ -277,10 +324,22 @@ class Util {
 			UntypedVariable: element.name.variableName
 			AttributeDeclaration: element.name.attributeName(context)
 			FunctionDefinition: element.name.functionName
-			EnumCase: element.name.enumCaseName			
+			EnumCase: {
+				var parent = element.getContainerOfType(typeof(EnumDefinition))
+				if (parent != null) {
+					'''«parent.name.enumClass».«element.name.enumCaseName»'''
+				} else {
+					element.name.enumCaseName
+				}							
+			}
 			ConstantDefinition: element.name.constantName
 			ProcessState: component.carmaProcessCreation(element.name)
-			MeasureVariableDeclaration: element.name.variableName
+//			MeasureVariableDeclaration: element.name.variableName
+			LabelDefinition: '''sys.getSpaceModel().getLabel( "«element.name»" )'''
+			LocationVariable: element.name.variableName
+			LoopingVariable: element.name.variableName
+			MeasureDefinition: element.name.measureName
+
 		}
 	}
 	
@@ -309,6 +368,13 @@ class Util {
 			}
 		]
 		result
+	}
+	
+	def getExpression( UpdateCommand c ) {
+		switch c {
+			UpdateAssignment: c.expression
+			UpdateCollectionAdd: c.arg
+		}
 	}
 	
 	def  referencedAttributes( Update e ) {
@@ -349,11 +415,14 @@ class Util {
 	def  myAttributes( Expression e ) {
 		val LinkedList<AttributeDeclaration> result = newLinkedList()
 		if (e instanceof MyContext) {
-			result.add( e.reference )
+			var a = e.attribute
+			if (a instanceof StoreAttribute) {
+				result.add( a.reference )
+			}
 		}
 		e.getAllContentsOfType(typeof(MyContext)).map[
-			it.reference
-		].forEach[ a |
+			it.attribute
+		].filter(typeof(StoreAttribute)).map[it.reference].forEach[ a |
 			if (result.forall[ it.name != a.name ]) {
 				result.add( a )
 			}
@@ -361,6 +430,45 @@ class Util {
 		result
 	}
 	
+	def dispatch Iterable<AttributeDeclaration> attributesInFunctionCommand( BlockCommand c , ReferenceContext context ) {
+		c.commands.map[ it.attributesInFunctionCommand( context ) ].flatten
+	}
+	
+	def dispatch Iterable<AttributeDeclaration> attributesInFunctionCommand( IfThenElseCommand c , ReferenceContext context ) {
+		(c.condition ?. attributesInExpression(context) ) +
+		(c.thenBlock.attributesInFunctionCommand( context )	)+
+			(c.elseBlock ?. attributesInFunctionCommand( context ) ?: newLinkedList())
+	}
+
+	def dispatch Iterable<AttributeDeclaration> attributesInFunctionCommand( ReturnCommand c , ReferenceContext context ) {
+		c.expression.attributesInExpression(context)
+	}
+	
+	def dispatch Iterable<AttributeDeclaration> attributesInFunctionCommand( VariableDeclarationCommand c , ReferenceContext context ) {
+		c.value ?. attributesInExpression(context) ?: newLinkedList()
+	}
+	
+	def dispatch Iterable<AttributeDeclaration> attributesInFunctionCommand( ForCommand c , ReferenceContext context ) {
+		(c.start ?. attributesInExpression(context) ?: newLinkedList())+
+			(c.end ?. attributesInExpression(context) ?: newLinkedList())+
+				(c.step ?.attributesInExpression(context) ?: newLinkedList())+
+					c.body.attributesInFunctionCommand( context )
+	}
+
+	def dispatch Iterable<AttributeDeclaration> attributesInFunctionCommand( AssignmentCommand c , ReferenceContext context ) {
+		c.value.attributesInExpression(context)	
+	}
+	
+	def attributesInExpression( Expression e , ReferenceContext context ) {
+		switch context {
+			case GLOBAL: e.globalAttributes
+			case MY: e.myAttributes
+			case SENDER: e.senderAttributes
+			case RECEIVER: e.receiverAttributes
+			case NONE: e.referencedAttibutes
+		}
+	}
+
 	
 	def globalAttributes( Iterable<Expression> e ) {
 		val LinkedList<AttributeDeclaration> result = newLinkedList()
@@ -390,16 +498,55 @@ class Util {
 	def  senderAttributes( Expression e ) {
 		val LinkedList<AttributeDeclaration> result = newLinkedList()
 		if (e instanceof SenderContext) {
-			result.add( e.reference )
+			var a = e.attribute
+			if (a instanceof StoreAttribute) {
+				result.add( a.reference )
+			}
 		}
 		e.getAllContentsOfType(typeof(SenderContext)).map[
-			it.reference
-		].forEach[ a |
+			it.attribute
+		].filter(typeof(StoreAttribute)).map[it.reference].forEach[ a |
 			if (result.forall[ it.name != a.name ]) {
 				result.add( a )
 			}
 		]
 		result
+	}
+	
+	def useSenderLoc( Expression e) {
+		if (e instanceof SenderContext) {
+			if (e.attribute instanceof LocAttribute) {
+				true
+			}
+		} else {
+			e.getAllContentsOfType(typeof(SenderContext)).map[
+				it.attribute
+			].filter(typeof(LocalAttribute)).size > 0
+		}
+	}
+	
+	def useReceiverLoc( Expression e) {
+		if (e instanceof ReceiverContext) {
+			if (e.attribute instanceof LocAttribute) {
+				true
+			}
+		} else {
+			e.getAllContentsOfType(typeof(ReceiverContext)).map[
+				it.attribute
+			].filter(typeof(LocalAttribute)).size > 0
+		}
+	}
+	
+	def useMyLoc( Expression e) {
+		if (e instanceof MyContext) {
+			if (e.attribute instanceof LocAttribute) {
+				true
+			}
+		} else {
+			e.getAllContentsOfType(typeof(MyContext)).map[
+				it.attribute
+			].filter(typeof(LocalAttribute)).size > 0
+		}
 	}
 	
 	def senderAttributes( Iterable<Expression> e ) {
@@ -417,11 +564,14 @@ class Util {
 	def  receiverAttributes( Expression e ) {
 		val LinkedList<AttributeDeclaration> result = newLinkedList()
 		if (e instanceof ReceiverContext) {
-			result.add( e.reference )
+			var a = e.attribute
+			if (a instanceof StoreAttribute) {
+				result.add( a.reference )
+			}
 		}
 		e.getAllContentsOfType(typeof(ReceiverContext)).map[
-			it.reference
-		].forEach[ a |
+			it.attribute
+		].filter(typeof(StoreAttribute)).map[it.reference].forEach[ a |
 			if (result.forall[ it.name != a.name ]) {
 				result.add( a )
 			}
@@ -459,136 +609,82 @@ class Util {
 	def dispatch boolean doReturn( FunctionCommand c ) {
 		false
 	}
+	
+	def indexOfLocationVariable( LocationVariable v ) {
+		var pattern = v.getContainerOfType( typeof(NodePattern) )
+		if (pattern != null) {
+			pattern.elements.indexOf( v ) 
+		} else {
+			-1
+		}
+	}
+	
+	def generateList( String v , int size ) {
+		var result = newLinkedList()
+		var counter = 0;
+		while (counter<size) {
+			result.add(v+counter);
+			counter = counter+1;
+		}
+		result;	
+	}
 
+	def Iterable<? extends ReferenceableElement> variablesDeclaredBefore( FunctionCommand c ) {
+		c ?. eContainer ?. variablesDeclaredBefore( c ) ?: newLinkedList()
+	}
 
-//	def boolean sameName(Name name1, Name name2){
-//		name1.name.equals(name2.name)
-//	}
-//	
-//	def ArrayList<Process> getInitialState(CBND cbnd){
-//		
-//		var definition = cbnd.name.getContainerOfType(ComponentBlockDefinition)
-//		var ProcessParameter processParameter = null 
-//		if(definition.componentSignature.componentParameters.eAllOfType(ProcessParameter).size > 0)
-//			processParameter = definition.componentSignature.componentParameters.eAllOfType(ProcessParameter).get(0)
-//			
-//		var String parameterLabel = ""
-//		if(processParameter != null)
-//			parameterLabel = processParameter.name.name
-//			
-//		var ProcessComposition initialisation = definition.componentBlock.initBlock.init
-//		var ArrayList<String> array = new ArrayList<String>()
-//		initialisation.stringArray(array)
-//		
-//		var ArrayList<Process> toReturn = new ArrayList<Process>()
-//		
-//		initialisation.processArray(toReturn)
-//		
-//		if(array.contains(parameterLabel)){
-//			var i = array.indexOf(parameterLabel)
-//			toReturn.remove(i)
-//			var ProcessComposition argumentProcessComposition = null 
-//			if(cbnd.arguments.eAllOfType(ProcessComposition).size > 0){
-//				argumentProcessComposition = cbnd.arguments.eAllOfType(ProcessComposition).get(0)
-//				argumentProcessComposition.processArray(toReturn)
-//			}
-//		}
-//		return toReturn
-//	}
-//	
-//	def void stringArray(ProcessComposition processComposition, ArrayList<String> array){
-//		switch(processComposition){
-//			ParallelComposition	: {processComposition.left.stringArray(array) processComposition.right.stringArray(array)}
-//			ProcessReference	: {array.add(processComposition.expression.name)}
-//		}
-//	}
-//	
-//	def void processArray(ProcessComposition processComposition, ArrayList<Process> array){
-//		switch(processComposition){
-//			ParallelComposition	: {processComposition.left.processArray(array) processComposition.right.processArray(array)}
-//			ProcessReference	: {array.add(processComposition.expression.getContainerOfType(Process))}
-//		}
-//	}
-//	
-//	/**
-//	 * Return a List of all Processes associated with the given one. 
-//	 * All Processes that transition from, or to, the Process argument. 
-//	 * <p>
-//	 * @author 	CDW <br>
-//	 * @param	Process <br>
-//	 * @return	ArrayList<Process>
-//	 */
-//	def ArrayList<Process> maximumFixedPoint(Process p1, boolean includeSelf){
-//		
-//		
-//		var HashSet<Process> buffer1 = new HashSet<Process>()
-//		var HashSet<Process> buffer2 = new HashSet<Process>()
-//		
-//		if(includeSelf)
-//			buffer1.add(p1)
-//		else
-//			buffer1.addAll(getReferences(p1))
-//		
-//		while(buffer1.size > buffer2.size){
-//			
-//			buffer2.addAll(buffer1)
-//			
-//			for(Process p2 : buffer2){
-//				if(includeSelf)
-//					buffer1.addAll(getAllReferences(p2))
-//				else
-//					buffer1.addAll(getReferences(p2))
-//			}
-//		}
-//		
-//		var ArrayList<Process> output = new ArrayList<Process>(buffer1)
-//		
-//		return output
-//		
-//	}
-//	
-//	/**
-//	 * Return all Processes referenced by the argument Process. Both parents and children.
-//	 * 
-//	 * @author 	CDW
-//	 * @param	Process
-//	 * @return	HashSet<Process>
-//	 */
-//	def HashSet<Process> getAllReferences(Process p1){
-//		
-//		var HashSet<Process> output = new HashSet<Process>()
-//		
-//		for(Process p2 : p1.getContainerOfType(ComponentStyle).eAllOfType(Process))
-//			for(ProcessExpressionReference pr : p2.eAllOfType(ProcessExpressionReference))
-//				if(p1.name.equals(pr.expression.name))
-//					output.add(p2)
-//		
-//		for(ProcessExpressionReference pr : p1.eAllOfType(ProcessExpressionReference))
-//			for(Process p2 : p1.getContainerOfType(ComponentStyle).eAllOfType(Process))
-//				if(p2.name.equals(pr.expression.name))
-//					output.add(p2)
-//					
-//		return output 
-//		
-//	}
-//	
-//	/**
-//	 * Return all Processes referenced by the argument Process. Only children.
-//	 * 
-//	 * @author 	CDW
-//	 * @param	Process
-//	 * @return	HashSet<Process>
-//	 */
-//	def HashSet<Process> getReferences(Process p1){
-//		
-//		var HashSet<Process> output = new HashSet<Process>()
-//		
-//		for(Process p2 : p1.getContainerOfType(ComponentStyle).eAllOfType(Process))
-//			for(ProcessExpressionReference pr : p2.eAllOfType(ProcessExpressionReference))
-//				if(p1.name.equals(pr.expression.name))
-//					output.add(p2)
-//							
-//		return output 
-//		
-//	}
+	def dispatch Iterable<? extends ReferenceableElement> variablesDeclaredBefore( IfThenElseCommand c1 , FunctionCommand c2 ) {
+		c1.variablesDeclaredBefore
+	}
+	
+	def dispatch Iterable<? extends ReferenceableElement> variablesDeclaredBefore( ForCommand c1 , FunctionCommand c2 ) {
+		c1.variablesDeclaredBefore + newLinkedList( c1.variable )
+	}
+
+	def dispatch Iterable<? extends ReferenceableElement> variablesDeclaredBefore( ForEach c1 , FunctionCommand c2 ) {
+		c1.variablesDeclaredBefore + newLinkedList( c1.iteration )
+	}
+
+	def dispatch Iterable<? extends ReferenceableElement> variablesDeclaredBefore( ReturnCommand c1 , FunctionCommand c2 ) {
+		newLinkedList(  )
+	}
+
+	def dispatch Iterable<? extends ReferenceableElement> variablesDeclaredBefore( AssignmentCommand c1 , FunctionCommand c2 ) {
+		newLinkedList(  )
+	}
+
+	def dispatch Iterable<? extends ReferenceableElement> variablesDeclaredBefore( VariableDeclarationCommand c1 , FunctionCommand c2 ) {
+		newLinkedList( )
+	}
+
+	def dispatch Iterable<? extends ReferenceableElement> variablesDeclaredBefore( BlockCommand c1 , FunctionCommand c2 ) {
+		var idx = c1.commands.indexOf( c2 )		
+		if (idx >= 0) {
+			c1.variablesDeclaredBefore + c1.commands.subList(0,idx).filter(typeof(VariableDeclarationCommand)).map[it.variable]
+		} else {
+			c1.variablesDeclaredBefore
+		}
+	}
+
+	def dispatch Iterable<? extends ReferenceableElement> variablesDeclaredBefore( EObject o , FunctionCommand c ) {
+		newLinkedList( )
+	}
+
+	def isReferenceToNodeName( EObject o ) {
+		if (o instanceof Reference) {
+			if (o.reference instanceof NamedNode) {
+				true
+		 	} else {
+		 		false
+		 	}
+		} else {
+			false
+		}
+	}
+	
+	def getIndexOf( UniverseElement e ) {
+		var sm = e.getContainerOfType(typeof(SpaceDefinition))
+		return sm.universe.indexOf(e)
+	}
+
 }

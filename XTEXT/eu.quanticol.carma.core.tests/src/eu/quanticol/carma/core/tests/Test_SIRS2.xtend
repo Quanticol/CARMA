@@ -38,11 +38,11 @@ component Agent(int a, int b){
     }
 
     behaviour{
-        A = contact*[z == my.zone && state == 1](z){state := 2}.A +
+        A = contact*[z == my.zone && state == 1](z){state := 2;}.A +
         	contact*<zone>.A +
-			recovery*{state := 3}.A +
-			susceptible*{state := 1}.A +
-			move*{zone := Mover(zone)}.A;
+			recovery*{state := 3;}.A +
+			susceptible*{state := 1;}.A +
+			move*{zone := Mover(zone);}.A;
     }
 
     init{
@@ -67,15 +67,15 @@ system Simple{
         }
 
         prob{
-			default : 1.0;
+			default { return 1.0; }
         }
 
         rate{
-        	[true] move* 		: 1.0;
-			[true] contact* 	: 0.03;
-			[true] recovery*	: 0.2;
-			[true] susceptible* : 0.2;
-			default : 1.0;
+        	move* 		{ return 1.0; }
+			contact* 	{ return 0.03; }
+			recovery*	{ return 0.2; }
+			susceptible* { return 0.2; }
+			default { return 1.0; }
         }
 
         update{
@@ -91,6 +91,7 @@ system Simple{
 
 	@Test
 	def void test_Compiler(){
+		class.classLoader.setJavaCompilerClassPath
 		code.compile[
 					var o = getCompiledClass.newInstance 
 			assertNotNull( o )

@@ -1,14 +1,11 @@
 package eu.quanticol.carma.core.generator.ms.measure
 
 import com.google.inject.Inject
-import eu.quanticol.carma.core.utils.Util
 import eu.quanticol.carma.core.carma.MeasureDefinition
-import eu.quanticol.carma.core.generator.ms.expression.ExpressionHandler
-import eu.quanticol.carma.core.carma.Expression
-import eu.quanticol.carma.core.carma.Range
-import eu.quanticol.carma.core.carma.MeasureVariableDeclaration
 import eu.quanticol.carma.core.generator.ms.attribute.AttributeHandler
+import eu.quanticol.carma.core.generator.ms.expression.ExpressionHandler
 import eu.quanticol.carma.core.utils.ReferenceContext
+import eu.quanticol.carma.core.utils.Util
 
 class MeasureHandler {
 
@@ -18,32 +15,50 @@ class MeasureHandler {
 	
 	public static final String SetUpMeasureMethodName = "setUpMeasures()"
 	
-	def measureBuilderMethod( String name ) {
-		'''buildMeasure«name»( )'''
-	}
-
 	def collectMeasures( Iterable<MeasureDefinition> measures ) {
 
 		'''
 		
-		private HashMap<String,Measure<CarmaSystem>> measures;
-				
 		public String[] getMeasures() {
-			TreeSet<String> sortedSet = new TreeSet<String>( measures.keySet() );
+			TreeSet<String> sortedSet = new TreeSet<String>( );
+			«FOR m:measures»
+			sortedSet.add( "«m.name»" );
+			«ENDFOR»
 			return sortedSet.toArray( new String[ sortedSet.size() ] );
 		}
 		
-		public Measure<CarmaSystem> getMeasure( String name ) {
-			return measures.get( name );
+		public Measure<CarmaSystem> getMeasure( String name , Map<String,Object> parameters ) {
+			«FOR m:measures»
+			if ("«m.name»".equals( name ) ) {
+				return getMeasure«m.name»( parameters );
+			}
+			«ENDFOR»			
+			return null;
 		}
 
-		protected void «SetUpMeasureMethodName» {
-			measures = new HashMap<String,Measure<CarmaSystem>>();
+		public String[] getMeasureParameters( String name ) {
 			«FOR m:measures»
-			«m.name.measureBuilderMethod»;
-			«ENDFOR»
-		}	
+			if ("«m.name»".equals( name ) ) {
+				return new String[] { «FOR v:m.variables SEPARATOR ','»"«v.name»"«ENDFOR»};
+			}
+			«ENDFOR»			
+			return new String[] {};
+		}
 		
+		public Map<String,Class<?>> getParametersType( String name ) {
+			«FOR m:measures»
+			if ("«m.name»".equals( name ) ) {
+				HashMap<String,Class<?>> toReturn = new HashMap<>();
+				«FOR v:m.variables»
+				toReturn.put( "«v.name»" , «v.type.toJavaType».class );
+				«ENDFOR»
+				return toReturn;
+			}
+			«ENDFOR»			
+			return new HashMap<>();
+		}
+		
+	
 		«FOR m:measures»
 		«m.measureToJava»
 		«ENDFOR»
@@ -51,65 +66,38 @@ class MeasureHandler {
 		'''
 	}
 
-	def CharSequence measureBuilderBody( String name , Iterable<Pair<Integer,MeasureVariableDeclaration>> vars , int idx ) {
-		if (vars.size>idx) {
-			var v = vars.get(idx)
-			var value = v.value.assign
-			if (value instanceof Range) {
-				'''
-					for( 
-						int v«idx» = «value.min.expressionToJava» ; 
-						v«idx» <= «value.max.expressionToJava» ; 
-						«IF value.step != null»
-						v«idx» = v«idx» + «value.step.expressionToJava»
-						«ELSE»
-						v«idx»++
-						«ENDIF»
-					) {
-						«name.measureBuilderBody(vars,idx+1)»
-					}
-				'''
-			} else {
-				'''
-				int v«idx» = «value.expressionToJava»;
-				«name.measureBuilderBody(vars,idx+1)»
-				'''				
-			}
-		} else {
-			'''measures.put( 
-				"«name»«IF vars.size>0»[«ENDIF»"«FOR v:vars»+v«v.key»«ENDFOR»«IF vars.size>0»+"]"«ENDIF» ,
-				getMeasure«name»( «FOR v:vars SEPARATOR ','»v«v.key»«ENDFOR»)
-			);'''
-		}
-	}
-
 	def measureToJava( MeasureDefinition m ) {
-		'''
-		
-		private void «m.name.measureBuilderMethod» {
-			«m.name.measureBuilderBody( m.variables.indexed , 0 )»
+		'''		
+		private static double «m.name.measureName»( CarmaSystem system «FOR v:m.variables » , «v.type.toJavaType» «v.name.variableName» «ENDFOR») {
+			final CarmaStore global = system.getGlobalStore();
+			final double now = system.now();
+			«FOR a:m.measure.globalAttributes»
+			«a.attributeTemporaryVariableDeclaration(ReferenceContext::GLOBAL,"global")»
+			«ENDFOR»
+			return «m.measure.expressionToJava»;
 		}
 		
 		
 		private Measure<CarmaSystem> getMeasure«m.name»( 
-			«FOR v:m.variables SEPARATOR ','»final Integer «v.name.variableName»«ENDFOR»
+			Map<String,Object> parameters
 		) {
+			
+			«FOR v:m.variables»
+			final «v.type.toJavaType» «v.name.variableName» = («v.type.toJavaType») parameters.get("«v.name»");
+			«ENDFOR»
 
 			return new Measure<CarmaSystem>() {
 			
 				//@Override
 				public double measure(final CarmaSystem system) {
-					final CarmaStore global = system.getGlobalStore();
-					final double now = system.now();
-					«FOR a:m.measure.globalAttributes»
-					«a.attributeTemporaryVariableDeclaration(ReferenceContext::GLOBAL,"global")»
-					«ENDFOR»
-					return «m.measure.expressionToJava»;
+					return «m.name.measureName»( system «FOR v:m.variables», «v.name.variableName» «ENDFOR»);
 				}
 
 				//@Override
 				public String getName() {
-					return "«m.name»"«FOR v:m.variables»+"_"+«v.name.variableName»«ENDFOR»;
+					return "«m.name»"«IF m.variables.size>0»+"["
+							+«FOR v:m.variables SEPARATOR '+'»"«v.name»="+«v.name.variableName»«ENDFOR»
+						+"]"«ENDIF»;
 				}
 			
 			};
@@ -117,6 +105,14 @@ class MeasureHandler {
 		}
 		
 		'''
+					/*
+					final CarmaStore global = system.getGlobalStore();
+					final double now = system.now();
+					«FOR a:m.measure.globalAttributes»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::GLOBAL,"global")»
+					«ENDFOR»
+					return «m.measure.expressionToJava»;
+					*/
 	}	
 	
 }

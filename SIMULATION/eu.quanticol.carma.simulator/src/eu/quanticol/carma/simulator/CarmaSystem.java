@@ -14,34 +14,60 @@ import org.cmg.ml.sam.sim.sampling.Measure;
 import org.cmg.ml.sam.sim.util.ComposedWeightedStructure;
 import org.cmg.ml.sam.sim.util.WeightedStructure;
 
+import eu.quanticol.carma.simulator.space.SpaceModel;
+
 /**
  * @author loreti
  *
  */
 public abstract class CarmaSystem implements ModelI {
-
+	
+	public static final String LOC_ATTRIBUTE_NAME = "loc";
+	
 	protected LinkedList<CarmaComponent> collective;
 	
 	protected CarmaStore global;
 	
 	protected double now;
+	
+	protected final SpaceModel space;
 
-	public CarmaSystem() {
+	
+	public CarmaSystem( ) {
+		this( new SpaceModel() );
+	}
+	
+	public CarmaSystem( SpaceModel space ) {
 		this.global = new CarmaStore();
 		this.collective = new LinkedList<CarmaComponent>();
 		this.now = 0.0;
+		this.space = space;
+	}
+	
+	public SpaceModel getSpaceModel() {
+		return this.space;
 	}
 	
 	public void broadcastOutput( RandomGenerator r , CarmaComponent sender,
 			int action, CarmaPredicate predicate, Object value) {
 		for (CarmaComponent c : collective) {
 			if (c!=sender) {
-				c.inputBroadcast(r , this , sender , action , predicate , value );
+				c.inputBroadcast(r , this , sender , action , predicate , value );				
 			}
 		}
-		
 	}
 	
+	public void removeKilled() {
+		LinkedList<CarmaComponent> newCollective = new LinkedList<>();
+		for (CarmaComponent carmaComponent : collective) {
+			if (!carmaComponent.isKilled()) {
+				newCollective.add(carmaComponent);
+			}
+		}
+		this.collective = newCollective;
+	}
+	
+
 	public void setGLobalAttribute( String attribute , Object value ) {
 		global.set(attribute, value);
 	}
@@ -88,7 +114,7 @@ public abstract class CarmaSystem implements ModelI {
 		
 		for (CarmaComponent caspaComponent : collective) {
 			try {
-				if (p.satisfy(caspaComponent.store)) {
+				if (p.satisfy(now,caspaComponent.store)) {
 					counter++;
 				}
 			} catch (NullPointerException e) {				
@@ -133,8 +159,12 @@ public abstract class CarmaSystem implements ModelI {
 	public int measure( ComponentPredicate p ) {
 		int count = 0;
 		for (CarmaComponent c : collective) {
-			if (p.eval(c)) {
+			try {
+			if (p.eval(now,c)) {
 				count++;
+			}
+			} catch (NullPointerException e) {
+				
 			}
 		}
 		return count;
@@ -144,7 +174,7 @@ public abstract class CarmaSystem implements ModelI {
 		double value = Double.POSITIVE_INFINITY;
 		for (CarmaComponent carmaComponent : collective) {
 			try {
-				if (guard.satisfy(carmaComponent.store)) {
+				if (guard.satisfy(now,carmaComponent.store)) {
 					double v = m.measure(carmaComponent.store);
 					if (v<value) {
 						value = v;
@@ -160,7 +190,7 @@ public abstract class CarmaSystem implements ModelI {
 		double value = Double.NEGATIVE_INFINITY;
 		for (CarmaComponent carmaComponent : collective) {
 			try {
-				if (guard.satisfy(carmaComponent.store)) {
+				if (guard.satisfy(now,carmaComponent.store)) {
 					double v = m.measure(carmaComponent.store);
 					if (v>value) {
 						value = v;
@@ -177,7 +207,7 @@ public abstract class CarmaSystem implements ModelI {
 		int count = 0;
 		for (CarmaComponent carmaComponent : collective) {
 			try {
-				if (guard.satisfy(carmaComponent.store)) {
+				if (guard.satisfy(now,carmaComponent.store)) {
 					value += m.measure(carmaComponent.store);
 					count++;
 				}
@@ -211,7 +241,7 @@ public abstract class CarmaSystem implements ModelI {
 	public LinkedList<Map<String,Object>> retrieve( CarmaPredicate guard , String[] attributes  ) {
 		LinkedList<Map<String,Object>> toReturn = new LinkedList<>();
 		for (CarmaComponent carmaComponent : collective) {
-			if (guard.satisfy(carmaComponent.store)) {
+			if (guard.satisfy(now,carmaComponent.store)) {
 				HashMap<String,Object> data = new HashMap<>();
 				for( int i=0 ; i<attributes.length ; i++ ) {
 					Object foo = carmaComponent.get(attributes[i], Object.class );

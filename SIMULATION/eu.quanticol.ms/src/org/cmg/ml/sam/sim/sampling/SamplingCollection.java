@@ -68,10 +68,10 @@ public class SamplingCollection<S> implements SamplingFunction<S> {
 	}
 
 	@Override
-	public LinkedList<SimulationTimeSeries> getSimulationTimeSeries() {
+	public LinkedList<SimulationTimeSeries> getSimulationTimeSeries( int replications ) {
 		LinkedList<SimulationTimeSeries> toReturn = new LinkedList<>();
 		for (SamplingFunction<S> f : functions) {
-			toReturn.addAll(f.getSimulationTimeSeries());
+			toReturn.addAll(f.getSimulationTimeSeries( replications ));
 		}
 		return toReturn;
 	}

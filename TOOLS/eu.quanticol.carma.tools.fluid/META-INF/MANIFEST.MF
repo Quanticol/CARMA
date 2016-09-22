@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Fluid
+Bundle-SymbolicName: eu.quanticol.carma.tools.fluid
+Bundle-Version: 1.0.0.qualifier
+Require-Bundle: eu.quanticol.carma.core;bundle-version="0.2.8"

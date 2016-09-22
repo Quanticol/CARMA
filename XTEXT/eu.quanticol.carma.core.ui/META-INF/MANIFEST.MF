@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: eu.quanticol.carma.core.ui
 Bundle-Vendor: Edinburgh University
-Bundle-Version: 0.2.1.beta
+Bundle-Version: 0.2.3.beta
 Bundle-SymbolicName: eu.quanticol.carma.core.ui; singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: eu.quanticol.carma.core;visibility:=reexport,
@@ -25,12 +25,17 @@ Require-Bundle: eu.quanticol.carma.core;visibility:=reexport,
  org.eclipse.xpand,
  org.eclipse.jdt;bundle-version="3.10.1",
  org.eclipse.jdt.launching;bundle-version="3.7.102",
- org.eclipse.jdt.core
+ org.eclipse.jdt.core,
+ org.eclipse.nebula.visualization.widgets;bundle-version="1.0.0",
+ org.eclipse.nebula.visualization.xygraph;bundle-version="2.1.0",
+ org.eclipse.draw2d;bundle-version="3.10.1"
 Import-Package: org.apache.log4j
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: eu.quanticol.carma.core.ui,
  eu.quanticol.carma.core.ui.contentassist,
  eu.quanticol.carma.core.ui.contentassist.antlr,
+ eu.quanticol.carma.core.ui.contentassist.antlr.internal,
  eu.quanticol.carma.core.ui.internal,
+ eu.quanticol.carma.core.ui.nature,
  eu.quanticol.carma.core.ui.quickfix
-Bundle-Activator: eu.quanticol.carma.core.ui.internal.CARMAActivator
+Bundle-Activator: eu.quanticol.carma.core.ui.ExtendedCARMAActivator

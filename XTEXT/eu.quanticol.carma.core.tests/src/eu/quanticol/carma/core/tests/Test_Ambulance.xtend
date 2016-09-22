@@ -48,7 +48,7 @@ component Agent(int v){
 		attrib value := v;
 	}
 	behaviour{
-		A = do*[false]<>{value:=2}.B;
+		A = do*[false]<>{value:=2;}.B;
 		B = dosomethingelse*[false]<>.A;
 	}
 	init{A}
@@ -76,17 +76,21 @@ system simple{
         	attrib c:=0;        	
         }
         prob{
-			default : 1.0;
+			default { return 1.0; }
         }
         rate{
-        	[true] create* : 0.5;
-         	[true] do* : 0.01;
-         	[true] dosomethingelse* : 0.01;
-			default : 1.0;
+        	create* { return 0.5; }
+         	do* { return 0.01; }
+         	dosomethingelse* { return 0.01; }
+			default { return 1.0; }
         }
         update{
-        	[true] create* : new Agent(Choice());
-        	[sender.value==1] do* : c:=global.c+1;
+        	create* { new Agent(Choice()); }
+        	do* { 
+        		if (sender.value==1) {
+        			c:=global.c+1;
+        		}
+        	}
         }
     }
 }
@@ -99,6 +103,7 @@ system simple{
 
 	@Test
 	def void test_Compiler(){
+		class.classLoader.setJavaCompilerClassPath
 		code.compile[ 
 			var o = getCompiledClass.newInstance 
 			assertNotNull( o )

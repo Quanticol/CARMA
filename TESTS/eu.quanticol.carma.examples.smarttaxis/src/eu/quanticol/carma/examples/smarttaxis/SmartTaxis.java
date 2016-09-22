@@ -77,7 +77,7 @@ public class SmartTaxis extends CarmaSystem {
 			double foo = measure(new ComponentPredicate() {
 
 				@Override
-				public boolean eval(CarmaComponent c) {
+				public boolean eval(double now,CarmaComponent c) {
 					int loc = sender.get(SmartTaxisDefinitions.LOC_ATTRIBUTE, SmartTaxisDefinitions.LOC_ATTRIBUTE_TYPE);
 					if (c.get(SmartTaxisDefinitions.LOC_ATTRIBUTE, SmartTaxisDefinitions.LOC_ATTRIBUTE_TYPE).equals(loc)) {
 						return c.isRunning( new CarmaProcessPredicate() {
@@ -180,10 +180,13 @@ public class SmartTaxis extends CarmaSystem {
 
 	@Override
 	public void unicastUpdate(RandomGenerator r , CarmaStore sender, CarmaStore receiver, int action, Object value) {
-
+		
 	}
 
 	public static void main( String[] argv ) {
+		
+		
+		
 		SimulationEnvironment<CarmaSystem> system = new SimulationEnvironment<CarmaSystem>(
 				new SmartTaxisFactory(SmartTaxisDefinitions.TAXIS, 0)
 		);

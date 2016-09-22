@@ -56,7 +56,7 @@ public class BikeSharingDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, double now) {
+			protected CarmaPredicate getPredicate(CarmaStore store) {
 				return CarmaPredicate.FALSE;
 			}
 		};
@@ -74,7 +74,7 @@ public class BikeSharingDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, double now) {
+			protected CarmaPredicate getPredicate(CarmaStore store) {
 				return CarmaPredicate.FALSE;
 			}
 		};
@@ -92,7 +92,7 @@ public class BikeSharingDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, double now) {
+			protected CarmaPredicate getPredicate(CarmaStore store) {
 				return CarmaPredicate.FALSE;
 			}
 		};
@@ -100,7 +100,7 @@ public class BikeSharingDefinitions {
 		CarmaInput takeBike = new CarmaInput( BikeSharing.TAKE_BIKE , false ) {
 
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, Object value, double now) {
+			protected CarmaPredicate getPredicate(CarmaStore store, Object value) {
 				return CarmaPredicate.TRUE;
 			}
 
@@ -121,7 +121,7 @@ public class BikeSharingDefinitions {
 		CarmaInput returnBike = new CarmaInput( BikeSharing.RETURN_BIKE , false ) {
 
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, Object value, double now) {
+			protected CarmaPredicate getPredicate(CarmaStore store, Object value) {
 				return CarmaPredicate.TRUE;
 			}
 
@@ -177,7 +177,7 @@ public class BikeSharingDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, double now) {
+			protected CarmaPredicate getPredicate(CarmaStore store) {
 				return new CarmaPredicate.HasValue<Integer>("zone", Integer.class, store.get("zone",Integer.class));
 			}
 		};
@@ -205,7 +205,7 @@ public class BikeSharingDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, double now) {
+			protected CarmaPredicate getPredicate(CarmaStore store) {
 				return new CarmaPredicate.HasValue<Integer>("zone", Integer.class, store.get("zone",Integer.class));
 			}
 		};
@@ -213,7 +213,7 @@ public class BikeSharingDefinitions {
 		CarmaPredicate returnBikeGuard = new CarmaPredicate() {
 
 			@Override
-			public boolean satisfy(CarmaStore store) {
+			public boolean satisfy(double now,CarmaStore store) {
 				int slots = store.get("slots", Integer.class);
 				return slots > 0;
 			}
@@ -223,7 +223,7 @@ public class BikeSharingDefinitions {
 		CarmaPredicate takeBikeGuard = new CarmaPredicate() {
 
 			@Override
-			public boolean satisfy(CarmaStore store) {
+			public boolean satisfy(double now,CarmaStore store) {
 				int bikes = store.get("bikes", Integer.class);
 				return bikes > 0;
 			}

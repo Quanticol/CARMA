@@ -41,7 +41,7 @@ public abstract class CarmaInput implements CarmaAction {
 	/**
 	 * @return the predicate
 	 */
-	protected abstract CarmaPredicate getPredicate( CarmaStore store , Object value , double now );
+	protected abstract CarmaPredicate getPredicate( CarmaStore store , Object value );
 
 	/**
 	 * @return the update
@@ -74,7 +74,7 @@ public abstract class CarmaInput implements CarmaAction {
 			Activity continuation ) {
 		if ((this.broadcast == broadcast) 
 			&&(this.action == action) 
-			&&(this.getPredicate(caspaComponent.store, value, caspaSystem.now).satisfy(sender)) 
+			&&(this.getPredicate(caspaComponent.store, value).satisfy(caspaSystem.now(),sender)) 
 		) {
 			Activity actionActivity = new Activity() {
 				

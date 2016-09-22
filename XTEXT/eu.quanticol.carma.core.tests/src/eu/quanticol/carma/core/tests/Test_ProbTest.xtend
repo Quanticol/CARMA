@@ -29,7 +29,7 @@ component Listen(){
     }
 
     behaviour{
-        Listen = listen(){listen := listen + 1}.Listen;
+        Listen = listen(){listen := listen + 1;}.Listen;
     }
 
     init{
@@ -44,7 +44,7 @@ component Shout(){
     }
 
     behaviour{
-        Shout = listen<>{shout := shout + 1}.Shout;
+        Shout = listen<>{shout := shout + 1;}.Shout;
     }
 
     init{
@@ -74,11 +74,11 @@ system Simple{
         }
 
         prob{
-			default : 0.0;
+			default { return 0.0; }
         }
 
         rate{
-			default : 1.0;
+			default { return 1.0; }
         }
 
         update{
@@ -91,6 +91,8 @@ system Simple{
 
 	@Test
 	def void test_Compiler(){
+		class.classLoader.setJavaCompilerClassPath
+		
 	'''
 component Listen(){
 
@@ -114,7 +116,7 @@ component Shout(){
     }
 
     behaviour{
-        Shout = listen<>{shout := shout + 1}.Shout;
+        Shout = listen<>{shout := shout + 1;}.Shout;
     }
 
     init{
@@ -144,11 +146,11 @@ system Simple{
         }
 
         prob{
-			default : 0.0;
+			default { return 0.0; }
         }
 
         rate{
-			default : 1.0;
+			default { return 1.0; }
         }
 
         update{

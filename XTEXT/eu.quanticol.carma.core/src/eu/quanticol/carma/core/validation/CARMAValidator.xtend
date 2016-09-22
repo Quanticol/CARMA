@@ -49,6 +49,14 @@ import eu.quanticol.carma.core.carma.AssignmentCommand
 import eu.quanticol.carma.core.carma.VariableDeclarationCommand
 import eu.quanticol.carma.core.carma.Reference
 import eu.quanticol.carma.core.carma.ComponentBlockInstantiation
+import eu.quanticol.carma.core.carma.UntypedVariable
+import eu.quanticol.carma.core.carma.InputAction
+import eu.quanticol.carma.core.carma.IsIn
+import eu.quanticol.carma.core.carma.IterationVariable
+import eu.quanticol.carma.core.carma.ForLoop
+import eu.quanticol.carma.core.carma.LoopingVariable
+import eu.quanticol.carma.core.carma.ForEach
+import eu.quanticol.carma.core.carma.NodeExpressionOrArrayAccess
 
 class CARMAValidator extends AbstractCARMAValidator {
 	
@@ -56,14 +64,14 @@ class CARMAValidator extends AbstractCARMAValidator {
 	@Inject extension Util
 
 
-	public static val ERROR_FunctionDefinition_wrong_name 	= "ERROR_FunctionDefinition_wong_name"
-
-	@Check
-	def check_ERROR_FunctionDefinition_wrong_name(FunctionDefinition f){
-		if ((f.name != null)&&(!f.name.empty)&&(!Character::isUpperCase( f.name.charAt(0) ) )) {
-			warning("Name error: function names should start with a capitalised letter!",CarmaPackage::eINSTANCE.referenceableElement_Name,ERROR_FunctionDefinition_wrong_name);
-		}
-	}
+//	public static val ERROR_FunctionDefinition_wrong_name 	= "ERROR_FunctionDefinition_wong_name"
+//
+//	@Check
+//	def check_ERROR_FunctionDefinition_wrong_name(FunctionDefinition f){
+//		if ((f.name != null)&&(!f.name.empty)&&(!Character::isUpperCase( f.name.charAt(0) ) )) {
+//			warning("Name error: function names should start with a capitalised letter!",CarmaPackage::eINSTANCE.referenceableElement_Name,ERROR_FunctionDefinition_wrong_name);
+//		}
+//	}
 
 	public static val ERROR_RecordDefinition_wong_name 	= "ERROR_RecordDefinition_wong_name"
 
@@ -130,6 +138,52 @@ class CARMAValidator extends AbstractCARMAValidator {
 		}
 
 	}
+
+	//FunctionDefinition - duplicated function name
+	public static val ERROR_VariableDeclarationCommand_multiple_definition 	= "ERROR_VariableDeclarationCommand_multiple_definition"
+	
+	@Check
+	def check_ERROR_VariableDeclarationCommand_multiple_definition (VariableDeclarationCommand c) {
+		
+		var vars = c.variablesDeclaredBefore
+		if (vars != null) {
+
+			if (vars.exists[it.name == c.variable.name]) {
+				error("Error: duplicated variable declaration",CarmaPackage::eINSTANCE.variableDeclarationCommand_Variable, ERROR_VariableDeclarationCommand_multiple_definition);				
+			}
+			
+		}
+
+	}
+
+	@Check
+	def check_ERROR_VariableDeclarationCommand_multiple_definition (IterationVariable c) {
+		
+		var vars = c.getContainerOfType(typeof(ForLoop)) ?. variablesDeclaredBefore
+		if (vars != null) {
+
+			if (vars.exists[it.name == c.name]) {
+				error("Error: duplicated variable declaration",CarmaPackage::eINSTANCE.referenceableElement_Name, ERROR_VariableDeclarationCommand_multiple_definition);				
+			}
+			
+		}
+
+	}
+	
+	@Check
+	def check_ERROR_VariableDeclarationCommand_multiple_definition (LoopingVariable c) {
+		
+		var vars = c.getContainerOfType(typeof(ForEach)) ?. variablesDeclaredBefore
+		if (vars != null) {
+
+			if (vars.exists[it.name == c.name]) {
+				error("Error: duplicated variable declaration",CarmaPackage::eINSTANCE.referenceableElement_Name, ERROR_VariableDeclarationCommand_multiple_definition);				
+			}
+			
+		}
+
+	}
+	
 	
 	//RecordDefinition - duplicated record name
 	public static val ERROR_RecordDefinition_multiple_definition 	= "ERROR_RecordDefinition_multiple_definition"
@@ -160,7 +214,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 
 			var functions = model.fields.filter[ it.name == f.name ]
 			if (functions.length > 1) {
-				error("Error: duplicated field declaration",CarmaPackage::eINSTANCE.fieldDefinition_Name, ERROR_FieldDefinition_multiple_definition);				
+				error("Error: duplicated field declaration",CarmaPackage::eINSTANCE.referenceableElement_Name, ERROR_FieldDefinition_multiple_definition);				
 			}
 			
 		}
@@ -212,7 +266,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 		var model = c.getContainerOfType(typeof(Model))
 		if (model != null) {
 
-			var functions = model.globalProcesses.filter[ it.name == c.name ]
+			var functions = model.getComponents.filter[ it.name == c.name ]
 			if (functions.length > 1) {
 				error("Error: duplicated component declaration",CarmaPackage::eINSTANCE.componentDefinition_Name, ERROR_ComponentDefinition_multiple_definition);				
 			}
@@ -240,6 +294,17 @@ class CARMAValidator extends AbstractCARMAValidator {
 			error("Error: duplicated variable declaration",CarmaPackage::eINSTANCE.referenceableElement_Name, ERROR_Variable_multiple_definition);				
 		}
 			
+	}
+
+	@Check
+	def check_ERROR_UnNamedVariable_multiple_definition( UntypedVariable v ) {
+		var act = v.getContainerOfType(typeof(InputAction))
+		if (act != null) {
+			var other = act.parameters.filter[ it.name == v.name ]
+			if (other.size > 1) {
+				error("Error: duplicated variable declaration",CarmaPackage::eINSTANCE.referenceableElement_Name, ERROR_Variable_multiple_definition);				
+			}
+		}
 	}
 	
 	//AttributeDeclaration - duplicated variable name
@@ -269,14 +334,13 @@ class CARMAValidator extends AbstractCARMAValidator {
 
 			var functions = model.globalProcesses.filter[ it.name == m.name ]
 			if (functions.length > 1) {
-				error("Error: duplicated measure declaration",CarmaPackage::eINSTANCE.measureDefinition_Name, ERROR_MeasureDefinition_multiple_definition);				
+				error("Error: duplicated measure declaration",CarmaPackage::eINSTANCE.referenceableElement_Name, ERROR_MeasureDefinition_multiple_definition);				
 			}
 			
 		}
 			
 	}
 	
-	//FunctionDefinition - duplicated function name
 	public static val ERROR_UpdateAssignment_type_error 	= "ERROR_UpdateAssignment_type_error"
 	
 	@Check
@@ -284,20 +348,81 @@ class CARMAValidator extends AbstractCARMAValidator {
 		
 		var expectedType = assignment ?. reference ?. typeOf
 		var actualType = assignment ?. expression ?. typeOf
-		if ((expectedType != null)&&(actualType !=null)&&(!expectedType.mostGeneral(actualType).equals(expectedType))) {
-			error("Type Error: Expected "+expectedType+" is "+actualType,CarmaPackage::eINSTANCE.updateAssignment_Expression,ERROR_FunctionDefinition_coherent_type);			
+		if ((expectedType != null)&&(actualType !=null)&&(!actualType.error)&&(!actualType.none)&&(!expectedType.mostGeneral(actualType).equals(expectedType))) {
+			error("Type Error: Expected "+expectedType+" is "+actualType,CarmaPackage::eINSTANCE.updateAssignment_Expression,ERROR_UpdateAssignment_type_error);			
 		}
 
 	}
 	
+	public static val ERROR_Unbound_UntypedVariable_error 	= "ERROR_Unbound_UntypedVariable"
+	
+	@Check
+	def check_ERROR_Unbound_UntypedVariable_error( Reference r ) {
+		
+		var t = r.reference.typeOf
+		if ((t == null)||(t.error)) {
+			error("Error: Unbound variable!",CarmaPackage::eINSTANCE.reference_Reference,ERROR_Unbound_UntypedVariable_error);			
+		}
+
+	}
+	
+
+	public static val ERROR_Wrong_Number_Of_Parameters_Input = "ERROR_Wrong_Number_Of_Parameters_Input"
+	
+	@Check
+	def check_ERROR_Wrong_Number_Of_Parameters_Input( InputAction a ) {
+		var m = a.getContainerOfType(typeof(Model))
+		if (m != null) {
+			var msg = m.getMessages(a.activity).head
+			if ((msg != null)&&(msg.size != a.parameters.size)) {
+				error("Error: Wrong number of parameters! (Expected "+msg.size+")",CarmaPackage::eINSTANCE.inputAction_Parameters,ERROR_Wrong_Number_Of_Parameters_Input);			
+			}
+		}
+	}
+	
+	public static val ERROR_Isolated_Input = "ERROR_Isolated_Input"
+	
+	@Check
+	def check_ERROR_Isolated_Input( InputAction a ) {
+		var m = a.getContainerOfType(typeof(Model))
+		if (m != null) {
+			var msg = m.getMessages(a.activity)
+			if ((msg != null)&&(msg.size == 0)) {
+				error("Error: No complementary output available!",CarmaPackage::eINSTANCE.inputAction_Activity,ERROR_Isolated_Input);	
+			}
+		}
+	}
+	
+	
 	public static val ERROR_Expression_type_error = "ERROR_Expression_type_error"
+
+/*
+ * START: VALIDATION_OR
+ */
+
+	@Check
+	def check_ERROR_Expression_type_error_Or_compatible( Or e ) {
+		if ((e.left != null)&&(e.right != null)) {
+			var t1 = e.left.typeOf
+			var t2 = e.right.typeOf
+			if (!t1.isBoolean&&!t1.isSet&&!t1.isCompatibleWith(t2)) {
+				error("Type Error: expected "+t1+" is "+t2,CarmaPackage::eINSTANCE.or_Right,ERROR_Expression_type_error);			
+			}
+		}
+		
+	}
 	
 	@Check
 	def check_ERROR_Expression_type_error_Or_left( Or e ) {
 		if (e.left != null) {
 			var type = e.left.typeOf
-			if ((type!=null)&&(!type.error)&&(!type.isBoolean)) {
-				error("Type Error: Expected "+CarmaType::BOOLEAN_TYPE+" is "+type,CarmaPackage::eINSTANCE.or_Left,ERROR_Expression_type_error);			
+			if ((type!=null)&&
+				(!type.error)&&
+				(!type.none)&&
+				(!type.isBoolean)&&
+				(!type.isSet)
+			) {
+				error("Type Error: unexpected type "+type,CarmaPackage::eINSTANCE.or_Left,ERROR_Expression_type_error);			
 			}
 		}
 	}
@@ -306,21 +431,72 @@ class CARMAValidator extends AbstractCARMAValidator {
 	def check_ERROR_Expression_type_error_Or_right( Or e ) {
 		if (e.right != null) {
 			var type = e.left.typeOf
-			if ((type!=null)&&(!type.error)&&(!type.isBoolean)) {
-				error("Type Error: Expected "+CarmaType::BOOLEAN_TYPE+" is "+type,CarmaPackage::eINSTANCE.or_Right,ERROR_Expression_type_error);			
+			if ((type!=null)&&
+				(!type.error)&&
+				(!type.none)&&
+				(!type.isBoolean)&&
+				(!type.isSet)
+			) {
+				error("Type Error: unexpected type "+type,CarmaPackage::eINSTANCE.or_Right,ERROR_Expression_type_error);			
+			}
+		}
+	}
+
+/*
+ * END: VALIDATION_OR
+ */
+
+
+/*
+ * START: VALIDATION_AND
+ */
+
+	@Check
+	def check_ERROR_Expression_type_error_And_compatible( And e ) {
+		if ((e.left != null)&&(e.right != null)) {
+			var t1 = e.left.typeOf
+			var t2 = e.right.typeOf
+			if (!t1.isBoolean&&!t1.isSet&&!t1.isCompatibleWith(t2)) {
+				error("Type Error: expected "+t1+" is "+t2,CarmaPackage::eINSTANCE.or_Right,ERROR_Expression_type_error);			
+			}
+		}
+		
+	}
+	
+	@Check
+	def check_ERROR_Expression_type_error_And_left( And e ) {
+		if (e.left != null) {
+			var type = e.left.typeOf
+			if ((type!=null)&&
+				(!type.error)&&
+				(!type.none)&&
+				(!type.isBoolean)&&
+				(!type.isSet)
+			) {
+				error("Type Error: unexpected type "+type,CarmaPackage::eINSTANCE.and_Left,ERROR_Expression_type_error);			
 			}
 		}
 	}
 
 	@Check
-	def check_ERROR_Expression_type_error_And_left( And e ) {
-		if (e.left != null) {
+	def check_ERROR_Expression_type_error_And_right( And e ) {
+		if (e.right != null) {
 			var type = e.left.typeOf
-			if ((type!=null)&&(!type.error)&&(!type.isBoolean)) {
-				error("Type Error: Expected "+CarmaType::BOOLEAN_TYPE+" is "+type,CarmaPackage::eINSTANCE.and_Left,ERROR_Expression_type_error);			
+						if ((type!=null)&&
+				(!type.error)&&
+				(!type.none)&&
+				(!type.isBoolean)&&
+				(!type.isSet)
+			) {
+				error("Type Error: unexpected type "+type,CarmaPackage::eINSTANCE.and_Right,ERROR_Expression_type_error);			
 			}
 		}
 	}
+
+/*
+ * END: VALIDATION_AND
+ */
+
 
 	@Check
 	def check_ERROR_Expression_type_error_IfThenElse_guard( IfThenElseExpression e ) {
@@ -343,58 +519,36 @@ class CARMAValidator extends AbstractCARMAValidator {
 		}
 	}
 	
-	
-	@Check
-	def check_ERROR_Expression_type_error_And_right( And e ) {
-		if (e.right != null) {
-			var type = e.left.typeOf
-			if ((type!=null)&&(!type.error)&&(!type.isBoolean)) {
-				error("Type Error: Expected "+CarmaType::BOOLEAN_TYPE+" is "+type,CarmaPackage::eINSTANCE.and_Right,ERROR_Expression_type_error);			
-			}
-		}
-	}
+/*
+ * START: VALIDATION_EQUALITY
+ */	
 	
 	@Check
 	def check_ERROR_Expression_type_error_Relations( Equality e ) {
 		if ((e.left != null)&&(e.right != null)) {
 			var type1 = e.left.typeOf
 			var type2 = e.right.typeOf
-			if ((type1!=null)&&(type2!=null)&&(!type1.error)&&(!type2.error)&&(!type1.equals(type2))) {
+			if ((type1!=null)&&(type2!=null)&&(!type1.none)&&(!type1.error)&&(!type1.none)&&(!type2.error)&&(!type1.equals(type2))) {
 				error("Type Error: Expected "+type1+" is "+type2,CarmaPackage::eINSTANCE.equality_Right,ERROR_Expression_type_error);			
 			}
 		}
 	}
-	
-//	@Check
-//	def check_ERROR_Expression_type_error_Relations_right( Equality e ) {
-//		if (e.right != null) {
-//			var type = e.left.typeOf
-//			if ((type!=null)&&(!type.error)&&(!type.number)) {
-//				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.equality_Right,ERROR_Expression_type_error);			
-//			}
-//		}
-//	}
+
+/*
+ * END: VALIDATION_EQUALITY
+ */	
 
 	@Check
-	def check_ERROR_Expression_type_error_Relations_left( DisEquality e ) {
-		if (e.left != null) {
-			var type = e.left.typeOf
-			if ((type!=null)&&(!type.error)&&(!type.number)) {
-				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.disEquality_Left,ERROR_Expression_type_error);			
+	def check_ERROR_Expression_type_error_Relations( DisEquality e ) {
+		if ((e.left != null)&&(e.right != null)) {
+			var type1 = e.left.typeOf
+			var type2 = e.right.typeOf
+			if ((type1!=null)&&(type2!=null)&&(!type1.none)&&(!type1.error)&&(!type1.none)&&(!type2.error)&&(!type1.equals(type2))) {
+				error("Type Error: Expected "+type1+" is "+type2,CarmaPackage::eINSTANCE.disEquality_Right,ERROR_Expression_type_error);			
 			}
 		}
 	}
 	
-	@Check
-	def check_ERROR_Expression_type_error_Relations_right( DisEquality e ) {
-		if (e.right != null) {
-			var type = e.left.typeOf
-			if ((type!=null)&&(!type.error)&&(!type.number)) {
-				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.disEquality_Right,ERROR_Expression_type_error);			
-			}
-		}
-	}
-
 	@Check
 	def check_ERROR_Expression_type_error_Relations_left( Less e ) {
 		if (e.left != null) {
@@ -476,11 +630,42 @@ class CARMAValidator extends AbstractCARMAValidator {
 	}
 	
 	@Check
+	def check_ERROR_Expression_type_error_IsIn_NotASet( IsIn e ) {
+		if (e.right!=null) {
+			var type = e.right.typeOf
+			if (!type.error&&!type.none&&!type.set&&!type.list) {
+				error("Type Error: Expected a set or a list is "+type,CarmaPackage::eINSTANCE.isIn_Right,ERROR_Expression_type_error);			
+			}	
+		}
+	}
+	
+	@Check
+	def check_ERROR_Expression_type_error_IsIn_compatible( IsIn e ) {
+		if ((e.right!=null)&&(e.left!=null)) {
+			var type1 = e.right.typeOf
+			var type2 = e.left.typeOf
+			if (!type1.error&&!type1.none
+				&&!type2.error&&!type2.none) {
+				var CarmaType expected = CarmaType::NONE_TYPE
+				if (type2.isSet) {
+					expected = type2.asSet.elementsType				
+				}
+				if (type2.isList) {
+					expected = type2.asList.elementsType				
+				}
+				if (!expected.none&&!expected.isCompatibleWith(type1)) {					
+					error("Type Error: Expected "+expected+" set is "+type2,CarmaPackage::eINSTANCE.isIn_Left,ERROR_Expression_type_error);								
+				}
+			}	
+		}
+	}
+	
+	@Check
 	def check_ERROR_Expression_type_error_Arithmetic_left( Addition e ) {
 		if (e.left != null) {
 			var type = e.left.typeOf
-			if ((type!=null)&&(!type.error)&&(!type.number)) {
-				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.addition_Left,ERROR_Expression_type_error);			
+			if ((type!=null)&&(!type.error)&&(!type.number)&&(!type.list)) {
+				error("Type Error: unexpected type "+type,CarmaPackage::eINSTANCE.addition_Left,ERROR_Expression_type_error);			
 			}
 		}
 	}
@@ -489,8 +674,8 @@ class CARMAValidator extends AbstractCARMAValidator {
 	def check_ERROR_Expression_type_error_Arithmetic_right( Addition e ) {
 		if (e.right != null) {
 			var type = e.left.typeOf
-			if ((type!=null)&&(!type.error)&&(!type.number)) {
-				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.addition_Left,ERROR_Expression_type_error);			
+			if ((type!=null)&&(!type.error)&&(!type.number)&&(!type.list)) {
+				error("Type Error: unexpected type "+type,CarmaPackage::eINSTANCE.addition_Left,ERROR_Expression_type_error);			
 			}
 		}
 	}
@@ -499,8 +684,8 @@ class CARMAValidator extends AbstractCARMAValidator {
 	def check_ERROR_Expression_type_error_Arithmetic_left( Subtraction e ) {
 		if (e.left != null) {
 			var type = e.left.typeOf
-			if ((type!=null)&&(!type.error)&&(!type.number)) {
-				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.subtraction_Left,ERROR_Expression_type_error);			
+			if ((type!=null)&&(!type.error)&&(!type.number)&&(!type.set)) {
+				error("Type Error: unexpected type "+type,CarmaPackage::eINSTANCE.subtraction_Left,ERROR_Expression_type_error);			
 			}
 		}
 	}
@@ -509,8 +694,8 @@ class CARMAValidator extends AbstractCARMAValidator {
 	def check_ERROR_Expression_type_error_Arithmetic_right( Subtraction e ) {
 		if (e.right != null) {
 			var type = e.left.typeOf
-			if ((type!=null)&&(!type.error)&&(!type.number)) {
-				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+type,CarmaPackage::eINSTANCE.subtraction_Right,ERROR_Expression_type_error);			
+			if ((type!=null)&&(!type.error)&&(!type.number)&&(!type.set)) {
+				error("Type Error: unexpected type "+type,CarmaPackage::eINSTANCE.subtraction_Right,ERROR_Expression_type_error);			
 			}
 		}
 	}
@@ -607,6 +792,42 @@ class CARMAValidator extends AbstractCARMAValidator {
 	}
 
 	@Check
+	def check_ERROR_Expression_type_error_ArrayAccess_array( NodeExpressionOrArrayAccess e ) {
+		if (e.source != null) {
+			if (!e.source.isReferenceToNodeName) {
+				var type = e.source.typeOf
+				if ((!type.error)&&(!type.none)&&(!type.list)) {
+					error("Type Error: Expected a node name or a list is "+type,CarmaPackage::eINSTANCE.nodeExpressionOrArrayAccess_Source,ERROR_Expression_type_error);			
+				}
+			}
+		}
+	}
+	
+	public static val ERROR_Aray_index_error = "ERROR_Aray_index_error"
+	
+
+	@Check
+	def check_ERROR_Expression_type_error_ArrayAccess_index( NodeExpressionOrArrayAccess e ) {
+		if (e.source != null) {
+			var sourceType = e.values.typeOf
+			if (sourceType.list) {
+				if (e.values.size == 1) {
+					var type = e.values.get(0).typeOf
+					if ((!type.error)&&(!type.none)&&(!type.integer)) {
+						error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" is "+type,CarmaPackage::eINSTANCE.nodeExpressionOrArrayAccess_Values,ERROR_Expression_type_error);			
+					}
+				} else {
+					if (e.values.size > 1) {
+						error("Error: illegal index expression (a single integer is expeceted)!",CarmaPackage::eINSTANCE.nodeExpressionOrArrayAccess_Values,ERROR_Aray_index_error);			
+					}
+				}
+				
+			}
+		}
+	}
+
+
+	@Check
 	def check_ERROR_Expression_type_error_Range_min( Range e ) {
 		if (e.min != null) {
 			var type = e.min.typeOf
@@ -647,8 +868,8 @@ class CARMAValidator extends AbstractCARMAValidator {
 			var f2 = ar.fields.head
 			if ((f2 != null)&&(f != f2)) {
 				var t2 = f2.field ?. recordType
-				if ((t2 != null)&&(!t2.error)&&(t1.reference != t2.reference)) {
-					error("Field "+f.field.name+" is not valid for type "+(t2.reference as RecordDefinition).name,
+				if ((t2 != null)&&(!t2.error)&&(!t1.equals(t2))) {
+					error("Field "+f.field.name+" is not valid for type "+(t2.asRecord.reference as RecordDefinition).name,
 						CarmaPackage::eINSTANCE.fieldAssignment_Field , 
 						ERROR_FieldAssignment_incompatible_field												
 					)
@@ -666,7 +887,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 		if (f != null) {
 			var t = f.field ?.recordType
 			if ((t!=null)&&(!t.error)&&(t.record)) {
-				var rt = t.reference as RecordDefinition
+				var rt = t.asRecord.reference
 				var missing =  rt.fields.filter[ df | r.fields.forall[ it.field != df ] ].map[it.name]
 				if (!missing.empty) {
 					error("Missing fields: "+missing.join(", "),
@@ -715,14 +936,20 @@ class CARMAValidator extends AbstractCARMAValidator {
 
 	@Check
 	def check_ERROR_Reference_call_error_1( Reference r ) {
-		if ((r.reference instanceof FunctionDefinition)&&(!r.isIsCall)) {
+		var ref = r.reference
+		if ((ref instanceof FunctionDefinition)&&(!r.isIsCall)) {
 			error("Error: missing parameters!",CarmaPackage::eINSTANCE.reference_Reference,ERROR_Reference_call_error);
-		}
+		}		
+		if ((ref instanceof MeasureDefinition)) {
+			if ((ref.variables.size > 0)&&(!r.isIsCall)) {
+				error("Error: missing parameters!",CarmaPackage::eINSTANCE.reference_Reference,ERROR_Reference_call_error);
+			}
+		}		
 	}
 
 	@Check
 	def check_ERROR_Reference_call_error_2( Reference r ) {
-		if (!(r.reference instanceof FunctionDefinition)&&(r.isIsCall)) {
+		if (!(r.reference instanceof FunctionDefinition)&&!(r.reference instanceof MeasureDefinition)&&(r.isIsCall)) {
 			error("Error: "+r.reference.name+" is not a function!",CarmaPackage::eINSTANCE.reference_Reference,ERROR_Reference_call_error);
 		}
 	}
@@ -737,17 +964,38 @@ class CARMAValidator extends AbstractCARMAValidator {
 				error("Error: wrong number of parameters!",CarmaPackage::eINSTANCE.reference_Args,ERROR_Reference_wrong_number_of_parameters);			
 			}
 		}
+		if (ref instanceof MeasureDefinition) {
+			if ((r.isIsCall)&&(r.args.size != ref.variables.size)) {
+				error("Error: wrong number of parameters!",CarmaPackage::eINSTANCE.reference_Args,ERROR_Reference_wrong_number_of_parameters);			
+			}
+		}
 	}
 
 	public static val ERROR_Reference_wrong_parameter_type = "ERROR_Reference_wrong_parameter_type"
 	
 	@Check
-	def check_ERROR_Reference_wrong_parameter_type( Reference r ) {
+	def check_ERROR_Function_wrong_parameter_type( Reference r ) {
 		var ref = r.reference
 		if (ref instanceof FunctionDefinition) {
 			if ((r.isIsCall)&&(r.args.size == ref.parameters.size)) {
 				for( var i=0 ; i<r.args.size ; i++ ) {
 					var dt = ref.parameters.get(i).type.toCarmaType
+					var at = r.args.get(i).typeOf
+					if (dt != at) {
+						error("Type Error: Expected "+dt+" is "+at,CarmaPackage::eINSTANCE.reference_Args,i,ERROR_Reference_wrong_number_of_parameters);													
+					}
+				}
+			}
+		}
+	}
+
+	@Check
+	def check_ERROR_Measure_wrong_parameter_type( Reference r ) {
+		var ref = r.reference
+		if (ref instanceof MeasureDefinition) {
+			if ((r.isIsCall)&&(r.args.size == ref.variables.size)) {
+				for( var i=0 ; i<r.args.size ; i++ ) {
+					var dt = ref.variables.get(i).type.toCarmaType
 					var at = r.args.get(i).typeOf
 					if (dt != at) {
 						error("Type Error: Expected "+dt+" is "+at,CarmaPackage::eINSTANCE.reference_Args,i,ERROR_Reference_wrong_number_of_parameters);													

@@ -3,6 +3,7 @@
  */
 package org.cmg.ml.sam.sim;
 
+import java.util.Collection;
 import java.util.HashMap;
 
 import org.apache.commons.math3.random.RandomGenerator;
@@ -55,6 +56,22 @@ public class RandomGeneratorRegistry {
 	public static <T> T uniform( T ... data ) {
 		RandomGenerator rg = getInstance().get();
 		return data[rg.nextInt(data.length)];
+	}
+	
+	public static <T> T uniformSelect( Collection<T> collection ) {
+		RandomGenerator rg = getInstance().get();
+		int idx = rg.nextInt(collection.size());
+		int counter = 0;
+		T last = null;
+		for (T t : collection) {
+			last = t;
+			if (counter == idx) {
+				return t;
+			} else {
+				counter++;
+			}
+		}
+		return last;
 	}
 	
 	public static double rnd() {

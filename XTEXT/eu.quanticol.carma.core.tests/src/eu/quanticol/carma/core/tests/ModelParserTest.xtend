@@ -41,8 +41,8 @@ component Rover(int a, int b,  process Z){
     }
 
     behaviour{
-        Sense     = sense*{data := data + 1}.Sense;
-        Send     = [my.data > 0] send[type == 1]<1>{data := data - 1}.Send;
+        Sense     = sense*{data := data + 1;}.Sense;
+        Send     = [my.data > 0] send[type == 1]<1>{data := data - 1;}.Send;
     }
 
     init{
@@ -62,12 +62,12 @@ component Satelite(int a, int b){
 
     behaviour{
 
-        Analyse = [my.data > 0] analyse*{data := data - 1, packge := packge + 1}.Transmit
-        + [my.data == 0] sense*{data := data + 1}.Transmit;
+        Analyse = [my.data > 0] analyse*{data := data - 1; packge := packge + 1;}.Transmit
+        + [my.data == 0] sense*{data := data + 1;}.Transmit;
 
-        Transmit = [my.packge > 0] transmit*{packge := packge - 1}.Analyse;
+        Transmit = [my.packge > 0] transmit*{packge := packge - 1;}.Analyse;
 
-        Receive = send(z){data := data + z}.Receive;
+        Receive = send(z){data := data + z;}.Receive;
     }
 
     init{
@@ -83,7 +83,7 @@ component Beacon(int a, int b){
     }
 
     behaviour{
-        Signal = [my.battery > 0] signal*{battery := battery - 1}.Signal + [my.battery <= 0] die*.nil;
+        Signal = [my.battery > 0] signal*{battery := battery - 1;}.Signal + [my.battery <= 0] die*.nil;
     }
 
     init{
@@ -92,11 +92,11 @@ component Beacon(int a, int b){
 }
 
 abstract {
-    Rove = rove*{myPosition := Roving(my.myPosition)}.Wait;
+    Rove = rove*{myPosition := Roving(my.myPosition);}.Wait;
     Wait = wait*.Wait;
 }
 
-measure Waiting[i := 0:2, j := 0:2 ] = #{ *  | my.myPosition.x == i && my.myPosition.y == j };
+measure Waiting( int i , int j ) = #{ *  | my.myPosition.x == i && my.myPosition.y == j };
 
 system Simple{
 
@@ -119,31 +119,54 @@ system Simple{
             attrib center := [ x := 1, y := 1 ];
         }
 
-        prob{
-            [(receiver.myPosition.x - global.center.x < 0) && (receiver.myPosition.y - global.center.y == 0)]	send : 1;
-            [(receiver.myPosition.x - global.center.x > 1)]	send : 0.75;
-            [(receiver.myPosition.x - global.center.x < 0)]	send : 0.5;
-            default : 0.25;
+        weight {
+        	send {
+            	if ((receiver.myPosition.x - global.center.x < 0) && (receiver.myPosition.y - global.center.y == 0)) {
+            		return 1;
+            	}
+            	if ((receiver.myPosition.x - global.center.x > 1)) {
+            		return 0.75;
+            	}
+            	if ((receiver.myPosition.x - global.center.x < 0)) {
+            		return 0.5;
+            	}
+            	return 0.25;
+        	}
+            default { return 0.25; }
         }
 
         rate{
-        	[(sender.myPosition.x == 0)]	rove* : 6;
-        	[(sender.myPosition.x == 1)]	rove* : 4;
-        	[(sender.myPosition.x == 2)]	rove* : 5;
-            [true]	sense* : #{ *  | sender.myPosition.x == my.myPosition.x && sender.myPosition.y == my.myPosition.y }/#{* | true};
-            [true]	analyse* : 0.1;
-            [true]	wait* : 3;
-            [true]	signal* : 0.5;
-            [true]	die* : 0.5;
-            default : 0.25;
+        	rove* {
+        		if ((sender.myPosition.x == 0)) {
+        			return 6;
+        		}
+        		if ((sender.myPosition.x == 1)) {
+        			return 4;
+        		}
+        		if ((sender.myPosition.x == 2)) {
+        			return 5;
+        		}
+        		return 0.25;
+        	}
+            sense* { return #{ *  | sender.myPosition.x == my.myPosition.x && sender.myPosition.y == my.myPosition.y }/#{* | true}; }
+            analyse* { return 0.1; }
+            wait* { return 3; }
+            signal* { return 0.5; }
+            die* { return 0.5; }
+            default { return 0.25; }
         }
 
         update{
-            [true] send : reports := global.reports + 1;
-            [sender.data > 5] sense* : new Beacon(sender.myPosition.x,sender.myPosition.y);
+            send { reports := global.reports + 1; }
+            sense* { 
+	            	if (sender.data > 5) { 
+	            		new Beacon(sender.myPosition.x,sender.myPosition.y);
+	            	}
+            }
         }
     }
 }
+
 
 	'''
 	@Test
@@ -153,13 +176,14 @@ system Simple{
 
 	@Test
 	def void test_Compiler(){
+		class.classLoader.setJavaCompilerClassPath
 		code.compile[
 					var o = getCompiledClass.newInstance 
 			assertNotNull( o )
 			assertTrue( o instanceof CarmaModel )
 			var m = o as CarmaModel
 			assertEquals( 1 , m.systems.length )
-			assertEquals( 9 , m.measures.length )					
+			assertEquals( 1 , m.measures.length )					
 
 	]
 	}

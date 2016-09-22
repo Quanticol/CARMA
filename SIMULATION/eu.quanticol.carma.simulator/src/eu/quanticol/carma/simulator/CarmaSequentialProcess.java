@@ -64,7 +64,7 @@ public class CarmaSequentialProcess extends CarmaProcess {
 			CarmaPredicate guard = transition.getGuard();
 			CarmaAction action = transition.getAction();
 			final CarmaProcessAutomaton.State next = transition.getNextState();
-			if (guard.satisfy(store)) {
+			if (guard.satisfy(caspaSystem.now() , store)) {
 				toReturn = toReturn.add( 
 					action.getActivity(
 						caspaSystem, 
@@ -72,7 +72,13 @@ public class CarmaSequentialProcess extends CarmaProcess {
 						new Activity() {				
 							@Override
 							public boolean execute(RandomGenerator r) {
-								return setState(next);
+								if (transition.isKill()) {
+									doKill();
+								} else {
+									setState(next);
+								}
+								caspaSystem.removeKilled();
+								return true;
 							}
 						}
 					)
@@ -80,6 +86,10 @@ public class CarmaSequentialProcess extends CarmaProcess {
 			}
 		}
 		return toReturn;
+	}
+
+	protected boolean doKill() {
+		return this.component.kill();
 	}
 
 	protected boolean setState(State next) {
@@ -106,23 +116,31 @@ public class CarmaSequentialProcess extends CarmaProcess {
 			return toReturn;
 		}
 		LinkedList<CarmaProcessAutomaton.Transition> transitions = currenstate.getTransitions();
+		CarmaStore store = getComponent().store;
 		for (CarmaProcessAutomaton.Transition transition : transitions) {
 			final CarmaProcessAutomaton.State next = transition.getNextState();
-			toReturn = toReturn.add(
-				transition.getAction().receive(
-						system, 
-						getComponent(), 
-						sender, 
-						action, 
-						value, 
-						broadcast, 
-						new Activity() {				
-							@Override
-							public boolean execute(RandomGenerator r) {
-								return setState(next);
-							}
-						})
-			);
+			if (transition.getGuard().satisfy(system.now(), store)) {
+				toReturn = toReturn.add(
+					transition.getAction().receive(
+							system, 
+							getComponent(), 
+							sender, 
+							action, 
+							value, 
+							broadcast, 
+							new Activity() {				
+								@Override
+								public boolean execute(RandomGenerator r) { 
+									if (transition.isKill()) {
+										doKill();
+									} else {
+										setState(next);
+									}
+									return true;
+								}
+							})
+				);
+			}
 		}
 		return toReturn;
 	}

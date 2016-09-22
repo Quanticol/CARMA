@@ -9,12 +9,12 @@ package eu.quanticol.carma.simulator;
  */
 public interface CarmaPredicate {
 
-	public boolean satisfy( CarmaStore store );
+	public boolean satisfy( double now , CarmaStore store );
 
 	public static final CarmaPredicate TRUE = new  CarmaPredicate() {
 
 		@Override
-		public boolean satisfy(CarmaStore store) {
+		public boolean satisfy(double now , CarmaStore store) {
 			return true;
 		}
 		
@@ -23,7 +23,7 @@ public interface CarmaPredicate {
 	public static final CarmaPredicate FALSE = new  CarmaPredicate() {
 
 		@Override
-		public boolean satisfy(CarmaStore store) {
+		public boolean satisfy(double now, CarmaStore store) {
 			return false;
 		}
 		
@@ -43,7 +43,7 @@ public interface CarmaPredicate {
 		}
 		
 		@Override
-		public boolean satisfy(CarmaStore store) {
+		public boolean satisfy(double now, CarmaStore store) {
 			return value.equals(store.get(attribute, clazz));
 		}
 		
@@ -58,9 +58,9 @@ public interface CarmaPredicate {
 		}
 		
 		@Override
-		public boolean satisfy(CarmaStore store) {
+		public boolean satisfy(double now, CarmaStore store) {
 			for (CarmaPredicate carmaPredicate : predicates) {
-				if (!carmaPredicate.satisfy(store)) {
+				if (!carmaPredicate.satisfy(now,store)) {
 					return false;
 				}
 			}

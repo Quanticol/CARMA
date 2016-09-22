@@ -38,11 +38,19 @@ public class CarmaProcessAutomaton {
 	}
 
 	public void addTransition( State s1 , CarmaAction action , State s2 ) {
-		s1.addTransition(action, s2);
+		s1.addTransition(action, s2,false);
 	}
 
+	public void addTransition( State s1 , CarmaAction action , State s2 , boolean isKill ) {
+		s1.addTransition(action, s2,isKill);
+	}
+
+	public void addTransition( State s1 , CarmaPredicate predicate , CarmaAction action , State s2 , boolean isKill ) {
+		s1.addTransition(predicate , action, s2,isKill);
+	}
+	
 	public void addTransition( State s1 , CarmaPredicate predicate , CarmaAction action , State s2 ) {
-		s1.addTransition(predicate , action, s2);
+		s1.addTransition(predicate , action, s2,false);
 	}
 
 	public class Transition {
@@ -50,15 +58,25 @@ public class CarmaProcessAutomaton {
 		private CarmaAction action;
 		private State nextState;
 		private CarmaPredicate guard;
+		private boolean isKill;
 		
 		public Transition(CarmaAction action , State nextState ) {
-			this(CarmaPredicate.TRUE,action,nextState);
+			this(CarmaPredicate.TRUE,action,nextState,false);
 		}
 		
+		public Transition(CarmaAction action , State nextState , boolean isKill ) {
+			this(CarmaPredicate.TRUE,action,nextState,isKill);
+		}
+
 		public Transition(CarmaPredicate guard , CarmaAction action , State nextState ) {
+			this(guard,action,nextState,false);
+		}
+		
+		public Transition(CarmaPredicate guard , CarmaAction action , State nextState , boolean isKill ) {
 			this.guard = guard;
 			this.action = action;
 			this.nextState = nextState;
+			this.isKill = isKill;
 		}
 		
 		/**
@@ -77,6 +95,9 @@ public class CarmaProcessAutomaton {
 			return guard;
 		}
 		
+		public boolean isKill() {
+			return isKill;
+		}
 	}
 	
 	
@@ -120,13 +141,13 @@ public class CarmaProcessAutomaton {
 			return processName+"["+name+"]";
 		}
 		
-		private void addTransition( CarmaAction act , State next ) {
-			transitions.add(new Transition(act,next));
+		private void addTransition( CarmaAction act , State next , boolean isKill ) {
+			transitions.add(new Transition(act,next,isKill));
 		}
 		
 		public void addTransition(CarmaPredicate guard, CarmaAction act,
-				State next) {
-			transitions.add(new Transition(guard,act,next));
+				State next, boolean isKill) {
+			transitions.add(new Transition(guard,act,next,isKill));
 		}
 
 

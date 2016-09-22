@@ -28,6 +28,14 @@ import eu.quanticol.carma.core.carma.Range
 import eu.quanticol.carma.core.carma.Expression
 import eu.quanticol.carma.core.carma.ComponentBlockForStatement
 import eu.quanticol.carma.core.carma.ComponentBlockConditionalStatement
+import eu.quanticol.carma.core.typing.CarmaType
+import eu.quanticol.carma.core.carma.UntypedVariable
+import eu.quanticol.carma.core.services.CARMAGrammarAccess.UntypedVariableElements
+import org.eclipse.emf.common.util.EList
+import eu.quanticol.carma.core.carma.UpdateCommand
+import eu.quanticol.carma.core.carma.UpdateAssignment
+import eu.quanticol.carma.core.carma.UpdateCollectionAdd
+import eu.quanticol.carma.core.carma.ComponentBlockIteratorStatement
 
 class CollectiveHandler {
 
@@ -103,11 +111,21 @@ class CollectiveHandler {
 		} else {
 			cbi.name.name.setCurrentComponent
 			'''
-			system.addComponent( 
-				createComponent«cbi.name.name»(					
-					«cbi.arguments.map[it.argumentCode(ranges)].invocationParameters(cbi.name.parameters.map[it.type])»
-				) 
-			);
+			{
+				«IF cbi.population != null» 
+				for (int pop = 0; pop < «cbi.population.expressionToJava» ; pop++ ) {
+				«ENDIF»
+					CarmaComponent fooComponent = createComponent«cbi.name.name»(					
+						«cbi.arguments.map[it.argumentCode(ranges)].invocationParameters(cbi.name.parameters.map[it.type])»
+					);
+					«IF cbi.location!=null»
+					fooComponent.setLocation(«cbi.location.expressionToJava»);
+					«ENDIF» 				
+					system.addComponent( fooComponent );
+				«IF cbi.population != null»
+				}
+				«ENDIF»
+			}
 			'''		
 		}
 	}
@@ -155,7 +173,8 @@ class CollectiveHandler {
 			CarmaPredicate «guardVar» = new CarmaPredicate() {
 
 				//@Override
-				public boolean satisfy(CarmaStore store) {
+				public boolean satisfy(double now,CarmaStore store) {
+					final «CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::MY)» = store.get( "loc" , Node.class );					
 					«FOR a:p.guard.booleanExpression.referencedAttibutes»
 					«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
 					«ENDFOR»
@@ -177,12 +196,28 @@ class CollectiveHandler {
 			«p.action.actionCode»
 			
 			«IF guards.empty»			
-			_COMP_«component».addTransition( «state.stateName(component)» , action , «p.next.nextCode(component)» );			
+			_COMP_«component».addTransition( 
+				«state.stateName(component)» , 
+				action , 
+				«p.next.nextCode(component)» «IF p.next.isKillCode»,
+				true«ENDIF»);			
 			«ELSE»
-			_COMP_«component».addTransition( «state.stateName(component)» , new CarmaPredicate.Conjunction( «FOR s:guards SEPARATOR ','» «s» «ENDFOR» ) , action , «p.next.nextCode(component)» );			
+			_COMP_«component».addTransition( 
+				«state.stateName(component)» , 
+				new CarmaPredicate.Conjunction( «FOR s:guards SEPARATOR ','» «s» «ENDFOR» ) , 
+				action , 
+				«p.next.nextCode(component)» «IF p.next.isKillCode»,
+				true«ENDIF»);			
 			«ENDIF»
 		}
 		'''
+	}
+	
+	def isKillCode( ProcessExpressionNext next ) {
+		switch next {
+			ProcessExpressionKill: true
+			default: false
+		}
 	}
 	
 	def nextCode( ProcessExpressionNext next , String component ) {
@@ -195,74 +230,93 @@ class CollectiveHandler {
 	
 	def dispatch CharSequence actionCode( InputAction act ) {
 		var t = act.activity.inferActivityType
-		var idxVar = act.parameters.indexed
-		'''
-		CarmaAction action = new CarmaInput( 
-			«act.activity.name.actionName» , «act.activity.isIsBroadacst»  		
-		) {
-			
-			@Override
-			protected CarmaStoreUpdate getUpdate(final Object value, final double now) {
+		if ((t.exists[ it == CarmaType::ERROR_TYPE ])||(t.size != act.parameters.size)) {
+			'''
+			CarmaAction action = null;
+			'''
+		} else {
+			var idxVar = act.parameters.indexed
+			'''
+			CarmaAction action = new CarmaInput( 
+				«act.activity.name.actionName» , «act.activity.isIsBroadacst»  		
+			) {
 				
-				«IF act.update != null»
-				LinkedList<Object> message = (LinkedList<Object>) value;
-				«FOR idv:idxVar»
-				final «t.get(idv.key).toJavaType(true)» «idv.value.name.variableName» = («t.get(idv.key).toJavaType(false)») message.get(«idv.key»);
-				«ENDFOR»
-				return new CarmaStoreUpdate() {
+				@Override
+				protected CarmaStoreUpdate getUpdate(final Object value, final double now) {
 					
-					//@Override
-					public void update(RandomGenerator r, CarmaStore store) {
-						«FOR a:act.update.referencedAttributes»
-						«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
-						«ENDFOR»
-						«FOR a:act.update.myAttributes»
-						«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"store")»
-						«ENDFOR»
-						«FOR u:act.update.updateAssignment»
-						store.set( "«u.reference.name»", «u.expression.expressionToJava» );
-						«ENDFOR»
-					}
-				};
-				«ELSE»
-				return new CarmaStoreUpdate() {					
-					//@Override
-					public void update(RandomGenerator r, CarmaStore store) {
-					}
-				};
-				«ENDIF»
-							
-			}	
-			
-			@Override
-			protected CarmaPredicate getPredicate(CarmaStore myStore, Object value, final double now) {
-				«IF act.activity.predicate != null»				
-				LinkedList<Object> message = (LinkedList<Object>) value;
-				«FOR idv:idxVar»
-				final «t.get(idv.key).toJavaType(true)» «idv.value.name.variableName» = («t.get(idv.key).toJavaType(false)») message.get(«idv.key»);
-				«ENDFOR»
-				«FOR a:act.activity.predicate.guard.myAttributes»
-				«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"myStore")»
-				«ENDFOR»
-				return new CarmaPredicate() {
-
-					//@Override
-					public boolean satisfy(CarmaStore store) {
-						«FOR a:act.activity.predicate.guard.referencedAttibutes»
-						«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
-						«ENDFOR»
-						return «act.activity.predicate.guard.expressionToJava»;
-					}
-					
-				};
-				«ELSE»
-				return CarmaPredicate.TRUE;
-				«ENDIF»
-				
-			}
+					«IF act.update != null»
+					LinkedList<Object> message = (LinkedList<Object>) value;
+					«FOR idv:idxVar»
+					final «t.get(idv.key).toJavaType(true)» «idv.value.name.variableName» = («t.get(idv.key).toJavaType(false)») message.get(«idv.key»);
+					«ENDFOR»
+					return new CarmaStoreUpdate() {
 						
-		};		
-		'''		
+						//@Override
+						public void update(RandomGenerator r, CarmaStore store) {
+							«FOR a:act.update.referencedAttributes»
+							«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
+							«ENDFOR»
+							final «CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::MY)» = store.get( "loc" , Node.class );					
+							«FOR a:act.update.myAttributes»
+							«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"store")»
+							«ENDFOR»
+							«FOR u:act.update.updateAssignment»
+							«u.updateCommandCode»
+							«ENDFOR»
+						}
+					};
+					«ELSE»
+					return new CarmaStoreUpdate() {					
+						//@Override
+						public void update(RandomGenerator r, CarmaStore store) {
+						}
+					};
+					«ENDIF»
+								
+				}	
+				
+				@Override
+				protected CarmaPredicate getPredicate(CarmaStore myStore, Object value) {
+					«IF act.activity.predicate != null»				
+					LinkedList<Object> message = (LinkedList<Object>) value;
+					«FOR idv:idxVar»
+					final «t.get(idv.key).toJavaType(true)» «idv.value.name.variableName» = («t.get(idv.key).toJavaType(false)») message.get(«idv.key»);
+					«ENDFOR»
+					final «CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::MY)» = myStore.get( "loc" , Node.class );					
+					«FOR a:act.activity.predicate.guard.myAttributes»
+					«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"myStore")»
+					«ENDFOR»
+					return new CarmaPredicate() {
+	
+						//@Override
+						public boolean satisfy(double now,CarmaStore store) {
+							try {
+								«FOR a:act.activity.predicate.guard.referencedAttibutes»
+								«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
+								«ENDFOR»
+								return «act.activity.predicate.guard.expressionToJava»;
+							} catch (NullPointerException e) {
+								return false;
+							}
+						}
+						
+					};
+					«ELSE»
+					return CarmaPredicate.TRUE;
+					«ENDIF»
+					
+				}
+							
+			};		
+			'''				
+		}
+	}
+	
+	def CharSequence updateCommandCode( UpdateCommand u ) {
+		switch u {
+			UpdateAssignment: '''store.set( "«u.reference.attributeName»", «u.expression.expressionToJava» );'''
+			UpdateCollectionAdd: '''«u.reference.attributeName.attributeName(ReferenceContext::MY)».add(«u.arg.expressionToJava»)'''
+		}
 	}
 
 	def dispatch CharSequence actionCode( OutputAction act ) {
@@ -278,6 +332,7 @@ class CollectiveHandler {
 				«FOR a:act.outputArguments.referencedAttibutes»
 				«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
 				«ENDFOR»
+				final «CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::MY)» = store.get( "loc" , Node.class );					
 				«FOR a:act.outputArguments.myAttributes»
 				«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"store")»
 				«ENDFOR»
@@ -294,6 +349,7 @@ class CollectiveHandler {
 					
 					//@Override
 					public void update(RandomGenerator r, CarmaStore store) {
+						final «CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::MY)» = store.get( "loc" , Node.class );					
 						«FOR a:act.update.referencedAttributes»
 						«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
 						«ENDFOR»
@@ -301,7 +357,7 @@ class CollectiveHandler {
 						«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"store")»
 						«ENDFOR»
 						«FOR u:act.update.updateAssignment»
-						store.set( "«u.reference.name»", «u.expression.expressionToJava» );
+						«u.updateCommandCode»
 						«ENDFOR»
 					}
 				};
@@ -315,24 +371,27 @@ class CollectiveHandler {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(final CarmaStore myStore, final double now) {
+			protected CarmaPredicate getPredicate(final CarmaStore myStore) {
 				«IF isSpontaneous»
 				return CarmaPredicate.FALSE;
 				«ELSE»
 				«IF act.activity.predicate != null»				
+				final «CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::MY)» = myStore.get( "loc" , Node.class );					
 				«FOR a:act.activity.predicate.guard.myAttributes»
 				«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"myStore")»
 				«ENDFOR»
 				return new CarmaPredicate() {
 
 					//@Override
-					public boolean satisfy(CarmaStore store) {
-						
-						«FOR a:act.activity.predicate.guard.referencedAttibutes»
-						«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
-						«ENDFOR»
-						return «act.activity.predicate.guard.expressionToJava»;
-						
+					public boolean satisfy(double now,CarmaStore store) {
+						try {
+							«FOR a:act.activity.predicate.guard.referencedAttibutes»
+							«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
+							«ENDFOR»
+							return «act.activity.predicate.guard.expressionToJava»;
+						} catch (NullPointerException e) {
+							return false;
+						}
 					}
 					
 				};
@@ -357,6 +416,23 @@ class CollectiveHandler {
 		'''
 	}
 
+	def dispatch CharSequence instantiationCode( ComponentBlockIteratorStatement block ) {
+		var eType = block.iteration.typeOf
+		if (eType.isNone) {
+			'''
+			//ERROR!!!
+			'''
+		} else {
+			'''
+			for( «eType.toJavaType(false)» «block.iteration.name.variableName»:  «block.iteration.value.expressionToJava» )  {
+				«FOR c:block.collective»
+				«c.instantiationCode»
+				«ENDFOR»			
+			}
+			'''
+		}
+	}
+
 	def dispatch CharSequence instantiationCode( ComponentBlockConditionalStatement block ) {
 		'''
 		if ( «block.guard.expressionToJava» ) {
@@ -370,6 +446,10 @@ class CollectiveHandler {
 		}
 		«ENDIF»
 		'''
+	}
+
+	def dispatch CharSequence instantiationCode( UpdateCommand command ) {
+		command.updateCommandCode
 	}
 
 }

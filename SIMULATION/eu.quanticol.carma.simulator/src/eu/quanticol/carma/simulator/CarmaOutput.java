@@ -46,7 +46,7 @@ public abstract class CarmaOutput implements CarmaAction {
 	/**
 	 * @return the predicate
 	 */
-	protected abstract CarmaPredicate getPredicate( CarmaStore store , double now );
+	protected abstract CarmaPredicate getPredicate( CarmaStore store );
 
 	/**
 	 * @return the update
@@ -71,7 +71,7 @@ public abstract class CarmaOutput implements CarmaAction {
 			public boolean execute(RandomGenerator r) {
 				if (broadcast) {
 					Object value = getValue( caspaComponent.store , caspaSystem.now );
-					caspaSystem.broadcastOutput(r, caspaComponent, action, getPredicate(caspaComponent.store,caspaSystem.now ), value );
+					caspaSystem.broadcastOutput(r, caspaComponent, action, getPredicate(caspaComponent.store), value );
 					CarmaStoreUpdate update = getUpdate(caspaSystem.now );
 					if (update != null) {
 						update.update( r , caspaComponent.store );
@@ -79,7 +79,7 @@ public abstract class CarmaOutput implements CarmaAction {
 					caspaSystem.broadcastUpdate(r,caspaComponent.store, action, value );
 					return true;
 				} else {
-					if (caspaSystem.unicastOutput(r, caspaComponent, action, getPredicate(caspaComponent.store,caspaSystem.now ), getValue( caspaComponent.store,caspaSystem.now ))) {
+					if (caspaSystem.unicastOutput(r, caspaComponent, action, getPredicate(caspaComponent.store), getValue( caspaComponent.store,caspaSystem.now ))) {
 						getUpdate(caspaSystem.now ).update( r , caspaComponent.store );
 						//N.B. The update of a unicast is triggered inside input action!!!!
 						return true;

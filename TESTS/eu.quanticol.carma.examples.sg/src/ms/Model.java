@@ -4,12 +4,13 @@ import org.apache.commons.math3.random.RandomGenerator;
 import org.cmg.ml.sam.sim.*;		
 import eu.quanticol.carma.simulator.*;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.TreeSet;
 import org.cmg.ml.sam.sim.sampling.*;
 
 
-public class Model implements CarmaModel {
+public class Model extends CarmaModel {
 	
 	public Model() {
 		generateLearnerBehaviour( );
@@ -766,7 +767,7 @@ public class Model implements CarmaModel {
 			) {
 				
 				@Override
-				protected CarmaStoreUpdate getUpdate(final Object value) {
+				protected CarmaStoreUpdate getUpdate(final Object value,double now) {
 					
 					LinkedList<Object> message = (LinkedList<Object>) value;
 					final __RECORD__LSet __VARIABLE__powers = (__RECORD__LSet) message.get(0);
@@ -805,13 +806,13 @@ public class Model implements CarmaModel {
 			) {
 				
 				@Override
-				protected Object getValue(CarmaStore store) {
+				protected Object getValue(CarmaStore store,double now) {
 					LinkedList<Object> toReturn = new LinkedList<Object>();
 					return toReturn;
 				}
 				
 				@Override
-				protected CarmaStoreUpdate getUpdate() {
+				protected CarmaStoreUpdate getUpdate(double now) {
 					return new CarmaStoreUpdate() {
 						
 						//@Override
@@ -834,7 +835,7 @@ public class Model implements CarmaModel {
 			CarmaPredicate _FOO_predicate0 = new CarmaPredicate() {
 		
 				//@Override
-				public boolean satisfy(CarmaStore store) {
+				public boolean satisfy(double now,CarmaStore store) {
 					final Double __ATTR__rng = store.get( "rng" , Double.class );
 					final Double __ATTR__lambda = store.get( "lambda" , Double.class );
 					return ( __ATTR__rng )<( __ATTR__lambda );
@@ -847,13 +848,13 @@ public class Model implements CarmaModel {
 				) {
 					
 					@Override
-					protected Object getValue(CarmaStore store) {
+					protected Object getValue(CarmaStore store,double now) {
 						LinkedList<Object> toReturn = new LinkedList<Object>();
 						return toReturn;
 					}
 					
 					@Override
-					protected CarmaStoreUpdate getUpdate() {
+					protected CarmaStoreUpdate getUpdate(double now) {
 						return new CarmaStoreUpdate() {					
 							//@Override
 							public void update(RandomGenerator r, CarmaStore store) {
@@ -875,7 +876,7 @@ public class Model implements CarmaModel {
 			CarmaPredicate _FOO_predicate0 = new CarmaPredicate() {
 		
 				//@Override
-				public boolean satisfy(CarmaStore store) {
+				public boolean satisfy(double now,CarmaStore store) {
 					final Double __ATTR__rng = store.get( "rng" , Double.class );
 					final Double __ATTR__lambda = store.get( "lambda" , Double.class );
 					return ( __ATTR__rng )>=( __ATTR__lambda );
@@ -888,13 +889,13 @@ public class Model implements CarmaModel {
 				) {
 					
 					@Override
-					protected Object getValue(CarmaStore store) {
+					protected Object getValue(CarmaStore store,double now) {
 						LinkedList<Object> toReturn = new LinkedList<Object>();
 						return toReturn;
 					}
 					
 					@Override
-					protected CarmaStoreUpdate getUpdate() {
+					protected CarmaStoreUpdate getUpdate(double now) {
 						return new CarmaStoreUpdate() {					
 							//@Override
 							public void update(RandomGenerator r, CarmaStore store) {
@@ -916,7 +917,7 @@ public class Model implements CarmaModel {
 			CarmaPredicate _FOO_predicate0 = new CarmaPredicate() {
 		
 				//@Override
-				public boolean satisfy(CarmaStore store) {
+				public boolean satisfy(double now,CarmaStore store) {
 					final Double __ATTR__pf = store.get( "pf" , Double.class );
 					return ( ( __ATTR__pf )>=( 0 ) )&&( ( __ATTR__pf )<( __FUN__Alpha( 
 							) ) );
@@ -929,13 +930,13 @@ public class Model implements CarmaModel {
 				) {
 					
 					@Override
-					protected Object getValue(CarmaStore store) {
+					protected Object getValue(CarmaStore store,double now) {
 						LinkedList<Object> toReturn = new LinkedList<Object>();
 						return toReturn;
 					}
 					
 					@Override
-					protected CarmaStoreUpdate getUpdate() {
+					protected CarmaStoreUpdate getUpdate(double now) {
 						return new CarmaStoreUpdate() {
 							
 							//@Override
@@ -964,7 +965,7 @@ public class Model implements CarmaModel {
 			CarmaPredicate _FOO_predicate0 = new CarmaPredicate() {
 		
 				//@Override
-				public boolean satisfy(CarmaStore store) {
+				public boolean satisfy(double now,CarmaStore store) {
 					final Double __ATTR__pf = store.get( "pf" , Double.class );
 					return ( ( __ATTR__pf )<( 0 ) )&&( ( __ATTR__pf )>( ( -(1) )*( __FUN__Alpha( 
 							) ) ) );
@@ -977,13 +978,13 @@ public class Model implements CarmaModel {
 				) {
 					
 					@Override
-					protected Object getValue(CarmaStore store) {
+					protected Object getValue(CarmaStore store,double now) {
 						LinkedList<Object> toReturn = new LinkedList<Object>();
 						return toReturn;
 					}
 					
 					@Override
-					protected CarmaStoreUpdate getUpdate() {
+					protected CarmaStoreUpdate getUpdate(double now) {
 						return new CarmaStoreUpdate() {
 							
 							//@Override
@@ -1012,7 +1013,7 @@ public class Model implements CarmaModel {
 			CarmaPredicate _FOO_predicate0 = new CarmaPredicate() {
 		
 				//@Override
-				public boolean satisfy(CarmaStore store) {
+				public boolean satisfy(double now,CarmaStore store) {
 					final Double __ATTR__pf = store.get( "pf" , Double.class );
 					return ( ( __ATTR__pf )==( __FUN__Alpha( 
 							) ) )||( ( __ATTR__pf )==( ( -(1) )*( __FUN__Alpha( 
@@ -1026,13 +1027,13 @@ public class Model implements CarmaModel {
 				) {
 					
 					@Override
-					protected Object getValue(CarmaStore store) {
+					protected Object getValue(CarmaStore store,double now) {
 						LinkedList<Object> toReturn = new LinkedList<Object>();
 						return toReturn;
 					}
 					
 					@Override
-					protected CarmaStoreUpdate getUpdate() {
+					protected CarmaStoreUpdate getUpdate(double now) {
 						return new CarmaStoreUpdate() {					
 							//@Override
 							public void update(RandomGenerator r, CarmaStore store) {
@@ -1056,7 +1057,7 @@ public class Model implements CarmaModel {
 			) {
 				
 				@Override
-				protected Object getValue(CarmaStore store) {
+				protected Object getValue(CarmaStore store,double now) {
 					LinkedList<Object> toReturn = new LinkedList<Object>();
 					final Integer __MY__i = store.get( "i" , Integer.class );
 					final Double __MY__p = store.get( "p" , Double.class );
@@ -1066,7 +1067,7 @@ public class Model implements CarmaModel {
 				}
 				
 				@Override
-				protected CarmaStoreUpdate getUpdate() {
+				protected CarmaStoreUpdate getUpdate(double now) {
 					return new CarmaStoreUpdate() {					
 						//@Override
 						public void update(RandomGenerator r, CarmaStore store) {
@@ -1124,7 +1125,7 @@ public class Model implements CarmaModel {
 			) {
 				
 				@Override
-				protected CarmaStoreUpdate getUpdate(final Object value) {
+				protected CarmaStoreUpdate getUpdate(final Object value, double now) {
 					
 					LinkedList<Object> message = (LinkedList<Object>) value;
 					final Integer __VARIABLE__i = (Integer) message.get(0);
@@ -1160,7 +1161,7 @@ public class Model implements CarmaModel {
 			CarmaPredicate _FOO_predicate0 = new CarmaPredicate() {
 		
 				//@Override
-				public boolean satisfy(CarmaStore store) {
+				public boolean satisfy(double now,CarmaStore store) {
 					final Integer __MY__rcvnum = store.get( "rcvnum" , Integer.class );
 					return ( __MY__rcvnum )<( 8 );
 				}
@@ -1172,13 +1173,13 @@ public class Model implements CarmaModel {
 				) {
 					
 					@Override
-					protected Object getValue(CarmaStore store) {
+					protected Object getValue(CarmaStore store,double now) {
 						LinkedList<Object> toReturn = new LinkedList<Object>();
 						return toReturn;
 					}
 					
 					@Override
-					protected CarmaStoreUpdate getUpdate() {
+					protected CarmaStoreUpdate getUpdate(double now) {
 						return new CarmaStoreUpdate() {					
 							//@Override
 							public void update(RandomGenerator r, CarmaStore store) {
@@ -1200,7 +1201,7 @@ public class Model implements CarmaModel {
 			CarmaPredicate _FOO_predicate0 = new CarmaPredicate() {
 		
 				//@Override
-				public boolean satisfy(CarmaStore store) {
+				public boolean satisfy(double now,CarmaStore store) {
 					final Integer __MY__rcvnum = store.get( "rcvnum" , Integer.class );
 					return ( __MY__rcvnum )==( 8 );
 				}
@@ -1212,13 +1213,13 @@ public class Model implements CarmaModel {
 				) {
 					
 					@Override
-					protected Object getValue(CarmaStore store) {
+					protected Object getValue(CarmaStore store,double now) {
 						LinkedList<Object> toReturn = new LinkedList<Object>();
 						return toReturn;
 					}
 					
 					@Override
-					protected CarmaStoreUpdate getUpdate() {
+					protected CarmaStoreUpdate getUpdate(double now) {
 						return new CarmaStoreUpdate() {
 							
 							//@Override
@@ -1248,13 +1249,13 @@ public class Model implements CarmaModel {
 			) {
 				
 				@Override
-				protected Object getValue(CarmaStore store) {
+				protected Object getValue(CarmaStore store,double now) {
 					LinkedList<Object> toReturn = new LinkedList<Object>();
 					return toReturn;
 				}
 				
 				@Override
-				protected CarmaStoreUpdate getUpdate() {
+				protected CarmaStoreUpdate getUpdate(double now) {
 					return new CarmaStoreUpdate() {
 						
 						//@Override
@@ -1282,7 +1283,7 @@ public class Model implements CarmaModel {
 			CarmaPredicate _FOO_predicate0 = new CarmaPredicate() {
 		
 				//@Override
-				public boolean satisfy(CarmaStore store) {
+				public boolean satisfy(double now,CarmaStore store) {
 					final Integer __ATTR__a = store.get( "a" , Integer.class );
 					return ( __ATTR__a )==( 1 );
 				}
@@ -1294,13 +1295,13 @@ public class Model implements CarmaModel {
 				) {
 					
 					@Override
-					protected Object getValue(CarmaStore store) {
+					protected Object getValue(CarmaStore store,double now) {
 						LinkedList<Object> toReturn = new LinkedList<Object>();
 						return toReturn;
 					}
 					
 					@Override
-					protected CarmaStoreUpdate getUpdate() {
+					protected CarmaStoreUpdate getUpdate(double now) {
 						return new CarmaStoreUpdate() {
 							
 							//@Override
@@ -1327,7 +1328,7 @@ public class Model implements CarmaModel {
 			CarmaPredicate _FOO_predicate0 = new CarmaPredicate() {
 		
 				//@Override
-				public boolean satisfy(CarmaStore store) {
+				public boolean satisfy(double now,CarmaStore store) {
 					final Integer __ATTR__a = store.get( "a" , Integer.class );
 					return ( __ATTR__a )==( 0 );
 				}
@@ -1339,13 +1340,13 @@ public class Model implements CarmaModel {
 				) {
 					
 					@Override
-					protected Object getValue(CarmaStore store) {
+					protected Object getValue(CarmaStore store,double now) {
 						LinkedList<Object> toReturn = new LinkedList<Object>();
 						return toReturn;
 					}
 					
 					@Override
-					protected CarmaStoreUpdate getUpdate() {
+					protected CarmaStoreUpdate getUpdate(double now) {
 						return new CarmaStoreUpdate() {					
 							//@Override
 							public void update(RandomGenerator r, CarmaStore store) {
@@ -1369,13 +1370,13 @@ public class Model implements CarmaModel {
 			) {
 				
 				@Override
-				protected Object getValue(CarmaStore store) {
+				protected Object getValue(CarmaStore store,double now) {
 					LinkedList<Object> toReturn = new LinkedList<Object>();
 					return toReturn;
 				}
 				
 				@Override
-				protected CarmaStoreUpdate getUpdate() {
+				protected CarmaStoreUpdate getUpdate(double now) {
 					return new CarmaStoreUpdate() {
 						
 						//@Override
@@ -1403,7 +1404,7 @@ public class Model implements CarmaModel {
 			CarmaPredicate _FOO_predicate0 = new CarmaPredicate() {
 		
 				//@Override
-				public boolean satisfy(CarmaStore store) {
+				public boolean satisfy(double now,CarmaStore store) {
 					final Integer __ATTR__a = store.get( "a" , Integer.class );
 					return ( __ATTR__a )==( 1 );
 				}
@@ -1415,7 +1416,7 @@ public class Model implements CarmaModel {
 				) {
 					
 					@Override
-					protected Object getValue(CarmaStore store) {
+					protected Object getValue(CarmaStore store,double now) {
 						LinkedList<Object> toReturn = new LinkedList<Object>();
 						final __RECORD__LSet __ATTR__newpowers = store.get( "newpowers" , __RECORD__LSet.class );
 						final __RECORD__LSet __ATTR__newpayoffs = store.get( "newpayoffs" , __RECORD__LSet.class );
@@ -1425,7 +1426,7 @@ public class Model implements CarmaModel {
 					}
 					
 					@Override
-					protected CarmaStoreUpdate getUpdate() {
+					protected CarmaStoreUpdate getUpdate(double now) {
 						return new CarmaStoreUpdate() {
 							
 							//@Override
@@ -1470,7 +1471,7 @@ public class Model implements CarmaModel {
 			CarmaPredicate _FOO_predicate0 = new CarmaPredicate() {
 		
 				//@Override
-				public boolean satisfy(CarmaStore store) {
+				public boolean satisfy(double now,CarmaStore store) {
 					final Integer __ATTR__a = store.get( "a" , Integer.class );
 					return ( __ATTR__a )==( 0 );
 				}
@@ -1482,7 +1483,7 @@ public class Model implements CarmaModel {
 				) {
 					
 					@Override
-					protected Object getValue(CarmaStore store) {
+					protected Object getValue(CarmaStore store,double now) {
 						LinkedList<Object> toReturn = new LinkedList<Object>();
 						final __RECORD__LSet __ATTR__powers = store.get( "powers" , __RECORD__LSet.class );
 						final __RECORD__LSet __ATTR__payoffs = store.get( "payoffs" , __RECORD__LSet.class );
@@ -1492,7 +1493,7 @@ public class Model implements CarmaModel {
 					}
 					
 					@Override
-					protected CarmaStoreUpdate getUpdate() {
+					protected CarmaStoreUpdate getUpdate(double now) {
 						return new CarmaStoreUpdate() {					
 							//@Override
 							public void update(RandomGenerator r, CarmaStore store) {
@@ -1743,7 +1744,7 @@ public class Model implements CarmaModel {
 							//- sender: reference to the store of sender;
 							//- receiver: reference to the store of the receiver;				
 							//@Override
-							public boolean satisfy(CarmaStore store) {
+							public boolean satisfy(double now,CarmaStore store) {
 								final Integer __MY__a = store.get( "a" , Integer.class );
 								try{
 									return ( __MY__a )==( 1 );
@@ -1782,6 +1783,21 @@ public class Model implements CarmaModel {
 		
 		};
 		
+	}
+	@Override
+	public String[] getMeasureParameters(String name) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public Map<String, Class<?>> getParametersType(String name) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public Measure<CarmaSystem> getMeasure(String name, Map<String, Object> parameters) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	

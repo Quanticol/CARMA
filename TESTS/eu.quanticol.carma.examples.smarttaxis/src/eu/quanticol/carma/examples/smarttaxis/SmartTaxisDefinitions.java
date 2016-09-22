@@ -183,7 +183,7 @@ public class SmartTaxisDefinitions {
 		return new ComponentPredicate() {
 		
 			@Override
-			public boolean eval(CarmaComponent c) {
+			public boolean eval(double now,CarmaComponent c) {
 				return (c.get(LOC_ATTRIBUTE, LOC_ATTRIBUTE_TYPE).equals( loc ))&&(c.isRunning(WAITING_USER_PROCESS));
 			}
 	
@@ -194,7 +194,7 @@ public class SmartTaxisDefinitions {
 		return new ComponentPredicate() {
 		
 			@Override
-			public boolean eval(CarmaComponent c) {
+			public boolean eval(double now,CarmaComponent c) {
 				return (c.get(LOC_ATTRIBUTE, LOC_ATTRIBUTE_TYPE).equals( loc ))&&
 						(c.get(OCCUPIED_ATTRIBUTE, OCCUPIED_ATTRIBUTE_TYPE) != null)&&
 						(c.get(OCCUPIED_ATTRIBUTE, OCCUPIED_ATTRIBUTE_TYPE).equals(false))&&
@@ -208,7 +208,7 @@ public class SmartTaxisDefinitions {
 		return new ComponentPredicate() {
 		
 			@Override
-			public boolean eval(CarmaComponent c) {
+			public boolean eval(double now,CarmaComponent c) {
 				return (c.get(OCCUPIED_ATTRIBUTE, OCCUPIED_ATTRIBUTE_TYPE) != null)&&
 						(c.get(OCCUPIED_ATTRIBUTE, OCCUPIED_ATTRIBUTE_TYPE).equals(false))&&
 						(c.get(DEST_ATTRIBUTE, DEST_ATTRIBUTE_TYPE).equals(-1));
@@ -222,7 +222,7 @@ public class SmartTaxisDefinitions {
 		return new ComponentPredicate() {
 		
 			@Override
-			public boolean eval(CarmaComponent c) {
+			public boolean eval(double now,CarmaComponent c) {
 				return (c.get(LOC_ATTRIBUTE, LOC_ATTRIBUTE_TYPE).equals( loc ))&&
 						(c.get(OCCUPIED_ATTRIBUTE, OCCUPIED_ATTRIBUTE_TYPE) != null)&&
 						(c.get(OCCUPIED_ATTRIBUTE, OCCUPIED_ATTRIBUTE_TYPE).equals(false))&&
@@ -236,7 +236,7 @@ public class SmartTaxisDefinitions {
 		return new ComponentPredicate() {
 		
 			@Override
-			public boolean eval(CarmaComponent c) {
+			public boolean eval(double now,CarmaComponent c) {
 				return (c.get(OCCUPIED_ATTRIBUTE, OCCUPIED_ATTRIBUTE_TYPE) != null)&&
 						(c.get(OCCUPIED_ATTRIBUTE, OCCUPIED_ATTRIBUTE_TYPE).equals(false))&&
 						(!c.get(DEST_ATTRIBUTE, DEST_ATTRIBUTE_TYPE).equals(-1));
@@ -271,7 +271,7 @@ public class SmartTaxisDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(final CarmaStore userStore, double now) {
+			protected CarmaPredicate getPredicate(final CarmaStore userStore) {
 				return CarmaPredicate.TRUE;
 //				return new CaspaPredicate() {
 //
@@ -305,12 +305,12 @@ public class SmartTaxisDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(final CarmaStore userStore, double now) {
+			protected CarmaPredicate getPredicate(final CarmaStore userStore) {
 				
 				return new CarmaPredicate() {
 
 					@Override
-					public boolean satisfy(CarmaStore store) {
+					public boolean satisfy(double now,CarmaStore store) {
 						return userStore.get(LOC_ATTRIBUTE, LOC_ATTRIBUTE_TYPE).equals(
 							store.get(LOC_ATTRIBUTE, LOC_ATTRIBUTE_TYPE)
 						);
@@ -351,7 +351,7 @@ public class SmartTaxisDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, double now) {
+			protected CarmaPredicate getPredicate(CarmaStore store) {
 				return CarmaPredicate.FALSE;
 			}
 		};
@@ -388,7 +388,7 @@ public class SmartTaxisDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, Object value, double now) {
+			protected CarmaPredicate getPredicate(CarmaStore store, Object value) {
 				return CarmaPredicate.TRUE;
 			}
 		};
@@ -413,7 +413,7 @@ public class SmartTaxisDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, double now) {
+			protected CarmaPredicate getPredicate(CarmaStore store) {
 				return CarmaPredicate.FALSE;
 			}
 		};
@@ -436,11 +436,11 @@ public class SmartTaxisDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(final CarmaStore taxiStore, double now) {
+			protected CarmaPredicate getPredicate(final CarmaStore taxiStore) {
 				return new CarmaPredicate() {
 
 					@Override
-					public boolean satisfy(CarmaStore store) {
+					public boolean satisfy(double now,CarmaStore store) {
 						return taxiStore.get(LOC_ATTRIBUTE, LOC_ATTRIBUTE_TYPE).equals(
 								store.get(LOC_ATTRIBUTE, LOC_ATTRIBUTE_TYPE)
 							);
@@ -473,7 +473,7 @@ public class SmartTaxisDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, Object value, double now) {
+			protected CarmaPredicate getPredicate(CarmaStore store, Object value) {
 				return CarmaPredicate.TRUE;
 			}
 		};
@@ -496,7 +496,7 @@ public class SmartTaxisDefinitions {
 		CarmaInput takeAction = new CarmaInput( TAKE , false ) {
 
 			@Override
-			protected CarmaPredicate getPredicate(final CarmaStore taxiStore, Object value, double now) {
+			protected CarmaPredicate getPredicate(final CarmaStore taxiStore, Object value) {
 				return CarmaPredicate.TRUE;
 			}
 
@@ -535,11 +535,11 @@ public class SmartTaxisDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(final CarmaStore taxiStore, Object value, double now) {
+			protected CarmaPredicate getPredicate(final CarmaStore taxiStore, Object value) {
 				return new CarmaPredicate() {
 
 					@Override
-					public boolean satisfy(CarmaStore store) {
+					public boolean satisfy(double now,CarmaStore store) {
 						return !taxiStore.get(LOC_ATTRIBUTE, LOC_ATTRIBUTE_TYPE).equals(
 								store.get(LOC_ATTRIBUTE, LOC_ATTRIBUTE_TYPE)
 								);
@@ -600,7 +600,7 @@ public class SmartTaxisDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store,double now) {
+			protected CarmaPredicate getPredicate(CarmaStore store) {
 				return CarmaPredicate.FALSE;
 			}
 		};

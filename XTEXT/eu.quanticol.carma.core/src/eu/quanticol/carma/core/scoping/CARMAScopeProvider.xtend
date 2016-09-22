@@ -11,7 +11,7 @@ import org.eclipse.emf.ecore.EObject
 import eu.quanticol.carma.core.carma.FunctionDefinition
 import org.eclipse.emf.ecore.EReference
 import eu.quanticol.carma.core.carma.Model
-import eu.quanticol.carma.core.carma.RecordAccess
+import eu.quanticol.carma.core.carma.FieldAccess
 import eu.quanticol.carma.core.carma.ConstantDefinition
 import org.eclipse.xtext.scoping.IScope
 import eu.quanticol.carma.core.carma.SystemDefinition
@@ -47,6 +47,18 @@ import eu.quanticol.carma.core.carma.VariableDeclarationCommand
 import eu.quanticol.carma.core.carma.AssignmentCommand
 import eu.quanticol.carma.core.carma.ProcessState
 import eu.quanticol.carma.core.carma.TargetAssignmentField
+import eu.quanticol.carma.core.carma.LambdaExpression
+import eu.quanticol.carma.core.carma.LocationExpression
+import eu.quanticol.carma.core.carma.LocationVariable
+import eu.quanticol.carma.core.carma.SpaceDefinition
+import eu.quanticol.carma.core.carma.Probability
+import eu.quanticol.carma.core.carma.Rate
+import eu.quanticol.carma.core.carma.Weight
+import eu.quanticol.carma.core.carma.ComponentBlockIteratorStatement
+import eu.quanticol.carma.core.carma.ComponentBlockFor
+import eu.quanticol.carma.core.carma.LocationFeature
+import eu.quanticol.carma.core.carma.CollectiveDefinition
+import eu.quanticol.carma.core.carma.ConnectionExpression
 
 /**
  * This class contains custom scoping description.
@@ -88,6 +100,9 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 		var parent = c.eContainer
 		switch( parent ) {
 			FunctionCommand: parent.getScopeFor(c)
+			LambdaExpression: Scopes::scopeFor(
+				parent.variables
+			)
 			FunctionDefinition: Scopes::scopeFor( 
 				parent.parameters , 
 				Scopes::scopeFor( 
@@ -96,21 +111,148 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 					]	  				
 				)
 			)
+			LocationFeature: {
+				var lf = parent.getContainerOfType(typeof(SpaceDefinition))
+				if (lf != null) {
+					Scopes::scopeFor(
+						parent.parameters ,
+						Scopes::scopeFor(
+							lf.parameters ,
+							Scopes::scopeFor( 
+								lf.globalReferenceableElements.filter[
+									it.isValidInExpressions
+								]	  				
+							)	
+						)												
+					)
+				} else {
+					IScope::NULLSCOPE
+				}
+				
+			}
+			Probability: {
+				var sys = parent.getContainerOfType(typeof(SystemDefinition))
+				if (sys != null) {
+					var store = sys.environment ?. store
+					var scope = Scopes::scopeFor( 
+						sys.globalReferenceableElements.filter[
+							it.isValidInEnvironmentExpressions
+						]	  				
+					)	
+					if (store != null) {
+						Scopes::scopeFor( store.attributes , scope )
+					} else {
+						scope
+					}
+				} else {
+					IScope::NULLSCOPE
+				}
+			}
+			Weight: {
+				var sys = parent.getContainerOfType(typeof(SystemDefinition))
+				if (sys != null) {
+					var store = sys.environment ?. store
+					var scope = Scopes::scopeFor( 
+						sys.globalReferenceableElements.filter[
+							it.isValidInEnvironmentExpressions
+						]	  				
+					)	
+					if (store != null) {
+						Scopes::scopeFor( store.attributes , scope )
+					} else {
+						scope
+					}
+				} else {
+					IScope::NULLSCOPE
+				}
+			}
+			Rate: {
+				var sys = parent.getContainerOfType(typeof(SystemDefinition))
+				if (sys != null) {
+					var store = sys.environment ?. store
+					var scope = Scopes::scopeFor( 
+						sys.globalReferenceableElements.filter[
+							it.isValidInEnvironmentExpressions
+						]	  				
+					)	
+					if (store != null) {
+						Scopes::scopeFor( store.attributes , scope )
+					} else {
+						scope
+					}
+				} else {
+					IScope::NULLSCOPE
+				}
+			}
 			default: IScope::NULLSCOPE
 		}
 	}
 	
 	def isValidInExpressions( ReferenceableElement r ) {
-		!((r instanceof AttributeDeclaration)||(r instanceof ProcessState))
+		!((r instanceof AttributeDeclaration)||(r instanceof ProcessState)||(r instanceof MeasureDefinition))
 	}
 
+	def isValidInEnvironmentExpressions( ReferenceableElement r ) {
+		!((r instanceof AttributeDeclaration)||(r instanceof ProcessState))
+	}
 
 	def scope_AssignmentTargetVariable_variable( AssignmentCommand c , EReference r ) {
 		c.parentScope
 	}
 
 	def scope_Reference_reference( FunctionCommand c , EReference r ) {
-		c.parentScope
+		if (c instanceof ForCommand) {
+			Scopes::scopeFor( newLinkedList( c.variable ) , c.parentScope )
+		} else {
+			c.parentScope
+		}
+	}
+	
+	def scope_Reference_reference( MeasureDefinition d , EReference r ) {
+		Scopes::scopeFor( 
+			d.variables , 
+			Scopes::scopeFor( 
+				d.globalReferenceableElements.filter[
+					it.isValidInExpressions
+				]	  				
+			)
+		)
+	}
+
+	def scope_Reference_reference( ConstantDefinition d , EReference r ) {
+		var model = d.getContainerOfType(typeof(Model))
+		if (model == null) {
+			IScope::NULLSCOPE
+		} else {
+			var elements = model.elements
+			var idx = elements.indexOf(d)
+			if (idx != -1) {
+				Scopes::scopeFor( 
+					elements.subList(0,idx).filter(typeof(ConstantDefinition)) ,
+					Scopes::scopeFor(
+						model.elements
+							.filter[ !(it instanceof ConstantDefinition) ]
+							.map[it.globalReferenceableElementsProvided].flatten.filter[ it.isValidInExpressions ] 									
+					)
+				)
+			} else {
+				Scopes::scopeFor(
+					model.elements.map[it.globalReferenceableElementsProvided].flatten.filter[ it.isValidInExpressions ]			
+				)
+			}
+		}
+		
+	}
+
+	def scope_Reference_reference( ConnectionExpression a , EReference r ) {
+		var space = a.getContainerOfType(SpaceDefinition)
+		if (space != null) {
+			Scopes::scopeFor( a.source ?. elements ?. filter(typeof(LocationVariable)) ?: newLinkedList() ,
+				Scopes::scopeFor( space ?. parameters ?: newLinkedList() )
+			)			
+		} else {
+			IScope::NULLSCOPE
+		}
 	}
 
 	def scope_Reference_reference( AttributeDeclaration a , EReference r) {
@@ -148,6 +290,19 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 			}			
 		} else {
 			IScope::NULLSCOPE		
+		}
+	}
+	
+	def scope_Reference_reference( Environment env , EReference r ) {
+		var sys = env.getContainerOfType(typeof(SystemDefinition))
+		if (sys != null) {
+			if (env.store != null) {
+				Scopes::scopeFor( env.store.attributes , Scopes::scopeFor( sys.globalReferenceableElements.filter[it.isValidInEnvironmentExpressions] ) )			
+			} else {
+				Scopes::scopeFor( sys.globalReferenceableElements.filter[it.isValidInEnvironmentExpressions] )
+			}
+		} else {
+			IScope::NULLSCOPE
 		}
 	}
 
@@ -241,22 +396,27 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 		} else {
 			var type = record.target.typeOf
 			if (type.isRecord) {
-				Scopes::scopeFor( (type.reference as RecordDefinition).fields )
+				Scopes::scopeFor( type.asRecord.getReference.fields )
 			} else {
-				IScope::NULLSCOPE
+				IScope::NULLSCOPE					
 			}
 		}
 	}
 
-	def scope_FieldDefinition( RecordAccess record , EReference r ) {
+	def scope_ReferenceableElement( FieldAccess record , EReference r ) {
 		if (record.source==null) {
 			IScope::NULLSCOPE
 		} else {
 			var type = record.source.typeOf
 			if (type.isRecord) {
-				Scopes::scopeFor( (type.reference as RecordDefinition).fields )
+				Scopes::scopeFor( type.asRecord.getReference.fields )
 			} else {
-				IScope::NULLSCOPE
+				if (type.isLocation) {
+					var m = record.getContainerOfType(typeof(Model))
+					Scopes::scopeFor( m ?. getLabelsAndFeatures	?: newLinkedList() )			
+				} else {
+					IScope::NULLSCOPE
+				}
 			}
 		}
 	}
@@ -275,7 +435,7 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 		}
 	}
 	
-	def scope_UpdateAssignment_reference( Processes p , EReference r ) {
+	def scope_StoreAttribute_reference( Processes p , EReference r ) {
 		var model = p.getContainerOfType(typeof(Model)) 
 		if (model != null) {
 			Scopes::scopeFor( model.attributes )
@@ -354,13 +514,14 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 			ConstantDefinition: newLinkedList( e )			
 			EnumDefinition: e.values
 			SystemDefinition: e.environment ?. store ?. attributes ?: newLinkedList()
+			MeasureDefinition: newLinkedList( e )
 			default: newLinkedList()			
 		}
 	}
 	
 	def getGlobalReferenceableElements( Element e ) {
 		var model = e.getContainerOfType(typeof(Model))
-		if (model != null) {
+		if (model != null) {			
 			model.elements.map[it.globalReferenceableElementsProvided].flatten
 		} else {
 			newLinkedList()
@@ -375,17 +536,42 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 			IScope::NULLSCOPE
 		}
 	}
+
+	def scope_Weight_activity( SystemDefinition sys ,EReference r ) {
+		var model = sys.getContainerOfType(typeof(Model))
+		if (model != null) {
+			Scopes::scopeFor( model.activities )
+		} else {
+			IScope::NULLSCOPE
+		}
+	}
+
+	def scope_Probability_activity( SystemDefinition sys ,EReference r ) {
+		var model = sys.getContainerOfType(typeof(Model))
+		if (model != null) {
+			Scopes::scopeFor( model.activities )
+		} else {
+			IScope::NULLSCOPE
+		}
+	}
 	
 	def getContainerScope( EObject cbi ) {
 		var forVariables = newLinkedList()
-		var parent = cbi.getContainerOfType(typeof(ComponentBlockForStatement))
+		var parent = cbi.getContainerOfType(typeof(ComponentBlockFor))
 		while ( parent != null ) {
-			forVariables.add( parent.variable )
+			if (parent instanceof ComponentBlockForStatement) {
+				forVariables.add( parent.variable )
+			}
+			if (parent instanceof ComponentBlockIteratorStatement) {
+				forVariables.add( parent.iteration)
+			}
 			parent = parent.eContainer ?. getContainerOfType(typeof(ComponentBlockForStatement))
 		}
-		var sys = cbi.getContainerOfType(typeof(SystemDefinition)).globalReferenceableElements.filter[ 
+		var sys = cbi.getContainerOfType(typeof(SystemDefinition)) ?. globalReferenceableElements ?. filter[ 
 			!( it instanceof AttributeDeclaration)
-		]
+		] ?: cbi.getContainerOfType(typeof(CollectiveDefinition)) ?. globalReferenceableElements ?. filter[ 
+			!( it instanceof AttributeDeclaration)
+		] ?: newLinkedList()
 		Scopes::scopeFor( forVariables , Scopes::scopeFor( sys ) )
 	}
 	
@@ -398,11 +584,16 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 			parentScope
 		}
 	}
+
 	
 	def scope_Reference_reference( ComponentBlockForStatement forBlock , EReference r ) {
 		var parentScope = forBlock.containerScope
 		Scopes::scopeFor( newLinkedList( forBlock.variable ) , parentScope )
 	}
 	
+	def scope_Reference_reference( ComponentBlockIteratorStatement forBlock , EReference r ) {
+		var parentScope = forBlock.containerScope
+		Scopes::scopeFor( newLinkedList( forBlock.iteration ) , parentScope )
+	}
 
 }

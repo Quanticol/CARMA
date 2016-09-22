@@ -3,6 +3,8 @@
  */
 package eu.quanticol.carma.core.typing;
 
+import java.util.LinkedList;
+
 import org.eclipse.emf.ecore.EObject;
 
 import eu.quanticol.carma.core.carma.EnumDefinition;
@@ -13,53 +15,75 @@ import eu.quanticol.carma.core.utils.Util;
  * @author loreti
  *
  */
-public class CarmaType {
+public abstract class CarmaType {
 	
-	public final static CarmaType INTEGER_TYPE = new CarmaType( TypeCode.INTEGER , null );
-	public final static CarmaType REAL_TYPE = new CarmaType( TypeCode.REAL , null );
-	public final static CarmaType BOOLEAN_TYPE = new CarmaType( TypeCode.BOOLEAN , null );
-	public final static CarmaType ERROR_TYPE = new CarmaType( TypeCode.ERROR , null );
-	public final static CarmaType PROCESS_TYPE = new CarmaType( TypeCode.PROCESS , null );
+	public final static CarmaIntegerType INTEGER_TYPE = new CarmaIntegerType( );
+	public final static CarmaRealType REAL_TYPE = new CarmaRealType( );
+	public final static CarmaBooleanType BOOLEAN_TYPE = new CarmaBooleanType( );
+	public final static CarmaType ERROR_TYPE = new CarmaErrorType( );
+	public final static CarmaProcessType PROCESS_TYPE = new CarmaProcessType( );
+	public final static CarmaLocationType LOCATION_TYPE = new CarmaLocationType();	
+	public final static CarmaNoneType NONE_TYPE = new CarmaNoneType();
 	
 	public static CarmaType createRecordType( RecordDefinition reference ) {
-		return new CarmaType( TypeCode.RECORD , reference );
+		return new CarmaRecordType( reference );
+	}
+	
+
+	public static CarmaEnumType createEnumType( EnumDefinition reference ) {
+		return new CarmaEnumType( reference );
 	}
 
-	public static CarmaType createEnumType( EnumDefinition reference ) {
-		return new CarmaType( TypeCode.ENUM , reference );
+	public static CarmaSetType createSetType( CarmaType t ) {
+		return new CarmaSetType( t );
 	}
-
+	
+	public static CarmaListType createListType( CarmaType t ) {
+		return new CarmaListType(t);
+	}
+	
+	public static CarmaTupleType createTupleType( CarmaType ... types ) {
+		return new CarmaTupleType( types );
+	}
+	
+	public static CarmaFunctionType createFunctionType( CarmaType argument , CarmaType result ) {
+		return new CarmaFunctionType( argument, result );
+	}
+	
 	public static enum TypeCode {
+		SET ,
+		LIST ,
+		LOCATION ,
 		BOOLEAN , 
 		INTEGER ,
 		REAL ,
 		ENUM ,
 		RECORD ,
 		PROCESS ,
+		FUNCTION ,
+		TUPLE ,
+		NONE ,
 		ERROR
 	}
 	
 	private final TypeCode code;
-
-	private final EObject reference;
 	
-	public CarmaType( TypeCode code , EObject reference ) {
+	protected CarmaType( TypeCode code ) {
 		this.code = code;
-		this.reference = reference;
 	}
 	
 	public TypeCode getCode() {
 		return code;
 	}
 	
-	public EObject getReference() {
-		return reference;
-	}
-	
 	public boolean isError() {
 		return code == TypeCode.ERROR;
 	}
 
+	public boolean isNone() {
+		return code == TypeCode.NONE;
+	}
+	
 	public boolean isBoolean() {
 		return code == TypeCode.BOOLEAN;
 	}
@@ -84,16 +108,61 @@ public class CarmaType {
 		return code == TypeCode.PROCESS;
 	}
 	
+	public boolean isSet() {
+		return code == TypeCode.SET;
+	}
+
+	public boolean isList() {
+		return code == TypeCode.LIST;
+	}
+	
+	public boolean isFunction() {
+		return code == TypeCode.FUNCTION;
+	}
+	
+	public boolean isLocation() {
+		return code == TypeCode.LOCATION;
+	}
+	
+	public CarmaErrorType asError() {
+		return (CarmaErrorType) this;
+	}
+	
+	public CarmaFunctionType asFunction() {
+		return (CarmaFunctionType) this;
+	}
+	
+	public CarmaRecordType asRecord() {
+		return (CarmaRecordType) this;
+	}
+
+	public CarmaEnumType asEnum() {
+		return (CarmaEnumType) this;
+	}
+
+	public CarmaListType asList() {
+		return (CarmaListType) this;
+	}
+
+	public CarmaSetType asSet() {
+		return (CarmaSetType) this;
+	}
+
+	public CarmaTupleType asTuple() {
+		return (CarmaTupleType) this;
+	}
+
+
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof CarmaType) {
-			CarmaType cType = (CarmaType) obj;
-			return (this.code == cType.code)&&
-					(((this.reference == null)&&(cType.reference==null))||
-					((this.reference != null)&&(this.reference.equals(cType.reference))));
+			return doEquals( (CarmaType) obj );
 		}
 		return false;
 	}
+
+	protected abstract boolean doEquals(CarmaType obj);
 
 	@Override
 	public int hashCode() {
@@ -102,10 +171,14 @@ public class CarmaType {
 
 	@Override
 	public String toString() {
-		return code.toString();
+		return doToString();
 	}
 	
 	
+	protected String doToString() {
+		return code.toString();
+	}
+
 	public CarmaType mostGeneral( CarmaType t ) {
 		if ( t==null ) {
 			return null;
@@ -132,6 +205,7 @@ public class CarmaType {
 //		return (((this.code == TypeCode.INTEGER)&&(t.code==TypeCode.REAL))
 //				||((this.code == TypeCode.REAL)&&(t.code == TypeCode.INTEGER)));
 	}
+	
 
 	
 }

@@ -244,7 +244,7 @@ component Learner(int index, real power, real rnd){
 	store{
 		attrib i := index;     //0..8 the index of the learner in LearnerSet
 		attrib p := power;     //the current power level
-		attrib lambda := rnd;
+		attrib l_ambda := rnd;
 		attrib pf := -1.0*ALPHA;   //payoff
 		attrib rng := 0.0;
 	}
@@ -252,14 +252,14 @@ component Learner(int index, real power, real rnd){
 	behaviour{
 		//RPP= Receive Powers and payoffs; GR: Generate random;  DU: Decide to update
 		//UP==Update Power state;  SP==Send New Power state
-		RPP = updatepower*(powers, payoffs_attrib){pf := ReturnVal(payoffs_attrib, my.i), p := ReturnVal(powers, my.i)}.GR;
+		RPP = updatepower*(powers, payoffs_attrib){pf := ReturnVal(payoffs_attrib, my.i); p := ReturnVal(powers, my.i);}.GR;
 		
-		GR = generaterandom*{rng := RND}.DU;   
+		GR = generaterandom*{rng := RND;}.DU;   
 		
-		DU = [rng < lambda]samepower*.SP + [rng >= lambda]changeupdate*.UP;
+		DU = [rng < l_ambda]samepower*.SP + [rng >= l_ambda]changeupdate*.UP;
 		
-		UP = [pf >= 0 && pf < ALPHA]decreasepower*{p := DecreaseP(my.i, my.p)}.SP
-			 + [pf < 0 && pf > -1*ALPHA] increasepower*{p := IncreaseP(my.i, my.p)}.SP
+		UP = [pf >= 0 && pf < ALPHA]decreasepower*{p := DecreaseP(my.i, my.p);}.SP
+			 + [pf < 0 && pf > -1*ALPHA] increasepower*{p := IncreaseP(my.i, my.p);}.SP
 			 + [pf == ALPHA || pf == -1*ALPHA]samepower*.SP;
 
 		SP = sendpower<my.i, my.p>.RPP;
@@ -286,19 +286,19 @@ component ComputingServer(){
 	behaviour{
 		//RP = Receive the new power of a learner State;   CP = Calculate Payoffs
 		//InitS = Init. State; 
-		RP = sendpower(i, p){a := UpdateVal(my.newpowers, i, p), rcvnum := rcvnum + 1, step := 1}.CP;
+		RP = sendpower(i, p){a := UpdateVal(my.newpowers, i, p); rcvnum := rcvnum + 1; step := 1;}.CP;
 		
-		CP = [my.rcvnum < 8]waitalllearners*{step := 0}.RP 
-				+ [my.rcvnum == 8] calcpayoffs*{newpayoffs := CalcPayoffs(my.newpowers), rcvnum := 0, step := 2}.NewPA;
+		CP = [my.rcvnum < 8]waitalllearners*{step := 0;}.RP 
+				+ [my.rcvnum == 8] calcpayoffs*{newpayoffs := CalcPayoffs(my.newpowers); rcvnum := 0; step := 2;}.NewPA;
 				
-		NewPA = newpayoffAlphas*{a := Greater(my.newpayoffs, alphas),step := 3}.FS; 		
+		NewPA = newpayoffAlphas*{a := Greater(my.newpayoffs, alphas); step := 3;}.FS; 		
 		
-		FS = [a == 1]stablestate*{payoffs := newpayoffs, powers := newpowers, stable := 1}.nil + [a == 0]continue*{ step := 4 }.NewPP;
+		FS = [a == 1]stablestate*{payoffs := newpayoffs; powers := newpowers; stable := 1;}.nil + [a == 0]continue*{ step := 4; }.NewPP;
 		
-		NewPP = newpayoffpayoff*{a := Greater(my.newpayoffs, payoffs), step := 5 }.DC; 
+		NewPP = newpayoffpayoff*{a := Greater(my.newpayoffs, payoffs); step := 5; }.DC; 
 				
-		DC = [a == 1]updatepower*<newpowers, newpayoffs>{step := 0 , payoffs := newpayoffs, powers := newpowers, newpayoffs := [ l10:=0.0, l13:=0.0, l14:=0.0, l20:=0.0, l23:=0.0, l24:=0.0, l03:=0.0, l04:=0.0 ] , newpowers := [ l10:=0.0, l13:=0.0, l14:=0.0, l20:=0.0, l23:=0.0, l24:=0.0, l03:=0.0, l04:=0.0 ] }.RP 
-				+ [a == 0]updatepower*<powers, payoffs>{ step := 0 }.RP;
+		DC = [a == 1]updatepower*<newpowers, newpayoffs>{step := 0 ; payoffs := newpayoffs; powers := newpowers; newpayoffs := [ l10:=0.0, l13:=0.0, l14:=0.0, l20:=0.0, l23:=0.0, l24:=0.0, l03:=0.0, l04:=0.0 ] ; newpowers := [ l10:=0.0, l13:=0.0, l14:=0.0, l20:=0.0, l23:=0.0, l24:=0.0, l03:=0.0, l04:=0.0 ]; }.RP 
+				+ [a == 0]updatepower*<powers, payoffs>{ step := 0; }.RP;
 	}
 	
 	init{
@@ -320,11 +320,11 @@ system Simple{
     environment{
     	
 	    	prob{
-	    		default: 1.0;
+	    		default { return 1.0; }
 	    	}
 	    	
 	    rate{
-	    		default: 1.0;
+	    		default { return 1.0; }
 	    }
     }
 }
@@ -337,6 +337,7 @@ system Simple{
 
 	@Test
 	def void test_Compiler(){
+		class.classLoader.setJavaCompilerClassPath
 		code.compile[ 
 			var o = getCompiledClass.newInstance 
 			assertNotNull( o )
@@ -355,7 +356,7 @@ system Simple{
 					println()
 				}
 				
-				override getSimulationTimeSeries() {
+				override getSimulationTimeSeries( int iterations ) {
 					return null;
 				}
 				
@@ -363,7 +364,7 @@ system Simple{
 					var data = context.retrieve( 
 						new CarmaPredicate() {
 							
-							override satisfy(CarmaStore store) {
+							override satisfy(double now,CarmaStore store) {
 //								(store.get("payoffs",typeof(Object)) != null)
 //								&&
 //								(store.get("stable",typeof(Integer))==1)

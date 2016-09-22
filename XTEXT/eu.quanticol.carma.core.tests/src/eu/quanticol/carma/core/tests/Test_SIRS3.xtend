@@ -38,7 +38,7 @@ component Agent(int a, process Z){
         S = contact*[z == my.zone](z).I;
         I = contact*<zone>.I + recovery*.R;
 		R = susceptible*.S;
-		M = move*{zone := Mover(zone)}.M;
+		M = move*{zone := Mover(zone);}.M;
     }
 
     init{
@@ -71,15 +71,15 @@ system Simple{
         }
 
         prob{
-			default : 1.0;
+			default { return 1.0; }
         }
 
         rate{
-        	[true] move* 		: 1.0;
-			[true] contact* 	: 0.03;
-			[true] recovery*	: 0.2;
-			[true] susceptible* : 0.2;
-			default : 1.0;
+        	move* 		{ return 1.0; }
+			contact* 	{ return 0.03; }
+			recovery*	{ return 0.2; }
+			susceptible* { return 0.2; }
+			default { return 1.0; }
         }
 
         update{
@@ -95,6 +95,7 @@ system Simple{
 
 	@Test
 	def void test_Compiler(){
+		class.classLoader.setJavaCompilerClassPath
 		code.compile[ 
 					var o = getCompiledClass.newInstance 
 			assertNotNull( o )

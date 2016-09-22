@@ -34,7 +34,7 @@ component Agent(){
 	}
 	
 	behaviour{
-		A = [localCounter < 10] step*{ localCounter := localCounter+1 , fire := now }.A;
+		A = [localCounter < 10] step*{ localCounter := localCounter+1 ; fire := now ; }.A;
 	}
 	
 	init{
@@ -63,17 +63,18 @@ system Simple{
     	}
     	
     	prob{
-    		default: 1.0;
+    		default { return 1.0; }
     	}
 	    	
 	    rate{
-	    		default: 1.0;
+	    		default { return 1.0; }
 	    }
 	    
 	    update {
-	    	[true] step*: 
-	    		globalCounter := global.globalCounter+1 , lastFire := now; 
-
+	    	step* { 
+	    		globalCounter := global.globalCounter+1;
+	    		lastFire := now; 
+			}
 	    }
     }
 }
@@ -86,6 +87,7 @@ system Simple{
 
 	@Test
 	def void test_Compiler(){
+		class.classLoader.setJavaCompilerClassPath
 		code.compile[ 
 			var o = getCompiledClass.newInstance 
 			assertNotNull( o )

@@ -6,6 +6,7 @@ package org.cmg.ml.sam.sim.sampling;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
@@ -18,12 +19,14 @@ public class SimulationTimeSeries {
 	private SummaryStatistics[] data;
 	private double dt;
 	private String name;
+	private int replications;
 	
 	
-	public SimulationTimeSeries( String name , double dt , SummaryStatistics[] data ) {
+	public SimulationTimeSeries( String name , double dt , int replications , SummaryStatistics[] data ) {
 		this.name = name;
 		this.dt = dt;
 		this.data = data;
+		this.replications = replications;
 	}
 	
 	public String getName() {
@@ -64,4 +67,22 @@ public class SimulationTimeSeries {
 		ps.close();
 	}
 	
+	public int getSize() {
+		return data.length;
+	}
+	
+	public double getConfidenceInterval( int i ) {
+		if (replications<=0) {
+			return 0.0;
+		} else {
+			return this.getStandardDeviation(i)/Math.sqrt( replications );		
+		}
+	}
+	
+	public void writeToCSV( PrintWriter writer ) {
+		for( int i=0 ; i<data.length ; i++ ) {
+			writer.println(getTime(i)+";"+getMean(i)+";"+getStandardDeviation(i)+";"+getConfidenceInterval(i)+";");
+			writer.flush();
+		}
+	}
 }

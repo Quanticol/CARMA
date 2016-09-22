@@ -43,7 +43,7 @@ fun Position Roving(){
     return [ x := pos_x , y:= pos_y ];
 }
 
-fun Position DestLoc(real time, Position g){
+fun Position Dest_loc(real time, Position g){
 	Position q := [ x := 0 , y := 0 ];
     if( g.x == 1 && g.y == 1){
     	q := Roving(); 
@@ -83,13 +83,13 @@ fun real Arate(real time, Position l1){
 	return r;
 }
 
-fun real Takeprob( int taxisAtLoc ){
+fun real Takeprob( int taxisAt_loc ){
 	real x_:= 0.0;
-	if (taxisAtLoc == 0){
+	if (taxisAt_loc == 0){
 		x_ := 0.0;
 	}
 	else{
-		x_ := 1.0/real(taxisAtLoc); 
+		x_ := 1.0/real(taxisAt_loc); 
 	}
 	return x_;
 }
@@ -97,12 +97,13 @@ fun real Takeprob( int taxisAtLoc ){
 component User(Position g, Position h, process Z){
     
     store{
-        attrib loc := g;
+        attrib _loc := g;
         attrib dest := h;
     }
 
     behaviour{
-        Wait = call*[true]<my.loc.x,my.loc.y>.Wait + take[loc.x == my.loc.x && loc.y == my.loc.y]<my.dest.x,my.dest.y>.kill;    
+        Wait = call*[true]<my._loc.x,my._loc.y>.Wait + 
+        take[_loc.x == my._loc.x && _loc.y == my._loc.y]<my.dest.x,my.dest.y>.kill;    
 	}
 	
     init{
@@ -113,15 +114,15 @@ component User(Position g, Position h, process Z){
 component Taxi(int a, int b, int c, int d, int e, process Z){
     
     store{
-        attrib loc := [ x:= a , y:= b];
+        attrib _loc := [ x:= a , y:= b];
         attrib dest := [ x:=c , y:=d];
         attrib occupancy := e;
     }
 
     behaviour{
-        F = take[true](posx,posy){dest := [x:=posx,y:=posy], occupancy := 1}.G + 
-        	call*[(my.loc.x != posx)&&(my.loc.y !=posy)](posx,posy){dest := [ x:=posx,y:=posy] }.G;
-        G = move*[false]<>{loc := dest, dest := [x:=3,y:=3], occupancy := 0}.F;
+        F = take[true](posx,posy){dest := [x:=posx,y:=posy]; occupancy := 1;}.G + 
+        	call*[(my._loc.x != posx)&&(my._loc.y !=posy)](posx,posy){dest := [ x:=posx,y:=posy]; }.G;
+        G = move*[false]<>{_loc := dest; dest := [x:=3,y:=3]; occupancy := 0;}.F;
     }
     
     init{
@@ -132,7 +133,7 @@ component Taxi(int a, int b, int c, int d, int e, process Z){
 component Arrival(int a, int b){
 	
 	store{
-		attrib loc := [ x:=a , y:= b];
+		attrib _loc := [ x:=a , y:= b];
 	}
 	
 	behaviour{
@@ -144,8 +145,8 @@ component Arrival(int a, int b){
 	}
 }
 
-	measure WaitingUser[ i := 0:SIZE-1 , j := 0:SIZE-1 ] = #{User[Wait] | my.loc.x == i && my.loc.y == j };
-	measure FreeTaxi[ i := 0:SIZE-1 , j := 0:SIZE-1 ] = #{Taxi[F] | my.loc.x == 0 && my.loc.y == 0 };
+	measure WaitingUser( int i , int j ) = #{User[Wait] | my._loc.x == i && my._loc.y == j };
+	measure FreeTaxi( int i , int j ) = #{Taxi[F] | my._loc.x == 0 && my._loc.y == 0 };
 	measure All_User = #{User[*] | true };
 
 system Scenario1{
@@ -161,21 +162,27 @@ system Scenario1{
     	
     	
     	prob{
-              [true] take : Takeprob(#{Taxi[F] | my.loc == sender.loc });
-              [true] call* : 1-P_LOST;
-              default : 1.0;
+              call* { return 1-P_LOST; }
+              default { return 1.0; }
+    	}
+    	
+    	weight{
+              take { return Takeprob(#{Taxi[F] | my._loc == sender._loc }); }
+              default { return 1.0; }
     	}
     	
         rate{
-        	[true] take : R_T;
-    		[true] call* : R_C;
-    		[true] move* : Mrate(sender.loc,sender.dest);
-    		[true] arrival* : R_A * (1.0 / real( SIZE * SIZE )) ;
-    		default : 0.0;
+        	take { return R_T; }
+    		call* { return R_C; }
+    		move* { return Mrate(sender._loc,sender.dest); }
+    		arrival* { return R_A * (1.0 / real( SIZE * SIZE )) ; }
+    		default { return 0.0; }
         }
         
         update{
-        	[true] arrival* : new User(sender.loc,DestLoc(now,sender.loc), Wait);
+        	arrival* {
+        		new User(sender._loc,Dest_loc(now,sender._loc), Wait);
+        	}
         }
     }
     
@@ -193,21 +200,27 @@ system Scenario2{
     environment{
     	
     	prob{
-              [true] take : Takeprob(#{Taxi[F] | my.loc == sender.loc });
-              [true] call* : 1-P_LOST;
-              default : 1.0;
+              call* { return 1-P_LOST; }
+              default { return 1.0; }
+    	}
+
+    	weight{
+              take { return Takeprob(#{Taxi[F] | my._loc == sender._loc }); }
+              default { return 1.0; }
     	}
     	
         rate{
-        	[true] take : R_T;
-    		[true] call* : R_C;
-    		[true] move* : Mrate(sender.loc,sender.dest);
-    		[true] arrival* : Arate(now,sender.loc);
-    		default : 0.0;
+        	take { return R_T; }
+    		call* { return R_C; }
+    		move* { return Mrate(sender._loc,sender.dest); }
+    		arrival* { return Arate(now,sender._loc); }
+    		default { return 0.0; }
         }
         
         update{
-        	[true] arrival* : new User(sender.loc,DestLoc(now,sender.loc), Wait);
+        	arrival* {
+        		new User(sender._loc,Dest_loc(now,sender._loc), Wait);
+        	}
         }
     }
     
@@ -221,13 +234,14 @@ system Scenario2{
 
 	@Test
 	def void test_Compiler(){
+		class.classLoader.setJavaCompilerClassPath
 		code.compile[ 
 					var o = getCompiledClass.newInstance 
 			assertNotNull( o )
 			assertTrue( o instanceof CarmaModel )
 			var m = o as CarmaModel
 			assertEquals( 2 , m.systems.length )
-			assertEquals( 19 , m.measures.length )					
+			assertEquals( 3 , m.measures.length )					
 
 	]
 	}

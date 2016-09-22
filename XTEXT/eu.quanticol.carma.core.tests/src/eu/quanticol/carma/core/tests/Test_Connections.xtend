@@ -39,12 +39,12 @@ component Client(){
     behaviour{
 		Busy_C 	= 	busy*.Ack_C;
 		
-		Ack_C 	= 	[lost < 3]ack<>{sends := sends + 1}.Listen_C + 
-					[lost < 3]lost*{lost := lost + 1}.Ack_C + 
-					[lost > 2]reset*{lost := 0, resets := resets + 1}.Busy_C;
+		Ack_C 	= 	[lost < 3]ack<>{sends := sends + 1;}.Listen_C + 
+					[lost < 3]lost*{lost := lost + 1;}.Ack_C + 
+					[lost > 2]reset*{lost := 0; resets := resets + 1;}.Busy_C;
 					
-		Listen_C	=	timeout*.Timeout_C + syn(){receives := receives + 1}.Work_C;
-		Timeout_C 	=	reset*{lost := 0, resets := resets + 1}.Busy_C;
+		Listen_C	=	timeout*.Timeout_C + syn(){receives := receives + 1;}.Work_C;
+		Timeout_C 	=	reset*{lost := 0; resets := resets + 1;}.Busy_C;
 		Work_C		=	work<>.Close_C;
 		Close_C		=	close<>.Busy_C;
 
@@ -65,8 +65,8 @@ component Server(){
 
     behaviour{
 		
-		Listen_S 	= ack(){receives := receives + 1}.Syn_S;
-		Syn_S		= syn<>{sends := sends + 1}.Work_S;
+		Listen_S 	= ack(){receives := receives + 1;}.Syn_S;
+		Syn_S		= syn<>{sends := sends + 1;}.Work_S;
 		Work_S		= work().Close_S;
 		Close_S		= close().Listen_S;
 
@@ -102,14 +102,14 @@ system Simple{
         }
 
         prob{
-			default : 1.0;
+			default { return 1.0; }
         }
 
         rate{
-        	[true] ack : 10.0;
-        	[true] syn : 10.0;
-        	[true] timeout : 0.5;
-			default : 1.0;
+        	ack { return 10.0; }
+        	syn { return 10.0; }
+        	timeout { return 0.5; }
+			default { return 1.0; }
         }
 
         update{
@@ -122,6 +122,7 @@ system Simple{
 
 	@Test
 	def void test_Compiler(){
+		class.classLoader.setJavaCompilerClassPath
 	'''
 component Client(){
 
@@ -138,12 +139,12 @@ component Client(){
     behaviour{
 		Busy_C 	= 	busy*.Ack_C;
 		
-		Ack_C 	= 	[lost < 3]ack<>{sends := sends + 1}.Listen_C + 
-					[lost < 3]lost*{lost := lost + 1}.Ack_C + 
-					[lost > 2]reset*{lost := 0, resets := resets + 1}.Busy_C;
+		Ack_C 	= 	[lost < 3]ack<>{sends := sends + 1;}.Listen_C + 
+					[lost < 3]lost*{lost := lost + 1;}.Ack_C + 
+					[lost > 2]reset*{lost := 0; resets := resets + 1;}.Busy_C;
 					
-		Listen_C	=	timeout*.Timeout_C + syn(){receives := receives + 1}.Work_C;
-		Timeout_C 	=	reset*{lost := 0, resets := resets + 1}.Busy_C;
+		Listen_C	=	timeout*.Timeout_C + syn(){receives := receives + 1;}.Work_C;
+		Timeout_C 	=	reset*{lost := 0; resets := resets + 1;}.Busy_C;
 		Work_C		=	work<>.Close_C;
 		Close_C		=	close<>.Busy_C;
 
@@ -164,8 +165,8 @@ component Server(){
 
     behaviour{
 		
-		Listen_S 	= ack(){receives := receives + 1}.Syn_S;
-		Syn_S		= syn<>{sends := sends + 1}.Work_S;
+		Listen_S 	= ack(){receives := receives + 1;}.Syn_S;
+		Syn_S		= syn<>{sends := sends + 1;}.Work_S;
 		Work_S		= work().Close_S;
 		Close_S		= close().Listen_S;
 
@@ -200,14 +201,14 @@ system Simple{
         }
 
         prob{
-			default : 1.0;
+			default { return 1.0; }
         }
 
         rate{
-        	[true] ack : 10.0;
-        	[true] syn : 10.0;
-        	[true] timeout : 0.5;
-			default : 1.0;
+        	ack { return 10.0; }
+        	syn { return 10.0; }
+        	timeout { return 0.5; }
+			default { return 1.0; }
         }
 
         update{

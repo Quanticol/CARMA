@@ -3,6 +3,8 @@ package eu.quanticol.carma.core.ui.wizard;
 import java.util.Collection;
 import java.util.List;
 
+import eu.quanticol.carma.core.ui.nature.CarmaNature;
+
 public class CustomCARMAProjectCreator extends CARMAProjectCreator {
 	
 	
@@ -27,5 +29,18 @@ public class CustomCARMAProjectCreator extends CARMAProjectCreator {
 		result.addAll(addCARMABundles(result));
 		return result;
 	}
+
+	@Override
+	protected String[] getProjectNatures() {
+		String[] parentNatures = super.getProjectNatures();
+		String[] natures = new String[parentNatures.length+1];
+		for( int i=0 ; i<parentNatures.length ; i++) {
+			natures[i] = parentNatures[i];
+		}
+		natures[parentNatures.length] = CarmaNature.ID;
+		return natures;
+	}
+	
+	
 
 }

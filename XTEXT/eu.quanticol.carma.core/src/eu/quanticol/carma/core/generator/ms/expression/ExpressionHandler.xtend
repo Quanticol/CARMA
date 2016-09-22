@@ -16,7 +16,6 @@ import eu.quanticol.carma.core.carma.Modulo
 import eu.quanticol.carma.core.carma.Not
 import eu.quanticol.carma.core.carma.UnaryPlus
 import eu.quanticol.carma.core.carma.UnaryMinus
-import eu.quanticol.carma.core.carma.RecordAccess
 import eu.quanticol.carma.core.carma.AtomicTrue
 import eu.quanticol.carma.core.carma.AtomicFalse
 import eu.quanticol.carma.core.carma.AtomicInteger
@@ -78,6 +77,33 @@ import eu.quanticol.carma.core.carma.AtomicRnd
 import eu.quanticol.carma.core.carma.CastToReal
 import eu.quanticol.carma.core.carma.CastToInteger
 import eu.quanticol.carma.core.typing.TypeSystem
+import eu.quanticol.carma.core.carma.ListExpression
+import eu.quanticol.carma.core.carma.SetExpression
+import eu.quanticol.carma.core.carma.IsIn
+import eu.quanticol.carma.core.carma.LambdaExpression
+import eu.quanticol.carma.core.carma.None
+import eu.quanticol.carma.core.carma.PreFunction
+import eu.quanticol.carma.core.carma.PostFunction
+import eu.quanticol.carma.core.carma.MapFunction
+import eu.quanticol.carma.core.carma.NewListFunction
+import eu.quanticol.carma.core.carma.NewSetFunction
+import eu.quanticol.carma.core.carma.SizeFunction
+import eu.quanticol.carma.core.carma.Locations
+import eu.quanticol.carma.core.carma.FieldAccess
+import eu.quanticol.carma.core.carma.FieldDefinition
+import eu.quanticol.carma.core.carma.LabelDefinition
+import eu.quanticol.carma.core.carma.AttributeReference
+import eu.quanticol.carma.core.carma.StoreAttribute
+import eu.quanticol.carma.core.carma.LocAttribute
+import eu.quanticol.carma.core.carma.MyLocation
+import eu.quanticol.carma.core.carma.LocationFeature
+import eu.quanticol.carma.core.carma.SpaceDefinition
+import eu.quanticol.carma.core.carma.TupleExpression
+import eu.quanticol.carma.core.carma.NodeExpressionOrArrayAccess
+import eu.quanticol.carma.core.carma.NamedNode
+import eu.quanticol.carma.core.carma.UniverseElement
+import eu.quanticol.carma.core.carma.AccessToEdgeValue
+import eu.quanticol.carma.core.carma.MeasureDefinition
 
 class ExpressionHandler {
 	
@@ -91,6 +117,10 @@ class ExpressionHandler {
 		currentComponent = current;
 	}
 	
+	def dispatch CharSequence expressionToJava( TupleExpression e ) {
+		'''sys.getSpaceModel().getVertex( new Tuple(«FOR v:e.values SEPARATOR ','»«v.expressionToJava»«ENDFOR») )'''
+	}
+	
 	def dispatch CharSequence expressionToJava( CastToReal e ) {
 		'''(double) ( «e.arg.expressionToJava» )'''
 	}
@@ -100,11 +130,20 @@ class ExpressionHandler {
 	}
 	
 	def dispatch CharSequence expressionToJava( Or e ) {
-		'''( «e.left.expressionToJava» )||( «e.right.expressionToJava» )'''
+		if (e.left.typeOf.isSet) {
+			'''union( «e.left.expressionToJava» , «e.right.expressionToJava» )'''		
+		} else {
+			'''( «e.left.expressionToJava» )||( «e.right.expressionToJava» )'''
+		}
 	}
 	
 	def dispatch CharSequence expressionToJava( And e ) {
-		'''( «e.left.expressionToJava» )&&( «e.right.expressionToJava» )'''
+		if (e.left.typeOf.isSet) {
+			'''intersection( «e.left.expressionToJava» , «e.right.expressionToJava» )'''		
+		} else {
+			'''( «e.left.expressionToJava» )&&( «e.right.expressionToJava» )'''
+		}
+
 	}
 
 	def dispatch CharSequence expressionToJava( Equality e ) {
@@ -118,12 +157,18 @@ class ExpressionHandler {
 	}
 	
 	def dispatch CharSequence expressionToJava( DisEquality e ) {
-		'''( «e.left.expressionToJava» )!=( «e.right.expressionToJava» )'''
+		'''!( carmaEquals( «e.left.expressionToJava» , «e.right.expressionToJava» ) )'''
+//		'''( «e.left.expressionToJava» )!=( «e.right.expressionToJava» )'''
 	}
 	
 	def dispatch CharSequence expressionToJava( Less e ) {
 		'''( «e.left.expressionToJava» )<( «e.right.expressionToJava» )'''
 	}
+
+	def dispatch CharSequence expressionToJava( IsIn e ) {
+		'''( «e.right.expressionToJava».contains(  ( «e.right.expressionToJava» ) ))'''
+	}
+	
 	
 	def dispatch CharSequence expressionToJava( LessOrEqual e ) {
 		'''( «e.left.expressionToJava» )<=( «e.right.expressionToJava» )'''
@@ -138,12 +183,31 @@ class ExpressionHandler {
 	}
 	
 	def dispatch CharSequence expressionToJava( Subtraction e ) {
-		'''( «e.left.expressionToJava» )-( «e.right.expressionToJava» )'''
+		var t = e.left.typeOf
+		if (t.isSet) {
+			'''removeAll( «e.left.expressionToJava» , «e.right.expressionToJava»  )'''		
+		} else {
+			'''( «e.left.expressionToJava» )-( «e.right.expressionToJava» )'''
+		}
 	}
 	
 	def dispatch CharSequence expressionToJava( Addition e ) {
-		'''( «e.left.expressionToJava» )+( «e.right.expressionToJava» )'''
+		var t = e.left.typeOf
+		if (t.isList) {
+			'''concatenate( «e.left.expressionToJava» , «e.right.expressionToJava»  )'''
+		} else {
+			'''( «e.left.expressionToJava» )+( «e.right.expressionToJava» )'''
+		}
 	}
+	
+	def dispatch CharSequence expressionToJava( Locations l ) {
+		'''sys.getSpaceModel().getAll()'''
+	}
+	
+	def dispatch CharSequence expressionToJava( MyLocation l ) {
+		"loc".attributeName(ReferenceContext::MY)
+	}
+	
 	
 	def dispatch CharSequence expressionToJava( Division e ) {
 		'''( «e.left.expressionToJava» )/( «e.right.expressionToJava» )'''
@@ -161,6 +225,10 @@ class ExpressionHandler {
 		'''!( «e.expression.expressionToJava» )'''
 	}
 
+	def dispatch CharSequence expressionToJava( None e ) {
+		'''null'''
+	}
+
 	def dispatch CharSequence expressionToJava( UnaryPlus e ) {
 		'''«e.expression.expressionToJava»'''
 	}
@@ -171,6 +239,7 @@ class ExpressionHandler {
 	
 	def dispatch CharSequence expressionToJava( Reference e ) {
 		'''«e.reference.getReference( ReferenceContext::NONE , currentComponent  )»«IF e.isIsCall»( 
+			«IF e.reference instanceof MeasureDefinition» this «IF e.args.size>0»,«ENDIF»«ENDIF»
 			«e.args.map[it.expressionToJava].invocationParameters( e.reference.functionArguments.map[it.type] )»
 		)«ENDIF»«IF e.typeOf.isRecord».clone()«ENDIF»'''		
 	}
@@ -178,13 +247,56 @@ class ExpressionHandler {
 	def getFunctionArguments( ReferenceableElement e ) {
 		switch e {
 			FunctionDefinition: e.parameters
+			MeasureDefinition: e.variables
 			default: newLinkedList()
 		}
 	}	
 
-	def dispatch CharSequence expressionToJava( RecordAccess e ) {
-		'''«e.source.expressionToJava».«e.field.name.fieldName»'''		
+	def dispatch CharSequence expressionToJava( FieldAccess e ) {
+		var source = e.source
+		var field = e.field
+		switch (field) {
+			FieldDefinition: '''«source.expressionToJava»«field.expressionToJava»'''		
+			LabelDefinition: '''«source.expressionToJava»«field.expressionToJava»'''
+			LocationFeature: {
+				'''null'''		
+//				'''«field.featureName»( «FOR p:field.parameters.indexed SEPARATOR ","» («field.typeOfElement(p.key)») «source.expressionToJava».get(«p.key»)«ENDFOR»)'''		
+			}
+			UniverseElement: {
+				'''«source.expressionToJava».get( «field.indexOf» , «field.type.toJavaType».class )'''
+			}
+		}
 	}
+	
+	def dispatch CharSequence expressionToJava( FieldDefinition e ) {
+		'''.«e.name.fieldName»'''
+	}
+	
+	def dispatch CharSequence expressionToJava( LabelDefinition e ) {
+		'''.hasLabel( "«e.name»" )'''
+	}
+	
+	def dispatch CharSequence expressionToJava( NodeExpressionOrArrayAccess e ) {
+		if (e.source.typeOf.isList) {
+			'''get(«e.source.expressionToJava»,«e.values.get(0).expressionToJava»)'''
+		} else {
+			'''sys.getSpaceModel().getVertex( «e.source.computeNodeName» , new Tuple(«FOR v:e.values SEPARATOR ','»«v.expressionToJava»«ENDFOR») )'''
+		}
+	}
+	
+	def computeNodeName( Expression e ) {
+		if (e instanceof Reference) {
+			var ref = e.reference
+			if (ref instanceof NamedNode) {
+				'''"«ref.name»"'''
+			} else {
+				'''null'''
+			}
+		} else {
+			'''null'''
+		}
+	}
+	
 		
 	def dispatch CharSequence expressionToJava( IfThenElseExpression e ) {
 		'''( «e.guard.expressionToJava» ? «e.thenBranch.expressionToJava» : «e.elseBranch.expressionToJava» )'''		
@@ -226,6 +338,13 @@ class ExpressionHandler {
 		'''RandomGeneratorRegistry.rnd()'''
 	}
 
+	def dispatch CharSequence expressionToJava( ListExpression e ) {
+		'''getList( «FOR v:e.values SEPARATOR ','»«v.expressionToJava»«ENDFOR» )'''
+	}
+
+	def dispatch CharSequence expressionToJava( SetExpression e ) {
+		'''getSet( «FOR v:e.values SEPARATOR ','»«v.expressionToJava»«ENDFOR» )'''
+	}
 
 	def dispatch CharSequence expressionToJava( SetComp	e ) {
 		'''
@@ -233,6 +352,25 @@ class ExpressionHandler {
 			«e.variable.getComponentPredicate(e.predicate)»
 		)
 		'''
+	}
+	
+	def dispatch CharSequence expressionToJava( MapFunction e ) {
+		'''
+		map( «e.arg1.expressionToJava» , «e.arg2.expressionToJava»)
+		'''
+	}
+
+	
+	def dispatch CharSequence expressionToJava( NewListFunction e ) {
+		'''
+		new LinkedList<«e.arg1.toJavaType»>();
+		'''		
+	}
+
+	def dispatch CharSequence expressionToJava( NewSetFunction e ) {
+		'''
+		new HashSet<«e.arg2.toJavaType»>();
+		'''		
 	}
 	
 	def dispatch CharSequence expressionToJava( MaxMeasure	e ) {
@@ -307,7 +445,7 @@ class ExpressionHandler {
 	def dispatch CharSequence expressionToJava( AverageMeasure	e ) {
 		'''
 		system.average( 
-			Measure<CarmaStore> m2 = new Measure<CarmaStore>() {
+			new Measure<CarmaStore>() {
 
 				public double measure(CarmaStore store) {
 					«FOR a:e.globalAttributes»
@@ -353,7 +491,6 @@ class ExpressionHandler {
 						try{
 							return csp.getState().getName().equals("«n»");
 						} catch (NullPointerException e) {
-							e.printStackTrace();
 							return false;
 						}
 					}
@@ -380,7 +517,6 @@ class ExpressionHandler {
 						try{
 							return csp.getName().equals("«p.comp.name»");
 						} catch (NullPointerException e) {
-							e.printStackTrace();
 							return false;
 						}	
 					}
@@ -428,26 +564,33 @@ class ExpressionHandler {
 			//- sender: reference to the store of sender;
 			//- receiver: reference to the store of the receiver;				
 			//@Override
-			public boolean satisfy(CarmaStore store) {
+			public boolean satisfy(double now,CarmaStore store) {
 				«FOR a:e.globalAttributes»
 				«a.attributeTemporaryVariableDeclaration(ReferenceContext::GLOBAL,"global")»
 				«ENDFOR»
 				«FOR a:e.senderAttributes»
 				«a.attributeTemporaryVariableDeclaration(ReferenceContext::SENDER,"sender")»
 				«ENDFOR»
+				«IF e.useSenderLoc»
+				«ReferenceContext::SENDER.locTemporaryVariableDeclaration("sender")»
+				«ENDIF»
 				«FOR a:e.receiverAttributes»
 				«a.attributeTemporaryVariableDeclaration(ReferenceContext::RECEIVER,"receiver")»
 				«ENDFOR»
+				«IF e.useReceiverLoc»
+				«ReferenceContext::RECEIVER.locTemporaryVariableDeclaration("receiver")»
+				«ENDIF»
 				«FOR a:e.myAttributes»
 				«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"store")»
 				«ENDFOR»
+				«ReferenceContext::MY.locTemporaryVariableDeclaration("store")»
 				«FOR a:e.referencedAttibutes»
 				«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
 				«ENDFOR»
 				try{
-					return «e.expressionToJava»;
+					Boolean result = «e.expressionToJava»;
+					return (result==null?false:result);
 				} catch (NullPointerException e) {
-					e.printStackTrace();
 					return false;
 				}
 			}
@@ -489,21 +632,53 @@ class ExpressionHandler {
 		''' 
 	}
 
+
+	def CharSequence accessToAttribute( AttributeReference a , ReferenceContext context ) {
+		switch a {
+			StoreAttribute: a.reference.getReference( context , currentComponent )
+			LocAttribute: "loc".attributeName( context )
+		}
+	}
+
 	def dispatch CharSequence expressionToJava( MyContext e ) {
-		e.reference.getReference( ReferenceContext::MY , currentComponent )
+		e.attribute.accessToAttribute( ReferenceContext::MY )
 	}
 
 	def dispatch CharSequence expressionToJava( ReceiverContext e ) {
-		e.reference.getReference( ReferenceContext::RECEIVER , currentComponent )
+		e.attribute.accessToAttribute( ReferenceContext::RECEIVER )
 	}
 
 	def dispatch CharSequence expressionToJava( SenderContext e ) {
-		e.reference.getReference( ReferenceContext::SENDER , currentComponent )
+		e.attribute.accessToAttribute( ReferenceContext::SENDER )
 	}
 
 	def dispatch CharSequence expressionToJava( GlobalContext e ) {
 		e.reference.getReference( ReferenceContext::GLOBAL , currentComponent )
 	} 
+	
+	def dispatch CharSequence expressionToJava( LambdaExpression e ) {
+		'''
+		«FOR v:e.variables SEPARATOR ','»«v.type.toJavaType» «v.name»«ENDFOR» -> («e.body.expressionToJava»)
+		'''
+	}
+	
+	def dispatch CharSequence expressionToJava( PreFunction e ) {
+		'''
+		«e.arg.expressionToJava».getPreset();
+		'''
+	}
+	
+	def dispatch CharSequence expressionToJava( PostFunction e ) {
+		'''
+		«e.arg.expressionToJava».getPoset();
+		'''
+	}
+	
+	def dispatch CharSequence expressionToJava( AccessToEdgeValue e ) {
+		'''
+		«e.src.expressionToJava».getValuesTo( «e.trg.expressionToJava» , "«e.label.name»" , «e.label.value.typeOf.toJavaType(false)».class )
+		'''
+	}
 	
 	def dispatch CharSequence expressionToJava( AbsFunction e ) {
 		'''Math.abs( «e.arg.expressionToJava» )'''	
@@ -578,7 +753,15 @@ class ExpressionHandler {
 	} 	
 	
 	def dispatch CharSequence expressionToJava( UniformFunction e ) {
-		'''RandomGeneratorRegistry.uniform(«FOR v:e.args SEPARATOR ','»«v.expressionToJava»«ENDFOR»)'''
+		if (e.args.length==1) {
+			'''RandomGeneratorRegistry.uniformSelect( «e.args.get(0).expressionToJava» )'''
+		} else {
+			'''RandomGeneratorRegistry.uniform(«FOR v:e.args SEPARATOR ','»«v.expressionToJava»«ENDFOR»)'''
+		}
+	}
+	
+	def dispatch CharSequence expressionToJava( SizeFunction e ) {
+		'''computeSize( «e.arg1.expressionToJava» )'''
 	}
 	
 	def invocationParameters( List<CharSequence> args , List<ValueType> parms ) {

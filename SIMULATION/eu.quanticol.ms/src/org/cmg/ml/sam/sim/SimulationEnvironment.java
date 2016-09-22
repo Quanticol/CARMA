@@ -32,6 +32,7 @@ public class SimulationEnvironment<S extends ModelI> {
 	private SimulationFactory<S> factory;
 	private S model;
 	private SamplingFunction<S> sampling_function;
+	private int iterations = 0;
 
 	public SimulationEnvironment(SimulationFactory<S> factory) {
 		if (factory == null) {
@@ -70,6 +71,7 @@ public class SimulationEnvironment<S extends ModelI> {
 				System.out.print("\n");
 			}
 			System.out.flush();
+			this.iterations++;
 		}
 		rgi.unregister();		
 	}
@@ -141,10 +143,10 @@ public class SimulationEnvironment<S extends ModelI> {
 		return random.nextInt(zones);
 	}
 
-	public LinkedList<SimulationTimeSeries> getTimeSeries() {
+	public LinkedList<SimulationTimeSeries> getTimeSeries( ) {
 		if (sampling_function == null) {
 			return null;
 		}
-		return sampling_function.getSimulationTimeSeries();
+		return sampling_function.getSimulationTimeSeries( iterations );
 	}
 }

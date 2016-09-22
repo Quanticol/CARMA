@@ -26,5 +26,5 @@ public interface SamplingFunction<S> {
 
 	public void start();
 
-	public LinkedList<SimulationTimeSeries> getSimulationTimeSeries();
+	public LinkedList<SimulationTimeSeries> getSimulationTimeSeries( int replications );
 }

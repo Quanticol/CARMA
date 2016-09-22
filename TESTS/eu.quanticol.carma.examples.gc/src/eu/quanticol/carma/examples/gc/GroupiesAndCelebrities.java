@@ -23,7 +23,7 @@ public class GroupiesAndCelebrities extends CarmaSystem {
 		int kindA = this.count(new CarmaPredicate() {
 			
 			@Override
-			public boolean satisfy(CarmaStore store) {
+			public boolean satisfy(double now,CarmaStore store) {
 				Integer aType = GroupiesCelebritiesDefinitions.KIND_A;
 				return aType.equals(store.get(GroupiesCelebritiesDefinitions.KIND_ATTRIBUTE, Integer.class));
 			}
@@ -31,7 +31,7 @@ public class GroupiesAndCelebrities extends CarmaSystem {
 		int kindB = this.count(new CarmaPredicate() {
 			
 			@Override
-			public boolean satisfy(CarmaStore store) {
+			public boolean satisfy(double now,CarmaStore store) {
 				Integer aType = GroupiesCelebritiesDefinitions.KIND_B;
 				return aType.equals(store.get(GroupiesCelebritiesDefinitions.KIND_ATTRIBUTE, Integer.class));
 			}

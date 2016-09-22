@@ -6,6 +6,8 @@ import eu.quanticol.carma.core.utils.Util
 import eu.quanticol.carma.core.generator.ms.collective.CollectiveHandler
 import eu.quanticol.carma.core.generator.ms.environment.EnvironmentHandler
 import eu.quanticol.carma.core.generator.ms.expression.ExpressionHandler
+import eu.quanticol.carma.core.carma.CollectiveReference
+import eu.quanticol.carma.core.carma.CollectiveBlock
 
 class SystemHandler {
 	
@@ -41,17 +43,16 @@ class SystemHandler {
 		'''
 		public class «sys.name.systemName» extends CarmaSystem {
 			
-			public «sys.name.systemName»() {
-				super();
+			public «sys.name.systemName»( ) {
+				super( «IF sys.space != null» «sys.space.spaceName» ( «FOR e:sys.args SEPARATOR ','»«e.expressionToJava»«ENDFOR») «ENDIF»);
 				«IF (sys.environment != null)&&(sys.environment.store != null)»
 				«FOR a:sys.environment.store.attributes»
 				setGLobalAttribute( "«a.name»" , «a.value.expressionToJava» );
 				«ENDFOR»
 				«ENDIF»
 				CarmaSystem system = this;
-				«FOR c:sys.collective»
-				«c.instantiationCode»
-				«ENDFOR»
+				CarmaSystem sys = this;
+				«sys.collective.generateCollective»		
 			}
 			
 			«IF (sys.environment != null)&&(sys.environment.probabilityBlock!=null)»
@@ -61,7 +62,11 @@ class SystemHandler {
 			public double broadcastProbability( CarmaStore sender , CarmaStore receiver , int action ) {
 				return 1.0;
 			}
-				
+			«ENDIF»
+
+			«IF (sys.environment != null)&&(sys.environment.weightBlock!=null)»
+			«sys.environment.weightBlock.handleWeightBlock»
+			«ELSE»
 			@Override
 			public double unicastProbability( CarmaStore sender , CarmaStore receiver , int action ) {
 				return 1.0;
@@ -117,5 +122,17 @@ class SystemHandler {
 		'''	
 	}
 	
+	
+	def dispatch CharSequence generateCollective( CollectiveReference ref ) {
+		ref.reference.block.generateCollective
+	}
+	
+	def dispatch CharSequence generateCollective( CollectiveBlock block ) {
+		'''
+		«FOR c:block.collective»
+		«c.instantiationCode»
+		«ENDFOR»		
+		'''
+	}
 	
 }

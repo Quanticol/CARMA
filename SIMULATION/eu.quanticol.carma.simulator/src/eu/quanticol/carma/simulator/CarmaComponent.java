@@ -10,6 +10,8 @@ import org.cmg.ml.sam.sim.Activity;
 import org.cmg.ml.sam.sim.util.ComposedWeightedStructure;
 import org.cmg.ml.sam.sim.util.WeightedStructure;
 
+import eu.quanticol.carma.simulator.space.SpaceModel.Node;
+
 /**
  * @author loreti
  *
@@ -19,6 +21,8 @@ public class CarmaComponent {
 	protected CarmaStore store;
 
 	protected LinkedList<CarmaProcess> processes;
+	
+	protected boolean isKilled = false;
 	
 	public CarmaComponent( ) {
 		this.store = new CarmaStore();
@@ -33,13 +37,21 @@ public class CarmaComponent {
 		return store.get(attribute, clazz);
 	}
 
+	public void setLocation( Node l ) {
+		this.set( CarmaSystem.LOC_ATTRIBUTE_NAME , l);
+	}
+	
+	public Node getLocation() {
+		return get( CarmaSystem.LOC_ATTRIBUTE_NAME , Node.class );
+	}
+	
 	public void inputBroadcast( RandomGenerator r , 
 			CarmaSystem system,
 			CarmaComponent sender, 
 			int action, 
 			CarmaPredicate predicate,
 			Object value ) {
-		if (predicate.satisfy(store)) {
+		if (predicate.satisfy(system.now(),store)) {
 			WeightedStructure<Activity> enabledInputs = new ComposedWeightedStructure<Activity>();
 			double missingProbability = 1.0;
 			for (CarmaProcess p : processes) {//TODO: fix this!
@@ -60,7 +72,7 @@ public class CarmaComponent {
 			CarmaPredicate predicate ,
 			Object value ) {
 		WeightedStructure<Activity> toReturn = new ComposedWeightedStructure<Activity>();
-		if (predicate.satisfy(store)) {
+		if (predicate.satisfy(system.now(),store)) {
 			for (CarmaProcess p : processes) {
 				toReturn = toReturn.add( p.doReceiveUnicast(system, sender.store, action, value) );
 			}
@@ -104,6 +116,15 @@ public class CarmaComponent {
 			}
 		}
 		return false;
+	}
+
+	public boolean kill() {
+		this.isKilled = true;
+		return this.isKilled;
+	}
+
+	public boolean isKilled() {
+		return isKilled;
 	}
 
 

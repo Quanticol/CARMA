@@ -12,8 +12,8 @@ import org.cmg.ml.sam.sim.util.WeightedStructure;
  */
 public abstract class CarmaProcess {
 	
-	private CarmaComponent component;
-	private String name;
+	protected CarmaComponent component;
+	protected String name;
 
 	public CarmaProcess( String name ) {
 		this(null,name);
@@ -53,5 +53,9 @@ public abstract class CarmaProcess {
 	public abstract WeightedStructure<Activity> doReceiveUnicast( CarmaSystem system , CarmaStore sender ,  int action, Object value );
 
 	public abstract WeightedStructure<Activity> getActivities(CarmaSystem caspaSystem);
+	
+	protected boolean doKill() {
+		return this.component.kill();
+	}
 
 }

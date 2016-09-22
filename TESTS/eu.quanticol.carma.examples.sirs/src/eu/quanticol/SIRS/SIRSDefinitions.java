@@ -38,7 +38,7 @@ public class SIRSDefinitions {
 		CarmaInput contactInAction = new CarmaInput( SIRS.CONTACT , true ) {
 
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, Object value, double now) {
+			protected CarmaPredicate getPredicate(CarmaStore store, Object value) {
 				// TODO Auto-generated method stub
 				return null;
 			}
@@ -54,7 +54,7 @@ public class SIRSDefinitions {
 		CarmaOutput contactOutAction = new CarmaOutput( SIRS.CONTACT , true ) {
 
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, double now) {
+			protected CarmaPredicate getPredicate(CarmaStore store) {
 				// TODO Auto-generated method stub
 				return null;
 			}
@@ -79,7 +79,7 @@ public class SIRSDefinitions {
 		CarmaOutput recoveryAction = new CarmaOutput( SIRS.RECOVERY , true ) {
 
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, double now) {
+			protected CarmaPredicate getPredicate(CarmaStore store) {
 				// TODO Auto-generated method stub
 				return null;
 			}
@@ -101,7 +101,7 @@ public class SIRSDefinitions {
 		CarmaOutput susceptibleAction = new CarmaOutput( SIRS.SUSCEPTIBLE , true ) {
 
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, double now) {
+			protected CarmaPredicate getPredicate(CarmaStore store) {
 				// TODO Auto-generated method stub
 				return null;
 			}
@@ -137,7 +137,7 @@ public class SIRSDefinitions {
 		CarmaOutput move = new CarmaOutput( SIRS.MOVE , true ) {
 
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, double now) {
+			protected CarmaPredicate getPredicate(CarmaStore store) {
 				// TODO Auto-generated method stub
 				return null;
 			}

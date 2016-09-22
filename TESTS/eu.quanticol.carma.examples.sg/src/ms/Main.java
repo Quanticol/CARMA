@@ -17,8 +17,8 @@ public class Main {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		Model m = new Model();
-		SimulationEnvironment<CarmaSystem> sim = new SimulationEnvironment<>(m.getFactory("Simple"));
+		Example m = new Example();
+		SimulationEnvironment<CarmaSystem> sim = new SimulationEnvironment<>(m.getFactory("Scenario1"));
 		sim.simulate(100);
 
 	}

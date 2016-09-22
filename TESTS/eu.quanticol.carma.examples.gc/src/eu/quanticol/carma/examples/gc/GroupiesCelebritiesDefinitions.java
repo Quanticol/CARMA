@@ -56,7 +56,7 @@ public class GroupiesCelebritiesDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, double now) {
+			protected CarmaPredicate getPredicate(CarmaStore store) {
 				return CarmaPredicate.TRUE;
 			}
 		};
@@ -64,7 +64,7 @@ public class GroupiesCelebritiesDefinitions {
 		CarmaInput inputAction = new CarmaInput( ACTION_ID , true ) {
 
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, Object value, double now) {
+			protected CarmaPredicate getPredicate(CarmaStore store, Object value) {
 				return CarmaPredicate.TRUE;
 			}
 
@@ -108,7 +108,7 @@ public class GroupiesCelebritiesDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, double now) {
+			protected CarmaPredicate getPredicate(CarmaStore store) {
 				return CarmaPredicate.TRUE;
 			}
 		};
@@ -116,12 +116,12 @@ public class GroupiesCelebritiesDefinitions {
 		CarmaInput inputAction = new CarmaInput( ACTION_ID , true ) {
 
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore localStore, Object value, double now) {
+			protected CarmaPredicate getPredicate(CarmaStore localStore, Object value) {
 				final int kind = localStore.get(KIND_ATTRIBUTE, Integer.class).intValue();
 				return new CarmaPredicate() {
 
 					@Override
-					public boolean satisfy(CarmaStore store) {
+					public boolean satisfy(double now,CarmaStore store) {
 						return kind == store.get(KIND_ATTRIBUTE, Integer.class).intValue();
 					}
 					

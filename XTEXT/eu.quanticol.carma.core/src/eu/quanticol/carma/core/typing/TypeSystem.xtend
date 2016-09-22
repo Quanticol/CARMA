@@ -31,7 +31,7 @@ import eu.quanticol.carma.core.carma.AttributeDeclaration
 import eu.quanticol.carma.core.carma.FunctionDefinition
 import eu.quanticol.carma.core.carma.EnumCase
 import eu.quanticol.carma.core.carma.ConstantDefinition
-import eu.quanticol.carma.core.carma.RecordAccess
+import eu.quanticol.carma.core.carma.FieldAccess
 import eu.quanticol.carma.core.carma.AtomicTrue
 import eu.quanticol.carma.core.carma.AtomicFalse
 import eu.quanticol.carma.core.carma.AtomicInteger
@@ -91,26 +91,93 @@ import eu.quanticol.carma.core.carma.CastToReal
 import eu.quanticol.carma.core.carma.CastToInteger
 import eu.quanticol.carma.core.carma.Range
 import eu.quanticol.carma.core.carma.ProcessState
-import eu.quanticol.carma.core.carma.MeasureVariableDeclaration
+import eu.quanticol.carma.core.carma.SetExpression
+import eu.quanticol.carma.core.carma.ListExpression
+import eu.quanticol.carma.core.carma.IsIn
+import eu.quanticol.carma.core.carma.LambdaExpression
+import eu.quanticol.carma.core.carma.SetType
+import eu.quanticol.carma.core.carma.ListType
+import eu.quanticol.carma.core.carma.MyLocation
+import eu.quanticol.carma.core.carma.None
+import eu.quanticol.carma.core.carma.PreFunction
+import eu.quanticol.carma.core.carma.PostFunction
+import eu.quanticol.carma.core.carma.MapFunction
+import eu.quanticol.carma.core.carma.NewListFunction
+import eu.quanticol.carma.core.carma.NewSetFunction
+import eu.quanticol.carma.core.carma.SizeFunction
+import eu.quanticol.carma.core.carma.LocationVariable
+import eu.quanticol.carma.core.carma.NodePattern
+import eu.quanticol.carma.core.carma.SpaceDefinition
+import eu.quanticol.carma.core.carma.Locations
+import eu.quanticol.carma.core.carma.LabelDefinition
+import eu.quanticol.carma.core.carma.LocAttribute
+import eu.quanticol.carma.core.carma.StoreAttribute
+import eu.quanticol.carma.core.carma.AttributeConstDeclaration
+import eu.quanticol.carma.core.carma.AttibuteVarDeclaration
+import eu.quanticol.carma.core.carma.LoopingVariable
+import eu.quanticol.carma.core.carma.LocationType
+import eu.quanticol.carma.core.carma.LocationFeature
+import eu.quanticol.carma.core.carma.TupleExpression
+import org.eclipse.emf.common.util.EList
+import eu.quanticol.carma.core.carma.UniverseElement
+import eu.quanticol.carma.core.carma.NodeExpressionOrArrayAccess
+import eu.quanticol.carma.core.carma.NamedNode
+import eu.quanticol.carma.core.carma.AccessToEdgeValue
+import eu.quanticol.carma.core.carma.MeasureDefinition
 
 class TypeSystem {
 
 	@Inject extension Util
 	
+	
+	def dispatch CarmaType typeOf( TupleExpression e ) {
+//		CarmaType::createTupleType(e.values.map[it.typeOf])
+		CarmaType::LOCATION_TYPE		
+	}
+	
+	def dispatch CarmaType typeOf( Locations e ) {
+		CarmaType::createSetType(CarmaType::LOCATION_TYPE)		
+	} 
+	
+	def dispatch CarmaType typeOf( LabelDefinition e ) {
+		CarmaType::createSetType(CarmaType::LOCATION_TYPE)		
+	} 
+	
 	def dispatch CarmaType typeOf( Object e ) {
 		CarmaType::ERROR_TYPE
+	}
+	
+	def dispatch CarmaType typeOf( IsIn e ) {
+		CarmaType::BOOLEAN_TYPE
 	}
 	
 	def  dispatch CarmaType typeOf( EObject e ) {
 		CarmaType::ERROR_TYPE	
 	}
 	
+	def computeBinaryBooleanOperatorType( CarmaType t ) {
+		switch t.code {
+			case NONE: CarmaType::NONE_TYPE
+			case BOOLEAN: CarmaType::BOOLEAN_TYPE
+			case SET: t
+			default: CarmaType::ERROR_TYPE
+		}		
+	}
+	
 	def  dispatch CarmaType typeOf( Or e ) {
-		CarmaType::BOOLEAN_TYPE
+		if (e.left==null) {
+			CarmaType::NONE_TYPE
+		} else {
+			e.left.typeOf.computeBinaryBooleanOperatorType
+		}
 	}		
 	
 	def  dispatch CarmaType typeOf( And e ) {
-		CarmaType::BOOLEAN_TYPE
+		if (e.left==null) {
+			CarmaType::NONE_TYPE
+		} else {
+			e.left.typeOf.computeBinaryBooleanOperatorType
+		}
 	}
 
 	def  dispatch CarmaType typeOf( Equality e ) {
@@ -138,19 +205,47 @@ class TypeSystem {
 	}
 
 	def  dispatch CarmaType typeOf( Subtraction e ) {
-		e.left.typeOf.mostGeneral( e.right.typeOf ) 
+		if ((e.left == null)||(e.right==null)) {
+			CarmaType::NONE_TYPE
+		} else {
+			e.left.typeOf.mostGeneral( e.right.typeOf ) 
+		}
 	}
 
 	def  dispatch CarmaType typeOf( Addition e ) {
-		e.left.typeOf.mostGeneral( e.right.typeOf )
+		if ((e.left == null)||(e.right==null)) {
+			CarmaType::NONE_TYPE
+		} else {
+			e.left.typeOf.mostGeneral( e.right.typeOf ) 
+		}
 	}
 
 	def  dispatch CarmaType typeOf( Multiplication e ) {
-		e.left.typeOf.mostGeneral( e.right.typeOf )
+		if ((e.left == null)||(e.right==null)) {
+			CarmaType::NONE_TYPE
+		} else {
+			var t1 = e.left.typeOf
+			var t2 = e.right.typeOf
+			if (t1.number&&t2.number) {
+				t1.mostGeneral(t2)				
+			} else {
+				CarmaType::ERROR_TYPE
+			}
+		}
 	}
 
 	def  dispatch CarmaType typeOf( Division e ) {
-		e.left.typeOf.mostGeneral( e.right.typeOf )
+		if ((e.left == null)||(e.right==null)) {
+			CarmaType::NONE_TYPE
+		} else {
+			var t1 = e.left.typeOf
+			var t2 = e.right.typeOf
+			if (t1.number&&t2.number) {
+				t1.mostGeneral(t2)				
+			} else {
+				CarmaType::ERROR_TYPE
+			}
+		}
 	}
 
 	def  dispatch CarmaType typeOf( Modulo e ) {
@@ -162,34 +257,97 @@ class TypeSystem {
 	}
 
 	def  dispatch CarmaType typeOf( UnaryPlus e ) {
-		e.expression.typeOf
+		if (e.expression == null) {
+			CarmaType::NONE_TYPE
+		} else {
+			var t = e.expression.typeOf
+			if (t.number) {
+				t
+			} else {
+				CarmaType::ERROR_TYPE
+			}
+		}
 	}
 	
 	def  dispatch CarmaType typeOf( UnaryMinus e ) {
-		e.expression.typeOf
+		if (e.expression == null) {
+			CarmaType::NONE_TYPE
+		} else {
+			var t = e.expression.typeOf
+			if (t.number) {
+				t
+			} else {
+				CarmaType::ERROR_TYPE
+			}
+		}
 	}
 	
 	def  dispatch CarmaType typeOf( IfThenElseExpression e ) {
-		e.thenBranch.typeOf.mostGeneral( e.elseBranch.typeOf )
+		if ((e.elseBranch == null)||(e.thenBranch==null)) {
+			CarmaType::NONE_TYPE
+		} else {
+			e.thenBranch.typeOf.mostGeneral( e.elseBranch.typeOf )
+		}
 	}
 	
 	def  dispatch CarmaType typeOf( Reference e ) {
-		e.reference.typeOf
+		if (e.reference == null) {
+			CarmaType::NONE_TYPE
+		} else {
+			e.reference.typeOf
+		}
 	}
 	
 	def dispatch CarmaType typeOf( IterationVariable v ) {
 		CarmaType::INTEGER_TYPE
 	}
+
+	def dispatch CarmaType typeOf( LoopingVariable v ) {
+		var CarmaType cType = v.value ?. typeOf ?: CarmaType::NONE_TYPE
+		if (cType.isSet) {
+			cType.asSet.elementsType
+		} else {
+			if (cType.isList) {
+				cType.asList.elementsType
+			} else {
+				CarmaType::NONE_TYPE
+			}
+		}
+	}
+	
 	
 	def dispatch CarmaType typeOf( TargetAssignmentVariable v ) {
-		v.variable.typeOf
+		if (v.variable == null) {
+			CarmaType::NONE_TYPE
+		} else {
+			v.variable.typeOf
+		}
 	}
 
 	def dispatch CarmaType typeOf( TargetAssignmentField f ) {
-		f.field.typeOf
+		if (f.field == null) {
+			CarmaType::NONE_TYPE
+		} else {
+			f.field.typeOf
+		}
 	}
 	
-	
+	def dispatch CarmaType typeOf( SetExpression e ) {
+		if (e.values.isEmpty) {
+			CarmaType::createSetType(null)
+		} else {
+			CarmaType::createSetType(e.values.get(0).typeOf)
+		}
+	}
+		
+	def dispatch CarmaType typeOf( ListExpression e ) {
+		if (e.values.isEmpty) {
+			CarmaType::createListType(null)
+		} else {
+			CarmaType::createListType(e.values.get(0).typeOf)
+		}
+	}
+		
 	def dispatch CarmaType typeOf( FieldAssignment f ) {
 		f.field.typeOf
 	}
@@ -198,8 +356,39 @@ class TypeSystem {
 		if (v.type != null) {
 			v.type.toCarmaType		
 		} else {
-			CarmaType::ERROR_TYPE
+			CarmaType::NONE_TYPE
 		}
+	}
+
+	def  dispatch CarmaType typeOf( LocationVariable v ) {
+		var vIndex = v.indexOfLocationVariable
+		var space = v.getContainerOfType(typeof(SpaceDefinition))
+		if ((vIndex>=0)&&(space!=null)) {
+			space.universe ?. locationElementType( vIndex ) ?: CarmaType::NONE_TYPE
+		} else {
+			CarmaType::NONE_TYPE
+		}
+	}
+	
+	def locationElementType( EList<UniverseElement> universe , int index ) {
+		if ((index >= 0)&&(index<universe.size)) {
+			universe.get(index).type.toCarmaType
+		} else {
+			CarmaType::NONE_TYPE
+		}
+	}
+	
+
+	def  dispatch CarmaType typeOf( LambdaExpression f ) {
+		if (f.variables.empty||f.body==null) {
+			CarmaType::NONE_TYPE
+		} else {
+			CarmaType::createFunctionType(
+				CarmaType::createTupleType( f.variables.map[ it.typeOf ] ) ,
+				f.body.typeOf
+			)
+		}
+		
 	}
 
 	def dispatch CarmaType typeOf( CastToReal e ) {
@@ -208,6 +397,46 @@ class TypeSystem {
 
 	def dispatch CarmaType typeOf( CastToInteger e ) {
 		CarmaType::INTEGER_TYPE
+	}
+
+	def dispatch CarmaType typeOf( NodeExpressionOrArrayAccess e ) {
+		var flag = false
+		var CarmaType result = CarmaType::NONE_TYPE
+		if (e.source != null) {
+			var source = e.source
+			if (source instanceof Reference) {
+				if (source.reference instanceof NamedNode) {
+					result = CarmaType::LOCATION_TYPE
+					flag = true
+				} 
+			} 
+			if (!flag) {
+				var t = source.typeOf	
+				if (t.isList) {
+					result = t.asList.elementsType		
+				} else {
+					result = CarmaType::ERROR_TYPE
+				}
+			}
+		} 
+		result
+		
+	}
+
+	def dispatch CarmaType typeOf( MyLocation e ) {
+		CarmaType::LOCATION_TYPE
+	}
+
+	def  dispatch CarmaType typeOf( AttributeConstDeclaration a ) {
+		a.value.typeOf
+	}
+
+	def  dispatch CarmaType typeOf( AttibuteVarDeclaration a ) {
+		if (a.type != null) {
+			a.type.toCarmaType
+		} else {
+			a.value.typeOf			
+		}
 	}
 
 	def  dispatch CarmaType typeOf( AttributeDeclaration a ) {
@@ -224,7 +453,7 @@ class TypeSystem {
 				}
 			}
 		} else {
-			CarmaType::ERROR_TYPE			
+			CarmaType::NONE_TYPE			
 		}
 	}
 
@@ -232,8 +461,12 @@ class TypeSystem {
 		if (f.type != null) {
 			f.type.toCarmaType
 		} else {
-			CarmaType::ERROR_TYPE
+			CarmaType::NONE_TYPE
 		}
+	}
+
+	def dispatch CarmaType typeOf( MeasureDefinition m ) {
+		CarmaType::REAL_TYPE
 	}
 
 	def  dispatch CarmaType typeOf( EnumCase ec ) {
@@ -241,7 +474,7 @@ class TypeSystem {
 		if (c != null) {
 			CarmaType::createEnumType(c)
 		} else {
-			CarmaType::ERROR_TYPE
+			CarmaType::NONE_TYPE
 		}
 	}
 	
@@ -249,21 +482,31 @@ class TypeSystem {
 		if (c.value!=null) {
 			c.value.typeOf
 		} else {
-			CarmaType::ERROR_TYPE
+			CarmaType::NONE_TYPE
 		}
 	}
 	
-	def dispatch CarmaType typeOf( MeasureVariableDeclaration v ) {
-		CarmaType::INTEGER_TYPE
-	}
-	
+//	def dispatch CarmaType typeOf( MeasureVariableDeclaration v ) {
+//		CarmaType::INTEGER_TYPE
+//	}
+//	
 	def  dispatch CarmaType typeOf( UntypedVariable v ) {
 		v.inferTypeOf
 	}
 	
 	
-	def  dispatch CarmaType typeOf( RecordAccess e ) {
-		e.field.typeOf
+	def  dispatch CarmaType typeOf( FieldAccess e ) {
+		if (e.field == null) {
+			CarmaType::NONE_TYPE
+		} else {
+			var f = e.field
+			switch f {
+				FieldDefinition: f.typeOf
+				LabelDefinition: CarmaType::BOOLEAN_TYPE
+				LocationFeature: f.type.toCarmaType				
+				UniverseElement: f.type.toCarmaType
+			}
+		}
 	}
 
 	def dispatch CarmaType typeOf( FieldDefinition f ) {
@@ -287,7 +530,11 @@ class TypeSystem {
 	}
 
 	def  dispatch CarmaType typeOf( AtomicRecord e ) {
-		e.fields.head ?. field ?. recordType ?: CarmaType::ERROR_TYPE
+		e.fields.head ?. field ?. recordType ?: CarmaType::NONE_TYPE
+	}
+	
+	def dispatch CarmaType typeOf( None e ) {
+		CarmaType::NONE_TYPE
 	}
 	
 	def  dispatch CarmaType typeOf( AtomicNow e ) {
@@ -311,23 +558,35 @@ class TypeSystem {
 	}
 
 	def  dispatch CarmaType typeOf( MyContext e ) {
-		e.reference.typeOf
+		if (e.attribute == null) {
+			CarmaType::NONE_TYPE
+		} else {
+			e.attribute.typeOf
+		}
+	}
+	
+	def dispatch CarmaType typeOf( LocAttribute a ) {
+		CarmaType::LOCATION_TYPE
+	}
+	
+	def dispatch CarmaType typeOf( StoreAttribute a ) {
+		a.reference.typeOf
 	}
 		
 	def  dispatch CarmaType typeOf( ReceiverContext e ) {
-		e.reference.typeOf
+		e ?. attribute ?. typeOf ?: CarmaType::NONE_TYPE
 	}
 
 	def  dispatch CarmaType typeOf( SenderContext e ) {
-		e.reference.typeOf
+		e ?. attribute ?. typeOf ?: CarmaType::NONE_TYPE
 	}
 
 	def  dispatch CarmaType typeOf( GlobalContext e ) {
-		e.reference.typeOf
+		e ?. reference ?. typeOf ?: CarmaType::NONE_TYPE
 	}
 
 	def  dispatch CarmaType typeOf( AbsFunction e ) {
-		e.arg.typeOf
+		e ?. arg ?. typeOf ?: CarmaType::NONE_TYPE
 	}
 
 	def  dispatch CarmaType typeOf( Range e ) {
@@ -379,15 +638,19 @@ class TypeSystem {
 	}
 
 	def  dispatch CarmaType typeOf( MaxFunction e ) {
-		e.first ?. typeOf.mostGeneral( e.second.typeOf )
+		if ((e.first == null)||(e.second == null)) {
+			CarmaType::NONE_TYPE
+		} else {
+			e.first.typeOf.mostGeneral( e.second.typeOf )
+		}
 	}
 
 	def  dispatch CarmaType typeOf( MaxMeasure e ) {
-		e.value.typeOf
+		e ?. value ?. typeOf ?: CarmaType::NONE_TYPE
 	}
 
 	def  dispatch CarmaType typeOf( MinMeasure e ) {
-		e.value.typeOf
+		e ?. value ?. typeOf ?: CarmaType::NONE_TYPE
 	}
 
 	def  dispatch CarmaType typeOf( AverageMeasure e ) {
@@ -395,7 +658,11 @@ class TypeSystem {
 	}
 
 	def  dispatch CarmaType typeOf( MinFunction e ) {
-		e.first ?. typeOf.mostGeneral( e.second.typeOf )
+		if ((e.first == null)||(e.second == null)) {
+			CarmaType::NONE_TYPE
+		} else {
+			e.first.typeOf.mostGeneral( e.second.typeOf )
+		}
 	}
 
 	def  dispatch CarmaType typeOf( PowFunction e ) {
@@ -419,7 +686,83 @@ class TypeSystem {
 	}
 
 	def  dispatch CarmaType typeOf( UniformFunction e ) {
-		e.args.head.typeOf
+		if (e.args.size>1) {
+			e.args.head.typeOf		
+		} else {
+			if (e.args.size == 1) {
+				var t = e.args.get(0).typeOf
+				if (t.isSet) {
+					t.asSet.elementsType
+				} else {
+					if (t.isList) {
+						t.asList.elementsType
+					} else {
+						CarmaType::NONE_TYPE
+					}
+				}
+			} else {
+				CarmaType::NONE_TYPE
+			}
+		}
+	}
+	
+	def dispatch CarmaType typeOf( PreFunction e ) {
+		CarmaType::createSetType( CarmaType::LOCATION_TYPE )
+	}
+
+	def dispatch CarmaType typeOf( PostFunction e ) {
+		CarmaType::createSetType( CarmaType::LOCATION_TYPE )
+	}
+
+	def dispatch CarmaType typeOf( AccessToEdgeValue e ) {
+		var labelType = e.label ?. value ?. typeOf	?: CarmaType::NONE_TYPE
+		if (labelType.isNone) {
+			labelType
+		} else {
+			CarmaType::createSetType( labelType )
+		}
+	}
+	
+	def dispatch CarmaType typeOf( MapFunction e ) {
+		if ((e.arg1 == null)||(e.arg2 == null)) {
+			CarmaType::NONE_TYPE
+		} else {
+			var fType = e.arg2.typeOf
+			var cType = e.arg1.typeOf
+			if (fType.function&&(cType.list||cType.set)) {
+				if (cType.list) {
+					CarmaType::createListType(fType.asFunction.result)
+				} else {
+					CarmaType::createSetType(fType.asFunction.result)
+				}
+			} else {
+				CarmaType::ERROR_TYPE
+			}
+		}
+	}
+	
+
+	
+	def dispatch CarmaType typeOf( NewListFunction e ) {
+		if (e.arg1 == null) {
+			CarmaType::NONE_TYPE
+		} else {
+			CarmaType::createListType( e.arg1.toCarmaType )
+		}
+	}
+
+	def dispatch CarmaType typeOf( NewSetFunction e ) {
+		if (e.arg2 == null) {
+			CarmaType::NONE_TYPE
+		} else {
+			CarmaType::createSetType( e.arg2.toCarmaType )
+		}
+	}
+	
+
+
+	def dispatch CarmaType typeOf( SizeFunction e ) {
+		CarmaType::INTEGER_TYPE
 	}
 
 	def  CarmaType toCarmaType( ValueType t ) {
@@ -428,6 +771,9 @@ class TypeSystem {
 			IntegerType: CarmaType::INTEGER_TYPE
 			RealType: CarmaType::REAL_TYPE
 			BooleanType: CarmaType::BOOLEAN_TYPE
+			LocationType: CarmaType::LOCATION_TYPE
+			SetType: CarmaType::createSetType( t.arg.toCarmaType )
+			ListType: CarmaType::createListType( t.arg.toCarmaType )
 			CustomType: t.reference.toCarmaType
 		}	
 	}
@@ -511,7 +857,7 @@ class TypeSystem {
 	}
 	
 		
-	def toJavaType( CarmaType t , boolean isElementary ) {
+	def CharSequence toJavaType( CarmaType t , boolean isElementary ) {
 		switch (t.code) {
 			case BOOLEAN: if (isElementary) {
 				"boolean"
@@ -528,9 +874,12 @@ class TypeSystem {
 			} else {
 				"Double"				
 			}
+			case LOCATION: "Node"
 			case PROCESS: "CarmaProcessAutomaton.State"
-			case RECORD: (t.reference as RecordDefinition).name.recordClass
-			case ENUM: (t.reference as EnumDefinition).name.enumClass
+			case RECORD: t.asRecord.getReference.name.recordClass
+			case ENUM: t.asEnum.getReference.name.enumClass
+			case LIST: "LinkedList<"+(t.asList.elementsType.toJavaType(false))+">"
+			case SET: "Set<"+(t.asSet.elementsType.toJavaType(false))+">"
 			case ERROR: "Object"
 			default: null
 		}

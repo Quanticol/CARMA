@@ -9,6 +9,6 @@ package eu.quanticol.carma.simulator;
  */
 public interface ComponentPredicate {
 
-	public boolean eval(CarmaComponent c);
+	public boolean eval(double now,CarmaComponent c);
 	
 }

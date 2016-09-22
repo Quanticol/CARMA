@@ -29,6 +29,7 @@ public class StatisticSampling<S> implements SamplingFunction<S> {
 	private double dt;
 	private double next_time;
 	private int current_index;
+	private double new_measure;
 
 	public StatisticSampling(int samples, double dt, Measure<S> measure) {
 		this.data = new SummaryStatistics[samples];
@@ -45,21 +46,30 @@ public class StatisticSampling<S> implements SamplingFunction<S> {
 
 	@Override
 	public void sample(double time, S context) {
-		//FIXME: One sample is lost!!!!!
-		this.last_measure = measure.measure(context);
+		this.new_measure = measure.measure(context);
 		if ((time >= this.next_time) && (this.current_index < this.data.length)) {
 			recordMeasure(time);
+		} else {
+			this.last_measure = this.new_measure;
 		}
 	}
 
 	private void recordMeasure(double time) {
-		do {
-			this.data[this.current_index].addValue(this.last_measure);
-			this.current_index++;
-			this.next_time += this.dt;
-		} while ((time >= this.next_time)
-				&& (this.current_index < this.data.length));
+		while ((this.next_time<time)&&(this.current_index<this.data.length)) {
+			this.recordSample();
+		} 
+		this.last_measure = this.new_measure;		
+		if (this.next_time == time) {
+			this.recordSample();
+		}
 	}
+	
+	private void recordSample() {
+		this.data[this.current_index].addValue(this.last_measure);
+		this.current_index++;
+		this.next_time += this.dt;
+	}
+	
 
 	@Override
 	public void end(double time) {
@@ -93,11 +103,15 @@ public class StatisticSampling<S> implements SamplingFunction<S> {
 	}
 
 	@Override
-	public LinkedList<SimulationTimeSeries> getSimulationTimeSeries() {
-		SimulationTimeSeries stt = new SimulationTimeSeries(measure.getName(), dt, data);
+	public LinkedList<SimulationTimeSeries> getSimulationTimeSeries( int replications ) {
+		SimulationTimeSeries stt = new SimulationTimeSeries(measure.getName(), dt, replications, data);
 		LinkedList<SimulationTimeSeries> toReturn = new LinkedList<>();
 		toReturn.add(stt);
 		return toReturn;
+	}
+
+	public int getSize() {
+		return data.length;
 	}
 
 }

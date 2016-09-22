@@ -5,6 +5,7 @@ import eu.quanticol.carma.core.utils.Util
 import eu.quanticol.carma.core.carma.AttributeDeclaration
 import eu.quanticol.carma.core.utils.ReferenceContext
 import eu.quanticol.carma.core.typing.TypeSystem
+import eu.quanticol.carma.core.typing.CarmaType
 
 class AttributeHandler {
 
@@ -15,7 +16,9 @@ class AttributeHandler {
 		'''final «a.typeOf.toJavaType(false)» «a.name.attributeName(c)» = «storeName».get( "«a.name»" , «a.typeOf.toJavaType(false)».class );'''		
 	}
 	
-	
+	def locTemporaryVariableDeclaration( ReferenceContext c , String storeName ) {
+		'''final «CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(c)» = «storeName».get( "loc" , Node.class );'''		
+	}
 	
 	
 }
