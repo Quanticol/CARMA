@@ -9,6 +9,7 @@ import org.eclipse.draw2d.LightweightSystem;
 import org.eclipse.nebula.visualization.xygraph.figures.IXYGraph;
 import org.eclipse.nebula.visualization.xygraph.figures.ToolbarArmedXYGraph;
 import org.eclipse.nebula.visualization.xygraph.figures.Trace;
+import org.eclipse.nebula.visualization.xygraph.figures.Trace.ErrorBarType;
 import org.eclipse.nebula.visualization.xygraph.figures.XYGraph;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
@@ -100,6 +101,9 @@ public class ExperimentResultsView extends ViewPart {
 		clearTraces();
 		for (SimulationTrace data: timeSeries) {
 			Trace trace = new Trace(data.getName(), xyGraph.getPrimaryXAxis(), xyGraph.getPrimaryYAxis(), data ) ;
+			trace.setErrorBarEnabled(true);
+			trace.setYErrorBarType(ErrorBarType.BOTH);
+			trace.setXErrorBarType(ErrorBarType.NONE);
 			xyGraph.addTrace( trace );
 			traces.add(trace);
 		}
