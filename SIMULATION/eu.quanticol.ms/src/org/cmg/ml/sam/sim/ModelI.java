@@ -15,6 +15,7 @@
  */
 package org.cmg.ml.sam.sim;
 
+import org.apache.commons.math3.random.RandomGenerator;
 import org.cmg.ml.sam.sim.util.WeightedStructure;
 
 /**
@@ -23,7 +24,7 @@ import org.cmg.ml.sam.sim.util.WeightedStructure;
  */
 public interface ModelI {
 
-	public WeightedStructure<Activity> getActivities();
+	public WeightedStructure<Activity> getActivities( RandomGenerator r );
 
 	public void timeStep(double dt);
 

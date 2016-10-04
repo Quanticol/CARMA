@@ -120,7 +120,7 @@ public class SimulationEnvironment<S extends ModelI> {
 	}
 
 	private double doAStep() {
-		WeightedStructure<Activity> agents = this.model.getActivities();
+		WeightedStructure<Activity> agents = this.model.getActivities( random );
 		double totalRate = agents.getTotalWeight();
 		if (totalRate == 0.0) {
 			return 0.0;

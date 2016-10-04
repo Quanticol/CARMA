@@ -17,6 +17,7 @@ package org.cmg.ml.sam.sim;
 
 import java.util.LinkedList;
 
+import org.apache.commons.math3.random.RandomGenerator;
 import org.cmg.ml.sam.sim.util.WeightedLinkedList;
 import org.cmg.ml.sam.sim.util.WeightedStructure;
 
@@ -35,7 +36,7 @@ public class AgentBasedModel<S> implements ModelI {
 	}
 
 	@Override
-	public WeightedStructure<Activity> getActivities() {
+	public WeightedStructure<Activity> getActivities( RandomGenerator r ) {
 		WeightedStructure<Activity> toReturn = new WeightedLinkedList<Activity>();
 		for (Agent<S> agent : agents) {
 			WeightedStructure<Activity> local = agent.getActivities(data);

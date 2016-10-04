@@ -136,7 +136,7 @@ public abstract class CarmaSystem implements ModelI {
 	 * @see org.cmg.ml.sam.sim.ModelI#getActions()
 	 */
 	@Override
-	public WeightedStructure<Activity> getActivities() {
+	public WeightedStructure<Activity> getActivities( RandomGenerator r ) {
 		WeightedStructure<Activity> toReturn = new ComposedWeightedStructure<Activity>();
 		for (CarmaComponent caspaComponent : collective) {
 			toReturn = toReturn.add( caspaComponent.getActivities( this ) );
