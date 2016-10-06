@@ -1,82 +1,67 @@
 package eu.quanticol.carma.core.utils
 
-import com.google.inject.Inject
-import java.util.HashSet
-import static extension org.eclipse.xtext.EcoreUtil2.*
-import java.util.ArrayList
-import eu.quanticol.carma.core.carma.ProcessComposition
-import eu.quanticol.carma.core.carma.ParallelComposition
-import eu.quanticol.carma.core.carma.ProcessReference
-import eu.quanticol.carma.core.carma.ProcessExpressionReference
-import org.eclipse.emf.ecore.EObject
-import eu.quanticol.carma.core.carma.Model
-import eu.quanticol.carma.core.carma.FunctionDefinition
-import eu.quanticol.carma.core.carma.RecordDefinition
-import eu.quanticol.carma.core.carma.Processes
-import eu.quanticol.carma.core.carma.ConstantDefinition
-import eu.quanticol.carma.core.carma.ComponentDefinition
-import eu.quanticol.carma.core.carma.MeasureDefinition
-import eu.quanticol.carma.core.carma.IntegerType
-import eu.quanticol.carma.core.carma.RealType
-import eu.quanticol.carma.core.carma.BooleanType
-import eu.quanticol.carma.core.carma.CustomType
-import eu.quanticol.carma.core.carma.EnumDefinition
-import eu.quanticol.carma.core.carma.ReferenceableElement
-import eu.quanticol.carma.core.carma.Variable
-import eu.quanticol.carma.core.carma.UntypedVariable
-import eu.quanticol.carma.core.carma.AttributeDeclaration
-import eu.quanticol.carma.core.carma.EnumCase
-import eu.quanticol.carma.core.carma.ProcessType
-import eu.quanticol.carma.core.carma.ValueType
-import eu.quanticol.carma.core.carma.ReferenceableType
-import eu.quanticol.carma.core.carma.Action
-import eu.quanticol.carma.core.carma.OutputAction
 import eu.quanticol.carma.core.carma.Activity
-import eu.quanticol.carma.core.carma.Element
-import eu.quanticol.carma.core.carma.SystemDefinition
-import eu.quanticol.carma.core.carma.StoreBlock
-import org.eclipse.xtext.scoping.Scopes
-import org.eclipse.xtext.scoping.IScope
-import org.eclipse.emf.common.util.EList
-import java.util.Set
-import java.util.LinkedList
-import eu.quanticol.carma.core.typing.CarmaType
-import eu.quanticol.carma.core.carma.Update
-import eu.quanticol.carma.core.carma.Expression
-import eu.quanticol.carma.core.carma.Reference
-import eu.quanticol.carma.core.carma.MyContext
-import eu.quanticol.carma.core.carma.GlobalContext
-import eu.quanticol.carma.core.carma.SenderContext
-import eu.quanticol.carma.core.carma.ReceiverContext
-import eu.quanticol.carma.core.carma.ProcessState
 import eu.quanticol.carma.core.carma.AssignmentCommand
-import eu.quanticol.carma.core.carma.ReturnCommand
-import eu.quanticol.carma.core.carma.IfThenElseCommand
-import eu.quanticol.carma.core.carma.ForCommand
-import eu.quanticol.carma.core.carma.BlockCommand
-import eu.quanticol.carma.core.carma.FunctionCommand
-import eu.quanticol.carma.core.carma.IterationVariable
-import java.nio.channels.SeekableByteChannel
-import eu.quanticol.carma.core.carma.SetType
-import eu.quanticol.carma.core.carma.ListType
-import eu.quanticol.carma.core.carma.LocationVariable
-import eu.quanticol.carma.core.carma.UpdateAssignment
-import eu.quanticol.carma.core.carma.UpdateCommand
-import eu.quanticol.carma.core.carma.UpdateCollectionAdd
-import eu.quanticol.carma.core.carma.VariableDeclarationCommand
-import eu.quanticol.carma.core.carma.LabelDefinition
+import eu.quanticol.carma.core.carma.AttributeDeclaration
 import eu.quanticol.carma.core.carma.AttributeReference
-import eu.quanticol.carma.core.carma.StoreAttribute
-import com.sun.xml.internal.bind.v2.schemagen.xmlschema.LocalAttribute
-import eu.quanticol.carma.core.carma.LocationType
-import eu.quanticol.carma.core.carma.SpaceDefinition
-import eu.quanticol.carma.core.carma.LocationFeature
-import eu.quanticol.carma.core.carma.LocAttribute
-import eu.quanticol.carma.core.carma.LoopingVariable
+import eu.quanticol.carma.core.carma.BlockCommand
+import eu.quanticol.carma.core.carma.BooleanType
+import eu.quanticol.carma.core.carma.ComponentDefinition
+import eu.quanticol.carma.core.carma.ConstantDefinition
+import eu.quanticol.carma.core.carma.CustomType
+import eu.quanticol.carma.core.carma.EnumCase
+import eu.quanticol.carma.core.carma.EnumDefinition
+import eu.quanticol.carma.core.carma.Expression
+import eu.quanticol.carma.core.carma.ForCommand
 import eu.quanticol.carma.core.carma.ForEach
-import eu.quanticol.carma.core.carma.NodePattern
+import eu.quanticol.carma.core.carma.FunctionCommand
+import eu.quanticol.carma.core.carma.FunctionDefinition
+import eu.quanticol.carma.core.carma.GlobalContext
+import eu.quanticol.carma.core.carma.IfThenElseCommand
+import eu.quanticol.carma.core.carma.IntegerType
+import eu.quanticol.carma.core.carma.IterationVariable
+import eu.quanticol.carma.core.carma.LabelDefinition
+import eu.quanticol.carma.core.carma.ListType
+import eu.quanticol.carma.core.carma.LocAttribute
+import eu.quanticol.carma.core.carma.LocationFeature
+import eu.quanticol.carma.core.carma.LocationType
+import eu.quanticol.carma.core.carma.LocationVariable
+import eu.quanticol.carma.core.carma.LoopingVariable
+import eu.quanticol.carma.core.carma.MeasureDefinition
+import eu.quanticol.carma.core.carma.Model
+import eu.quanticol.carma.core.carma.MyContext
 import eu.quanticol.carma.core.carma.NamedNode
+import eu.quanticol.carma.core.carma.NodePattern
+import eu.quanticol.carma.core.carma.OutputAction
+import eu.quanticol.carma.core.carma.ProcessState
+import eu.quanticol.carma.core.carma.ProcessType
+import eu.quanticol.carma.core.carma.Processes
+import eu.quanticol.carma.core.carma.RealType
+import eu.quanticol.carma.core.carma.ReceiverContext
+import eu.quanticol.carma.core.carma.RecordDefinition
+import eu.quanticol.carma.core.carma.Reference
+import eu.quanticol.carma.core.carma.ReferenceableElement
+import eu.quanticol.carma.core.carma.ReferenceableType
+import eu.quanticol.carma.core.carma.ReturnCommand
+import eu.quanticol.carma.core.carma.SenderContext
+import eu.quanticol.carma.core.carma.SetType
+import eu.quanticol.carma.core.carma.SpaceDefinition
+import eu.quanticol.carma.core.carma.StoreAttribute
+import eu.quanticol.carma.core.carma.SystemDefinition
 import eu.quanticol.carma.core.carma.UniverseElement
+import eu.quanticol.carma.core.carma.UntypedVariable
+import eu.quanticol.carma.core.carma.Update
+import eu.quanticol.carma.core.carma.UpdateAssignment
+import eu.quanticol.carma.core.carma.UpdateCollectionAdd
+import eu.quanticol.carma.core.carma.UpdateCommand
+import eu.quanticol.carma.core.carma.ValueType
+import eu.quanticol.carma.core.carma.Variable
+import eu.quanticol.carma.core.carma.VariableDeclarationCommand
+import java.util.LinkedList
+import org.eclipse.emf.common.util.EList
+import org.eclipse.emf.ecore.EObject
+
+import static extension org.eclipse.xtext.EcoreUtil2.*
 
 class Util {
 
@@ -303,7 +288,7 @@ class Util {
 	def attributeName( AttributeReference r ) {
 		switch r {
 			StoreAttribute: r.reference.name
-			LocalAttribute: "loc"
+			LocAttribute: "loc"
 		}
 	}
 
@@ -521,7 +506,7 @@ class Util {
 		} else {
 			e.getAllContentsOfType(typeof(SenderContext)).map[
 				it.attribute
-			].filter(typeof(LocalAttribute)).size > 0
+			].filter(typeof(LocAttribute)).size > 0
 		}
 	}
 	
@@ -533,7 +518,7 @@ class Util {
 		} else {
 			e.getAllContentsOfType(typeof(ReceiverContext)).map[
 				it.attribute
-			].filter(typeof(LocalAttribute)).size > 0
+			].filter(typeof(LocAttribute)).size > 0
 		}
 	}
 	
@@ -545,7 +530,7 @@ class Util {
 		} else {
 			e.getAllContentsOfType(typeof(MyContext)).map[
 				it.attribute
-			].filter(typeof(LocalAttribute)).size > 0
+			].filter(typeof(LocAttribute)).size > 0
 		}
 	}
 	

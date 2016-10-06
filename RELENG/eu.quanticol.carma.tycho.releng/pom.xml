@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+
+
+	<parent>
+		<relativePath>../../RELENG/eu.quanticol.carma.tycho.parent/pom.xml</relativePath>
+		<groupId>eu.quanticol.carma</groupId>
+		<artifactId>eu.quanticol.carma.tycho.root</artifactId>
+		<version>1.4.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>eu.quanticol.carma.tycho.releng</artifactId>
+	<packaging>pom</packaging>
+	
+	<modules>
+		<module>../../DEVTOOLS/eu.quanticol.carma.targetplatform</module>
+	
+		<module>../../SIMULATION/eu.quanticol.ms</module>
+		<module>../../SIMULATION/eu.quanticol.carma.simulator</module>
+		<module>../../XTEXT/eu.quanticol.carma.core</module>
+		<module>../../XTEXT/eu.quanticol.carma.core.ui</module>
+
+		<module>../../XTEXT/eu.quanticol.carma.core.sdk</module>
+
+		<module>../../RELENG/eu.quanticol.carma.repository</module> 
+		
+	</modules>
+</project>

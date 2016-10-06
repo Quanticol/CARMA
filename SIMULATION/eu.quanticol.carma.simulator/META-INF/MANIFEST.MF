@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Carma
 Bundle-SymbolicName: eu.quanticol.carma.simulator;singleton:=true
-Bundle-Version: 1.0.8.0
+Bundle-Version: 1.4.0.qualifier
 Export-Package: eu.quanticol.carma.simulator,
  eu.quanticol.carma.simulator.space
 Require-Bundle: eu.quanticol.ms;bundle-version="1.0.0"
