@@ -5,10 +5,14 @@ package eu.quanticol.carma.core.ui.views.models;
 
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.function.Function;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 
+import com.google.inject.Inject;
+
+import eu.quanticol.carma.core.ui.CarmaUiUtil;
 import eu.quanticol.carma.core.ui.data.SimulationExperiment;
 import eu.quanticol.carma.core.ui.views.SimulationTrace;
 import eu.quanticol.carma.simulator.CarmaModel;
@@ -19,8 +23,8 @@ import eu.quanticol.carma.simulator.CarmaModel;
  */
 public class WorkspaceSimulationSuite {
 
-	private LinkedList<ProjectSimulationSuite> suites;
-
+	private LinkedList<ProjectSimulationSuite> suites;	
+	
 	public WorkspaceSimulationSuite( LinkedList<ProjectSimulationSuite> suites ) {
 		this.suites = suites;
 	}
@@ -49,6 +53,7 @@ public class WorkspaceSimulationSuite {
 		return suites.removeIf( (ProjectSimulationSuite ps) -> ps.getProject().equals(project));
 	}
 
+	
 	public void doRefreshResource(IProject p, IResource r, CarmaModel m) {
 		for (ProjectSimulationSuite suite : suites) {
 			if (suite.getProject().equals(p)) {
@@ -66,6 +71,14 @@ public class WorkspaceSimulationSuite {
 			if (suite.getProject().equals(project)) {
 				found = true;
 				suite.add(experiment);
+			}
+		}
+	}
+
+	public void doRefreshProcessResources(IProject iProject, Function<IResource, CarmaModel> loader ) {
+		for (ProjectSimulationSuite suite : suites) {
+			if (suite.getProject().equals(iProject)) {
+				suite.refreshResources( loader );
 			}
 		}
 	}

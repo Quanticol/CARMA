@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.LinkedList;
+import java.util.function.Function;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -70,6 +71,12 @@ public class ProjectSimulationSuite {
 	public void refreshResource(IResource r, CarmaModel m) {
 		for (SimulationSuiteElement simulationSuiteElement : experiments) {
 			simulationSuiteElement.refresh( r , m );
+		}
+	}
+
+	public void refreshResources(Function<IResource, CarmaModel> loader) {
+		for (SimulationSuiteElement simulationSuiteElement : experiments) {
+			simulationSuiteElement.refresh( loader );
 		}
 	}
 	

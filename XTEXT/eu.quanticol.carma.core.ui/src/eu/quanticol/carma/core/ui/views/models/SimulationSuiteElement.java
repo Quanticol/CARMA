@@ -5,6 +5,7 @@ package eu.quanticol.carma.core.ui.views.models;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Function;
 
 import org.eclipse.core.resources.IResource;
 
@@ -70,6 +71,10 @@ public class SimulationSuiteElement {
 	
 	public boolean check() {
 		return experiment.check();
+	}
+
+	public void refresh(Function<IResource, CarmaModel> loader) {
+		experiment.setCarmaModel(loader.apply(experiment.getResource()));
 	}
 
 }

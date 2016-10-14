@@ -6,6 +6,7 @@ package eu.quanticol.carma.core.ui.views;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 import org.cmg.ml.sam.sim.sampling.SimulationTimeSeries;
@@ -120,7 +121,9 @@ public class SimulationView extends ViewPart {
 
 	protected void doHandleChangeEvent(IResourceChangeEvent event) {
 		if (event.getType()==IResourceChangeEvent.POST_CHANGE) {
+			System.out.println("HERE!");
 			IResourceDelta delta = event.getDelta();
+			HashSet<IProject> toRefresh = new HashSet<>();
 			IResourceDeltaVisitor visitor = new IResourceDeltaVisitor() {
 				
 				@Override
@@ -193,17 +196,19 @@ public class SimulationView extends ViewPart {
 							}
 						} else {
 							String ext = delta.getResource().getFileExtension();
-							if ((ext != null)&&(ext.equals("carma"))) {
+							System.out.println(delta.getResource().getName());
+							if ((ext != null)&&((ext.equals("carma")||ext.equals("class")))) {
 								IResource r = delta.getResource();
 								IProject p = r.getProject();
-								Display.getDefault().asyncExec(new Runnable() 
-								{ 
-									public void run() {
-										doRefreshResource(p, r);
-									}
-									
-								});
-								return false;
+//								Display.getDefault().asyncExec(new Runnable() 
+//								{ 
+//									public void run() {
+//										doRefreshResource(p, r);
+//									}
+//									
+//								});
+//								return false;
+								toRefresh.add(p);
 							}
 						}
 					}
@@ -212,6 +217,9 @@ public class SimulationView extends ViewPart {
 			};
 			try {
 				delta.accept(visitor);
+				for (IProject iProject : toRefresh) {
+					workSpaceSimulationSuite.doRefreshProcessResources( iProject , r -> util.loadCarmaModel(iProject, r));
+				}
 			} catch (CoreException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -326,15 +334,17 @@ public class SimulationView extends ViewPart {
 	protected void enableDisableActions() {
 		TreePath[] paths = suiteViewer.getStructuredSelection().getPaths();
 		saveAllLaboratory.setEnabled(workSpaceSimulationSuite.size()>0);
-		addExperiment.setEnabled(workSpaceSimulationSuite.size()>0);
+		//addExperiment.setEnabled(workSpaceSimulationSuite.size()>0);
 		if (paths.length == 0) {
-			addExperiment.setEnabled(workSpaceSimulationSuite.size()>0);
+			addExperiment.setEnabled(false);
+			//addExperiment.setEnabled(workSpaceSimulationSuite.size()>0);
 			removeExperiment.setEnabled(false);
 			editExperiment.setEnabled(false);
 			runExperiment.setEnabled(false);
 			copyExperiment.setEnabled(false);
 			saveLaboratory.setEnabled(false);
 		} else {
+			addExperiment.setEnabled(true);
 			Object element = paths[0].getLastSegment();
 			boolean experimentSelected = (element instanceof ExperimentDetail)||(element instanceof SimulationSuiteElement);
 			removeExperiment.setEnabled(experimentSelected);
