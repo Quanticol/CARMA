@@ -42,21 +42,31 @@ class Test_NewTaxis {
 	   	}
 	   }
 	   connections {
-	      [?x,?y]: x<width-1 <-> [x+1,y] : w=1.0;
-	      [?x,?y]: y<height-1 <-> [x,y+1]: w=1.0;
-	      [?x,?y]: x<width-1 && y<height-1 <-> [x+1,x+1]: w=1.0;
+	   	  for r from 0 to width-1 {
+			 for c from 0 to height-1 {
+			 	[r,c] <-> [r+1,c]{ w = 1 };
+			 	[r,c] <-> [r,c+1]{ w = 1 };	
+			 }  	  	
+	   	  }
 	   }
 	   areas {
 	      centre {
-	      	[?x,?y]: (x==width/2)&&(y==height/2);
+	      	[width/2,height/2];
 	      }
 	      border {
-	       [?x,?y]: x==0||x==width-1||y==0||y==height-1;
+		   	  for r from 0 to width {
+			 	[r,0];
+				[r,height-1];
+		   	  }
+		   	  for c from 0 to height {
+		   	  	[0,c];
+		   	  	[width-1,c];
+		   	  }
 	      }
 		} 
 	}
 	
-	fun real Mrate( node l1, node l2){
+	fun real Mrate( location l1, location l2){
 		real t := real( abs(l1.x - l2.x) + abs(l1.y - l2.y) );
 		real r := 0.0;
 		if(t > 1.0){
@@ -67,7 +77,7 @@ class Test_NewTaxis {
 		return r;
 	}
 	
-	fun real Arate(real time, node l1){
+	fun real Arate(real time, location l1){
 		real r := 0.0;
 		if (l1.centre) {
 			if(time < SWITCH_TIME)
@@ -95,7 +105,7 @@ class Test_NewTaxis {
 		return x_;
 	}
 	
-	component User(node userDestination){   
+	component User(location userDestination){   
 		store{
 			dest = userDestination;
 		}
@@ -109,7 +119,7 @@ class Test_NewTaxis {
 	
 	component Taxi( ){
 		store{
-			node dest = none;
+			location dest = none;
 			free = true;
 		}
 	    behaviour{

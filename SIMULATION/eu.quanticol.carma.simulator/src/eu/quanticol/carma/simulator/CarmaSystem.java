@@ -22,6 +22,22 @@ import eu.quanticol.carma.simulator.space.SpaceModel;
  */
 public abstract class CarmaSystem implements ModelI {
 	
+	
+	private static SpaceModel currentSpaceModel = new SpaceModel();
+	
+	public static void setCurrentSpaceModel( SpaceModel model ) {
+		if (model != null) {
+			currentSpaceModel = model;
+		} else {
+			currentSpaceModel = new SpaceModel();
+		}
+	}
+	
+	public static SpaceModel getCurrentSpaceModel() {
+		return currentSpaceModel;
+	}
+	
+	
 	public static final String LOC_ATTRIBUTE_NAME = "loc";
 	
 	protected LinkedList<CarmaComponent> collective;
@@ -38,6 +54,7 @@ public abstract class CarmaSystem implements ModelI {
 	}
 	
 	public CarmaSystem( SpaceModel space ) {
+		setCurrentSpaceModel(space);
 		this.global = new CarmaStore();
 		this.collective = new LinkedList<CarmaComponent>();
 		this.now = 0.0;

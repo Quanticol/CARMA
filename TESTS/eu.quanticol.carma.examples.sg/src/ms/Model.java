@@ -767,7 +767,7 @@ public class Model extends CarmaModel {
 			) {
 				
 				@Override
-				protected CarmaStoreUpdate getUpdate(final Object value,double now) {
+				protected CarmaStoreUpdate getUpdate(CarmaSystem sys, final Object value,double now) {
 					
 					LinkedList<Object> message = (LinkedList<Object>) value;
 					final __RECORD__LSet __VARIABLE__powers = (__RECORD__LSet) message.get(0);
@@ -791,7 +791,7 @@ public class Model extends CarmaModel {
 				}	
 				
 				@Override
-				protected CarmaPredicate getPredicate(CarmaStore myStore, Object value) {
+				protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore myStore, Object value) {
 					return CarmaPredicate.TRUE;
 					
 				}
@@ -806,13 +806,13 @@ public class Model extends CarmaModel {
 			) {
 				
 				@Override
-				protected Object getValue(CarmaStore store,double now) {
+				protected Object getValue(CarmaSystem sys, CarmaStore store,double now) {
 					LinkedList<Object> toReturn = new LinkedList<Object>();
 					return toReturn;
 				}
 				
 				@Override
-				protected CarmaStoreUpdate getUpdate(double now) {
+				protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 					return new CarmaStoreUpdate() {
 						
 						//@Override
@@ -823,7 +823,7 @@ public class Model extends CarmaModel {
 				}
 				
 				@Override
-				protected CarmaPredicate getPredicate(final CarmaStore myStore) {
+				protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
 					return CarmaPredicate.FALSE;
 					
 				}
@@ -848,13 +848,13 @@ public class Model extends CarmaModel {
 				) {
 					
 					@Override
-					protected Object getValue(CarmaStore store,double now) {
+					protected Object getValue(CarmaSystem sys, CarmaStore store,double now) {
 						LinkedList<Object> toReturn = new LinkedList<Object>();
 						return toReturn;
 					}
 					
 					@Override
-					protected CarmaStoreUpdate getUpdate(double now) {
+					protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 						return new CarmaStoreUpdate() {					
 							//@Override
 							public void update(RandomGenerator r, CarmaStore store) {
@@ -863,7 +863,7 @@ public class Model extends CarmaModel {
 					}
 					
 					@Override
-					protected CarmaPredicate getPredicate(final CarmaStore myStore) {
+					protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
 						return CarmaPredicate.FALSE;
 						
 					}
@@ -889,13 +889,13 @@ public class Model extends CarmaModel {
 				) {
 					
 					@Override
-					protected Object getValue(CarmaStore store,double now) {
+					protected Object getValue(CarmaSystem sys, CarmaStore store,double now) {
 						LinkedList<Object> toReturn = new LinkedList<Object>();
 						return toReturn;
 					}
 					
 					@Override
-					protected CarmaStoreUpdate getUpdate(double now) {
+					protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 						return new CarmaStoreUpdate() {					
 							//@Override
 							public void update(RandomGenerator r, CarmaStore store) {
@@ -904,7 +904,7 @@ public class Model extends CarmaModel {
 					}
 					
 					@Override
-					protected CarmaPredicate getPredicate(final CarmaStore myStore) {
+					protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
 						return CarmaPredicate.FALSE;
 						
 					}
@@ -930,13 +930,13 @@ public class Model extends CarmaModel {
 				) {
 					
 					@Override
-					protected Object getValue(CarmaStore store,double now) {
+					protected Object getValue(CarmaSystem sys, CarmaStore store,double now) {
 						LinkedList<Object> toReturn = new LinkedList<Object>();
 						return toReturn;
 					}
 					
 					@Override
-					protected CarmaStoreUpdate getUpdate(double now) {
+					protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 						return new CarmaStoreUpdate() {
 							
 							//@Override
@@ -952,7 +952,7 @@ public class Model extends CarmaModel {
 					}
 					
 					@Override
-					protected CarmaPredicate getPredicate(final CarmaStore myStore) {
+					protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
 						return CarmaPredicate.FALSE;
 						
 					}
@@ -978,13 +978,13 @@ public class Model extends CarmaModel {
 				) {
 					
 					@Override
-					protected Object getValue(CarmaStore store,double now) {
+					protected Object getValue(CarmaSystem sys, CarmaStore store,double now) {
 						LinkedList<Object> toReturn = new LinkedList<Object>();
 						return toReturn;
 					}
 					
 					@Override
-					protected CarmaStoreUpdate getUpdate(double now) {
+					protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 						return new CarmaStoreUpdate() {
 							
 							//@Override
@@ -1000,7 +1000,7 @@ public class Model extends CarmaModel {
 					}
 					
 					@Override
-					protected CarmaPredicate getPredicate(final CarmaStore myStore) {
+					protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
 						return CarmaPredicate.FALSE;
 						
 					}
@@ -1027,13 +1027,13 @@ public class Model extends CarmaModel {
 				) {
 					
 					@Override
-					protected Object getValue(CarmaStore store,double now) {
+					protected Object getValue(CarmaSystem sys, CarmaStore store,double now) {
 						LinkedList<Object> toReturn = new LinkedList<Object>();
 						return toReturn;
 					}
 					
 					@Override
-					protected CarmaStoreUpdate getUpdate(double now) {
+					protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 						return new CarmaStoreUpdate() {					
 							//@Override
 							public void update(RandomGenerator r, CarmaStore store) {
@@ -1042,7 +1042,7 @@ public class Model extends CarmaModel {
 					}
 					
 					@Override
-					protected CarmaPredicate getPredicate(final CarmaStore myStore) {
+					protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
 						return CarmaPredicate.FALSE;
 						
 					}
@@ -1057,7 +1057,7 @@ public class Model extends CarmaModel {
 			) {
 				
 				@Override
-				protected Object getValue(CarmaStore store,double now) {
+				protected Object getValue(CarmaSystem sys, CarmaStore store,double now) {
 					LinkedList<Object> toReturn = new LinkedList<Object>();
 					final Integer __MY__i = store.get( "i" , Integer.class );
 					final Double __MY__p = store.get( "p" , Double.class );
@@ -1067,7 +1067,7 @@ public class Model extends CarmaModel {
 				}
 				
 				@Override
-				protected CarmaStoreUpdate getUpdate(double now) {
+				protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 					return new CarmaStoreUpdate() {					
 						//@Override
 						public void update(RandomGenerator r, CarmaStore store) {
@@ -1076,7 +1076,7 @@ public class Model extends CarmaModel {
 				}
 				
 				@Override
-				protected CarmaPredicate getPredicate(final CarmaStore myStore) {
+				protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
 					return CarmaPredicate.TRUE;
 					
 				}
@@ -1125,7 +1125,7 @@ public class Model extends CarmaModel {
 			) {
 				
 				@Override
-				protected CarmaStoreUpdate getUpdate(final Object value, double now) {
+				protected CarmaStoreUpdate getUpdate(CarmaSystem sys, final Object value, double now) {
 					
 					LinkedList<Object> message = (LinkedList<Object>) value;
 					final Integer __VARIABLE__i = (Integer) message.get(0);
@@ -1148,7 +1148,7 @@ public class Model extends CarmaModel {
 				}	
 				
 				@Override
-				protected CarmaPredicate getPredicate(CarmaStore myStore, Object value) {
+				protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore myStore, Object value) {
 					return CarmaPredicate.TRUE;
 					
 				}
@@ -1173,13 +1173,13 @@ public class Model extends CarmaModel {
 				) {
 					
 					@Override
-					protected Object getValue(CarmaStore store,double now) {
+					protected Object getValue(CarmaSystem sys, CarmaStore store,double now) {
 						LinkedList<Object> toReturn = new LinkedList<Object>();
 						return toReturn;
 					}
 					
 					@Override
-					protected CarmaStoreUpdate getUpdate(double now) {
+					protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 						return new CarmaStoreUpdate() {					
 							//@Override
 							public void update(RandomGenerator r, CarmaStore store) {
@@ -1188,7 +1188,7 @@ public class Model extends CarmaModel {
 					}
 					
 					@Override
-					protected CarmaPredicate getPredicate(final CarmaStore myStore) {
+					protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
 						return CarmaPredicate.FALSE;
 						
 					}
@@ -1213,13 +1213,13 @@ public class Model extends CarmaModel {
 				) {
 					
 					@Override
-					protected Object getValue(CarmaStore store,double now) {
+					protected Object getValue(CarmaSystem sys, CarmaStore store,double now) {
 						LinkedList<Object> toReturn = new LinkedList<Object>();
 						return toReturn;
 					}
 					
 					@Override
-					protected CarmaStoreUpdate getUpdate(double now) {
+					protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 						return new CarmaStoreUpdate() {
 							
 							//@Override
@@ -1234,7 +1234,7 @@ public class Model extends CarmaModel {
 					}
 					
 					@Override
-					protected CarmaPredicate getPredicate(final CarmaStore myStore) {
+					protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
 						return CarmaPredicate.FALSE;
 						
 					}
@@ -1249,13 +1249,13 @@ public class Model extends CarmaModel {
 			) {
 				
 				@Override
-				protected Object getValue(CarmaStore store,double now) {
+				protected Object getValue(CarmaSystem sys, CarmaStore store,double now) {
 					LinkedList<Object> toReturn = new LinkedList<Object>();
 					return toReturn;
 				}
 				
 				@Override
-				protected CarmaStoreUpdate getUpdate(double now) {
+				protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 					return new CarmaStoreUpdate() {
 						
 						//@Override
@@ -1271,7 +1271,7 @@ public class Model extends CarmaModel {
 				}
 				
 				@Override
-				protected CarmaPredicate getPredicate(final CarmaStore myStore) {
+				protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
 					return CarmaPredicate.FALSE;
 					
 				}
@@ -1295,13 +1295,13 @@ public class Model extends CarmaModel {
 				) {
 					
 					@Override
-					protected Object getValue(CarmaStore store,double now) {
+					protected Object getValue(CarmaSystem sys, CarmaStore store,double now) {
 						LinkedList<Object> toReturn = new LinkedList<Object>();
 						return toReturn;
 					}
 					
 					@Override
-					protected CarmaStoreUpdate getUpdate(double now) {
+					protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 						return new CarmaStoreUpdate() {
 							
 							//@Override
@@ -1315,7 +1315,7 @@ public class Model extends CarmaModel {
 					}
 					
 					@Override
-					protected CarmaPredicate getPredicate(final CarmaStore myStore) {
+					protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
 						return CarmaPredicate.FALSE;
 						
 					}
@@ -1340,13 +1340,13 @@ public class Model extends CarmaModel {
 				) {
 					
 					@Override
-					protected Object getValue(CarmaStore store,double now) {
+					protected Object getValue(CarmaSystem sys, CarmaStore store,double now) {
 						LinkedList<Object> toReturn = new LinkedList<Object>();
 						return toReturn;
 					}
 					
 					@Override
-					protected CarmaStoreUpdate getUpdate(double now) {
+					protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 						return new CarmaStoreUpdate() {					
 							//@Override
 							public void update(RandomGenerator r, CarmaStore store) {
@@ -1355,7 +1355,7 @@ public class Model extends CarmaModel {
 					}
 					
 					@Override
-					protected CarmaPredicate getPredicate(final CarmaStore myStore) {
+					protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
 						return CarmaPredicate.FALSE;
 						
 					}
@@ -1370,13 +1370,13 @@ public class Model extends CarmaModel {
 			) {
 				
 				@Override
-				protected Object getValue(CarmaStore store,double now) {
+				protected Object getValue(CarmaSystem sys, CarmaStore store,double now) {
 					LinkedList<Object> toReturn = new LinkedList<Object>();
 					return toReturn;
 				}
 				
 				@Override
-				protected CarmaStoreUpdate getUpdate(double now) {
+				protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 					return new CarmaStoreUpdate() {
 						
 						//@Override
@@ -1392,7 +1392,7 @@ public class Model extends CarmaModel {
 				}
 				
 				@Override
-				protected CarmaPredicate getPredicate(final CarmaStore myStore) {
+				protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
 					return CarmaPredicate.FALSE;
 					
 				}
@@ -1416,7 +1416,7 @@ public class Model extends CarmaModel {
 				) {
 					
 					@Override
-					protected Object getValue(CarmaStore store,double now) {
+					protected Object getValue(CarmaSystem sys, CarmaStore store,double now) {
 						LinkedList<Object> toReturn = new LinkedList<Object>();
 						final __RECORD__LSet __ATTR__newpowers = store.get( "newpowers" , __RECORD__LSet.class );
 						final __RECORD__LSet __ATTR__newpayoffs = store.get( "newpayoffs" , __RECORD__LSet.class );
@@ -1426,7 +1426,7 @@ public class Model extends CarmaModel {
 					}
 					
 					@Override
-					protected CarmaStoreUpdate getUpdate(double now) {
+					protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 						return new CarmaStoreUpdate() {
 							
 							//@Override
@@ -1458,7 +1458,7 @@ public class Model extends CarmaModel {
 					}
 					
 					@Override
-					protected CarmaPredicate getPredicate(final CarmaStore myStore) {
+					protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
 						return CarmaPredicate.TRUE;
 						
 					}
@@ -1483,7 +1483,7 @@ public class Model extends CarmaModel {
 				) {
 					
 					@Override
-					protected Object getValue(CarmaStore store,double now) {
+					protected Object getValue(CarmaSystem sys, CarmaStore store,double now) {
 						LinkedList<Object> toReturn = new LinkedList<Object>();
 						final __RECORD__LSet __ATTR__powers = store.get( "powers" , __RECORD__LSet.class );
 						final __RECORD__LSet __ATTR__payoffs = store.get( "payoffs" , __RECORD__LSet.class );
@@ -1493,7 +1493,7 @@ public class Model extends CarmaModel {
 					}
 					
 					@Override
-					protected CarmaStoreUpdate getUpdate(double now) {
+					protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 						return new CarmaStoreUpdate() {					
 							//@Override
 							public void update(RandomGenerator r, CarmaStore store) {
@@ -1502,7 +1502,7 @@ public class Model extends CarmaModel {
 					}
 					
 					@Override
-					protected CarmaPredicate getPredicate(final CarmaStore myStore) {
+					protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
 						return CarmaPredicate.TRUE;
 						
 					}

@@ -255,12 +255,12 @@ public class SmartTaxisDefinitions {
 		CarmaOutput callAction = new CarmaOutput( CALL , false ) {
 			
 			@Override
-			protected Object getValue(CarmaStore store, double now) {
+			protected Object getValue(CarmaSystem sys, CarmaStore store, double now) {
 				return store.get(LOC_ATTRIBUTE, LOC_ATTRIBUTE_TYPE);
 			}
 			
 			@Override
-			protected CarmaStoreUpdate getUpdate(double now) {				
+			protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {				
 				return new CarmaStoreUpdate() {
 					
 					@Override
@@ -271,7 +271,7 @@ public class SmartTaxisDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(final CarmaStore userStore) {
+			protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore userStore) {
 				return CarmaPredicate.TRUE;
 //				return new CaspaPredicate() {
 //
@@ -289,12 +289,12 @@ public class SmartTaxisDefinitions {
 		CarmaOutput takeAction = new CarmaOutput( TAKE , false ) {
 			
 			@Override
-			protected Object getValue(CarmaStore store, double now) {
+			protected Object getValue(CarmaSystem sys, CarmaStore store, double now) {
 				return store.get(DEST_ATTRIBUTE, DEST_ATTRIBUTE_TYPE);
 			}
 			
 			@Override
-			protected CarmaStoreUpdate getUpdate(double now) {				
+			protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {				
 				return new CarmaStoreUpdate() {
 					
 					@Override
@@ -305,7 +305,7 @@ public class SmartTaxisDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(final CarmaStore userStore) {
+			protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore userStore) {
 				
 				return new CarmaPredicate() {
 
@@ -336,12 +336,12 @@ public class SmartTaxisDefinitions {
 		CarmaOutput arrive = new CarmaOutput(ARRIVE , true) {
 			
 			@Override
-			protected Object getValue(CarmaStore store, double now) {
+			protected Object getValue(CarmaSystem sys, CarmaStore store, double now) {
 				return new Object();
 			}
 			
 			@Override
-			protected CarmaStoreUpdate getUpdate(double now) {
+			protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 				return new CarmaStoreUpdate() {
 					
 					@Override
@@ -351,7 +351,7 @@ public class SmartTaxisDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store) {
+			protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore store) {
 				return CarmaPredicate.FALSE;
 			}
 		};
@@ -370,7 +370,7 @@ public class SmartTaxisDefinitions {
 		CarmaInput callAction = new CarmaInput(CALL,true) {
 			
 			@Override
-			protected CarmaStoreUpdate getUpdate(final Object value, double now) {
+			protected CarmaStoreUpdate getUpdate(CarmaSystem sys, final Object value, double now) {
 				if (value instanceof Integer) {
 					return new CarmaStoreUpdate() {
 						
@@ -388,7 +388,7 @@ public class SmartTaxisDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, Object value) {
+			protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore store, Object value) {
 				return CarmaPredicate.TRUE;
 			}
 		};
@@ -396,12 +396,12 @@ public class SmartTaxisDefinitions {
 		CarmaOutput ageAction = new CarmaOutput( AGE , true ) {
 			
 			@Override
-			protected Object getValue(CarmaStore store, double now) {
+			protected Object getValue(CarmaSystem sys, CarmaStore store, double now) {
 				return new Object();
 			}
 			
 			@Override
-			protected CarmaStoreUpdate getUpdate(double now) {
+			protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 				return new CarmaStoreUpdate() {
 					
 					@Override
@@ -413,7 +413,7 @@ public class SmartTaxisDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store) {
+			protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore store) {
 				return CarmaPredicate.FALSE;
 			}
 		};
@@ -421,12 +421,12 @@ public class SmartTaxisDefinitions {
 		CarmaOutput exchOutAction = new CarmaOutput( EXCH , true ) {
 			
 			@Override
-			protected Object getValue(CarmaStore store, double now) {
+			protected Object getValue(CarmaSystem sys, CarmaStore store, double now) {
 				return store.get(INFO_ATTRIBUTE, INFO_ATTRIBUTE_TYPE);
 			}
 			
 			@Override
-			protected CarmaStoreUpdate getUpdate(double now) {
+			protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 				return new CarmaStoreUpdate() {
 					
 					@Override
@@ -436,7 +436,7 @@ public class SmartTaxisDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(final CarmaStore taxiStore) {
+			protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore taxiStore) {
 				return new CarmaPredicate() {
 
 					@Override
@@ -453,7 +453,7 @@ public class SmartTaxisDefinitions {
 		CarmaInput exchInAction = new CarmaInput( EXCH , true ) {
 			
 			@Override
-			protected CarmaStoreUpdate getUpdate(final Object value, double now) {
+			protected CarmaStoreUpdate getUpdate(CarmaSystem sys, final Object value, double now) {
 					if (value instanceof InfoClass) {
 						return new CarmaStoreUpdate() {
 							
@@ -473,7 +473,7 @@ public class SmartTaxisDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, Object value) {
+			protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore store, Object value) {
 				return CarmaPredicate.TRUE;
 			}
 		};
@@ -496,12 +496,12 @@ public class SmartTaxisDefinitions {
 		CarmaInput takeAction = new CarmaInput( TAKE , false ) {
 
 			@Override
-			protected CarmaPredicate getPredicate(final CarmaStore taxiStore, Object value) {
+			protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore taxiStore, Object value) {
 				return CarmaPredicate.TRUE;
 			}
 
 			@Override
-			protected CarmaStoreUpdate getUpdate(final Object value, double now) {
+			protected CarmaStoreUpdate getUpdate(CarmaSystem sys, final Object value, double now) {
 				return new CarmaStoreUpdate() {
 					
 					@Override
@@ -519,7 +519,7 @@ public class SmartTaxisDefinitions {
 		CarmaInput callAction = new CarmaInput(CALL,false) {
 			
 			@Override
-			protected CarmaStoreUpdate getUpdate(final Object value, double now) {
+			protected CarmaStoreUpdate getUpdate(CarmaSystem sys, final Object value, double now) {
 				if (value instanceof Integer) {
 					return new CarmaStoreUpdate() {
 						
@@ -535,7 +535,7 @@ public class SmartTaxisDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(final CarmaStore taxiStore, Object value) {
+			protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore taxiStore, Object value) {
 				return new CarmaPredicate() {
 
 					@Override
@@ -580,12 +580,12 @@ public class SmartTaxisDefinitions {
 		CarmaOutput moveAction = new CarmaOutput( MOVE , true ) {
 			
 			@Override
-			protected Object getValue(CarmaStore store, double now) {
+			protected Object getValue(CarmaSystem sys, CarmaStore store, double now) {
 				return new Object();
 			}
 			
 			@Override
-			protected CarmaStoreUpdate getUpdate(double now) {
+			protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 				return new CarmaStoreUpdate() {
 					
 					@Override
@@ -600,7 +600,7 @@ public class SmartTaxisDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store) {
+			protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore store) {
 				return CarmaPredicate.FALSE;
 			}
 		};

@@ -11,6 +11,7 @@ import eu.quanticol.carma.simulator.CarmaPredicate;
 import eu.quanticol.carma.simulator.CarmaProcessAutomaton;
 import eu.quanticol.carma.simulator.CarmaStore;
 import eu.quanticol.carma.simulator.CarmaStoreUpdate;
+import eu.quanticol.carma.simulator.CarmaSystem;
 
 /**
  * @author loreti
@@ -38,13 +39,13 @@ public class SIRSDefinitions {
 		CarmaInput contactInAction = new CarmaInput( SIRS.CONTACT , true ) {
 
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, Object value) {
+			protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore store, Object value) {
 				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
-			protected CarmaStoreUpdate getUpdate(Object value, double now) {
+			protected CarmaStoreUpdate getUpdate(CarmaSystem sys, Object value, double now) {
 				// TODO Auto-generated method stub
 				return null;
 			}
@@ -54,19 +55,19 @@ public class SIRSDefinitions {
 		CarmaOutput contactOutAction = new CarmaOutput( SIRS.CONTACT , true ) {
 
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store) {
+			protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore store) {
 				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
-			protected CarmaStoreUpdate getUpdate(double now) {
+			protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
-			protected Object getValue(CarmaStore store, double now) {
+			protected Object getValue(CarmaSystem sys, CarmaStore store, double now) {
 				// TODO Auto-generated method stub
 				return null;
 			}
@@ -79,19 +80,19 @@ public class SIRSDefinitions {
 		CarmaOutput recoveryAction = new CarmaOutput( SIRS.RECOVERY , true ) {
 
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store) {
+			protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore store) {
 				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
-			protected CarmaStoreUpdate getUpdate(double now) {
+			protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
-			protected Object getValue(CarmaStore store, double now) {
+			protected Object getValue(CarmaSystem sys, CarmaStore store, double now) {
 				// TODO Auto-generated method stub
 				return null;
 			}
@@ -101,19 +102,19 @@ public class SIRSDefinitions {
 		CarmaOutput susceptibleAction = new CarmaOutput( SIRS.SUSCEPTIBLE , true ) {
 
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store) {
+			protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore store) {
 				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
-			protected CarmaStoreUpdate getUpdate(double now) {
+			protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
-			protected Object getValue(CarmaStore store, double now) {
+			protected Object getValue(CarmaSystem sys, CarmaStore store, double now) {
 				// TODO Auto-generated method stub
 				return null;
 			}
@@ -137,19 +138,19 @@ public class SIRSDefinitions {
 		CarmaOutput move = new CarmaOutput( SIRS.MOVE , true ) {
 
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store) {
+			protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore store) {
 				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
-			protected CarmaStoreUpdate getUpdate(double now) {
+			protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
-			protected Object getValue(CarmaStore store, double now) {
+			protected Object getValue(CarmaSystem sys, CarmaStore store, double now) {
 				// TODO Auto-generated method stub
 				return null;
 			}

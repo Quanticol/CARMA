@@ -27,5 +27,5 @@ public interface ModelI {
 	public WeightedStructure<Activity> getActivities( RandomGenerator r );
 
 	public void timeStep(double dt);
-
+	
 }

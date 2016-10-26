@@ -18,7 +18,6 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//SpaceDefinition/nodes"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//SpaceDefinition/edges"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//SpaceDefinition/labels"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//SpaceDefinition/features"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//UniverseElement">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//UniverseElement/type"/>
@@ -40,14 +39,23 @@
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//NamedNode"/>
     <genClasses ecoreClass="CARMA.ecore#//UnNamedNode"/>
-    <genClasses ecoreClass="CARMA.ecore#//LocationFeature">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//LocationFeature/type"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//LocationFeature/parameters"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//LocationFeature/body"/>
-    </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//LabelDefinition">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//LabelDefinition/patterns"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//LabelDefinition/features"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//LabelDefinition/nodes"/>
+    </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//AreaBodyCommand"/>
+    <genClasses ecoreClass="CARMA.ecore#//AreaElementDeclaration">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AreaElementDeclaration/node"/>
+    </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//AreaForLoop">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AreaForLoop/body"/>
+    </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//AreaBlockCommand">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AreaBlockCommand/nodes"/>
+    </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//AreaIfThenElseCommand">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AreaIfThenElseCommand/condition"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AreaIfThenElseCommand/thenBlock"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AreaIfThenElseCommand/elseBlock"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//AreaFeature">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//AreaFeature/name"/>
@@ -57,12 +65,23 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AreaDefinitionCase/pattern"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AreaDefinitionCase/guard"/>
     </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//ConnectionExpression">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ConnectionExpression/source"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ConnectionExpression/guard"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ConnectionExpression/direction"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ConnectionExpression/trg"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ConnectionExpression/edgeProperties"/>
+    <genClasses ecoreClass="CARMA.ecore#//ConnectionDeclaration">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ConnectionDeclaration/source"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ConnectionDeclaration/direction"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ConnectionDeclaration/target"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ConnectionDeclaration/edgeProperties"/>
+    </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//ConnectionForLoop">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ConnectionForLoop/body"/>
+    </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//ConnectionBodyCommand"/>
+    <genClasses ecoreClass="CARMA.ecore#//ConnectionBlockCommand">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ConnectionBlockCommand/edges"/>
+    </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//ConnectionIfThenElseCommand">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ConnectionIfThenElseCommand/condition"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ConnectionIfThenElseCommand/thenBlock"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ConnectionIfThenElseCommand/elseBlock"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//EdgeProperty">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//EdgeProperty/name"/>
@@ -324,6 +343,24 @@
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//NodeForEach">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//NodeForEach/iteration"/>
+    </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//AreaForCommand">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AreaForCommand/variable"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AreaForCommand/start"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AreaForCommand/step"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AreaForCommand/end"/>
+    </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//AreaForEach">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AreaForEach/iteration"/>
+    </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//ConnectionForCommand">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ConnectionForCommand/variable"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ConnectionForCommand/start"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ConnectionForCommand/step"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ConnectionForCommand/end"/>
+    </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//ConnectionForEach">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ConnectionForEach/iteration"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//DirectedEdge"/>
     <genClasses ecoreClass="CARMA.ecore#//UnDirectedEdge"/>

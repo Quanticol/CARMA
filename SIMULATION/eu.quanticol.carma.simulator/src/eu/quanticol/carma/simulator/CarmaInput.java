@@ -41,12 +41,12 @@ public abstract class CarmaInput implements CarmaAction {
 	/**
 	 * @return the predicate
 	 */
-	protected abstract CarmaPredicate getPredicate( CarmaStore store , Object value );
+	protected abstract CarmaPredicate getPredicate( CarmaSystem sys, CarmaStore store , Object value );
 
 	/**
 	 * @return the update
 	 */
-	protected abstract CarmaStoreUpdate getUpdate( Object value , double now );
+	protected abstract CarmaStoreUpdate getUpdate( CarmaSystem sys, Object value , double now );
 
 	protected double getReceivingProbability(CarmaSystem caspaSystem , CarmaStore receiver , CarmaStore sender , Object value ) {
 		if (broadcast) {
@@ -74,18 +74,18 @@ public abstract class CarmaInput implements CarmaAction {
 			Activity continuation ) {
 		if ((this.broadcast == broadcast) 
 			&&(this.action == action) 
-			&&(this.getPredicate(caspaComponent.store, value).satisfy(caspaSystem.now(),sender)) 
+			&&(this.getPredicate(caspaSystem, caspaComponent.store, value).satisfy(caspaSystem.now(),sender)) 
 		) {
 			Activity actionActivity = new Activity() {
 				
 				@Override
 				public boolean execute(RandomGenerator r) {
-					CarmaStoreUpdate update = getUpdate(value, caspaSystem.now);
-					if (update != null) {
-						update.update( r , caspaComponent.store );
-					}
+					CarmaStoreUpdate update = getUpdate(caspaSystem, value, caspaSystem.now);
 					if (!CarmaInput.this.broadcast) {
 						caspaSystem.unicastUpdate(r,sender, caspaComponent.store , action , value );
+					}
+					if (update != null) {
+						update.update( r , caspaComponent.store );
 					}
 					return true;
 				}

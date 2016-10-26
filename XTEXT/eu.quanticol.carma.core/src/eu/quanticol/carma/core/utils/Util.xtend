@@ -23,7 +23,6 @@ import eu.quanticol.carma.core.carma.IterationVariable
 import eu.quanticol.carma.core.carma.LabelDefinition
 import eu.quanticol.carma.core.carma.ListType
 import eu.quanticol.carma.core.carma.LocAttribute
-import eu.quanticol.carma.core.carma.LocationFeature
 import eu.quanticol.carma.core.carma.LocationType
 import eu.quanticol.carma.core.carma.LocationVariable
 import eu.quanticol.carma.core.carma.LoopingVariable
@@ -62,6 +61,16 @@ import org.eclipse.emf.common.util.EList
 import org.eclipse.emf.ecore.EObject
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
+import eu.quanticol.carma.simulator.space.SpaceModel
+import eu.quanticol.carma.core.carma.ConnectionDeclaration
+import eu.quanticol.carma.core.carma.ConnectionIfThenElseCommand
+import eu.quanticol.carma.core.carma.EdgeProperty
+import eu.quanticol.carma.core.carma.ConnectionForLoop
+import eu.quanticol.carma.core.carma.ConnectionBlockCommand
+import eu.quanticol.carma.core.carma.NodeDeclaration
+import eu.quanticol.carma.core.carma.NodeIfThenElseCommand
+import eu.quanticol.carma.core.carma.NodeForLoop
+import eu.quanticol.carma.core.carma.NodeBlockCommand
 
 class Util {
 
@@ -101,17 +110,12 @@ class Util {
 		toReturn
 	}	
 	
-	def featureName( LocationFeature f ) {
-		var space = f.getContainerOfType(typeof(SpaceDefinition))
-		'''_FEATURE_«f.name»_«space ?. name ?: "NONE"»'''
-	}
-	
 	def spaceName( SpaceDefinition s ) {
 		'''get_SPACE_«s.name»'''
 	}
 	
 	def getLabelsAndFeatures( Model m ) {
-		m.elements.filter(typeof(SpaceDefinition)).map[ it.labels+it.features+it.universe ].flatten
+		m.elements.filter(typeof(SpaceDefinition)).map[ it.labels+it.universe ].flatten
 	}
 	
 	def  getActivities( Model m , boolean broadcast ) {
@@ -672,4 +676,54 @@ class Util {
 		return sm.universe.indexOf(e)
 	}
 
+	def edgeAttributes( SpaceDefinition model ) {
+		val eProperties = model.edges.map[ it.declaredEdgeAttrbutes ].flatten
+		eProperties.filter[ x | x == eProperties.findFirst[ it.name == x.name ]]
+	}
+	
+	def dispatch declaredEdgeAttrbutes( ConnectionDeclaration c ) {
+		c.edgeProperties
+	}
+	
+	def dispatch Iterable<EdgeProperty> declaredEdgeAttrbutes( ConnectionIfThenElseCommand c ) {
+		c.thenBlock.declaredEdgeAttrbutes+c.elseBlock.declaredEdgeAttrbutes
+	}
+	
+	def dispatch Iterable<EdgeProperty> declaredEdgeAttrbutes( ConnectionForLoop c ) {
+		c.body.declaredEdgeAttrbutes
+	}
+
+	def dispatch Iterable<EdgeProperty> declaredEdgeAttrbutes( ConnectionBlockCommand c ) {
+		c.edges.map[ it.declaredEdgeAttrbutes ].flatten
+	}
+	
+	def nodeNames( SpaceDefinition model ) {
+		val nNames = model.nodes.map[it.declaredNamedNodes].flatten
+		nNames.filter[ x | x == nNames.findFirst[ it.name == x.name ]]
+	}
+	
+	
+	def dispatch Iterable<NamedNode>  declaredNamedNodes( NodeDeclaration n ) {
+		if (n instanceof NamedNode) {
+			newLinkedList( n )
+		} else {
+			newLinkedList()
+		}
+	}
+
+	def dispatch Iterable<NamedNode>  declaredNamedNodes( NodeIfThenElseCommand n ) {
+		n.thenBlock.declaredNamedNodes+n.elseBlock.declaredNamedNodes
+	}
+
+	def dispatch Iterable<NamedNode>  declaredNamedNodes( NodeForLoop n ) {
+		n.body.declaredNamedNodes
+	}
+
+	def dispatch Iterable<NamedNode>  declaredNamedNodes( NodeBlockCommand n ) {
+		n.nodes.map[ it.declaredNamedNodes ].flatten
+	}
+
+	def areaNames( SpaceDefinition model ) {
+		model.labels
+	}
 }

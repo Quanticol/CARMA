@@ -3,7 +3,7 @@ package ms;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.cmg.ml.sam.sim.*;		
 import eu.quanticol.carma.simulator.*;
-import eu.quanticol.carma.simulator.space.SpaceModel.Node;
+import eu.quanticol.carma.simulator.space.Node;
 import eu.quanticol.carma.simulator.space.SpaceModel;
 import eu.quanticol.carma.simulator.space.Tuple;
 import java.util.LinkedList;
@@ -232,7 +232,7 @@ public class Example extends CarmaModel {
 			Double __VARIABLE__r =0.0;
 			//
 			//
-			if (__VARIABLE__l1.hasLabel( "center" )) {
+			if (__VARIABLE__l1.isInArea( "center" )) {
 				//
 				if (( __VARIABLE__time )<( __CONST__SWITCH_TIME )) return ( 0.5 )*( __CONST__R_A );
 				else {
@@ -319,7 +319,7 @@ public class Example extends CarmaModel {
 				}
 			}
 			}
-			sm.setLabel( "border" , newLabel );
+			sm.setArea( "border" , newLabel );
 		}
 		{
 			HashSet<Node> newLabel = new HashSet<>();
@@ -332,7 +332,7 @@ public class Example extends CarmaModel {
 				}
 			}
 			}
-			sm.setLabel( "center" , newLabel );
+			sm.setArea( "center" , newLabel );
 		}
 		return sm;
 	}		
@@ -376,7 +376,7 @@ public class Example extends CarmaModel {
 			) {
 				
 				@Override
-				protected Object getValue(CarmaStore store, final double now) {
+				protected Object getValue(CarmaSystem sys, CarmaStore store, final double now) {
 					LinkedList<Object> toReturn = new LinkedList<Object>();
 					final Node __MY__loc = store.get( "loc" , Node.class );					
 					toReturn.add( __MY__loc );
@@ -384,7 +384,7 @@ public class Example extends CarmaModel {
 				}
 				
 				@Override
-				protected CarmaStoreUpdate getUpdate( final double now ) {
+				protected CarmaStoreUpdate getUpdate(CarmaSystem sys,  final double now ) {
 					return new CarmaStoreUpdate() {					
 						//@Override
 						public void update(RandomGenerator r, CarmaStore store) {
@@ -393,7 +393,7 @@ public class Example extends CarmaModel {
 				}
 				
 				@Override
-				protected CarmaPredicate getPredicate(final CarmaStore myStore) {
+				protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
 					final Node __MY__loc = myStore.get( "loc" , Node.class );					
 					return new CarmaPredicate() {
 			
@@ -422,7 +422,7 @@ public class Example extends CarmaModel {
 			) {
 				
 				@Override
-				protected Object getValue(CarmaStore store, final double now) {
+				protected Object getValue(CarmaSystem sys, CarmaStore store, final double now) {
 					LinkedList<Object> toReturn = new LinkedList<Object>();
 					final Node __MY__loc = store.get( "loc" , Node.class );					
 					final Node __MY__dest = store.get( "dest" , Node.class );
@@ -431,7 +431,7 @@ public class Example extends CarmaModel {
 				}
 				
 				@Override
-				protected CarmaStoreUpdate getUpdate( final double now ) {
+				protected CarmaStoreUpdate getUpdate(CarmaSystem sys,  final double now ) {
 					return new CarmaStoreUpdate() {					
 						//@Override
 						public void update(RandomGenerator r, CarmaStore store) {
@@ -440,7 +440,7 @@ public class Example extends CarmaModel {
 				}
 				
 				@Override
-				protected CarmaPredicate getPredicate(final CarmaStore myStore) {
+				protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
 					final Node __MY__loc = myStore.get( "loc" , Node.class );					
 					return new CarmaPredicate() {
 			
@@ -507,7 +507,7 @@ public class Example extends CarmaModel {
 				) {
 					
 					@Override
-					protected CarmaStoreUpdate getUpdate(final Object value, final double now) {
+					protected CarmaStoreUpdate getUpdate(CarmaSystem sys, final Object value, final double now) {
 						
 						LinkedList<Object> message = (LinkedList<Object>) value;
 						final Node __VARIABLE__x = (Node) message.get(0);
@@ -524,7 +524,7 @@ public class Example extends CarmaModel {
 					}	
 					
 					@Override
-					protected CarmaPredicate getPredicate(CarmaStore myStore, Object value) {
+					protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore myStore, Object value) {
 								LinkedList<Object> message = (LinkedList<Object>) value;
 								final Node __VARIABLE__x = (Node) message.get(0);
 								final Node __MY__loc = myStore.get( "loc" , Node.class );					
@@ -558,7 +558,7 @@ public class Example extends CarmaModel {
 			) {
 				
 				@Override
-				protected CarmaStoreUpdate getUpdate(final Object value, final double now) {
+				protected CarmaStoreUpdate getUpdate(CarmaSystem sys, final Object value, final double now) {
 					
 					LinkedList<Object> message = (LinkedList<Object>) value;
 					final Node __VARIABLE__pos = (Node) message.get(0);
@@ -575,7 +575,7 @@ public class Example extends CarmaModel {
 				}	
 				
 				@Override
-				protected CarmaPredicate getPredicate(CarmaStore myStore, Object value) {
+				protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore myStore, Object value) {
 							LinkedList<Object> message = (LinkedList<Object>) value;
 							final Node __VARIABLE__pos = (Node) message.get(0);
 							final Node __MY__loc = myStore.get( "loc" , Node.class );					
@@ -607,14 +607,14 @@ public class Example extends CarmaModel {
 			) {
 				
 				@Override
-				protected Object getValue(CarmaStore store, final double now) {
+				protected Object getValue(CarmaSystem sys, CarmaStore store, final double now) {
 					LinkedList<Object> toReturn = new LinkedList<Object>();
 					final Node __MY__loc = store.get( "loc" , Node.class );					
 					return toReturn;
 				}
 				
 				@Override
-				protected CarmaStoreUpdate getUpdate( final double now ) {
+				protected CarmaStoreUpdate getUpdate(CarmaSystem sys,  final double now ) {
 					return new CarmaStoreUpdate() {
 						
 						//@Override
@@ -629,7 +629,7 @@ public class Example extends CarmaModel {
 				}
 				
 				@Override
-				protected CarmaPredicate getPredicate(final CarmaStore myStore) {
+				protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
 					final Node __MY__loc = myStore.get( "loc" , Node.class );					
 					return new CarmaPredicate() {
 			
@@ -683,14 +683,14 @@ public class Example extends CarmaModel {
 			) {
 				
 				@Override
-				protected Object getValue(CarmaStore store, final double now) {
+				protected Object getValue(CarmaSystem sys, CarmaStore store, final double now) {
 					LinkedList<Object> toReturn = new LinkedList<Object>();
 					final Node __MY__loc = store.get( "loc" , Node.class );					
 					return toReturn;
 				}
 				
 				@Override
-				protected CarmaStoreUpdate getUpdate( final double now ) {
+				protected CarmaStoreUpdate getUpdate(CarmaSystem sys,  final double now ) {
 					return new CarmaStoreUpdate() {					
 						//@Override
 						public void update(RandomGenerator r, CarmaStore store) {
@@ -699,7 +699,7 @@ public class Example extends CarmaModel {
 				}
 				
 				@Override
-				protected CarmaPredicate getPredicate(final CarmaStore myStore) {
+				protected CarmaPredicate getPredicate(CarmaSystem sys, final CarmaStore myStore) {
 					final Node __MY__loc = myStore.get( "loc" , Node.class );					
 					return new CarmaPredicate() {
 			
@@ -941,7 +941,7 @@ public class Example extends CarmaModel {
 			final Node __SENDER__loc = sender.get( "loc" , Node.class );
 			if (action==__ACT__arrival) {
 				if ( ( __ATTR__active_users )<( __CONST__MAX_USER ) ) {
-					if ( __SENDER__loc.hasLabel( "center" ) ) {
+					if ( __SENDER__loc.isInArea( "center" ) ) {
 						{
 								CarmaComponent fooComponent = createComponentUser(					
 									RandomGeneratorRegistry.uniformSelect( removeAll( sys.getSpaceModel().getAll() , getSet( sys.getSpaceModel().getVertex( new Tuple(1,1) ) )  ) )
@@ -1189,7 +1189,7 @@ public class Example extends CarmaModel {
 			final Node __SENDER__loc = sender.get( "loc" , Node.class );
 			if (action==__ACT__arrival) {
 				if ( ( __ATTR__active_users )<( __CONST__MAX_USER ) ) {
-					if ( __SENDER__loc.hasLabel( "center" ) ) {
+					if ( __SENDER__loc.isInArea( "center" ) ) {
 						{
 								CarmaComponent fooComponent = createComponentUser(					
 									RandomGeneratorRegistry.uniformSelect( removeAll( sys.getSpaceModel().getAll() , getSet( sys.getSpaceModel().getVertex( new Tuple(1,1) ) )  ) )

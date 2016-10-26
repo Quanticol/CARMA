@@ -9,6 +9,8 @@ import java.util.Map;
 import org.cmg.ml.sam.sim.SimulationFactory;
 import org.cmg.ml.sam.sim.sampling.Measure;
 
+import eu.quanticol.carma.simulator.space.SpaceModel;
+
 
 /**
  * @author loreti
@@ -50,4 +52,5 @@ public abstract class CarmaModel {
 		}
 		return true;
 	}
+	
 }

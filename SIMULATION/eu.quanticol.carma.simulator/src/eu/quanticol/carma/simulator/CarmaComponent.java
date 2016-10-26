@@ -10,7 +10,7 @@ import org.cmg.ml.sam.sim.Activity;
 import org.cmg.ml.sam.sim.util.ComposedWeightedStructure;
 import org.cmg.ml.sam.sim.util.WeightedStructure;
 
-import eu.quanticol.carma.simulator.space.SpaceModel.Node;
+import eu.quanticol.carma.simulator.space.Node;
 
 /**
  * @author loreti

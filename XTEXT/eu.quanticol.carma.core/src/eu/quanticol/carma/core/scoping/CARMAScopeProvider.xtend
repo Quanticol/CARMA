@@ -56,9 +56,7 @@ import eu.quanticol.carma.core.carma.Rate
 import eu.quanticol.carma.core.carma.Weight
 import eu.quanticol.carma.core.carma.ComponentBlockIteratorStatement
 import eu.quanticol.carma.core.carma.ComponentBlockFor
-import eu.quanticol.carma.core.carma.LocationFeature
 import eu.quanticol.carma.core.carma.CollectiveDefinition
-import eu.quanticol.carma.core.carma.ConnectionExpression
 
 /**
  * This class contains custom scoping description.
@@ -111,25 +109,6 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 					]	  				
 				)
 			)
-			LocationFeature: {
-				var lf = parent.getContainerOfType(typeof(SpaceDefinition))
-				if (lf != null) {
-					Scopes::scopeFor(
-						parent.parameters ,
-						Scopes::scopeFor(
-							lf.parameters ,
-							Scopes::scopeFor( 
-								lf.globalReferenceableElements.filter[
-									it.isValidInExpressions
-								]	  				
-							)	
-						)												
-					)
-				} else {
-					IScope::NULLSCOPE
-				}
-				
-			}
 			Probability: {
 				var sys = parent.getContainerOfType(typeof(SystemDefinition))
 				if (sys != null) {
@@ -244,16 +223,16 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 		
 	}
 
-	def scope_Reference_reference( ConnectionExpression a , EReference r ) {
-		var space = a.getContainerOfType(SpaceDefinition)
-		if (space != null) {
-			Scopes::scopeFor( a.source ?. elements ?. filter(typeof(LocationVariable)) ?: newLinkedList() ,
-				Scopes::scopeFor( space ?. parameters ?: newLinkedList() )
-			)			
-		} else {
-			IScope::NULLSCOPE
-		}
-	}
+//	def scope_Reference_reference( ConnectionExpression a , EReference r ) {
+//		var space = a.getContainerOfType(SpaceDefinition)
+//		if (space != null) {
+//			Scopes::scopeFor( a.source ?. elements ?. filter(typeof(LocationVariable)) ?: newLinkedList() ,
+//				Scopes::scopeFor( space ?. parameters ?: newLinkedList() )
+//			)			
+//		} else {
+//			IScope::NULLSCOPE
+//		}
+//	}
 
 	def scope_Reference_reference( AttributeDeclaration a , EReference r) {
 		var element = a.getContainerOfType(typeof(Element))
@@ -515,6 +494,7 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 			EnumDefinition: e.values
 			SystemDefinition: e.environment ?. store ?. attributes ?: newLinkedList()
 			MeasureDefinition: newLinkedList( e )
+			SpaceDefinition: e.nodeNames+e.areaNames
 			default: newLinkedList()			
 		}
 	}
@@ -535,6 +515,10 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 		} else {
 			IScope::NULLSCOPE
 		}
+	}
+	
+	def scope_AccessToEdgeValue_label( Model model , EReference r ) {
+		Scopes::scopeFor( model.elements.filter(typeof(SpaceDefinition)).map[it.edgeAttributes].flatten )
 	}
 
 	def scope_Weight_activity( SystemDefinition sys ,EReference r ) {

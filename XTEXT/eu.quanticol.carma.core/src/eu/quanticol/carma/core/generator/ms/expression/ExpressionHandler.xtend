@@ -96,14 +96,14 @@ import eu.quanticol.carma.core.carma.AttributeReference
 import eu.quanticol.carma.core.carma.StoreAttribute
 import eu.quanticol.carma.core.carma.LocAttribute
 import eu.quanticol.carma.core.carma.MyLocation
-import eu.quanticol.carma.core.carma.LocationFeature
-import eu.quanticol.carma.core.carma.SpaceDefinition
 import eu.quanticol.carma.core.carma.TupleExpression
 import eu.quanticol.carma.core.carma.NodeExpressionOrArrayAccess
 import eu.quanticol.carma.core.carma.NamedNode
 import eu.quanticol.carma.core.carma.UniverseElement
 import eu.quanticol.carma.core.carma.AccessToEdgeValue
 import eu.quanticol.carma.core.carma.MeasureDefinition
+import eu.quanticol.carma.core.carma.PreSetExpression
+import eu.quanticol.carma.core.carma.PoSetExpression
 
 class ExpressionHandler {
 	
@@ -118,7 +118,7 @@ class ExpressionHandler {
 	}
 	
 	def dispatch CharSequence expressionToJava( TupleExpression e ) {
-		'''sys.getSpaceModel().getVertex( new Tuple(«FOR v:e.values SEPARATOR ','»«v.expressionToJava»«ENDFOR») )'''
+		'''CarmaSystem.getCurrentSpaceModel().getVertex( new Tuple(«FOR v:e.values SEPARATOR ','»«v.expressionToJava»«ENDFOR») )'''
 	}
 	
 	def dispatch CharSequence expressionToJava( CastToReal e ) {
@@ -201,7 +201,7 @@ class ExpressionHandler {
 	}
 	
 	def dispatch CharSequence expressionToJava( Locations l ) {
-		'''sys.getSpaceModel().getAll()'''
+		'''CarmaSystem.getCurrentSpaceModel().getAll()'''
 	}
 	
 	def dispatch CharSequence expressionToJava( MyLocation l ) {
@@ -258,10 +258,6 @@ class ExpressionHandler {
 		switch (field) {
 			FieldDefinition: '''«source.expressionToJava»«field.expressionToJava»'''		
 			LabelDefinition: '''«source.expressionToJava»«field.expressionToJava»'''
-			LocationFeature: {
-				'''null'''		
-//				'''«field.featureName»( «FOR p:field.parameters.indexed SEPARATOR ","» («field.typeOfElement(p.key)») «source.expressionToJava».get(«p.key»)«ENDFOR»)'''		
-			}
 			UniverseElement: {
 				'''«source.expressionToJava».get( «field.indexOf» , «field.type.toJavaType».class )'''
 			}
@@ -273,14 +269,14 @@ class ExpressionHandler {
 	}
 	
 	def dispatch CharSequence expressionToJava( LabelDefinition e ) {
-		'''.hasLabel( "«e.name»" )'''
+		'''.isInArea( "«e.name»" )'''
 	}
 	
 	def dispatch CharSequence expressionToJava( NodeExpressionOrArrayAccess e ) {
 		if (e.source.typeOf.isList) {
 			'''get(«e.source.expressionToJava»,«e.values.get(0).expressionToJava»)'''
 		} else {
-			'''sys.getSpaceModel().getVertex( «e.source.computeNodeName» , new Tuple(«FOR v:e.values SEPARATOR ','»«v.expressionToJava»«ENDFOR») )'''
+			'''CarmaSystem.getCurrentSpaceModel().getVertex( «e.source.computeNodeName» , new Tuple(«FOR v:e.values SEPARATOR ','»«v.expressionToJava»«ENDFOR») )'''
 		}
 	}
 	
@@ -664,13 +660,27 @@ class ExpressionHandler {
 	
 	def dispatch CharSequence expressionToJava( PreFunction e ) {
 		'''
-		«e.arg.expressionToJava».getPreset();
+		«e.arg.expressionToJava».getPreset()
 		'''
 	}
 	
+	
+	def dispatch CharSequence expressionToJava( PoSetExpression e ) {
+		'''
+		«e.source.expressionToJava».getPoset()
+		'''
+	}
+
+	def dispatch CharSequence expressionToJava( PreSetExpression e ) {
+		'''
+		«e.source.expressionToJava».getPreset()
+		'''
+	}
+	
+	
 	def dispatch CharSequence expressionToJava( PostFunction e ) {
 		'''
-		«e.arg.expressionToJava».getPoset();
+		«e.arg.expressionToJava».getPoset()
 		'''
 	}
 	

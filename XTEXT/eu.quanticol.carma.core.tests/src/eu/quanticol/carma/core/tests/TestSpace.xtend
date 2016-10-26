@@ -20,6 +20,9 @@ import eu.quanticol.carma.simulator.CarmaPredicate
 import eu.quanticol.carma.simulator.CarmaStore
 import java.util.HashSet
 import org.eclipse.xtext.xbase.compiler.GeneratorConfig
+import org.eclipse.xtext.xbase.lib.util.ReflectExtensions
+import eu.quanticol.carma.simulator.space.SpaceModel
+import eu.quanticol.carma.simulator.space.Tuple
 
 @RunWith(typeof(XtextRunner))
 @InjectWith(typeof(CARMAInjectorProviderCustom))
@@ -27,6 +30,7 @@ class Test_Space {
 	@Inject extension ParseHelper<Model>
 	@Inject extension ValidationTestHelper	
 	@Inject extension MyCompilationTestHelper
+	@Inject extension ReflectExtensions
 	
 	CharSequence code = 	'''
 space grid( int width , int height ) {
@@ -39,9 +43,12 @@ space grid( int width , int height ) {
    	}
    }
    connections {
-      [?x,?y]: x<width-1 <-> [x+1,y] : w=1.0;
-      [?x,?y]: y<height-1 <-> [x,y+1]: w=1.0;
-      [?x,?y]: x<width-1 && y<height-1 <-> [x+1,x+1]: w=1.0;
+   	  for r from 0 to width-1 {
+		 for c from 0 to height-1 {
+		 	[r,c] <-> [r+1,c]{ w = 1 };
+		 	[r,c] <-> [r,c+1]{ w = 1 };	
+		 }  	  	
+   	  }
    }
    areas {
       corner {
@@ -51,10 +58,19 @@ space grid( int width , int height ) {
       	 [width-1,height-1];
       }
       diagonal {
-      	[?z,?w]: z==w;
+      	for i from 0 to min(height, width) {
+      		[i,i];	
+      	}
       }
       border {
-       [?x,?y]: x==0||x==width-1||y==0||y==height-1;
+	   	  for r from 0 to width {
+		 	[r,0];
+			[r,height-1];
+	   	  }
+	   	  for c from 0 to height {
+	   	  	[0,c];
+	   	  	[width-1,c];
+	   	  }
       }
 	} 
 }
@@ -73,6 +89,20 @@ space grid( int width , int height ) {
 			var o = getCompiledClass.newInstance 
 			assertNotNull( o )
 			assertTrue( o instanceof CarmaModel )
+			var o2 = o.invoke("get_SPACE_grid",5,5)
+			assertNotNull(o2)
+			assertTrue( o2 instanceof SpaceModel)
+			var sm = o2 as SpaceModel
+			var n = sm.getVertex(new Tuple(0,0))
+			assertNotNull( n )
+			assertEquals(2,n.poset.size())
+			assertTrue(n.poset.contains(sm.getVertex(new Tuple(0,1))))
+			assertTrue(n.poset.contains(sm.getVertex(new Tuple(1,0))))
+			assertTrue(n.preset.contains(sm.getVertex(new Tuple(0,1))))
+			assertTrue(n.preset.contains(sm.getVertex(new Tuple(1,0))))
+			assertTrue(n.getValuesTo(sm.getVertex(new Tuple(0,1)),"w",typeof(Integer)).size()>0)
+			assertTrue(n.isInArea("border"));
+			
 		]
 	}
 	

@@ -15,6 +15,7 @@ import eu.quanticol.carma.simulator.CarmaProcessAutomaton;
 import eu.quanticol.carma.simulator.CarmaSequentialProcess;
 import eu.quanticol.carma.simulator.CarmaStore;
 import eu.quanticol.carma.simulator.CarmaStoreUpdate;
+import eu.quanticol.carma.simulator.CarmaSystem;
 
 /**
  * @author loreti
@@ -46,17 +47,17 @@ public class GroupiesCelebritiesDefinitions {
 		CarmaAction spreadAction = new CarmaOutput( ACTION_ID , true ) {
 			
 			@Override
-			protected Object getValue(CarmaStore store, double now) {
+			protected Object getValue(CarmaSystem sys, CarmaStore store, double now) {
 				return store.get("kind", Integer.class);
 			}
 			
 			@Override
-			protected CarmaStoreUpdate getUpdate(double now) {
+			protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 				return null;
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store) {
+			protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore store) {
 				return CarmaPredicate.TRUE;
 			}
 		};
@@ -64,12 +65,12 @@ public class GroupiesCelebritiesDefinitions {
 		CarmaInput inputAction = new CarmaInput( ACTION_ID , true ) {
 
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, Object value) {
+			protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore store, Object value) {
 				return CarmaPredicate.TRUE;
 			}
 
 			@Override
-			protected CarmaStoreUpdate getUpdate(final Object value, double now) {
+			protected CarmaStoreUpdate getUpdate(CarmaSystem sys, final Object value, double now) {
 				return new CarmaStoreUpdate() {
 					
 					@Override
@@ -98,17 +99,17 @@ public class GroupiesCelebritiesDefinitions {
 		CarmaAction spreadAction = new CarmaOutput( ACTION_ID , true ) {
 			
 			@Override
-			protected Object getValue(CarmaStore store, double now) {
+			protected Object getValue(CarmaSystem sys, CarmaStore store, double now) {
 				return store.get("kind", Integer.class);
 			}
 			
 			@Override
-			protected CarmaStoreUpdate getUpdate(double now) {
+			protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 				return null;
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store) {
+			protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore store) {
 				return CarmaPredicate.TRUE;
 			}
 		};
@@ -116,7 +117,7 @@ public class GroupiesCelebritiesDefinitions {
 		CarmaInput inputAction = new CarmaInput( ACTION_ID , true ) {
 
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore localStore, Object value) {
+			protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore localStore, Object value) {
 				final int kind = localStore.get(KIND_ATTRIBUTE, Integer.class).intValue();
 				return new CarmaPredicate() {
 
@@ -129,7 +130,7 @@ public class GroupiesCelebritiesDefinitions {
 			}
 
 			@Override
-			protected CarmaStoreUpdate getUpdate(final Object value, double now) {
+			protected CarmaStoreUpdate getUpdate(CarmaSystem sys, final Object value, double now) {
 				return new CarmaStoreUpdate() {
 					
 					@Override

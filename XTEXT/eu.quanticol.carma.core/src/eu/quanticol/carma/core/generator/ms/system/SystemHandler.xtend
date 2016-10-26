@@ -106,7 +106,9 @@ class SystemHandler {
 
 				//@Override
 				public CarmaSystem getModel() {
-					return new «sys.name.systemName»();
+					CarmaSystem sys = new «sys.name.systemName»();
+					CarmaSystem.setCurrentSpaceModel( sys.getSpaceModel() );
+					return sys;
 				}
 			
 				//@Override

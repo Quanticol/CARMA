@@ -29,12 +29,11 @@ SpaceDefinition:
 			(nodes += NodeBodyCommand)*
 		'}'
 		'connections' '{' 
-			(edges += ConnectionExpression ';')*
+			(edges += ConnectionBodyCommand)*
 		'}' 
 		('areas' '{'
 			(labels += LabelDefinition)*
 		'}')?	
-		(features += LocationFeature)*
 	'}'
 ;
 
@@ -78,17 +77,46 @@ UnNamedNode:
 	'[' values += Expression (',' values += Expression )* ']' ';'
 ;
 
-LocationFeature:
-	'feature' type=BasicType name=ID '(' (parameters += Variable (',' parameters+=Variable)*)? ')' 
-		body=FunctionCommand
-;
+//LocationFeature:
+//	'feature' type=BasicType name=ID '(' (parameters += Variable (',' parameters+=Variable)*)? ')' 
+//		body=FunctionCommand
+//;
 
 LabelDefinition:
-	name=ID '{' ( patterns+=AreaDefinitionCase ';' )* 
-	'}' (':' '{'
-		(features += AreaFeature ';')*
-	'}')?
+	name=ID '{' ( nodes+=AreaBodyCommand )* 
+	'}' 
+//	('{'
+//		(features += AreaFeature ';')*
+//	'}')?
 ;
+
+AreaBodyCommand:
+	AreaElementDeclaration|AreaIfThenElseCommand|AreaForLoop|AreaBlockCommand
+;
+
+AreaElementDeclaration:
+	node=LocationExpression ';'	
+;
+
+AreaForLoop:
+		"for" ({AreaForCommand} variable=IterationVariable 'from' start=Expression ('by' step=Expression)? 'to' end=Expression  
+		body=AreaBodyCommand
+		| {AreaForEach} iteration=LoopingVariable body=AreaBodyCommand
+	)	
+;
+
+AreaBlockCommand: {AreaBlockCommand}
+	'{'
+			(nodes += AreaBodyCommand)*
+	'}'	
+;
+
+AreaIfThenElseCommand:
+	'if' '(' condition=Expression ')'
+		thenBlock = AreaBodyCommand
+	(=> 'else' elseBlock = AreaBodyCommand)?	
+;
+
 
 AreaFeature:
 	name=ID '=' value=Expression
@@ -98,9 +126,33 @@ AreaDefinitionCase:
 	pattern=NodePattern (':' guard=Expression )?
 ;
 
-ConnectionExpression:
-	source=NodePattern (':' guard=Expression)? direction=Direction trg=LocationExpression ':' edgeProperties += EdgeProperty (',' edgeProperties += EdgeProperty)*
+ConnectionDeclaration:
+	source=LocationExpression direction=Direction target=LocationExpression ('{' (edgeProperties += EdgeProperty (',' edgeProperties += EdgeProperty)*)? '}')? ';'	
 ;
+
+ConnectionForLoop:
+		"for" ({ConnectionForCommand} variable=IterationVariable 'from' start=Expression ('by' step=Expression)? 'to' end=Expression  
+		body=ConnectionBodyCommand
+		| {ConnectionForEach} iteration=LoopingVariable body=ConnectionBodyCommand
+	)	
+;
+
+ConnectionBodyCommand:
+	ConnectionDeclaration|ConnectionIfThenElseCommand|ConnectionForLoop|ConnectionBlockCommand
+;
+
+ConnectionBlockCommand: {ConnectionBlockCommand}
+	'{'
+			(edges += ConnectionBodyCommand)*
+	'}'	
+;
+
+ConnectionIfThenElseCommand:
+	'if' '(' condition=Expression ')'
+		thenBlock = ConnectionBodyCommand
+	(=> 'else' elseBlock = ConnectionBodyCommand)?	
+;
+
 
 EdgeProperty:
 	name=ID '=' value=Expression
@@ -198,19 +250,19 @@ ValueType hidden(ML_COMMENT,SL_COMMENT,WS):
 ;
 
 BasicType:
-		IntegerType|
-		RealType|
+		IntegerType |
+		RealType |
 		BooleanType |
 		CustomType |
 		ArrayType |
 		ListType |
 		SetType |
-		LocationType 
+		LocationType
 ;
 
 IntegerType: {IntegerType} "int" ('[' min=Expression '..' max=Expression ']')?;
 
-LocationType: {LocationType} "node";
+LocationType: {LocationType} "location";
 
 RealType: {RealType} "real" ;
 
@@ -248,8 +300,6 @@ ReferenceableElement:
 	NamedNode|
 	LocationVariable|
 	FieldDefinition|
-	LabelDefinition|
-	LocationFeature|
 	LabelDefinition|	
 	UniverseElement|
 	MeasureDefinition
@@ -416,7 +466,7 @@ StoreBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 AttributeDeclaration:
 	{AttributeConstDeclaration} "const" name=ID (":="|"=") value=Expression
 	| {AttibuteVarDeclaration} ("attrib")? (type=BasicType)? name=ID  (":="|"=") value=Expression
-;
+	;
 	
 ProcessesBlock hidden(ML_COMMENT,SL_COMMENT,WS):
 	{ProcessesBlock}

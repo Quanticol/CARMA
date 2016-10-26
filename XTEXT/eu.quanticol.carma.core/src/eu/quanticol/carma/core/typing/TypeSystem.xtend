@@ -116,7 +116,6 @@ import eu.quanticol.carma.core.carma.AttributeConstDeclaration
 import eu.quanticol.carma.core.carma.AttibuteVarDeclaration
 import eu.quanticol.carma.core.carma.LoopingVariable
 import eu.quanticol.carma.core.carma.LocationType
-import eu.quanticol.carma.core.carma.LocationFeature
 import eu.quanticol.carma.core.carma.TupleExpression
 import org.eclipse.emf.common.util.EList
 import eu.quanticol.carma.core.carma.UniverseElement
@@ -124,6 +123,8 @@ import eu.quanticol.carma.core.carma.NodeExpressionOrArrayAccess
 import eu.quanticol.carma.core.carma.NamedNode
 import eu.quanticol.carma.core.carma.AccessToEdgeValue
 import eu.quanticol.carma.core.carma.MeasureDefinition
+import eu.quanticol.carma.core.carma.PoSetExpression
+import eu.quanticol.carma.core.carma.PreSetExpression
 
 class TypeSystem {
 
@@ -503,7 +504,6 @@ class TypeSystem {
 			switch f {
 				FieldDefinition: f.typeOf
 				LabelDefinition: CarmaType::BOOLEAN_TYPE
-				LocationFeature: f.type.toCarmaType				
 				UniverseElement: f.type.toCarmaType
 			}
 		}
@@ -713,6 +713,15 @@ class TypeSystem {
 	def dispatch CarmaType typeOf( PostFunction e ) {
 		CarmaType::createSetType( CarmaType::LOCATION_TYPE )
 	}
+
+	def dispatch CarmaType typeOf( PoSetExpression e ) {
+		CarmaType::createSetType( CarmaType::LOCATION_TYPE )
+	}
+
+	def dispatch CarmaType typeOf( PreSetExpression e ) {
+		CarmaType::createSetType( CarmaType::LOCATION_TYPE )
+	}
+
 
 	def dispatch CarmaType typeOf( AccessToEdgeValue e ) {
 		var labelType = e.label ?. value ?. typeOf	?: CarmaType::NONE_TYPE

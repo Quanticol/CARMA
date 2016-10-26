@@ -59,8 +59,15 @@ public class RandomGeneratorRegistry {
 	}
 	
 	public static <T> T uniformSelect( Collection<T> collection ) {
-		RandomGenerator rg = getInstance().get();
-		int idx = rg.nextInt(collection.size());
+		if (collection.size()==0) {
+			System.out.println("IS EMPTY!!!");
+			return null;
+		}
+		int idx = 0;
+		if (collection.size()>1) {
+			RandomGenerator rg = getInstance().get();
+			idx = rg.nextInt(collection.size());
+		}
 		int counter = 0;
 		T last = null;
 		for (T t : collection) {

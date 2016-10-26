@@ -11,6 +11,7 @@ import eu.quanticol.carma.simulator.CarmaPredicate;
 import eu.quanticol.carma.simulator.CarmaProcessAutomaton;
 import eu.quanticol.carma.simulator.CarmaStore;
 import eu.quanticol.carma.simulator.CarmaStoreUpdate;
+import eu.quanticol.carma.simulator.CarmaSystem;
 
 /**
  * @author loreti
@@ -39,12 +40,12 @@ public class BikeSharingDefinitions {
 		CarmaOutput moveAction = new CarmaOutput( BikeSharing.MOVE , true ) {
 			
 			@Override
-			protected Object getValue(CarmaStore store, double now) {
+			protected Object getValue(CarmaSystem sys, CarmaStore store, double now) {
 				return null;
 			}
 			
 			@Override
-			protected CarmaStoreUpdate getUpdate( double now) {				
+			protected CarmaStoreUpdate getUpdate(CarmaSystem sys,  double now) {				
 				return new CarmaStoreUpdate() {
 					
 					@Override
@@ -56,7 +57,7 @@ public class BikeSharingDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store) {
+			protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore store) {
 				return CarmaPredicate.FALSE;
 			}
 		};
@@ -64,17 +65,17 @@ public class BikeSharingDefinitions {
 		CarmaOutput stopAction = new CarmaOutput( BikeSharing.STOP , true ) {
 			
 			@Override
-			protected Object getValue(CarmaStore store, double now) {
+			protected Object getValue(CarmaSystem sys, CarmaStore store, double now) {
 				return null;
 			}
 			
 			@Override
-			protected CarmaStoreUpdate getUpdate(double now) {				
+			protected CarmaStoreUpdate getUpdate(CarmaSystem sys,double now) {				
 				return null;
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store) {
+			protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore store) {
 				return CarmaPredicate.FALSE;
 			}
 		};
@@ -82,17 +83,17 @@ public class BikeSharingDefinitions {
 		CarmaOutput restartAction = new CarmaOutput( BikeSharing.RESTART , true ) {
 			
 			@Override
-			protected Object getValue(CarmaStore store, double now) {
+			protected Object getValue(CarmaSystem sys, CarmaStore store, double now) {
 				return null;
 			}
 			
 			@Override
-			protected CarmaStoreUpdate getUpdate(double now) {				
+			protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {				
 				return null;
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store) {
+			protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore store) {
 				return CarmaPredicate.FALSE;
 			}
 		};
@@ -100,12 +101,12 @@ public class BikeSharingDefinitions {
 		CarmaInput takeBike = new CarmaInput( BikeSharing.TAKE_BIKE , false ) {
 
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, Object value) {
+			protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore store, Object value) {
 				return CarmaPredicate.TRUE;
 			}
 
 			@Override
-			protected CarmaStoreUpdate getUpdate(Object value, double now) {
+			protected CarmaStoreUpdate getUpdate(CarmaSystem sys, Object value, double now) {
 				return new CarmaStoreUpdate() {
 					
 					@Override
@@ -121,12 +122,12 @@ public class BikeSharingDefinitions {
 		CarmaInput returnBike = new CarmaInput( BikeSharing.RETURN_BIKE , false ) {
 
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store, Object value) {
+			protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore store, Object value) {
 				return CarmaPredicate.TRUE;
 			}
 
 			@Override
-			protected CarmaStoreUpdate getUpdate(Object value, double now) {
+			protected CarmaStoreUpdate getUpdate(CarmaSystem sys, Object value, double now) {
 				return new CarmaStoreUpdate() {
 					
 					@Override
@@ -157,12 +158,12 @@ public class BikeSharingDefinitions {
 		CarmaOutput takeBike = new CarmaOutput( BikeSharing.TAKE_BIKE , false ) {
 			
 			@Override
-			protected Object getValue(CarmaStore store, double now) {
+			protected Object getValue(CarmaSystem sys, CarmaStore store, double now) {
 				return null;
 			}
 			
 			@Override
-			protected CarmaStoreUpdate getUpdate(double now) {
+			protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 				return new CarmaStoreUpdate() {
 					
 					@Override
@@ -177,7 +178,7 @@ public class BikeSharingDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store) {
+			protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore store) {
 				return new CarmaPredicate.HasValue<Integer>("zone", Integer.class, store.get("zone",Integer.class));
 			}
 		};
@@ -185,12 +186,12 @@ public class BikeSharingDefinitions {
 		CarmaOutput returnBike = new CarmaOutput( BikeSharing.RETURN_BIKE , false ) {
 			
 			@Override
-			protected Object getValue(CarmaStore store, double now) {
+			protected Object getValue(CarmaSystem sys, CarmaStore store, double now) {
 				return null;
 			}
 			
 			@Override
-			protected CarmaStoreUpdate getUpdate(double now) {
+			protected CarmaStoreUpdate getUpdate(CarmaSystem sys, double now) {
 				return new CarmaStoreUpdate() {
 					
 					@Override
@@ -205,7 +206,7 @@ public class BikeSharingDefinitions {
 			}
 			
 			@Override
-			protected CarmaPredicate getPredicate(CarmaStore store) {
+			protected CarmaPredicate getPredicate(CarmaSystem sys, CarmaStore store) {
 				return new CarmaPredicate.HasValue<Integer>("zone", Integer.class, store.get("zone",Integer.class));
 			}
 		};
