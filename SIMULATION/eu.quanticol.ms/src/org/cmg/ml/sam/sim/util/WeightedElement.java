@@ -15,6 +15,9 @@
  */
 package org.cmg.ml.sam.sim.util;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * @author loreti
  *
@@ -70,6 +73,13 @@ public class WeightedElement<S> implements WeightedStructure<S> {
 	@Override
 	public String toString() {
 		return s+":"+w;
+	}
+
+	@Override
+	public List<WeightedElement<S>> getAll() {
+		LinkedList<WeightedElement<S>> list = new LinkedList<>();
+		list.add(this);
+		return list;
 	}
 
 

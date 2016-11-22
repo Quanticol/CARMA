@@ -15,6 +15,8 @@
  */
 package org.cmg.ml.sam.sim.util;
 
+import java.util.List;
+
 /**
  * @author loreti
  *
@@ -29,4 +31,6 @@ public interface WeightedStructure<S> {
 
 	public WeightedStructure<S> add(WeightedStructure<S> s);
 
+	public List<WeightedElement<S>> getAll();
+	
 }

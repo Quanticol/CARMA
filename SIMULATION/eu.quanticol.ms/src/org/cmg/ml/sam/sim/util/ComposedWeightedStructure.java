@@ -16,6 +16,7 @@
 package org.cmg.ml.sam.sim.util;
 
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author loreti
@@ -105,6 +106,18 @@ public class ComposedWeightedStructure<S> implements WeightedStructure<S> {
 		}
 		this.total_weight += increment;
 		return this;
+	}
+
+	@Override
+	public List<WeightedElement<S>> getAll() {
+		LinkedList<WeightedElement<S>> toReturn = new LinkedList<>();
+		if (left != null) {
+			toReturn.addAll(left.getAll());
+		}
+		if (right != null) {
+			toReturn.addAll(right.getAll());
+		}
+		return toReturn;
 	}
 
 }
