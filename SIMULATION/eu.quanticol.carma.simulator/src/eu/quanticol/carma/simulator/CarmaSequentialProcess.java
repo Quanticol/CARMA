@@ -19,7 +19,7 @@ import eu.quanticol.carma.simulator.CarmaProcessAutomaton.Transition;
  */
 public class CarmaSequentialProcess extends CarmaProcess {
 
-	private State currenstate;
+	private State currentstate;
 	private CarmaProcessAutomaton automaton;
 	private boolean kill = false;
 
@@ -34,14 +34,14 @@ public class CarmaSequentialProcess extends CarmaProcess {
 	public CarmaSequentialProcess(CarmaProcessAutomaton automaton, State initialState) {
 		super( null , automaton.getName() );
 		this.automaton = automaton;
-		this.currenstate = initialState;
+		this.currentstate = initialState;
 	}
 
 	public CarmaSequentialProcess(CarmaComponent component,
 			CarmaProcessAutomaton automaton, State initialState) {
 		super( component , automaton.getName() );
 		this.automaton = automaton;
-		this.currenstate = initialState;
+		this.currentstate = initialState;
 	}
 
 	public void setKill() {
@@ -55,10 +55,10 @@ public class CarmaSequentialProcess extends CarmaProcess {
 	@Override
 	public WeightedStructure<Activity> getActivities( CarmaSystem caspaSystem ) {
 		WeightedStructure<Activity> toReturn = new ComposedWeightedStructure<Activity>();
-		if (currenstate == null) {
+		if (currentstate == null) {
 			return toReturn;
 		}
-		LinkedList<CarmaProcessAutomaton.Transition> transitions = currenstate.getTransitions();
+		LinkedList<CarmaProcessAutomaton.Transition> transitions = currentstate.getTransitions();
 		CarmaStore store = getComponent().store;
 		for (CarmaProcessAutomaton.Transition transition : transitions) {
 			CarmaPredicate guard = transition.getGuard();
@@ -100,7 +100,7 @@ public class CarmaSequentialProcess extends CarmaProcess {
 	}
 
 	protected boolean setState(State next) {
-		this.currenstate = next;
+		this.currentstate = next;
 		return true;
 	}
 
@@ -119,10 +119,10 @@ public class CarmaSequentialProcess extends CarmaProcess {
 	private WeightedStructure<Activity> doReceiveInput(CarmaSystem system,
 			CarmaStore sender, int action, Object value, boolean broadcast) {
 		WeightedStructure<Activity> toReturn = new ComposedWeightedStructure<Activity>();
-		if (currenstate == null) {
+		if (currentstate == null) {
 			return toReturn;
 		}
-		LinkedList<CarmaProcessAutomaton.Transition> transitions = currenstate.getTransitions();
+		LinkedList<CarmaProcessAutomaton.Transition> transitions = currentstate.getTransitions();
 		CarmaStore store = getComponent().store;
 		for (CarmaProcessAutomaton.Transition transition : transitions) {
 			final CarmaProcessAutomaton.State next = transition.getNextState();
@@ -162,19 +162,29 @@ public class CarmaSequentialProcess extends CarmaProcess {
 	 */
 	@Override
 	public String toString() {
-		if (currenstate==null) {
+		if (currentstate==null) {
 			return this.getName()+"[nil]";
 		}
-		return currenstate.toString();
+		return currentstate.toString();
 	}
 
 	public State getState() {
-		return currenstate;
+		return currentstate;
 	}
 
 	public CarmaProcessAutomaton automaton() {
 		return automaton;
 	}
+
+	/* (non-Javadoc)
+	 * @see eu.quanticol.carma.simulator.CarmaProcess#getName()
+	 */
+	@Override
+	public String getName() {
+		return (currentstate==null?"nil":currentstate.getName());
+	}
+	
+	
 
 
 }
