@@ -53,7 +53,7 @@ public class SequenceOfActivities implements Activity {
 	@Override
 	public String getName() {
 		String toReturn = "";
-		for( int i=0 ; i<toReturn.length() ; i++ ) {
+		for( int i=0 ; i<activities.length ; i++ ) {
 			toReturn += activities[i].getName();
 		}
 		return toReturn;
