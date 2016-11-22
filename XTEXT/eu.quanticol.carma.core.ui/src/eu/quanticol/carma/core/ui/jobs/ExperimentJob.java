@@ -61,7 +61,7 @@ private String tag;
 	}
 	
 	public void simulate(IProgressMonitor monitor){
-		DateFormat dateFormat1 = new SimpleDateFormat("dd/MM/yyyy  HH:mm:ss");
+		DateFormat dateFormat1 = new SimpleDateFormat("dd-MM-yyyy HH.mm.ss");
 	    Calendar cal1 = Calendar.getInstance();
 	    this.tag = dateFormat1.format(cal1.getTime());
 		this.startTime = System.currentTimeMillis();		

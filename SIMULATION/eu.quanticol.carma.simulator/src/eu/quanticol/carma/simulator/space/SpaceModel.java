@@ -21,6 +21,8 @@ public class SpaceModel {
 	private final HashMap<Location, Node> vertexes;
 	
 	private final HashMap<String,Set<Node>> labels;
+
+	private HashMap<Set<String>, HashMap<Node,HashMap<Node, Double>>> distances;
 	
 	public SpaceModel() {
 		this.vertexes = new HashMap<>();
@@ -113,6 +115,5 @@ public class SpaceModel {
 		result.addAll(vertexes.values());
 		return result;
 	}
-	
-	
+		
 }

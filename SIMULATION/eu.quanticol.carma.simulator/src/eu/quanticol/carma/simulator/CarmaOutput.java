@@ -18,18 +18,24 @@ public abstract class CarmaOutput implements CarmaAction {
 	
 	@Override
 	public String toString() {
-		return action+(broadcast?"*":"");
+		return name+(broadcast?"*":"");
 	}
 
-	private int action;
-	private boolean broadcast;
+	private final String name;
+	private final int action;
+	private final boolean broadcast;
 
-	public CarmaOutput(int action, boolean broadcast ) {
+	public CarmaOutput(String name, int action, boolean broadcast ) {
 		super();
 		this.action = action;
 		this.broadcast = broadcast;
+		this.name = name;
 	}
 
+	public CarmaOutput(int action, boolean broadcast) {
+		this(action+"",action,broadcast);
+	}
+	
 	/**
 	 * @return the action
 	 */
@@ -88,6 +94,11 @@ public abstract class CarmaOutput implements CarmaAction {
 					return false;
 				}
 			}
+
+			@Override
+			public String getName() {
+				return CarmaOutput.this.toString();
+			}
 			
 		};
 		if (continuation != null) {
@@ -103,6 +114,13 @@ public abstract class CarmaOutput implements CarmaAction {
 			CarmaComponent caspaComponent, CarmaStore sender, int action,
 			Object value, boolean broadcast, Activity continuation) {
 		return null;
+	}
+
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
 	}
 
 

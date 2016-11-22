@@ -41,4 +41,9 @@ public class GetActivity implements Activity {
 		return true;
 	}
 
+	@Override
+	public String getName() {
+		return "";
+	}
+
 }

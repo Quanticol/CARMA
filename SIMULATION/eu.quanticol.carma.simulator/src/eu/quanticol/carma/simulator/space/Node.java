@@ -3,6 +3,7 @@ package eu.quanticol.carma.simulator.space;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 
 public class Node {
 	
@@ -123,6 +124,16 @@ public class Node {
 	
 	public <T> T get( int i , Class<T> clazz) {
 		return data.get(i, clazz);
+	}
+	
+	public Double getMinDistance( Node n , Set<String> labels ) {
+		double result = Double.MAX_VALUE;
+		
+		for (HashMap<String, Object> edges : this.outgoingData.get(n)) {
+			
+		}
+		
+		return result;
 	}
 	
 }

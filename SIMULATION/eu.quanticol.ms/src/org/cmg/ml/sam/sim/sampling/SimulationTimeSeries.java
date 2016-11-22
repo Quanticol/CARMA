@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
@@ -78,7 +79,15 @@ public class SimulationTimeSeries {
 			return this.getStandardDeviation(i)/Math.sqrt( replications );		
 		}
 	}
+
 	
+	public void writeToCSV( StringWriter writer ) {
+		for( int i=0 ; i<data.length ; i++ ) {
+			writer.write(getTime(i)+";"+getMean(i)+";"+getStandardDeviation(i)+";"+getConfidenceInterval(i)+";\n");
+			writer.flush();
+		}
+	}
+
 	public void writeToCSV( PrintWriter writer ) {
 		for( int i=0 ; i<data.length ; i++ ) {
 			writer.println(getTime(i)+";"+getMean(i)+";"+getStandardDeviation(i)+";"+getConfidenceInterval(i)+";");

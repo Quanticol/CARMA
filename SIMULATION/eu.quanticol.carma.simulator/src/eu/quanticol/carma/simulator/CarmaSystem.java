@@ -92,7 +92,7 @@ public abstract class CarmaSystem implements ModelI {
 	public <T> T getGlobalAttribute( String attribute, Class<T> clazz ) {
 		return global.get(attribute, clazz);
 	}
-	
+
 	public boolean unicastOutput( RandomGenerator r , CarmaComponent sender, int action,
 			CarmaPredicate predicate, Object value) {
 		WeightedStructure<Activity> activeInputs = new ComposedWeightedStructure<Activity>();

@@ -3,13 +3,17 @@
  */
 package eu.quanticol.carma.core.ui.views;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.LinkedList;
 
 import org.cmg.ml.sam.sim.sampling.SimulationTimeSeries;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -573,31 +577,50 @@ public class SimulationView extends ViewPart {
 	}
 
 	protected void doExportExperimentData() {
-		SimulationOutcome result = (SimulationOutcome) resultViewer.getStructuredSelection().getFirstElement();
-		if (result != null) {
-			DirectoryDialog dialog = new DirectoryDialog(suiteViewer.getControl().getShell(), SWT.SHEET);
-			dialog.setMessage("Select the location");
-			String locationstr = dialog.open();
-			if (locationstr != null) {
-				try {
-					File parent = new File(locationstr);
-					for (SimulationTimeSeries serie : result.getCollectedData()) {
-						PrintWriter writer = new PrintWriter(new File(parent, serie.getName()+".csv"));
-						serie.writeToCSV(writer);
-						writer.close();
-					}
-					MessageDialog.openInformation(
-							suiteViewer.getControl().getShell(),
-							"Info...",
-							"Data saved!");										
-				} catch (FileNotFoundException e) {
-					MessageDialog.openError(
-							suiteViewer.getControl().getShell(),
-							"Error...",
-							e.getMessage());					
+		try {
+			TreePath[] paths = suiteViewer.getStructuredSelection().getPaths();
+			
+			if ((paths != null)&&(paths.length>0)) {
+				TreePath selected = paths[0];			
+				ProjectSimulationSuite projectSuite = (ProjectSimulationSuite) selected.getFirstSegment();
+				IFolder folder = projectSuite.getProject().getFolder("output");
+				if (!folder.exists()) {
+					folder.create(true, true,null);
 				}
-			}
+				SimulationOutcome result = (SimulationOutcome) resultViewer.getStructuredSelection().getFirstElement();
+				if (result != null) {
+//					DirectoryDialog dialog = new DirectoryDialog(suiteViewer.getControl().getShell(), SWT.SHEET);
+//					dialog.setMessage("Select the location");
+//					String locationstr = dialog.open();
+//					if (locationstr != null) {
+//							File parent = new File(locationstr);
+							for (SimulationTimeSeries serie : result.getCollectedData()) {
+								StringWriter sWriter = new StringWriter();
+								PrintWriter writer = new PrintWriter(sWriter);
+//								PrintWriter writer = new PrintWriter(new File(parent, serie.getName()+(result.getStartingTime().replace(' ', '_').replace('/', '_'))+".csv"));
+								serie.writeToCSV(writer);
+								writer.close();
+								IFile outputFile = projectSuite.getProject().getFile("output/"+serie.getName()+(result.getStartingTime().replace(' ', '_').replace('/', '_'))+".csv");
+								if (outputFile.exists()) {
+									outputFile.setContents( new ByteArrayInputStream(sWriter.toString().getBytes()) , true , false , null );
+								} else {
+									outputFile.create( new ByteArrayInputStream(sWriter.toString().getBytes()) , true , null);
+								}
+							}
+							MessageDialog.openInformation(
+									suiteViewer.getControl().getShell(),
+									"Info...",
+									"Data saved!");										
+//					}
+				}
+			}					
+		} catch (CoreException e) {
+			MessageDialog.openError(
+					suiteViewer.getControl().getShell(),
+					"Error...",
+					e.getMessage());					
 		}
+
 	}
 
 	private void makeSaveLaboratoryAction() {

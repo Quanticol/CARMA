@@ -15,13 +15,19 @@ import org.cmg.ml.sam.sim.util.WeightedStructure;
  */
 public abstract class CarmaInput implements CarmaAction {
 	
-	private int action;
-	private boolean broadcast;
+	private final String name;
+	private final int action;
+	private final boolean broadcast;
 
-	public CarmaInput(int action, boolean broadcast) {
+	public CarmaInput(String name, int action, boolean broadcast) {
 		super();
 		this.action = action;
 		this.broadcast = broadcast;
+		this.name = name;
+	}
+
+	public CarmaInput(int action, boolean broadcast) {
+		this(action+"",action,broadcast);
 	}
 
 	/**
@@ -89,6 +95,12 @@ public abstract class CarmaInput implements CarmaAction {
 					}
 					return true;
 				}
+
+				@Override
+				public String getName() {
+					return name;
+				}
+				
 				
 			};
 			if (continuation != null) {
@@ -100,6 +112,18 @@ public abstract class CarmaInput implements CarmaAction {
 			);
 		}
 		return null;
+	}
+
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	@Override
+	public String toString() {
+		return name+(broadcast?"*":"");
 	}
 
 	

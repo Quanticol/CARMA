@@ -4,6 +4,7 @@
 package eu.quanticol.carma.simulator;
 
 import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.commons.math3.random.RandomGenerator;
 import org.cmg.ml.sam.sim.Activity;
@@ -127,5 +128,7 @@ public class CarmaComponent {
 		return isKilled;
 	}
 
-
+	public List<CarmaProcess> getProcesses() {
+		return this.processes;
+	}
 }

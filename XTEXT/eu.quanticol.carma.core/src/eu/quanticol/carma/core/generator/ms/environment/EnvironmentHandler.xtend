@@ -159,7 +159,7 @@ class EnvironmentHandler {
 		«ENDFOR»
 		«ReferenceContext::RECEIVER.locTemporaryVariableDeclaration("receiver")»
 		«FOR p:probabilities»
-		if ((action==«p.activity.name.actionName»)
+		if ((action==«p.activity.name.actionIndexName»)
 			) «p.expression.functionBodyToJava»
 		«ENDFOR»
 		«IF defaultValue != null»
@@ -184,7 +184,7 @@ class EnvironmentHandler {
 		«ENDFOR»
 		«ReferenceContext::RECEIVER.locTemporaryVariableDeclaration("receiver")»
 		«FOR p:weights»
-		if ((action==«p.activity.name.actionName»)
+		if ((action==«p.activity.name.actionIndexName»)
 			) «p.expression.functionBodyToJava»
 		«ENDFOR»
 		«IF defaultValue != null»
@@ -215,7 +215,7 @@ class EnvironmentHandler {
 		«ENDFOR»
 		«ReferenceContext::SENDER.locTemporaryVariableDeclaration("sender")»
 		«FOR p:rates»
-		if ((action==«p.stub.activity.name.actionName»)
+		if ((action==«p.stub.activity.name.actionIndexName»)
 			) «p.expression.functionBodyToJava»
 		«ENDFOR»
 		«IF defaultValue != null»
@@ -240,7 +240,7 @@ class EnvironmentHandler {
 		«ENDFOR»
 		«ReferenceContext::SENDER.locTemporaryVariableDeclaration("sender")»
 		«FOR u:updates»
-		if (action==«u.stub.activity.name.actionName») {
+		if (action==«u.stub.activity.name.actionIndexName») {
 			«u.command.generateCollective»
 			return ;				
 		}

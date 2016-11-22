@@ -57,6 +57,8 @@ import eu.quanticol.carma.core.carma.ForLoop
 import eu.quanticol.carma.core.carma.LoopingVariable
 import eu.quanticol.carma.core.carma.ForEach
 import eu.quanticol.carma.core.carma.NodeExpressionOrArrayAccess
+import eu.quanticol.carma.core.carma.IntegerType
+import eu.quanticol.carma.core.carma.RealType
 
 class CARMAValidator extends AbstractCARMAValidator {
 	
@@ -340,6 +342,20 @@ class CARMAValidator extends AbstractCARMAValidator {
 		}
 			
 	}
+
+	//MeasureDefinition - Wrong type for measure parameter!
+	public static val ERROR_MeasureDefinition_wrong_parameter_type 	= "ERROR_MeasureDefinition_wrong_parameter_type"
+	
+	@Check
+	def check_ERROR_MeasureDefinition_wrong_parameter_type(MeasureDefinition m) {
+
+		if (m.variables.exists[ !((it.type instanceof IntegerType)||(it.type instanceof RealType))  ]) {
+			error("Error: wrong measure declaration, only int and real parameters are allowed!",CarmaPackage::eINSTANCE.referenceableElement_Name, ERROR_MeasureDefinition_wrong_parameter_type);				
+		}
+			
+	}
+	
+	
 	
 	public static val ERROR_UpdateAssignment_type_error 	= "ERROR_UpdateAssignment_type_error"
 	

@@ -238,7 +238,7 @@ class CollectiveHandler {
 			var idxVar = act.parameters.indexed
 			'''
 			CarmaAction action = new CarmaInput( 
-				«act.activity.name.actionName» , «act.activity.isIsBroadacst»  		
+				«act.activity.name.actionName» , «act.activity.name.actionIndexName» , «act.activity.isIsBroadacst»  		
 			) {
 				
 				@Override
@@ -323,7 +323,7 @@ class CollectiveHandler {
 		var isSpontaneous = (act.activity.predicate == null)&&(!act.withData)
 		'''
 		CarmaAction action = new CarmaOutput(
-			«act.activity.name.actionName» , «act.activity.isIsBroadacst»  		
+			«act.activity.name.actionName» , «act.activity.name.actionIndexName» , «act.activity.isIsBroadacst»  		
 		) {
 			
 			@Override

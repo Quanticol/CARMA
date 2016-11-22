@@ -19,6 +19,8 @@ import org.apache.commons.math3.random.RandomGenerator;
  *
  */
 public interface Activity {
+	
+	public String getName();
 
 	public boolean execute(RandomGenerator r);
 

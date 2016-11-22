@@ -28,4 +28,6 @@ public interface CarmaAction {
 			Activity continuation 
 		);
 	
+	public String getName(); 
+	
 }

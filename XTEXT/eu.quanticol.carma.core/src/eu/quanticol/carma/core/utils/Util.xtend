@@ -88,6 +88,7 @@ class Util {
 	public static final String RECEIVER_PREFIX = "__RECEIVER__";
 	public static final String STATE_PREFIX = "__STATE__";
 	public static final String ACT_PREFIX = "__ACT__";
+	public static final String ACT_NAME_PREFIX = "__ACT_NAME__";
 	public static final String MEASURE_PREFIX = "__MEASURE__";
 	public static final String SYSTEM_PREFIX = "__SYSTEM__";
 	
@@ -248,7 +249,7 @@ class Util {
 			RealType: '''Double'''
 			BooleanType: '''Boolean'''
 			SetType: '''HashSet<«ft.arg.toJavaType»>'''
-			ListType: '''HashSet<«ft.arg.toJavaType»>'''
+			ListType: '''LinkedList<«ft.arg.toJavaType»>'''
 			LocationType: '''Node'''
 			CustomType: {
 				var ref = ft.reference
@@ -285,10 +286,14 @@ class Util {
 		'''«STATE_PREFIX»_«component»_«name»'''
 	}
 
-	def  actionName( String name ) {
+	def  actionIndexName( String name ) {
 		'''«ACT_PREFIX»«name»'''
 	}
-
+	
+	def actionName( String name ) {
+		'''«ACT_NAME_PREFIX»«name»'''	
+	}
+	
 	def attributeName( AttributeReference r ) {
 		switch r {
 			StoreAttribute: r.reference.name
@@ -324,7 +329,7 @@ class Util {
 			ConstantDefinition: element.name.constantName
 			ProcessState: component.carmaProcessCreation(element.name)
 //			MeasureVariableDeclaration: element.name.variableName
-			LabelDefinition: '''sys.getSpaceModel().getLabel( "«element.name»" )'''
+			LabelDefinition: '''CarmaSystem.getCurrentSpaceModel().getLabel( "«element.name»" )'''
 			LocationVariable: element.name.variableName
 			LoopingVariable: element.name.variableName
 			MeasureDefinition: element.name.measureName

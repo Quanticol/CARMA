@@ -39,6 +39,11 @@ public class PopulationModel<S> implements ModelI {
 					tra.getRate(), 
 					new Activity() {
 						@Override
+						public String getName() {
+							return "";
+						}
+
+						@Override
 						public boolean execute(RandomGenerator r) {
 							apply( tra , r );
 							return false;

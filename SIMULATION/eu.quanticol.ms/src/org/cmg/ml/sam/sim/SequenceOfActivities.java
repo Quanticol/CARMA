@@ -50,4 +50,13 @@ public class SequenceOfActivities implements Activity {
 		return result;
 	}
 
+	@Override
+	public String getName() {
+		String toReturn = "";
+		for( int i=0 ; i<toReturn.length() ; i++ ) {
+			toReturn += activities[i].getName();
+		}
+		return toReturn;
+	}
+
 }

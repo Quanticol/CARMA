@@ -12,7 +12,8 @@ class ActivityHandler {
 		
 		'''
 		«FOR a:activities.indexed»
-		public static final int «a.value.name.actionName» = «a.key»;	
+		public static final int «a.value.name.actionIndexName» = «a.key»;	
+		public static final String «a.value.name.actionName» = "«a.value.name»";
 		«ENDFOR»
 		'''
 		

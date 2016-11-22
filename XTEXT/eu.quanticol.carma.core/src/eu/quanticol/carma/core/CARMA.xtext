@@ -254,7 +254,7 @@ BasicType:
 		RealType |
 		BooleanType |
 		CustomType |
-		ArrayType |
+//		ArrayType |
 		ListType |
 		SetType |
 		LocationType
@@ -270,7 +270,7 @@ BooleanType: {BooleanType} "bool";
 
 CustomType: {CustomType} reference=[ReferenceableType];
 
-ArrayType: 'array' '<' arg=BasicType '>';
+//ArrayType: 'array' '<' arg=BasicType '>';
 
 ListType: 'list' '<' arg=BasicType '>';
 

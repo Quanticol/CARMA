@@ -39,6 +39,11 @@ public class SeirAgent extends Agent<SeirState> {
 					new Activity() {
 
 						@Override
+						public String getName() {
+							return "";
+						}
+
+						@Override
 						public boolean execute(
 								RandomGenerator r ) {
 							data.fromStoE();
@@ -53,6 +58,11 @@ public class SeirAgent extends Agent<SeirState> {
 			return new WeightedElement<Activity>(
 					data.fromEtoIRate() ,
 					new Activity() {
+
+						@Override
+						public String getName() {
+							return "";
+						}
 
 						@Override
 						public boolean execute(
@@ -72,6 +82,11 @@ public class SeirAgent extends Agent<SeirState> {
 					new Activity() {
 
 						@Override
+						public String getName() {
+							return "";
+						}
+
+						@Override
 						public boolean execute(
 								RandomGenerator r ) {
 							data.fromItoR();
@@ -87,6 +102,11 @@ public class SeirAgent extends Agent<SeirState> {
 			return new WeightedElement<Activity>(
 					data.fromRtoIRate() ,
 					new Activity() {
+
+						@Override
+						public String getName() {
+							return "";
+						}
 
 						@Override
 						public boolean execute(

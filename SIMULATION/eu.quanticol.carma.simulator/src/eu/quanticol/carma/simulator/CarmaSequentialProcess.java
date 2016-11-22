@@ -69,7 +69,9 @@ public class CarmaSequentialProcess extends CarmaProcess {
 					action.getActivity(
 						caspaSystem, 
 						getComponent(), 
-						new Activity() {				
+						new Activity() {	
+							
+							
 							@Override
 							public boolean execute(RandomGenerator r) {
 								if (transition.isKill()) {
@@ -79,6 +81,11 @@ public class CarmaSequentialProcess extends CarmaProcess {
 								}
 								caspaSystem.removeKilled();
 								return true;
+							}
+
+							@Override
+							public String getName() {
+								return "";
 							}
 						}
 					)
@@ -137,6 +144,11 @@ public class CarmaSequentialProcess extends CarmaProcess {
 										setState(next);
 									}
 									return true;
+								}
+
+								@Override
+								public String getName() {
+									return "";
 								}
 							})
 				);
