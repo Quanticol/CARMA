@@ -79,6 +79,7 @@ class CollectiveHandler {
 			«FOR v:comp.parameters SEPARATOR ','»«v.type.toJavaType» «v.name.variableName» «ENDFOR» 
 		) {
 			CarmaComponent c = new CarmaComponent();
+			c.setName( "«comp.name»" );
 			«IF comp.store != null»
 			«FOR a:comp.store.attributes»
 			c.set( "«a.name»" ,  «a.value.expressionToJava» );

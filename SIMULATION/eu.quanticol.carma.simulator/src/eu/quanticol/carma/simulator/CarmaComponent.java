@@ -18,6 +18,8 @@ import eu.quanticol.carma.simulator.space.Node;
  *
  */
 public class CarmaComponent {
+
+	protected String name;
 	
 	protected CarmaStore store;
 
@@ -130,5 +132,22 @@ public class CarmaComponent {
 
 	public List<CarmaProcess> getProcesses() {
 		return this.processes;
+	}
+
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		if (name == null) {
+			return "<Unnamed>";
+		}
+		return name;
+	}
+
+	/**
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
 	}
 }
