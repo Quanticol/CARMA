@@ -4,6 +4,7 @@
 package eu.quanticol.carma.simulator;
 
 import java.util.HashMap;
+import java.util.Set;
 
 /**
  * @author loreti
@@ -43,6 +44,10 @@ public class CarmaStore {
 	@Override
 	public String toString() {
 		return data.toString();
+	}
+	
+	public Set<String> getAttributes() {
+		return data.keySet();
 	}
 
 	
