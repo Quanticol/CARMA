@@ -59,6 +59,12 @@ import eu.quanticol.carma.core.carma.ForEach
 import eu.quanticol.carma.core.carma.NodeExpressionOrArrayAccess
 import eu.quanticol.carma.core.carma.IntegerType
 import eu.quanticol.carma.core.carma.RealType
+import eu.quanticol.carma.core.carma.NamedNode
+import eu.quanticol.carma.core.carma.SetComp
+import eu.quanticol.carma.core.carma.Environment
+import eu.quanticol.carma.core.carma.AverageMeasure
+import eu.quanticol.carma.core.carma.MinMeasure
+import eu.quanticol.carma.core.carma.MaxMeasure
 
 class CARMAValidator extends AbstractCARMAValidator {
 	
@@ -375,13 +381,64 @@ class CARMAValidator extends AbstractCARMAValidator {
 	@Check
 	def check_ERROR_Unbound_UntypedVariable_error( Reference r ) {
 		
-		var t = r.reference.typeOf
-		if ((t == null)||(t.error)) {
-			error("Error: Unbound variable!",CarmaPackage::eINSTANCE.reference_Reference,ERROR_Unbound_UntypedVariable_error);			
+		if (!(r.reference instanceof NamedNode)) {
+			var t = r.reference.typeOf
+			if ((t == null)||(t.error)) {
+				error("Error: Unbound variable!",CarmaPackage::eINSTANCE.reference_Reference,ERROR_Unbound_UntypedVariable_error);			
+			}
 		}
 
 	}
+
+	public static val ERROR_Use_of_SetComp_in_expressions = "ERROR_Use_of_SetComp_in_expressions"
 	
+	@Check
+	def check_ERROR_Use_of_SetComp_in_expressions( SetComp e ) {
+		var env = e.getContainerOfType(typeof(Environment))
+		var mis = e.getContainerOfType(typeof(MeasureDefinition))
+		if ((env == null)&&(mis == null)) {
+				error("Error: illegal use of population expression!",null,ERROR_Use_of_SetComp_in_expressions);			
+		}	
+	}
+
+	public static val ERROR_Use_of_AverageMeasure_in_expressions = "ERROR_Use_of_AverageMeasure_in_expressions"
+	
+	@Check
+	def check_ERROR_Use_of_AverageMeasure_in_expressions( AverageMeasure e ) {
+		var env = e.getContainerOfType(typeof(Environment))
+		var mis = e.getContainerOfType(typeof(MeasureDefinition))
+		if ((env == null)&&(mis == null)) {
+				error("Error: illegal use of population expression!",CarmaPackage::eINSTANCE.averageMeasure_Value,ERROR_Use_of_AverageMeasure_in_expressions);			
+		}	
+	}
+
+	public static val ERROR_Use_of_MinMeasure_in_expressions = "ERROR_Use_of_MinMeasure_in_expressions"
+	
+	@Check
+	def check_ERROR_Use_of_MinMeasure_in_expressions( MinMeasure e ) {
+		var env = e.getContainerOfType(typeof(Environment))
+		var mis = e.getContainerOfType(typeof(MeasureDefinition))
+		if ((env == null)&&(mis == null)) {
+				error("Error: illegal use of population expression!",CarmaPackage::eINSTANCE.minMeasure_Value,ERROR_Use_of_MinMeasure_in_expressions);			
+		}	
+	}
+
+
+	public static val ERROR_Use_of_MaxMeasure_in_expressions = "ERROR_Use_of_MaxMeasure_in_expressions"
+	
+	@Check
+	def check_ERROR_Use_of_MaxMeasure_in_expressions( MaxMeasure e ) {
+		var env = e.getContainerOfType(typeof(Environment))
+		var mis = e.getContainerOfType(typeof(MeasureDefinition))
+		if ((env == null)&&(mis == null)) {
+				error("Error: illegal use of expression!",CarmaPackage::eINSTANCE.minMeasure_Value,ERROR_Use_of_MaxMeasure_in_expressions);			
+		}	
+	}
+
+
+//MinMeasure
+
+//MaxMeasure
 
 	public static val ERROR_Wrong_Number_Of_Parameters_Input = "ERROR_Wrong_Number_Of_Parameters_Input"
 	

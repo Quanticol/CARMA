@@ -178,10 +178,6 @@
   <eClassifiers xsi:type="ecore:EClass" name="CustomType" eSuperTypes="#//BasicType">
     <eStructuralFeatures xsi:type="ecore:EReference" name="reference" eType="#//ReferenceableType"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ArrayType" eSuperTypes="#//BasicType">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="arg" eType="#//BasicType"
-        containment="true"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ListType" eSuperTypes="#//BasicType">
     <eStructuralFeatures xsi:type="ecore:EReference" name="arg" eType="#//BasicType"
         containment="true"/>

@@ -82,7 +82,11 @@ class CollectiveHandler {
 			c.setName( "«comp.name»" );
 			«IF comp.store != null»
 			«FOR a:comp.store.attributes»
-			c.set( "«a.name»" ,  «a.value.expressionToJava» );
+			«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE)»
+			«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY)»
+			«a.name.attributeName(ReferenceContext::NONE)» =  «a.value.expressionToJava»;
+			«a.name.attributeName(ReferenceContext::MY)» = «a.name.attributeName(ReferenceContext::NONE)»;
+			c.set( "«a.name»" ,  «a.name.attributeName(ReferenceContext::NONE)» );
 			«ENDFOR»
 			«ENDIF»
 			«comp.initBlock.init.processInstantiation(comp.name)»
@@ -257,7 +261,7 @@ class CollectiveHandler {
 							«FOR a:act.update.referencedAttributes»
 							«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
 							«ENDFOR»
-							final «CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::MY)» = store.get( "loc" , Node.class );					
+							«CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::MY)» = store.get( "loc" , Node.class );					
 							«FOR a:act.update.myAttributes»
 							«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"store")»
 							«ENDFOR»
@@ -315,7 +319,10 @@ class CollectiveHandler {
 	
 	def CharSequence updateCommandCode( UpdateCommand u ) {
 		switch u {
-			UpdateAssignment: '''store.set( "«u.reference.attributeName»", «u.expression.expressionToJava» );'''
+			UpdateAssignment: 
+				'''
+				store.set( "«u.reference.attributeName»", «u.expression.expressionToJava» );
+				'''
 			UpdateCollectionAdd: '''«u.reference.attributeName.attributeName(ReferenceContext::MY)».add(«u.arg.expressionToJava»)'''
 		}
 	}

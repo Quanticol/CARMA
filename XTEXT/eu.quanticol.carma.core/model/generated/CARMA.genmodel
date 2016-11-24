@@ -140,9 +140,6 @@
     <genClasses ecoreClass="CARMA.ecore#//CustomType">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//CustomType/reference"/>
     </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//ArrayType">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ArrayType/arg"/>
-    </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//ListType">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ListType/arg"/>
     </genClasses>

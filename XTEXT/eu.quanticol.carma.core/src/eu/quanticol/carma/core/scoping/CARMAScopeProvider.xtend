@@ -57,6 +57,14 @@ import eu.quanticol.carma.core.carma.Weight
 import eu.quanticol.carma.core.carma.ComponentBlockIteratorStatement
 import eu.quanticol.carma.core.carma.ComponentBlockFor
 import eu.quanticol.carma.core.carma.CollectiveDefinition
+import eu.quanticol.carma.core.carma.ForEach
+import eu.quanticol.carma.core.carma.NodeDeclaration
+import eu.quanticol.carma.core.carma.NodeIfThenElseCommand
+import eu.quanticol.carma.core.carma.NodeForCommand
+import eu.quanticol.carma.core.carma.NodeForEach
+import eu.quanticol.carma.core.carma.NodeBlockCommand
+import eu.quanticol.carma.core.carma.NodeBodyCommand
+import eu.quanticol.carma.core.carma.NamedNode
 
 /**
  * This class contains custom scoping description.
@@ -93,6 +101,11 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 	def dispatch getScopeFor( ForCommand container , FunctionCommand command ) {
 		Scopes::scopeFor( newLinkedList( container.variable ) , container.parentScope )
 	}
+
+	def dispatch getScopeFor( ForEach container , FunctionCommand command ) {
+		Scopes::scopeFor( newLinkedList( container.iteration ) , container.parentScope )
+	}
+	
 	
 	def IScope parentScope( FunctionCommand c ) {
 		var parent = c.eContainer
@@ -253,6 +266,36 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 		} else {
 				parentScope
 		}
+	}
+	
+	
+	def scope_NamedLocationExpression_ref( Model m , EReference r ) {
+		Scopes::scopeFor( m.elements.filter(typeof(SpaceDefinition)).map[it.nodes.map[it.declaredNamedNodes].flatten].flatten )
+	}
+	
+	
+	def dispatch Iterable<NamedNode> declaredNodeNames( NodeBodyCommand n ) {
+		newLinkedList()
+	}
+
+	def dispatch Iterable<NamedNode> declaredNodeNames( NamedNode n ) {
+		newLinkedList(n)
+	}
+
+	def dispatch Iterable<NamedNode> declaredNodeNames( NodeIfThenElseCommand n ) {
+		n.thenBlock.declaredNamedNodes+n.elseBlock.declaredNamedNodes
+	}
+	
+	def dispatch Iterable<NamedNode> declaredNodeNames( NodeForCommand n ) {
+		n.body.declaredNamedNodes
+	}
+	
+	def dispatch Iterable<NamedNode> declaredNodeNames( NodeForEach n ) {
+		n.body.declaredNamedNodes
+	}
+	
+	def dispatch Iterable<NamedNode> declaredNodeNames( NodeBlockCommand n ) {
+		n.nodes.map[it.declaredNodeNames].flatten
 	}
 	
 	def scope_Reference_reference( ProcessesBlock a , EReference r) {
