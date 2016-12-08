@@ -68,7 +68,7 @@ class MeasureHandler {
 
 	def measureToJava( MeasureDefinition m ) {
 		'''		
-		private static double «m.name.measureName»( CarmaSystem system «FOR v:m.variables » , «v.type.toJavaType» «v.name.variableName» «ENDFOR») {
+		private double «m.name.measureName»( CarmaSystem system «FOR v:m.variables » , «v.type.toJavaType» «v.name.variableName» «ENDFOR») {
 			final CarmaStore global = system.getGlobalStore();
 			final double now = system.now();
 			final CarmaSystem sys = system;

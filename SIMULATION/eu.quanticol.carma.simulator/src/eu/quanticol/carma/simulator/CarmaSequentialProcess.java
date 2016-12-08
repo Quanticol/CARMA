@@ -181,7 +181,7 @@ public class CarmaSequentialProcess extends CarmaProcess {
 	 */
 	@Override
 	public String getName() {
-		return (currentstate==null?"nil":currentstate.getName());
+		return name;
 	}
 	
 	

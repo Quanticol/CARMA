@@ -94,7 +94,6 @@ import eu.quanticol.carma.core.carma.ProcessState
 import eu.quanticol.carma.core.carma.SetExpression
 import eu.quanticol.carma.core.carma.ListExpression
 import eu.quanticol.carma.core.carma.IsIn
-import eu.quanticol.carma.core.carma.LambdaExpression
 import eu.quanticol.carma.core.carma.SetType
 import eu.quanticol.carma.core.carma.ListType
 import eu.quanticol.carma.core.carma.MyLocation
@@ -125,6 +124,14 @@ import eu.quanticol.carma.core.carma.AccessToEdgeValue
 import eu.quanticol.carma.core.carma.MeasureDefinition
 import eu.quanticol.carma.core.carma.PoSetExpression
 import eu.quanticol.carma.core.carma.PreSetExpression
+import eu.quanticol.carma.core.carma.FilterFunction
+import eu.quanticol.carma.core.carma.ExistsFunction
+import eu.quanticol.carma.core.carma.ForAllFunction
+import com.ibm.icu.text.SelectFormat
+import eu.quanticol.carma.core.carma.SelectFunction
+import eu.quanticol.carma.core.carma.LambdaParameter
+import eu.quanticol.carma.core.carma.LambdaContext
+import eu.quanticol.carma.core.carma.NormalSampling
 
 class TypeSystem {
 
@@ -380,20 +387,38 @@ class TypeSystem {
 	}
 	
 
-	def  dispatch CarmaType typeOf( LambdaExpression f ) {
-		if (f.variables.empty||f.body==null) {
-			CarmaType::NONE_TYPE
-		} else {
-			CarmaType::createFunctionType(
-				CarmaType::createTupleType( f.variables.map[ it.typeOf ] ) ,
-				f.body.typeOf
-			)
-		}
-		
-	}
+//	def  dispatch CarmaType typeOf( LambdaExpression f ) {
+//		if (f.variables.empty||f.body==null) {
+//			CarmaType::NONE_TYPE
+//		} else {
+//			CarmaType::createFunctionType(
+//				CarmaType::createTupleType( f.variables.map[ it.typeOf ] ) ,
+//				f.body.typeOf
+//			)
+//		}
+//		
+//	}
 
 	def dispatch CarmaType typeOf( CastToReal e ) {
 		CarmaType::REAL_TYPE
+	}
+	
+	def dispatch CarmaType typeOf( LambdaParameter e ) {
+		var lambda = e.getContainerOfType(typeof(LambdaContext))
+		if (lambda == null) {
+			CarmaType::NONE_TYPE
+		} else {
+			var arg1Type = lambda.arg1.typeOf
+			if ((arg1Type.set)||(arg1Type.list)) {
+				if (arg1Type instanceof CarmaSetType) {
+					arg1Type.elementsType
+				} else {
+					(arg1Type as CarmaListType).elementsType
+				}
+			} else {
+				CarmaType::ERROR_TYPE
+			}
+		}
 	}
 
 	def dispatch CarmaType typeOf( CastToInteger e ) {
@@ -542,6 +567,10 @@ class TypeSystem {
 	}
 	
 	def  dispatch CarmaType typeOf( AtomicRnd e ) {
+		CarmaType::REAL_TYPE
+	}
+	
+	def  dispatch CarmaType typeOf( NormalSampling e ) {
 		CarmaType::REAL_TYPE
 	}
 	
@@ -738,20 +767,71 @@ class TypeSystem {
 		} else {
 			var fType = e.arg2.typeOf
 			var cType = e.arg1.typeOf
-			if (fType.function&&(cType.list||cType.set)) {
+			if ((!fType.none)&&(!fType.error)&&(cType.list||cType.set)) {
 				if (cType.list) {
-					CarmaType::createListType(fType.asFunction.result)
+					CarmaType::createListType(fType)
 				} else {
-					CarmaType::createSetType(fType.asFunction.result)
+					CarmaType::createSetType(fType)
 				}
 			} else {
 				CarmaType::ERROR_TYPE
 			}
 		}
 	}
-	
+
+	def dispatch CarmaType typeOf( FilterFunction e ) {
+		if ((e.arg1 == null)||(e.arg2 == null)) {
+			CarmaType::NONE_TYPE
+		} else {
+			var cType = e.arg1.typeOf
+			if ((cType.list||cType.set)) {
+				cType
+			} else {
+				CarmaType::ERROR_TYPE
+			}
+		}
+	}	
 
 	
+	def dispatch CarmaType typeOf( SelectFunction e ) {
+		if ((e.arg1 == null)||(e.arg2 == null)) {
+			CarmaType::NONE_TYPE
+		} else {
+			var cType = e.arg1.typeOf
+			if ((cType.list||cType.set)) {
+				if (cType instanceof CarmaSetType) {
+					cType.elementsType
+				} else {
+					(cType as CarmaListType).elementsType
+				}
+			} else {
+				CarmaType::ERROR_TYPE
+			}
+		}
+	}	
+//
+//	def dispatch CarmaType typeOf( ReduceFunction e ) {
+//		if ((e.arg1 == null)||(e.arg2 == null)) {
+//			CarmaType::NONE_TYPE
+//		} else {
+//			var fType = e.arg2.typeOf
+//			var cType = e.arg1.typeOf
+//			if (fType.function&&(cType.list||cType.set)) {
+//				(fType as CarmaFunctionType).result
+//			} else {
+//				CarmaType::ERROR_TYPE
+//			}
+//		}
+//	}	
+	
+	def dispatch CarmaType typeOf( ExistsFunction e ) {
+		CarmaType::BOOLEAN_TYPE
+	}
+
+	def dispatch CarmaType typeOf( ForAllFunction e ) {
+		CarmaType::BOOLEAN_TYPE
+	}
+
 	def dispatch CarmaType typeOf( NewListFunction e ) {
 		if (e.arg1 == null) {
 			CarmaType::NONE_TYPE
@@ -888,10 +968,13 @@ class TypeSystem {
 			case RECORD: t.asRecord.getReference.name.recordClass
 			case ENUM: t.asEnum.getReference.name.enumClass
 			case LIST: "LinkedList<"+(t.asList.elementsType.toJavaType(false))+">"
-			case SET: "Set<"+(t.asSet.elementsType.toJavaType(false))+">"
+			case SET: "HashSet<"+(t.asSet.elementsType.toJavaType(false))+">"
 			case ERROR: "Object"
 			default: null
 		}
 	}
 	
+	def areEqual( UniverseElement e1 , UniverseElement e2 ) {
+		(e1.name==e2.name)&&(e1.type==e2.type)
+	}	
 }

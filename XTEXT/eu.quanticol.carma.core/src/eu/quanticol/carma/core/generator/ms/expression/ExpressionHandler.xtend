@@ -80,7 +80,6 @@ import eu.quanticol.carma.core.typing.TypeSystem
 import eu.quanticol.carma.core.carma.ListExpression
 import eu.quanticol.carma.core.carma.SetExpression
 import eu.quanticol.carma.core.carma.IsIn
-import eu.quanticol.carma.core.carma.LambdaExpression
 import eu.quanticol.carma.core.carma.None
 import eu.quanticol.carma.core.carma.PreFunction
 import eu.quanticol.carma.core.carma.PostFunction
@@ -104,6 +103,11 @@ import eu.quanticol.carma.core.carma.AccessToEdgeValue
 import eu.quanticol.carma.core.carma.MeasureDefinition
 import eu.quanticol.carma.core.carma.PreSetExpression
 import eu.quanticol.carma.core.carma.PoSetExpression
+import eu.quanticol.carma.core.carma.FilterFunction
+import eu.quanticol.carma.core.carma.ExistsFunction
+import eu.quanticol.carma.core.carma.ForAllFunction
+import eu.quanticol.carma.core.carma.SelectFunction
+import eu.quanticol.carma.core.carma.LambdaParameter
 
 class ExpressionHandler {
 	
@@ -135,6 +139,12 @@ class ExpressionHandler {
 		} else {
 			'''( «e.left.expressionToJava» )||( «e.right.expressionToJava» )'''
 		}
+	}
+	
+	def dispatch CharSequence expressionToJava( LambdaParameter c ) {
+		'''
+		__LAMBDA__var
+		'''
 	}
 	
 	def dispatch CharSequence expressionToJava( And e ) {
@@ -352,9 +362,39 @@ class ExpressionHandler {
 	
 	def dispatch CharSequence expressionToJava( MapFunction e ) {
 		'''
-		map( «e.arg1.expressionToJava» , «e.arg2.expressionToJava»)
+		map( «e.arg1.expressionToJava» , __LAMBDA__var -> «e.arg2.expressionToJava»)
 		'''
 	}
+
+	def dispatch CharSequence expressionToJava( FilterFunction e ) {
+		'''
+		filter( «e.arg1.expressionToJava» , __LAMBDA__var -> «e.arg2.expressionToJava»)
+		'''
+	}
+
+	def dispatch CharSequence expressionToJava( ExistsFunction e ) {
+		'''
+		exists( «e.arg1.expressionToJava» , __LAMBDA__var -> «e.arg2.expressionToJava»)
+		'''
+	}
+
+	def dispatch CharSequence expressionToJava( ForAllFunction e ) {
+		'''
+		forall( «e.arg1.expressionToJava» , __LAMBDA__var -> «e.arg2.expressionToJava»)
+		'''
+	}
+
+	def dispatch CharSequence expressionToJava( SelectFunction e ) {
+		'''
+		select( «e.arg1.expressionToJava» , __LAMBDA__var -> «e.arg2.expressionToJava»)
+		'''
+	}
+
+//	def dispatch CharSequence expressionToJava( ReduceFunction e ) {
+//		'''
+//		reduce( «e.arg1.expressionToJava» , «e.arg2.expressionToJava» , «e.arg3.expressionToJava» )
+//		'''
+//	}
 
 	
 	def dispatch CharSequence expressionToJava( NewListFunction e ) {
@@ -652,11 +692,11 @@ class ExpressionHandler {
 		e.reference.getReference( ReferenceContext::GLOBAL , currentComponent )
 	} 
 	
-	def dispatch CharSequence expressionToJava( LambdaExpression e ) {
-		'''
-		«FOR v:e.variables SEPARATOR ','»«v.type.toJavaType» «v.name»«ENDFOR» -> («e.body.expressionToJava»)
-		'''
-	}
+//	def dispatch CharSequence expressionToJava( LambdaExpression e ) {
+//		'''
+//		«FOR v:e.variables SEPARATOR ','»«v.type.toJavaType» «v.name»«ENDFOR» -> («e.body.expressionToJava»)
+//		'''
+//	}
 	
 	def dispatch CharSequence expressionToJava( PreFunction e ) {
 		'''

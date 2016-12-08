@@ -359,6 +359,12 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Expression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="LambdaContext" eSuperTypes="#//Expression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="arg1" eType="#//Expression"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="arg2" eType="#//Expression"
+        containment="true"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="UniformFunction" eSuperTypes="#//Expression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="args" upperBound="-1" eType="#//Expression"
         containment="true"/>
@@ -606,12 +612,6 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="step" eType="#//Expression"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="LambdaExpression" eSuperTypes="#//Expression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="variables" upperBound="-1"
-        eType="#//Variable" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="body" eType="#//Expression"
-        containment="true"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Or" eSuperTypes="#//Expression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//Expression"
         containment="true"/>
@@ -735,6 +735,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="source" eType="#//Expression"
         containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="LambdaParameter" eSuperTypes="#//Expression"/>
   <eClassifiers xsi:type="ecore:EClass" name="Locations" eSuperTypes="#//Expression"/>
   <eClassifiers xsi:type="ecore:EClass" name="MyLocation" eSuperTypes="#//Expression"/>
   <eClassifiers xsi:type="ecore:EClass" name="AtomicTrue" eSuperTypes="#//Expression"/>
@@ -749,11 +750,19 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="fields" upperBound="-1"
         eType="#//FieldAssignment" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="AtomicNow" eSuperTypes="#//Expression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="AtomicNow" eSuperTypes="#//Expression">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="token" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="None" eSuperTypes="#//Expression"/>
   <eClassifiers xsi:type="ecore:EClass" name="AtomicRnd" eSuperTypes="#//Expression"/>
   <eClassifiers xsi:type="ecore:EClass" name="AtomicPi" eSuperTypes="#//Expression"/>
   <eClassifiers xsi:type="ecore:EClass" name="AtomicExp" eSuperTypes="#//Expression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="NormalSampling" eSuperTypes="#//Expression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="mean" eType="#//Expression"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sd" eType="#//Expression"
+        containment="true"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="MyContext" eSuperTypes="#//Expression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="attribute" eType="#//AttributeReference"
         containment="true"/>
@@ -902,12 +911,6 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="trg" eType="#//Expression"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="MapFunction" eSuperTypes="#//Expression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="arg1" eType="#//Expression"
-        containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="arg2" eType="#//Expression"
-        containment="true"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="NewListFunction" eSuperTypes="#//Expression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="arg1" eType="#//BasicType"
         containment="true"/>
@@ -920,4 +923,9 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="arg1" eType="#//Expression"
         containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="MapFunction" eSuperTypes="#//LambdaContext"/>
+  <eClassifiers xsi:type="ecore:EClass" name="FilterFunction" eSuperTypes="#//LambdaContext"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ExistsFunction" eSuperTypes="#//LambdaContext"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ForAllFunction" eSuperTypes="#//LambdaContext"/>
+  <eClassifiers xsi:type="ecore:EClass" name="SelectFunction" eSuperTypes="#//LambdaContext"/>
 </ecore:EPackage>

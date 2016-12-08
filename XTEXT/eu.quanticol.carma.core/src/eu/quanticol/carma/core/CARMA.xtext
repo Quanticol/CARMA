@@ -649,7 +649,7 @@ Range returns Expression:
 
 
 Expression hidden(ML_COMMENT,SL_COMMENT,WS):
-	{LambdaExpression} 'lambda' variables+=Variable (',' variables+=Variable )* '->' body = Or |
+//	{LambdaExpression} 'lambda' '<' variables+=Variable (',' variables+=Variable )* '>' '->' body = Or |
 	Or
 ;
 
@@ -723,6 +723,7 @@ Primary returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 Atomic returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	Reference 
 	| CollectionAtomicExpression
+	| {LambdaParameter} "*"
 	| {Locations} "locations"
 	| {MyLocation} "loc"
 	| {AtomicTrue} "true"
@@ -730,12 +731,13 @@ Atomic returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	| {AtomicInteger} value=INT 
 	| {AtomicReal} value=REAL 
 	| {AtomicRecord} '[' fields += FieldAssignment (',' fields += FieldAssignment)* ']' 
-	| {AtomicNow} "now"
+	| {AtomicNow} token="now"
 	| {None} "none" 
 	| SetComp				
 	| {AtomicRnd} "RND"
 	| {AtomicPi} "PI"
 	| {AtomicExp} "E"
+	| {NormalSampling} "NORMAL" '(' mean=Expression ',' sd=Expression ')'
 	| BuiltInFunctions
 	| {MyContext} "my" "." attribute=AttributeReference
 	| {ReceiverContext} "receiver" "." attribute=AttributeReference
@@ -799,14 +801,20 @@ BuiltInFunctions returns Expression :
 	| {PostFunction} "post" "(" arg=Expression ")"
 	| {AccessToEdgeValue} "edgeValues" "(" src=Expression "," label=[EdgeProperty] "," trg=Expression ")"
 	//Functions on Collections
-	| {MapFunction} "map" "(" arg1=Expression "," arg2=Expression ")"
-//	| {FilterFunction} "filter" "(" arg1=Expression "," arg2=Expression ")"
-//	| {FindFunction} "find" "(" arg1=Expression "," arg2=Expression ")"
-//	| {ExistsFunction} "exist" "(" arg1=Expression "," arg2=Expression ")"
-//	| {ForAllFunction} "forall" "(" arg1=Expression "," arg2=Expression ")"
 	| {NewListFunction} "newList" "(" arg1=BasicType ")"
 	| {NewSetFunction} "newSet" "(" arg2=BasicType ")"
 	| {SizeFunction} "size" "(" arg1 = Expression ")"
+	| LambdaContext
+;
+
+
+LambdaContext:
+	{MapFunction} "map" "(" arg1=Expression "," arg2=Expression ")"
+	| {FilterFunction} "filter" "(" arg1=Expression "," arg2=Expression ")"
+	| {ExistsFunction} "exist" "(" arg1=Expression "," arg2=Expression ")"
+	| {ForAllFunction} "forall" "(" arg1=Expression "," arg2=Expression ")"
+	| {SelectFunction} "select" "(" arg1 = Expression "," arg2=Expression ")"
+//	| {ReduceFunction} "reduce" "(" arg1 = Expression "," arg2=Expression "," arg3=Expression ")"
 ;
 
 UniformFunction: 

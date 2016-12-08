@@ -65,6 +65,25 @@ import eu.quanticol.carma.core.carma.Environment
 import eu.quanticol.carma.core.carma.AverageMeasure
 import eu.quanticol.carma.core.carma.MinMeasure
 import eu.quanticol.carma.core.carma.MaxMeasure
+import eu.quanticol.carma.core.carma.SpaceDefinition
+import eu.quanticol.carma.core.carma.UniverseElement
+import eu.quanticol.carma.core.carma.MapFunction
+import eu.quanticol.carma.core.carma.FilterFunction
+import eu.quanticol.carma.core.carma.ExistsFunction
+import eu.quanticol.carma.core.carma.ForAllFunction
+import eu.quanticol.carma.core.carma.SizeFunction
+import eu.quanticol.carma.core.carma.SelectFunction
+import eu.quanticol.carma.core.carma.LambdaContext
+import eu.quanticol.carma.core.carma.LambdaParameter
+import eu.quanticol.carma.core.carma.impl.CarmaPackageImpl
+import eu.quanticol.carma.core.carma.NamedLocationExpression
+import eu.quanticol.carma.core.carma.NodeDeclaration
+import eu.quanticol.carma.core.carma.LocationExpression
+import eu.quanticol.carma.core.carma.SystemDefinition
+import eu.quanticol.carma.core.carma.NormalSampling
+import eu.quanticol.carma.core.carma.AtomicNow
+import eu.quanticol.carma.core.carma.Processes
+import eu.quanticol.carma.core.carma.ProcessesBlock
 
 class CARMAValidator extends AbstractCARMAValidator {
 	
@@ -1090,7 +1109,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 	public static val ERROR_ComponentBlockInstantiation_wrong_parameter_type = "ERROR_ComponentBlockInstantiation_wrong_parameter_type"
 	
 	@Check
-	def check_ERROR_ERROR_ComponentBlockInstantiation_wrong_parameter_type( ComponentBlockInstantiation cbi ) {
+	def check_ERROR_ComponentBlockInstantiation_wrong_parameter_type( ComponentBlockInstantiation cbi ) {
 		if ((cbi.name.parameters.size == cbi.arguments.size)) {
 			for( var i=0 ; i<cbi.name.parameters.size ; i++ ) {
 				var dt = cbi.name.parameters.get(i).type.toCarmaType
@@ -1101,6 +1120,226 @@ class CARMAValidator extends AbstractCARMAValidator {
 			}
 		}
 	}
+
+	public static val ERROR_Inconsistent_SpaceUniverse_Declaration = "ERROR_Inconsistent_SpaceUniverse_Declaration"
+	
+	@Check
+	def check_ERROR_Inconsistent_SpaceUniverse_Declaration( SpaceDefinition s ) {
+		var model = s.getContainerOfType(typeof(Model))
+		if (model != null) {
+			var smodels = model.elements.filter(typeof(SpaceDefinition)).filter[ it != s ].filter[ it.universe.size != s.universe.size ]
+			if (smodels.length != 0) {
+				error("Error: all the space models in the same file may have the universe!",CarmaPackage::eINSTANCE.spaceDefinition_Universe,ERROR_Inconsistent_SpaceUniverse_Declaration);													
+			}
+		}
+	}
+	
+	@Check
+	def check_ERROR_Inconsistent_SpaceUniverse_Declaration_element( UniverseElement e ) {
+		val space = e.getContainerOfType(typeof(SpaceDefinition))
+		if (space != null) {
+			val idx = space.universe.indexOf(e)
+			var model = space.getContainerOfType(typeof(Model))
+			if (model != null) {
+				var smodels = model.elements.filter(typeof(SpaceDefinition))
+					.filter[ it != space ]
+					.map[ it.universe.get(idx) ]
+					.filter[ !e.areEqual(it) ]
+				if (smodels.length != 0) {
+					error("Error: all the space models in the same file may have the universe!",CarmaPackage::eINSTANCE.universeElement_Type,ERROR_Inconsistent_SpaceUniverse_Declaration);													
+				}
+			}
+		}
+	}
+
+	@Check
+	def check_ERROR_LambdaContext_Type_Arg1( LambdaContext s ) {
+		if (s.arg1 != null) {
+			var eType = s.arg1.typeOf
+			if ((!eType.list)&&(!eType.set)) {
+				error("Error: Either a list or a set is expected here!",CarmaPackage::eINSTANCE.lambdaContext_Arg1,ERROR_Expression_type_error);
+			}
+		}	
+	}
+
+	@Check
+	def check_ERROR_SizeFunction_Type_Arg1( SizeFunction s ) {
+		if (s.arg1 != null) {
+			var eType = s.arg1.typeOf
+			if ((!eType.list)&&(!eType.set)) {
+				error("Error: Either a list or a set is expected here!",CarmaPackage::eINSTANCE.sizeFunction_Arg1,ERROR_Expression_type_error);
+			}
+		}	
+	}
+
+
+	public static val ERROR_LambdaContext_NoNested_Arg2 = "ERROR_LambdaContext_NoNested_Arg2";
+	
+
+	@Check
+	def check_ERROR_LambdaContext_NoNested_Arg2( LambdaContext s ) {
+		if (s.arg2 != null) {
+			var wrongelements = s.arg2.getAllContentsOfType(typeof(LambdaContext))
+			if ((s.arg2 instanceof LambdaContext)||(!wrongelements.empty)) {
+				error("Error: lambda expressions cannot be nested!",CarmaPackage::eINSTANCE.lambdaContext_Arg2,ERROR_LambdaContext_NoNested_Arg2);
+			}
+		}	
+	}
+		
+	public static val ERROR_Location_Parameters = "ERROR_Location_Parameters";
+	
+	@Check
+	def check_ERROR_Location_Parameters( NodeDeclaration e ) {
+		var spaceDef = e.getContainerOfType(typeof(SpaceDefinition))
+		if (spaceDef != null) {
+			var universeSize = spaceDef.universe.size
+			if (e.values.size != universeSize) {
+				error("Error: wrong number of parameters!",CarmaPackage::eINSTANCE.nodeDeclaration_Values,ERROR_Location_Parameters)				
+			}
+		}
+	}
+	
+	@Check
+	def check_ERROR_Location_Parameters_Type( NodeDeclaration e ) {
+		val spaceDef = e.getContainerOfType(typeof(SpaceDefinition))
+		if (spaceDef != null) {
+			val universeSize = spaceDef.universe.size
+			e.values.forEach[x, i|
+				if (i<universeSize) {
+					var actualType = x.typeOf
+					var expectedType = spaceDef.universe.get(i).type.toCarmaType
+					if ((expectedType != null)&&(actualType !=null)&&(!actualType.error)&&(!actualType.none)&&(!expectedType.mostGeneral(actualType).equals(expectedType))) {
+						error("Type Error: Expected "+expectedType+" is "+actualType,CarmaPackage::eINSTANCE.nodeDeclaration_Values,i,ERROR_Expression_type_error);									
+					}
+				}
+			]
+		}
+	}
+
+	@Check
+	def check_ERROR_Location_Parameters_Type( LocationExpression e ) {
+		var spaceModels = e.getContainerOfType(typeof(Model)) ?. elements ?. filter(typeof(SpaceDefinition)) ?: newLinkedList()
+		if (!spaceModels.isEmpty) {
+			val universe = spaceModels.get(0).universe
+			e.values.forEach[x, i|
+				if (i<universe.size) {
+					var actualType = x.typeOf
+					var expectedType = universe.get(i).type.toCarmaType
+					if ((expectedType != null)&&(actualType !=null)&&(!actualType.error)&&(!actualType.none)&&(!expectedType.mostGeneral(actualType).equals(expectedType))) {
+						error("Type Error: Expected "+expectedType+" is "+actualType,CarmaPackage::eINSTANCE.locationExpression_Values,i,ERROR_Expression_type_error);									
+					}
+				}
+			]
+		}
+	}
+		
+	@Check
+	def check_ERROR_Location_Parameters( LocationExpression e ) {
+		var spaceModels = e.getContainerOfType(typeof(Model)) ?. elements ?. filter(typeof(SpaceDefinition)) ?: newLinkedList()
+		if (!spaceModels.isEmpty) {
+			var universeSize = spaceModels.get(0).universe.size
+			if (e.values.size != universeSize) {
+				error("Error: wrong number of parameters!",CarmaPackage::eINSTANCE.locationExpression_Values,ERROR_Location_Parameters)				
+			}
+		} else {
+			error("Error: no space model is defined!",CarmaPackage::eINSTANCE.locationExpression_Values,ERROR_Location_Parameters)							
+		}
+	}
+	
+	
+	public static val ERROR_Location_In_Systems = "ERROR_Location_In_Systems";
+		
+	@Check
+	def check_ERROR_Location_In_Systems( LocationExpression e ) {
+		var sysDefinition = e.getContainerOfType(typeof(SystemDefinition))
+		if (sysDefinition != null) {
+			error("Error: no space model is defined in this system!",CarmaPackage::eINSTANCE.nodeDeclaration_Values,ERROR_Location_In_Systems)				
+		}
+	}
+
+	
+//	@Check
+//	def check_ERROR_Map_Type_Arg2( MapFunction s ) {
+//		if (s.arg2 != null) {
+//			var eType = s.arg2.typeOf
+//			if (!eType.function) {
+//				error("Error: a function is expected here!",CarmaPackage::eINSTANCE.mapFunction_Arg2,ERROR_Expression_type_error);
+//			}
+//		}	
+//	}
+//
+	@Check
+	def check_ERROR_Filter_Type_Arg2( FilterFunction s ) {
+		if (s.arg2 != null) {
+			var eType = s.arg2.typeOf
+			if ((!eType.boolean)) {
+				error("Type Error: Expected "+CarmaType::BOOLEAN_TYPE+" is "+eType,CarmaPackage::eINSTANCE.lambdaContext_Arg2,ERROR_Expression_type_error);
+			}
+		}	
+	}
+
+	@Check
+	def check_ERROR_Filter_Type_Arg2( ForAllFunction s ) {
+		if (s.arg2 != null) {
+			var eType = s.arg2.typeOf
+			if ((!eType.boolean)) {
+				error("Type Error: Expected "+CarmaType::BOOLEAN_TYPE+" is "+eType,CarmaPackage::eINSTANCE.lambdaContext_Arg2,ERROR_Expression_type_error);
+			}
+		}	
+	}
+	
+	@Check
+	def check_ERROR_Filter_Type_Arg2( ExistsFunction s ) {
+		if (s.arg2 != null) {
+			var eType = s.arg2.typeOf
+			if ((!eType.boolean)) {
+				error("Type Error: Expected "+CarmaType::BOOLEAN_TYPE+" is "+eType,CarmaPackage::eINSTANCE.lambdaContext_Arg2,ERROR_Expression_type_error);
+			}
+		}	
+	}
+	
+	@Check
+	def check_ERROR_Filter_Type_Arg2( SelectFunction s ) {
+		if (s.arg2 != null) {
+			var eType = s.arg2.typeOf
+			if ((!eType.integer)&&(!eType.real)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+eType,CarmaPackage::eINSTANCE.lambdaContext_Arg2,ERROR_Expression_type_error);
+			}
+		}	
+	}
+	
+	@Check
+	def check_ERROR_Normal_Mean( NormalSampling ns) {
+		if (ns.mean != null) {
+			var eType = ns.mean.typeOf
+			if ((!eType.integer)&&(!eType.real)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+eType,CarmaPackage::eINSTANCE.normalSampling_Mean,ERROR_Expression_type_error);
+			}
+		}	
+	}
+	
+	@Check
+	def check_ERROR_Normal_Sd( NormalSampling ns) {
+		if (ns.sd != null) {
+			var eType = ns.mean.typeOf
+			if ((!eType.integer)&&(!eType.real)) {
+				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+eType,CarmaPackage::eINSTANCE.normalSampling_Sd,ERROR_Expression_type_error);
+			}
+		}	
+	}
+	
+	public static final String ERROR_Bad_use_of_now = "ERROR_Bad_use_of_now";
+	
+	@Check
+	def check_ERROR_Bad_use_of_now( AtomicNow n ) {
+		var sys = n.getContainerOfType(typeof(Environment));
+		var proc = n.getContainerOfType(typeof(Processes));
+		var comp = n.getContainerOfType(typeof(ProcessesBlock));
+		if ((sys==null)&&(proc==null)&&(comp==null)) {
+			error("Error: Illegal use of 'now'! This expression can only occur in environments and behaviours!",CarmaPackage::eINSTANCE.atomicNow_Token,ERROR_Bad_use_of_now);
+		}
+	}
+	
 }	
 	
 

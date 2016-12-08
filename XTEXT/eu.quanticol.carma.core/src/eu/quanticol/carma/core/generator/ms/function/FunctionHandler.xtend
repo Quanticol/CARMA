@@ -36,7 +36,7 @@ class FunctionHandler {
 	def String getFunction(FunctionDefinition functionDefinition){
 		
 		'''
-		public static «functionDefinition.type.toJavaType» «functionDefinition.name.functionName» ( 
+		public «functionDefinition.type.toJavaType» «functionDefinition.name.functionName» ( 
 			«FOR p:functionDefinition.parameters SEPARATOR ','»«p.toJavaDeclaration»«ENDFOR»
 		) {
 			«functionDefinition.body.functionBodyToJava»

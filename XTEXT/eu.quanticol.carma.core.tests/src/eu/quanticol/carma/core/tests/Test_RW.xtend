@@ -35,7 +35,7 @@ component A(){
 		location dest = none;
 	}
 	behaviour{
-		S = [!my.loc.goal]select*[false]<>{ my.dest := next( my.loc ); }.M;
+		S = [!my.loc.goal]choose*[false]<>{ my.dest := next( my.loc ); }.M;
 		M = move*[false]<>{my.loc := my.dest; }.S;
 	}
 	init{S}

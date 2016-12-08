@@ -47,7 +47,6 @@ import eu.quanticol.carma.core.carma.VariableDeclarationCommand
 import eu.quanticol.carma.core.carma.AssignmentCommand
 import eu.quanticol.carma.core.carma.ProcessState
 import eu.quanticol.carma.core.carma.TargetAssignmentField
-import eu.quanticol.carma.core.carma.LambdaExpression
 import eu.quanticol.carma.core.carma.LocationExpression
 import eu.quanticol.carma.core.carma.LocationVariable
 import eu.quanticol.carma.core.carma.SpaceDefinition
@@ -111,9 +110,9 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 		var parent = c.eContainer
 		switch( parent ) {
 			FunctionCommand: parent.getScopeFor(c)
-			LambdaExpression: Scopes::scopeFor(
-				parent.variables
-			)
+//			LambdaExpression: Scopes::scopeFor(
+//				parent.variables
+//			)
 			FunctionDefinition: Scopes::scopeFor( 
 				parent.parameters , 
 				Scopes::scopeFor( 

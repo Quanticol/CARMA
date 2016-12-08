@@ -274,6 +274,10 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//ActionGuard/guard"/>
     </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//Expression"/>
+    <genClasses ecoreClass="CARMA.ecore#//LambdaContext">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//LambdaContext/arg1"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//LambdaContext/arg2"/>
+    </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//UniformFunction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//UniformFunction/args"/>
     </genClasses>
@@ -449,10 +453,6 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Range/max"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Range/step"/>
     </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//LambdaExpression">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//LambdaExpression/variables"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//LambdaExpression/body"/>
-    </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//Or">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Or/left"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//Or/right"/>
@@ -537,6 +537,7 @@
     <genClasses ecoreClass="CARMA.ecore#//PoSetExpression">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//PoSetExpression/source"/>
     </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//LambdaParameter"/>
     <genClasses ecoreClass="CARMA.ecore#//Locations"/>
     <genClasses ecoreClass="CARMA.ecore#//MyLocation"/>
     <genClasses ecoreClass="CARMA.ecore#//AtomicTrue"/>
@@ -550,11 +551,17 @@
     <genClasses ecoreClass="CARMA.ecore#//AtomicRecord">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AtomicRecord/fields"/>
     </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//AtomicNow"/>
+    <genClasses ecoreClass="CARMA.ecore#//AtomicNow">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CARMA.ecore#//AtomicNow/token"/>
+    </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//None"/>
     <genClasses ecoreClass="CARMA.ecore#//AtomicRnd"/>
     <genClasses ecoreClass="CARMA.ecore#//AtomicPi"/>
     <genClasses ecoreClass="CARMA.ecore#//AtomicExp"/>
+    <genClasses ecoreClass="CARMA.ecore#//NormalSampling">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//NormalSampling/mean"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//NormalSampling/sd"/>
+    </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//MyContext">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//MyContext/attribute"/>
     </genClasses>
@@ -663,10 +670,6 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CARMA.ecore#//AccessToEdgeValue/label"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//AccessToEdgeValue/trg"/>
     </genClasses>
-    <genClasses ecoreClass="CARMA.ecore#//MapFunction">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//MapFunction/arg1"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//MapFunction/arg2"/>
-    </genClasses>
     <genClasses ecoreClass="CARMA.ecore#//NewListFunction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//NewListFunction/arg1"/>
     </genClasses>
@@ -676,5 +679,10 @@
     <genClasses ecoreClass="CARMA.ecore#//SizeFunction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CARMA.ecore#//SizeFunction/arg1"/>
     </genClasses>
+    <genClasses ecoreClass="CARMA.ecore#//MapFunction"/>
+    <genClasses ecoreClass="CARMA.ecore#//FilterFunction"/>
+    <genClasses ecoreClass="CARMA.ecore#//ExistsFunction"/>
+    <genClasses ecoreClass="CARMA.ecore#//ForAllFunction"/>
+    <genClasses ecoreClass="CARMA.ecore#//SelectFunction"/>
   </genPackages>
 </genmodel:GenModel>

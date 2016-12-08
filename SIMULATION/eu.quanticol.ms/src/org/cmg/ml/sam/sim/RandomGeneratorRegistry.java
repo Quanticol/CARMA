@@ -3,8 +3,10 @@
  */
 package org.cmg.ml.sam.sim;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.function.Function;
 
 import org.apache.commons.math3.random.RandomGenerator;
 
@@ -80,10 +82,50 @@ public class RandomGeneratorRegistry {
 		}
 		return last;
 	}
-	
+
+	public static <T> T select( Collection<T> collection , Function<T,Double> weight ) {
+		if (collection.size()==0) {
+			System.out.println("IS EMPTY!!!");
+			return null;
+		}
+		double[] weightArray = new double[collection.size()];
+		double total = 0.0;
+		ArrayList<T> elements = new ArrayList<>();
+		int counter = 0;
+		for (T e : collection) {
+			Double w = weight.apply(e);
+			if (w == null) {
+				w = 0.0;
+			}
+			total += w;
+			weightArray[counter] = total;
+			elements.add(e);
+			counter++;
+
+		}		
+		return select( elements , weightArray , total );
+	}
+
+	private static <T> T select(ArrayList<T> elements, double[] weightArray, double total) {
+		if (total == 0) {
+			return null;
+		}
+		double val = total*rnd();
+		for (int i=0 ; i<weightArray.length; i++ ) {
+			if (val<weightArray[i]) {
+				return elements.get(i);
+			}
+		}
+		return null;
+	}
+
 	public static double rnd() {
 		RandomGenerator rg = getInstance().get();
 		return rg.nextDouble();
 	}
 	
+	public static double normal(double mean, double sd) {
+		RandomGenerator rg = getInstance().get();
+		return rg.nextGaussian()*sd+mean;
+	}
 }
