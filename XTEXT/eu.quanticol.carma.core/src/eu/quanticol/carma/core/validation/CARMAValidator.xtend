@@ -995,10 +995,12 @@ class CARMAValidator extends AbstractCARMAValidator {
 	
 	@Check
 	def check_ERROR_FieldAssignment_type_error( FieldAssignment f ) {
-		var tf = f.field.fieldType.toCarmaType
-		var tv = f.value.typeOf
-		if (!tf.equals(tv)) {
-			error("Type Error: Expected "+tf+" is "+tv,CarmaPackage::eINSTANCE.fieldAssignment_Value,ERROR_FieldAssignment_type_error);
+		if ((f.field != null)&&(f.value != null)) {
+			var tf = f.field.fieldType.toCarmaType
+			var tv = f.value.typeOf
+			if (!tf.equals(tv)) {
+				error("Type Error: Expected "+tf+" is "+tv,CarmaPackage::eINSTANCE.fieldAssignment_Value,ERROR_FieldAssignment_type_error);
+			}		
 		}
 	}
 
@@ -1006,10 +1008,12 @@ class CARMAValidator extends AbstractCARMAValidator {
 	
 	@Check
 	def check_ERROR_VariableAssignment_type_error( AssignmentCommand f ) {
-		var tf = f.target.typeOf
-		var tv = f.value.typeOf
-		if (!tf.equals(tv)) {
-			error("Type Error: Expected "+tf+" is "+tv,CarmaPackage::eINSTANCE.assignmentCommand_Value,ERROR_VariableAssignment_type_error);
+		if ((f.target != null)&&(f.value != null)) {
+			var tf = f.target.typeOf
+			var tv = f.value.typeOf
+			if (!tf.equals(tv)) {
+				error("Type Error: Expected "+tf+" is "+tv,CarmaPackage::eINSTANCE.assignmentCommand_Value,ERROR_VariableAssignment_type_error);
+			}
 		}
 	}
 
