@@ -600,7 +600,7 @@ public class SimulationView extends ViewPart {
 //								PrintWriter writer = new PrintWriter(new File(parent, serie.getName()+(result.getStartingTime().replace(' ', '_').replace('/', '_'))+".csv"));
 								serie.writeToCSV(writer);
 								writer.close();
-								IFile outputFile = projectSuite.getProject().getFile("output/"+serie.getName()+(result.getStartingTime().replace(' ', '_').replace('/', '_'))+".csv");
+								IFile outputFile = projectSuite.getProject().getFile("output/"+serie.getName()+(result.getStartingTime().replace(' ', '_').replace('/', '_').replace(":",""))+".csv");
 								if (outputFile.exists()) {
 									outputFile.setContents( new ByteArrayInputStream(sWriter.toString().getBytes()) , true , false , null );
 								} else {

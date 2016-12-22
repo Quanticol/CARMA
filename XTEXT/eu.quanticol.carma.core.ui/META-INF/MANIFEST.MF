@@ -35,6 +35,7 @@ Export-Package: eu.quanticol.carma.core.ui,
  eu.quanticol.carma.core.ui.contentassist,
  eu.quanticol.carma.core.ui.contentassist.antlr,
  eu.quanticol.carma.core.ui.contentassist.antlr.internal,
+ eu.quanticol.carma.core.ui.data,
  eu.quanticol.carma.core.ui.internal,
  eu.quanticol.carma.core.ui.nature,
  eu.quanticol.carma.core.ui.quickfix

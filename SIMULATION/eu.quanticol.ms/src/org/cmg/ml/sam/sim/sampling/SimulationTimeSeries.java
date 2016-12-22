@@ -83,14 +83,14 @@ public class SimulationTimeSeries {
 	
 	public void writeToCSV( StringWriter writer ) {
 		for( int i=0 ; i<data.length ; i++ ) {
-			writer.write(getTime(i)+";"+getMean(i)+";"+getStandardDeviation(i)+";"+getConfidenceInterval(i)+";\n");
+			writer.write(getTime(i)+";"+getMean(i)+";"+getStandardDeviation(i)+";"+getConfidenceInterval(i)+"\n");
 			writer.flush();
 		}
 	}
 
 	public void writeToCSV( PrintWriter writer ) {
 		for( int i=0 ; i<data.length ; i++ ) {
-			writer.println(getTime(i)+";"+getMean(i)+";"+getStandardDeviation(i)+";"+getConfidenceInterval(i)+";");
+			writer.println(getTime(i)+";"+getMean(i)+";"+getStandardDeviation(i)+";"+getConfidenceInterval(i));
 			writer.flush();
 		}
 	}
