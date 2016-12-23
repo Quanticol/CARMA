@@ -375,11 +375,19 @@ IfThenElseCommand:
 ////////////////////////////////////////////////////ASSIGNMENT
 
 UpdateCommand hidden(ML_COMMENT,SL_COMMENT,WS):
-	('my' '.')? AttributeReference (
-		{UpdateAssignment.reference=current} (":="|"="|'<-') expression=Expression ";" 
-		| {UpdateCollectionAdd.reference=current} "." "add" "(" arg=Expression ")" ";"
-		| {UpdateCollectionRmove.reference=current} "." "remove" "(" arg=Expression ")" ";"
+	AttributeTarget (
+		{UpdateAssignment.target=current} (":="|"="|'<-') expression=Expression ";" 
+		| {UpdateCollectionAdd.target=current} "." "add" "(" arg=Expression ")" ";"
+		| {UpdateCollectionRmove.target=current} "." "remove" "(" arg=Expression ")" ";"
 	)
+;
+
+AttributeTarget:
+	MyContext | GlobalContext | AttributeReference
+;
+
+MyContext:{MyContext} 
+    "my" "." attribute=AttributeReference
 ;
 
 AttributeReference:
@@ -731,7 +739,7 @@ Atomic returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	| {AtomicInteger} value=INT 
 	| {AtomicReal} value=REAL 
 	| {AtomicRecord} '[' fields += FieldAssignment (',' fields += FieldAssignment)* ']' 
-	| {AtomicNow} token="now"
+	| {AtomicNow} "now"
 	| {None} "none" 
 	| SetComp				
 	| {AtomicRnd} "RND"
@@ -739,15 +747,19 @@ Atomic returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	| {AtomicExp} "E"
 	| {NormalSampling} "NORMAL" '(' mean=Expression ',' sd=Expression ')'
 	| BuiltInFunctions
-	| {MyContext} "my" "." attribute=AttributeReference
+	| MyContext
 	| {ReceiverContext} "receiver" "." attribute=AttributeReference
 	| {SenderContext} "sender" "." attribute=AttributeReference
-	| {GlobalContext} "global" "." reference=[AttributeDeclaration]
+	| GlobalContext
 	| {CastToReal} "real" '(' arg=Expression ')'
 	| {CastToInteger} "int" '(' arg=Expression ')'
 	| {TupleExpression} '[' values += Primary (',' values += Primary )* ']'
 //	| {AtomicOutcome}				value=OutcomeProbability	THE ROLE OF THIS CASES IS NOT CLEAR FOR ME.
 //	| {AtomicProcessComposition}	value=ProcessComposition
+;
+
+GlobalContext:
+	"global" "." reference=[AttributeDeclaration]
 ;
 
 CollectionAtomicExpression returns Expression:

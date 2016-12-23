@@ -84,6 +84,11 @@ import eu.quanticol.carma.core.carma.NormalSampling
 import eu.quanticol.carma.core.carma.AtomicNow
 import eu.quanticol.carma.core.carma.Processes
 import eu.quanticol.carma.core.carma.ProcessesBlock
+import eu.quanticol.carma.core.carma.GlobalContext
+import eu.quanticol.carma.core.carma.ReceiverContext
+import eu.quanticol.carma.core.carma.ProbabilityBlock
+import eu.quanticol.carma.core.carma.WeightBlock
+import eu.quanticol.carma.core.carma.SenderContext
 
 class CARMAValidator extends AbstractCARMAValidator {
 	
@@ -387,7 +392,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 	@Check
 	def check_ERROR_AttributeAssignment_type_error( UpdateAssignment assignment ) {
 		
-		var expectedType = assignment ?. reference ?. typeOf
+		var expectedType = assignment ?. target ?. typeOf
 		var actualType = assignment ?. expression ?. typeOf
 		if ((expectedType != null)&&(actualType !=null)&&(!actualType.error)&&(!actualType.none)&&(!expectedType.mostGeneral(actualType).equals(expectedType))) {
 			error("Type Error: Expected "+expectedType+" is "+actualType,CarmaPackage::eINSTANCE.updateAssignment_Expression,ERROR_UpdateAssignment_type_error);			
@@ -1340,9 +1345,47 @@ class CARMAValidator extends AbstractCARMAValidator {
 		var proc = n.getContainerOfType(typeof(Processes));
 		var comp = n.getContainerOfType(typeof(ProcessesBlock));
 		if ((sys==null)&&(proc==null)&&(comp==null)) {
-			error("Error: Illegal use of 'now'! This expression can only occur in environments and behaviours!",CarmaPackage::eINSTANCE.atomicNow_Token,ERROR_Bad_use_of_now);
+//			error("Error: Illegal use of 'now'! This expression can only occur in environments and behaviours!",CarmaPackage::eINSTANCE.atomicNow_Token,ERROR_Bad_use_of_now);
+			error("Error: Illegal use of 'now'! This expression can only occur in environments and behaviours!",null,ERROR_Bad_use_of_now);
 		}
 	}
+	
+	public static final String ERROR_Bad_use_of_global = "ERROR_Bad_use_of_global";
+	
+	@Check
+	def check_ERROR_Bad_use_of_global( GlobalContext c ) {
+		var env = c.getContainerOfType(typeof(Environment));
+		var m = c.getContainerOfType(typeof(MeasureDefinition))
+		if ((env==null)&&(m==null)) {
+//			error("Error: Illegal use of 'now'! This expression can only occur in environments and behaviours!",CarmaPackage::eINSTANCE.atomicNow_Token,ERROR_Bad_use_of_now);
+			error("Error: Illegal use of 'global'! This can only occur in measure definitions and environments!",null,ERROR_Bad_use_of_global);
+		}
+	}
+	
+	public static final String ERROR_Bad_use_of_receiver = "ERROR_Bad_use_of_receiver";
+	
+	@Check
+	def check_ERROR_Bad_use_of_receiver( ReceiverContext c ) {
+		var prob = c.getContainerOfType(typeof(ProbabilityBlock))
+		var weight = c.getContainerOfType(typeof(WeightBlock))
+		if ((prob==null)&&(weight==null)) {
+//			error("Error: Illegal use of 'now'! This expression can only occur in environments and behaviours!",CarmaPackage::eINSTANCE.atomicNow_Token,ERROR_Bad_use_of_now);
+			error("Error: Illegal use of 'receiver'! This can only occur in 'weight' and 'probability' blocks!",null,ERROR_Bad_use_of_receiver);
+		}
+	}
+	
+	public static final String ERROR_Bad_use_of_sender = "ERROR_Bad_use_of_sender";
+	
+	@Check
+	def check_ERROR_Bad_use_of_sender( SenderContext c ) {
+		var env = c.getContainerOfType(typeof(Environment));
+		var store =  c.getContainerOfType(typeof(StoreBlock));
+		if ((env==null)||(store!=null)) {
+//			error("Error: Illegal use of 'now'! This expression can only occur in environments and behaviours!",CarmaPackage::eINSTANCE.atomicNow_Token,ERROR_Bad_use_of_now);
+			error("Error: Illegal use of 'sender'!",null,ERROR_Bad_use_of_sender);
+		}
+	}
+	
 	
 }	
 	

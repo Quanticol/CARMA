@@ -677,7 +677,7 @@ class TypeSystem {
 	def  dispatch CarmaType typeOf( MaxMeasure e ) {
 		e ?. value ?. typeOf ?: CarmaType::NONE_TYPE
 	}
-
+	
 	def  dispatch CarmaType typeOf( MinMeasure e ) {
 		e ?. value ?. typeOf ?: CarmaType::NONE_TYPE
 	}

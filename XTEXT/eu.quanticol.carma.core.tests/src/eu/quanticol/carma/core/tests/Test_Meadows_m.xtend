@@ -30,7 +30,7 @@ fun int DistanceSquared(location a, location b){
 
 fun location GetNextClosestToDestination(location current, location destination){
 	location choice := GetNextRandomChoice(current);
-	for possibleNext in  current.post{
+	for possibleNext in  current.post {
 		if(DistanceSquared(possibleNext, destination) < DistanceSquared(choice, destination)){
 			choice = possibleNext;
 		}

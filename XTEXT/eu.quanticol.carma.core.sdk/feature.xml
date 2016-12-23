@@ -219,14 +219,6 @@ litigation.
       <discovery label="CARMA plug-in web page" url="http://quanticol.sourceforge.net"/>
    </url>
 
-   <includes
-         id="org.eclipse.xtext.redist"
-         version="0.0.0"/>
-
-   <includes
-         id="org.eclipse.nebula.visualization.feature"
-         version="0.0.0"/>
-
    <requires>
       <import plugin="org.eclipse.pde.ui"/>
       <import feature="org.eclipse.xtext.ui" version="2.10.0.v201605250459" match="compatible"/>

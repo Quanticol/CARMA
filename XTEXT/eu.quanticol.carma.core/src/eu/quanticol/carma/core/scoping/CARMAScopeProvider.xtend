@@ -64,6 +64,8 @@ import eu.quanticol.carma.core.carma.NodeForEach
 import eu.quanticol.carma.core.carma.NodeBlockCommand
 import eu.quanticol.carma.core.carma.NodeBodyCommand
 import eu.quanticol.carma.core.carma.NamedNode
+import eu.quanticol.carma.core.carma.ProbabilityBlock
+import eu.quanticol.carma.core.carma.WeightBlock
 
 /**
  * This class contains custom scoping description.
@@ -398,8 +400,10 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 	}
 
 	def scope_AttributeDeclaration( ReceiverContext a , EReference r ) {
+		var prob = a.getContainerOfType(typeof(ProbabilityBlock))
+		var weight = a.getContainerOfType(typeof(WeightBlock))
 		var env = a.getContainerOfType(typeof(Environment))
-		if (env != null) { 
+		if ((env != null)&&((prob!=null)||(weight!=null))) { 
 			var model = env.getContainerOfType(typeof(Model))
 			if (model != null) {
 				Scopes::scopeFor( model.attributes )

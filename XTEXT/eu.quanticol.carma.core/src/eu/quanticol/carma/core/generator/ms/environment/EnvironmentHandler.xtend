@@ -248,12 +248,12 @@ class EnvironmentHandler {
 		'''
 	}
 	
-	def getUpdateEnvironmentCommandCode(UpdateCommand command) {
-		switch (command) {
-			UpdateAssignment: '''global.set( "«command.reference.attributeName»" , «command.expression.expressionToJava» );'''
-			UpdateCollectionAdd: '''«command.reference.attributeName.attributeName(ReferenceContext::MY)».add(«command.arg.expressionToJava»)'''
-		}
-	}
+//	def getUpdateEnvironmentCommandCode(UpdateCommand command) {
+//		switch (command) {
+//			UpdateAssignment: '''global.set( "«command.reference.attributeName»" , «command.expression.expressionToJava» );'''
+//			UpdateCollectionAdd: '''«command.reference.attributeName.attributeName(ReferenceContext::MY)».add(«command.arg.expressionToJava»)'''
+//		}
+//	}
 	
 	
 }

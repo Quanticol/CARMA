@@ -36,6 +36,11 @@ import eu.quanticol.carma.core.carma.UpdateCommand
 import eu.quanticol.carma.core.carma.UpdateAssignment
 import eu.quanticol.carma.core.carma.UpdateCollectionAdd
 import eu.quanticol.carma.core.carma.ComponentBlockIteratorStatement
+import eu.quanticol.carma.core.carma.UpdateCollectionRmove
+import eu.quanticol.carma.core.carma.AttributeTarget
+import eu.quanticol.carma.core.carma.AttributeReference
+import eu.quanticol.carma.core.carma.GlobalContext
+import eu.quanticol.carma.core.carma.MyContext
 
 class CollectiveHandler {
 
@@ -321,9 +326,26 @@ class CollectiveHandler {
 		switch u {
 			UpdateAssignment: 
 				'''
-				store.set( "«u.reference.attributeName»", «u.expression.expressionToJava» );
+				store.set( "«u.target.targetAttributeName»", «u.expression.expressionToJava» );
 				'''
-			UpdateCollectionAdd: '''«u.reference.attributeName.attributeName(ReferenceContext::MY)».add(«u.arg.expressionToJava»)'''
+			UpdateCollectionAdd: '''«u.target.targetAttributeVariable».add(«u.arg.expressionToJava»)'''
+			UpdateCollectionRmove: '''«u.target.targetAttributeVariable».remove(«u.arg.expressionToJava»)'''
+		}
+	}
+	
+	def CharSequence targetAttributeVariable( AttributeTarget target ) {
+		switch target {
+			AttributeReference: target.attributeName.attributeName(ReferenceContext::NONE)
+			GlobalContext: target.reference.name.attributeName(ReferenceContext::NONE)
+			MyContext: target.attribute.attributeName.attributeName(ReferenceContext::MY)
+		}
+	}
+	
+	def CharSequence targetAttributeName( AttributeTarget target ) {
+		switch target {
+			AttributeReference: target.attributeName
+			GlobalContext: target.reference.name
+			MyContext: target.attribute.attributeName
 		}
 	}
 

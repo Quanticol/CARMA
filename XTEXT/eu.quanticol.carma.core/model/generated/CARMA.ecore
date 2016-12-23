@@ -242,7 +242,12 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="UpdateCommand" eSuperTypes="#//ComponentBlockDeclaration"/>
-  <eClassifiers xsi:type="ecore:EClass" name="AttributeReference" eSuperTypes="#//UpdateCommand"/>
+  <eClassifiers xsi:type="ecore:EClass" name="AttributeTarget" eSuperTypes="#//UpdateCommand"/>
+  <eClassifiers xsi:type="ecore:EClass" name="MyContext" eSuperTypes="#//AttributeTarget #//Expression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="attribute" eType="#//AttributeReference"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AttributeReference" eSuperTypes="#//AttributeTarget"/>
   <eClassifiers xsi:type="ecore:EClass" name="StoreAttribute" eSuperTypes="#//AttributeReference">
     <eStructuralFeatures xsi:type="ecore:EReference" name="reference" eType="#//AttributeDeclaration"/>
   </eClassifiers>
@@ -359,6 +364,9 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Expression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="GlobalContext" eSuperTypes="#//AttributeTarget #//Expression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="reference" eType="#//AttributeDeclaration"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="LambdaContext" eSuperTypes="#//Expression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="arg1" eType="#//Expression"
         containment="true"/>
@@ -515,19 +523,19 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="UpdateAssignment" eSuperTypes="#//UpdateCommand">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="reference" eType="#//AttributeReference"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="target" eType="#//AttributeTarget"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="expression" eType="#//Expression"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="UpdateCollectionAdd" eSuperTypes="#//UpdateCommand">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="reference" eType="#//AttributeReference"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="target" eType="#//AttributeTarget"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="arg" eType="#//Expression"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="UpdateCollectionRmove" eSuperTypes="#//UpdateCommand">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="reference" eType="#//AttributeReference"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="target" eType="#//AttributeTarget"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="arg" eType="#//Expression"
         containment="true"/>
@@ -750,9 +758,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="fields" upperBound="-1"
         eType="#//FieldAssignment" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="AtomicNow" eSuperTypes="#//Expression">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="token" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AtomicNow" eSuperTypes="#//Expression"/>
   <eClassifiers xsi:type="ecore:EClass" name="None" eSuperTypes="#//Expression"/>
   <eClassifiers xsi:type="ecore:EClass" name="AtomicRnd" eSuperTypes="#//Expression"/>
   <eClassifiers xsi:type="ecore:EClass" name="AtomicPi" eSuperTypes="#//Expression"/>
@@ -763,10 +769,6 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="sd" eType="#//Expression"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="MyContext" eSuperTypes="#//Expression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="attribute" eType="#//AttributeReference"
-        containment="true"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ReceiverContext" eSuperTypes="#//Expression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="attribute" eType="#//AttributeReference"
         containment="true"/>
@@ -774,9 +776,6 @@
   <eClassifiers xsi:type="ecore:EClass" name="SenderContext" eSuperTypes="#//Expression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="attribute" eType="#//AttributeReference"
         containment="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="GlobalContext" eSuperTypes="#//Expression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="reference" eType="#//AttributeDeclaration"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="CastToReal" eSuperTypes="#//Expression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="arg" eType="#//Expression"

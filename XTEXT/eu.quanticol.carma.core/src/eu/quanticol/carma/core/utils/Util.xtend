@@ -731,4 +731,8 @@ class Util {
 	def areaNames( SpaceDefinition model ) {
 		model.labels
 	}
+	
+	def invokedFunctions( FunctionDefinition f ) {
+		f.body.getAllContentsOfType( typeof(Reference) ).filter[ it.isIsCall ]
+	}
 }

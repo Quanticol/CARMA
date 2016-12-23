@@ -8,6 +8,8 @@ import eu.quanticol.carma.core.generator.ms.environment.EnvironmentHandler
 import eu.quanticol.carma.core.generator.ms.expression.ExpressionHandler
 import eu.quanticol.carma.core.carma.CollectiveReference
 import eu.quanticol.carma.core.carma.CollectiveBlock
+import eu.quanticol.carma.core.generator.ms.attribute.AttributeHandler
+import eu.quanticol.carma.core.utils.ReferenceContext
 
 class SystemHandler {
 	
@@ -15,6 +17,7 @@ class SystemHandler {
 	@Inject extension CollectiveHandler
 	@Inject extension EnvironmentHandler
 	@Inject extension ExpressionHandler
+	@Inject extension AttributeHandler
 	
 	def systemsCollector( Iterable<SystemDefinition> systems ) {
 		'''
@@ -47,7 +50,11 @@ class SystemHandler {
 				super( «IF sys.space != null» «sys.space.spaceName» ( «FOR e:sys.args SEPARATOR ','»«e.expressionToJava»«ENDFOR») «ENDIF»);
 				«IF (sys.environment != null)&&(sys.environment.store != null)»
 				«FOR a:sys.environment.store.attributes»
-				setGLobalAttribute( "«a.name»" , «a.value.expressionToJava» );
+				«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE)»
+				«a.attributeTemporaryVariableDeclaration(ReferenceContext::GLOBAL)»
+				«a.name.attributeName(ReferenceContext::NONE)» =  «a.value.expressionToJava»;
+				«a.name.attributeName(ReferenceContext::GLOBAL)» = «a.name.attributeName(ReferenceContext::NONE)»;
+				setGLobalAttribute( "«a.name»" , «a.name.attributeName(ReferenceContext::NONE)» );
 				«ENDFOR»
 				«ENDIF»
 				CarmaSystem system = this;
