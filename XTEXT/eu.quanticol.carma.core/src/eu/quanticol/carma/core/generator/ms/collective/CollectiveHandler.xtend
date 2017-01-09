@@ -36,11 +36,11 @@ import eu.quanticol.carma.core.carma.UpdateCommand
 import eu.quanticol.carma.core.carma.UpdateAssignment
 import eu.quanticol.carma.core.carma.UpdateCollectionAdd
 import eu.quanticol.carma.core.carma.ComponentBlockIteratorStatement
-import eu.quanticol.carma.core.carma.UpdateCollectionRmove
 import eu.quanticol.carma.core.carma.AttributeTarget
 import eu.quanticol.carma.core.carma.AttributeReference
 import eu.quanticol.carma.core.carma.GlobalContext
 import eu.quanticol.carma.core.carma.MyContext
+import eu.quanticol.carma.core.carma.UpdateCollectionRemove
 
 class CollectiveHandler {
 
@@ -328,8 +328,8 @@ class CollectiveHandler {
 				'''
 				store.set( "«u.target.targetAttributeName»", «u.expression.expressionToJava» );
 				'''
-			UpdateCollectionAdd: '''«u.target.targetAttributeVariable».add(«u.arg.expressionToJava»)'''
-			UpdateCollectionRmove: '''«u.target.targetAttributeVariable».remove(«u.arg.expressionToJava»)'''
+			UpdateCollectionAdd: '''«u.target.targetAttributeVariable».add(«u.expression.expressionToJava»)'''
+			UpdateCollectionRemove: '''«u.target.targetAttributeVariable».remove(«u.expression.expressionToJava»)'''
 		}
 	}
 	

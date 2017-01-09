@@ -6,6 +6,7 @@ Bundle-Version: 1.4.0.qualifier
 Export-Package: org.apache.commons.math3.random,
  org.cmg.ml.sam.sim,
  org.cmg.ml.sam.sim.ds,
+ org.cmg.ml.sam.sim.pm,
  org.cmg.ml.sam.sim.sampling,
  org.cmg.ml.sam.sim.util
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8

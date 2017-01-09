@@ -71,6 +71,10 @@ import eu.quanticol.carma.core.carma.NodeDeclaration
 import eu.quanticol.carma.core.carma.NodeIfThenElseCommand
 import eu.quanticol.carma.core.carma.NodeForLoop
 import eu.quanticol.carma.core.carma.NodeBlockCommand
+import java.util.HashSet
+import java.util.HashMap
+import eu.quanticol.carma.core.carma.RandomExpression
+import eu.quanticol.carma.core.carma.ForLoop
 
 class Util {
 
@@ -367,7 +371,7 @@ class Util {
 	def getExpression( UpdateCommand c ) {
 		switch c {
 			UpdateAssignment: c.expression
-			UpdateCollectionAdd: c.arg
+			UpdateCollectionAdd: c.expression
 		}
 	}
 	
@@ -733,6 +737,116 @@ class Util {
 	}
 	
 	def invokedFunctions( FunctionDefinition f ) {
-		f.body.getAllContentsOfType( typeof(Reference) ).filter[ it.isIsCall ]
+		f.body.getAllContentsOfType( typeof(Reference) ).filter[ it.isIsCall ].map[ it.reference ].filter(typeof(FunctionDefinition))
 	}
-}
+	
+	def isRecursive( FunctionDefinition f ) {
+		val invoked = newHashSet( )
+		invoked.addAll( f.invokedFunctions )
+		var toExpand = invoked
+		while (!toExpand.empty) {
+			var nextToExpand = newHashSet()
+			for (g: toExpand) {
+				nextToExpand.addAll(g.invokedFunctions.filter[!invoked.contains(it)])		
+			}
+			toExpand = nextToExpand
+			invoked.addAll(toExpand)
+		}
+		invoked.contains(f)
+	}
+	
+	def recursiveFunctions( Model m ) {
+		m.elements.filter(typeof(FunctionDefinition)).filter[it.isRecursive]
+	}
+	
+	def dispatch boolean isARandomCommand( IfThenElseCommand c ) {
+		if ((c.condition != null)&&(c.condition.usesRandomExpressions)) {
+			true
+		} else {
+			((c.thenBlock != null)&&(c.thenBlock.isARandomCommand))||
+			((c.elseBlock != null)&&(c.elseBlock.isARandomCommand))
+		}
+	}
+
+	def dispatch boolean isARandomCommand( ReturnCommand c ) {
+		(c.expression != null)&&(c.expression.usesRandomExpressions)
+	}
+
+	def dispatch boolean isARandomCommand( VariableDeclarationCommand c ) {
+		(c.value != null)&&(c.value.usesRandomExpressions)
+	}
+
+	def dispatch boolean isARandomCommand( ForCommand c ) {
+		((c.start!=null)&&(c.start.usesRandomExpressions))||((c.step!=null)&&(c.step.usesRandomExpressions))||((c.end != null)||(c.end.usesRandomExpressions))
+	}
+
+	def dispatch Boolean isARandomCommand( ForEach c ) {
+		(c.iteration != null)&&(c.iteration.value!=null)&&(c.iteration.value.usesRandomExpressions)
+	}
+
+	def dispatch Boolean isARandomCommand( BlockCommand c ) {
+		c.commands.exists[it.isARandomCommand]
+	}
+	
+	def dispatch Boolean isARandomCommand( AssignmentCommand c ) {
+		(c.value != null)&&(c.value.usesRandomExpressions)
+	}
+	
+	def referencedFunctions( EObject o ) {
+		var list = o.getAllContentsOfType(typeof(Reference))
+		if (o instanceof Reference) {
+			list.add( o )
+		}
+		list.filter[it.isIsCall].map[it.reference].filter(typeof(FunctionDefinition))
+	}
+		
+	def void fillRecursiveTable( FunctionDefinition f , HashSet<FunctionDefinition> pending , HashMap<FunctionDefinition,Boolean> recursiveTable ) {
+		if (recursiveTable.get(f)==null) {
+			pending.add( f )
+			var referencedFunctions = f.referencedFunctions
+			referencedFunctions.filter[!pending.contains(it)].forEach[
+				it.fillRecursiveTable(pending,recursiveTable)
+			]
+			if (referencedFunctions.exists[pending.contains(it)||((recursiveTable.get(it)!=null)&&(recursiveTable.get(it)))]) {
+				recursiveTable.put(f,true)
+			} else {
+				recursiveTable.put(f,false)
+			}
+			pending.remove( f )
+		}		
+	}
+	
+	def buildRecursiveTable( Model m ) {
+		val table = newHashMap()
+		val set = newHashSet() 
+		m.elements.filter(typeof(FunctionDefinition)).forEach[it.fillRecursiveTable(set,table)]
+		table
+	}
+	
+	def buildRandomFuncitonTable( Model m ) {
+		val table = newHashMap()
+		m.elements.filter(typeof(FunctionDefinition)).forEach[
+			if (it.body == null) {
+				table.put(it,false)
+			} else {
+				table.put(it,it.body.isARandomCommand)				
+			}
+			
+		]
+		table
+	}
+	
+	def usesRandomExpressions( Expression e ) {
+		(e instanceof RandomExpression)||(!e.getAllContentsOfType(typeof(RandomExpression)).empty)
+	}
+	
+	def isRandom( Expression e , HashMap<FunctionDefinition,Boolean> randomTable ) {
+		(e.usesRandomExpressions)||(e.referencedFunctions.exists[(randomTable.get(it)!=null)&&(randomTable.get(it))])
+	}
+	
+	def isRecursive( Expression e , HashMap<FunctionDefinition,Boolean> recursiveTable ) {
+		e.referencedFunctions.exists[(recursiveTable.get(it)!=null)&&(recursiveTable.get(it))]	
+	}
+	
+	
+ }

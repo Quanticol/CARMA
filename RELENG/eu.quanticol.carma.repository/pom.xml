@@ -21,7 +21,8 @@
 				<version>${tycho-version}</version>
 				<configuration>
 					<finalName>${project.artifactId}-${qualifiedVersion}</finalName>
-				</configuration>
+            		<includeAllDependencies>true</includeAllDependencies>
+            	</configuration>
 			</plugin>
 		</plugins>
 	</build>

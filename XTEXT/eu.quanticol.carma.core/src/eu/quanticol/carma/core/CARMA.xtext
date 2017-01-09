@@ -377,8 +377,8 @@ IfThenElseCommand:
 UpdateCommand hidden(ML_COMMENT,SL_COMMENT,WS):
 	AttributeTarget (
 		{UpdateAssignment.target=current} (":="|"="|'<-') expression=Expression ";" 
-		| {UpdateCollectionAdd.target=current} "." "add" "(" arg=Expression ")" ";"
-		| {UpdateCollectionRmove.target=current} "." "remove" "(" arg=Expression ")" ";"
+		| {UpdateCollectionAdd.target=current} "." "add" "(" expression=Expression ")" ";"
+		| {UpdateCollectionRemove.target=current} "." "remove" "(" expression=Expression ")" ";"
 	)
 ;
 
@@ -742,10 +742,10 @@ Atomic returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	| {AtomicNow} "now"
 	| {None} "none" 
 	| SetComp				
-	| {AtomicRnd} "RND"
+	| AtomicRnd
 	| {AtomicPi} "PI"
 	| {AtomicExp} "E"
-	| {NormalSampling} "NORMAL" '(' mean=Expression ',' sd=Expression ')'
+	| NormalSampling
 	| BuiltInFunctions
 	| MyContext
 	| {ReceiverContext} "receiver" "." attribute=AttributeReference
@@ -756,6 +756,14 @@ Atomic returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	| {TupleExpression} '[' values += Primary (',' values += Primary )* ']'
 //	| {AtomicOutcome}				value=OutcomeProbability	THE ROLE OF THIS CASES IS NOT CLEAR FOR ME.
 //	| {AtomicProcessComposition}	value=ProcessComposition
+;
+
+AtomicRnd:
+	{AtomicRnd} "RND"	
+;
+
+NormalSampling:
+	"NORMAL" '(' mean=Expression ',' sd=Expression ')'	
 ;
 
 GlobalContext:
@@ -819,14 +827,21 @@ BuiltInFunctions returns Expression :
 	| LambdaContext
 ;
 
+RandomExpression:
+	UniformFunction|NormalSampling|SelectFunction|AtomicRnd
+;
 
 LambdaContext:
 	{MapFunction} "map" "(" arg1=Expression "," arg2=Expression ")"
 	| {FilterFunction} "filter" "(" arg1=Expression "," arg2=Expression ")"
 	| {ExistsFunction} "exist" "(" arg1=Expression "," arg2=Expression ")"
 	| {ForAllFunction} "forall" "(" arg1=Expression "," arg2=Expression ")"
-	| {SelectFunction} "select" "(" arg1 = Expression "," arg2=Expression ")"
+	| SelectFunction
 //	| {ReduceFunction} "reduce" "(" arg1 = Expression "," arg2=Expression "," arg3=Expression ")"
+;
+
+SelectFunction:
+	"select" "(" arg1 = Expression "," arg2=Expression ")"	
 ;
 
 UniformFunction: 

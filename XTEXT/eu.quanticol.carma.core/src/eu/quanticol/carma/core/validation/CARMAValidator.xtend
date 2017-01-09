@@ -89,6 +89,18 @@ import eu.quanticol.carma.core.carma.ReceiverContext
 import eu.quanticol.carma.core.carma.ProbabilityBlock
 import eu.quanticol.carma.core.carma.WeightBlock
 import eu.quanticol.carma.core.carma.SenderContext
+import eu.quanticol.carma.core.carma.OutputAction
+import java.util.HashMap
+import eu.quanticol.carma.core.carma.CarmaFactory
+import eu.quanticol.carma.core.carma.ActionGuard
+import eu.quanticol.carma.core.carma.UpdateCollectionAdd
+import eu.quanticol.carma.core.carma.UpdateCollectionRemove
+import eu.quanticol.carma.core.carma.UpdateCommand
+import eu.quanticol.carma.core.carma.Action
+import eu.quanticol.carma.core.carma.Activity
+import eu.quanticol.carma.core.carma.ProcessExpressionChoice
+import eu.quanticol.carma.core.carma.ProcessExpressionGuard
+import eu.quanticol.carma.core.carma.ProcessExpressionAction
 
 class CARMAValidator extends AbstractCARMAValidator {
 	
@@ -1384,6 +1396,92 @@ class CARMAValidator extends AbstractCARMAValidator {
 //			error("Error: Illegal use of 'now'! This expression can only occur in environments and behaviours!",CarmaPackage::eINSTANCE.atomicNow_Token,ERROR_Bad_use_of_now);
 			error("Error: Illegal use of 'sender'!",null,ERROR_Bad_use_of_sender);
 		}
+	}
+	
+	
+	public static final String ERROR_Dangerous_use_of_expressions = "ERROR_Dangerous_use_of_expressions";
+	
+	
+	def dispatch validate_Action_Use_of_Elementary_Expressions( OutputAction act , HashMap<FunctionDefinition,Boolean> recursiveTable , HashMap<FunctionDefinition,Boolean> randomTable ) {
+		if ((act.activity != null)&&(act.activity.predicate != null)) {
+			act.activity.predicate.validate_Action_Guard_Use_of_Elementary_Expressions(recursiveTable,randomTable)
+		}		
+		act.outputArguments.forEach[e, i|
+			if (e.isRandom(randomTable)) {
+				error("Random expressions cannot be used in output actions!",act,CarmaPackage::eINSTANCE.outputAction_OutputArguments,i,eu.quanticol.carma.core.validation.CARMAValidator.ERROR_Dangerous_use_of_expressions)
+			}
+			if (e.isRecursive(recursiveTable)) {
+				error("Recursive functions cannot be used in output actions!",act,CarmaPackage::eINSTANCE.outputAction_OutputArguments,i,eu.quanticol.carma.core.validation.CARMAValidator.ERROR_Dangerous_use_of_expressions)
+			}
+		]	
+		act ?. update ?.updateAssignment?.forEach[c|
+			c.validate_AttributeUpdate_Use_of_Elementary_Expressions(recursiveTable,randomTable)
+		]
+	}
+	
+	def validate_Action_Guard_Use_of_Elementary_Expressions( ActionGuard g , HashMap<FunctionDefinition,Boolean> recursiveTable , HashMap<FunctionDefinition,Boolean> randomTable ) {
+		if (g.guard != null) {
+			if (g.guard.isRandom(randomTable)) {
+				error("Random expressions cannot be used in predicates!",g,CarmaPackage::eINSTANCE.actionGuard_Guard,eu.quanticol.carma.core.validation.CARMAValidator.ERROR_Dangerous_use_of_expressions)
+			}
+			if (g.guard.isRecursive(recursiveTable)) {
+				error("Recursive functions cannot be used in predicates!",g,CarmaPackage::eINSTANCE.actionGuard_Guard,eu.quanticol.carma.core.validation.CARMAValidator.ERROR_Dangerous_use_of_expressions)
+			}
+		}
+	}
+	
+	def validate_AttributeUpdate_Use_of_Elementary_Expressions( UpdateCommand c , HashMap<FunctionDefinition,Boolean> recursiveTable , HashMap<FunctionDefinition,Boolean> randomTable ) {
+		if (c.expression != null) {
+			if (c.expression.isRecursive(recursiveTable)) {
+				error("Recursive functions cannot be used in attribute updates!",c,CarmaPackage::eINSTANCE.updateAssignment_Expression,eu.quanticol.carma.core.validation.CARMAValidator.ERROR_Dangerous_use_of_expressions)
+			}
+		}
+	}
+
+	def dispatch validate_Action_Use_of_Elementary_Expressions( Activity act , HashMap<FunctionDefinition,Boolean> recursiveTable , HashMap<FunctionDefinition,Boolean> randomTable ) {
+		
+	}
+	
+	def dispatch void validate_ProcessExpression_Use_of_Elementary_Expressions( ProcessExpressionChoice p , HashMap<FunctionDefinition,Boolean> recursiveTable , HashMap<FunctionDefinition,Boolean> randomTable ) {
+		p.left.validate_ProcessExpression_Use_of_Elementary_Expressions(recursiveTable,randomTable)
+		p.right.validate_ProcessExpression_Use_of_Elementary_Expressions(recursiveTable,randomTable)
+	}
+
+	def dispatch void validate_ProcessExpression_Use_of_Elementary_Expressions( ProcessExpressionGuard p , HashMap<FunctionDefinition,Boolean> recursiveTable , HashMap<FunctionDefinition,Boolean> randomTable ) {
+		if ((p.guard != null)&&(p.guard.booleanExpression != null)) {
+			if (p.guard.booleanExpression.isRandom(randomTable)) {
+				error("Random expressions cannot be used in process guards!",p,CarmaPackage::eINSTANCE.processExpressionGuard_Guard,eu.quanticol.carma.core.validation.CARMAValidator.ERROR_Dangerous_use_of_expressions)
+			}
+			if (p.guard.booleanExpression.isRecursive(recursiveTable)) {
+				error("Recursive functions cannot be used in process guards!",p,CarmaPackage::eINSTANCE.processExpressionGuard_Guard,eu.quanticol.carma.core.validation.CARMAValidator.ERROR_Dangerous_use_of_expressions)
+			}
+		}
+		if (p.expression != null) {
+			p.expression.validate_ProcessExpression_Use_of_Elementary_Expressions(recursiveTable,randomTable)
+		}
+	}
+	
+	def dispatch void validate_ProcessExpression_Use_of_Elementary_Expressions( ProcessExpressionAction p , HashMap<FunctionDefinition,Boolean> recursiveTable , HashMap<FunctionDefinition,Boolean> randomTable ) {
+		p.action.validate_Action_Use_of_Elementary_Expressions(recursiveTable,randomTable)
+	}
+	
+	
+	
+	def dispatch validate_Action_Use_of_Elementary_Expressions( InputAction act , HashMap<FunctionDefinition,Boolean> recursiveTable , HashMap<FunctionDefinition,Boolean> randomTable ) {
+		if ((act.activity != null)&&(act.activity.predicate != null)) {
+			act.activity.predicate.validate_Action_Guard_Use_of_Elementary_Expressions(recursiveTable,randomTable)
+		}		
+		act ?. update ?.updateAssignment?.forEach[c|
+			c.validate_AttributeUpdate_Use_of_Elementary_Expressions(recursiveTable,randomTable)
+		]
+	}
+	
+	@Check
+	def check_ERROR_Dangerous_use_of_expressions( Model m ) {
+		val randomTable = m.buildRandomFuncitonTable()
+		val recursiveTable = m.buildRecursiveTable()
+		var outputActions = m.getAllContentsOfType(typeof(ProcessState))
+		outputActions.forEach[ it.processExpression ?. validate_ProcessExpression_Use_of_Elementary_Expressions(recursiveTable,randomTable)]
 	}
 	
 	
