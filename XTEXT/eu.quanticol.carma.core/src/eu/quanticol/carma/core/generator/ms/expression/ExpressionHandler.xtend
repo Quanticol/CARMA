@@ -176,7 +176,7 @@ class ExpressionHandler {
 	}
 
 	def dispatch CharSequence expressionToJava( IsIn e ) {
-		'''( «e.right.expressionToJava».contains(  ( «e.right.expressionToJava» ) ))'''
+		'''( «e.right.expressionToJava».contains(  ( «e.left.expressionToJava» ) ))'''
 	}
 	
 	
