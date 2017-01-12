@@ -25,6 +25,7 @@ import javax.tools.ToolProvider;
 
 import org.cmg.ml.sam.sim.sampling.SimulationTimeSeries;
 
+import eu.quanticol.carma.core.ModelLoader;
 import eu.quanticol.carma.core.ui.data.MeasureData;
 import eu.quanticol.carma.core.ui.data.SimulationOutcome;
 import eu.quanticol.carma.simulator.CarmaModel;
@@ -76,7 +77,7 @@ public class CARMACommandLine {
 			CommandLineSimulation sim = readSingleExperiment(reader);
 			if (sim != null)
 				experiments.add(sim);
-			else
+			else if (!fileEnded)
 				System.out.println("Disregarding experiment.");
 		}
 		reader.close();
@@ -85,7 +86,16 @@ public class CARMACommandLine {
 	}
 	
 	private static CommandLineSimulation readSingleExperiment(BufferedReader reader) throws IOException {
-		String name = reader.readLine();
+		String name;
+		// disregard any empty lines between the previous experiment and this, also ensuring
+		// that there is still an experiment description left (ie we are not at EOF)
+		do {
+			name = reader.readLine();
+			if (name == null) {
+				fileEnded = true;
+				return null;
+			}
+		} while (name.isEmpty());
 		String modelName = reader.readLine();
 		CarmaModel model = getCARMAModel(modelName);
 		if (model == null) {
@@ -119,8 +129,14 @@ public class CARMACommandLine {
 	}
 
 	private static CarmaModel loadCARMAModelFromCARMA(String name) {
-		System.out.println("Not supported yet, coming soon.");
-		return null;
+		try {
+			ModelLoader loader = new ModelLoader();
+			return loader.load(name);
+		} catch (Exception e) {
+			System.out.println("Problem when loading model from file " + name + ":");
+			e.printStackTrace();
+			return null;
+		}
 	}
 	
 	private static CarmaModel loadCARMAModelFromJava(String name) {
@@ -160,9 +176,11 @@ public class CARMACommandLine {
 			// compiled class to be a subclass of CarmaModel (although this works fine when
 			// not run in a jar, for some reason)
 			//URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { rootUrl });
+//			URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { rootUrl },
+//					Thread.currentThread().getContextClassLoader());
+//			Thread.currentThread().setContextClassLoader(classLoader);
 			URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { rootUrl },
-					Thread.currentThread().getContextClassLoader());
-			Thread.currentThread().setContextClassLoader(classLoader);
+					CarmaModel.class.getClassLoader());
 			//String className = modelName.replace(".java", "");
 			String className = "ms." + modelName.replace(".java", "");
 			Class<?> cls = Class.forName(className, true, classLoader);

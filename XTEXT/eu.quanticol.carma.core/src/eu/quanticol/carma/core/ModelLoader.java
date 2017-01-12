@@ -3,6 +3,7 @@
  */
 package eu.quanticol.carma.core;
 
+import java.nio.file.Paths;
 import java.util.LinkedList;
 
 import javax.tools.DiagnosticCollector;
@@ -40,14 +41,15 @@ public class ModelLoader {
 		Injector injector = new CARMAStandaloneSetup().createInjectorAndDoEMFRegistration();
 		this.resourceSet = injector.getInstance(XtextResourceSet.class);
 		this.resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);		
-		this.generator = new ModelHandler();//injector.getInstance(CARMAGenerator.class);
+		//this.generator = new ModelHandler();//injector.getInstance(CARMAGenerator.class);
+		this.generator = injector.getInstance(ModelHandler.class);
 //		this.utilities = injector.getInstance(Utilities.class);
-		this.compiler = new CharSequenceCompiler<>(CarmaSystem.class.getClassLoader(), new LinkedList<>());
+		this.compiler = new CharSequenceCompiler<>(CarmaModel.class.getClassLoader(), new LinkedList<>());
     }
 	
 	public CarmaModel load( String fileName ) {
 		System.out.println("Loading: "+fileName);
-		URI uri = URI.createURI(fileName);
+		URI uri = URI.createFileURI(Paths.get(fileName).toFile().toString());
 		Resource resource = resourceSet.getResource(uri, true);
 		EObject object = resource.getContents().get(0);
 		if (object instanceof Model) {
@@ -59,7 +61,7 @@ public class ModelLoader {
 			final DiagnosticCollector<JavaFileObject> errs =
 		            new DiagnosticCollector<JavaFileObject>();
 			try {
-				Class<CarmaModel> compiledScript = compiler.compile(fullClassName, code, errs, new Class<?>[] { CarmaSystem.class } );
+				Class<CarmaModel> compiledScript = compiler.compile(fullClassName, code, errs, new Class<?>[] { CarmaModel.class } );
 				return compiledScript.newInstance();
 			} catch (ClassCastException e) {
 				// TODO Auto-generated catch block
