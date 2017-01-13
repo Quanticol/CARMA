@@ -3,7 +3,9 @@
  */
 package eu.quanticol.carma.core.ui.views;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -13,6 +15,7 @@ import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -27,13 +30,15 @@ import org.eclipse.swt.widgets.Text;
  */
 public class MeasureParametersDialog  extends TitleAreaDialog {
 
+	private static final String RANGE_INDICATOR = "..";
+	private static final String SEPARATOR = ",";
 	private Composite area;
 	private Composite container;
 	private String[] parameters;
 	private Map<String, Class<?>> types;
 	private Text[] parametersFields;
 	private boolean withError = false;
-	private Map<String, Object> data;
+	private List<Map<String, Object>> data;
 
 	public MeasureParametersDialog(Shell parentShell, String[] parameters, Map<String, Class<?>> types) {
 		super(parentShell);
@@ -77,7 +82,14 @@ public class MeasureParametersDialog  extends TitleAreaDialog {
 				
 			});
 	    }
-	    
+	    Label descriptionLabel = new Label(container, SWT.NONE);
+	    descriptionLabel.setText("You can provide multiple comma-separated values as well as "
+	    		+ "(for integer parameters) ranges, such as 2, 5..8, 10");
+	    GridData descriptionLabelData = new GridData();
+	    //descriptionLabelData.verticalAlignment = GridData.FILL;
+	    descriptionLabelData.horizontalSpan = 2;
+	    descriptionLabelData.verticalIndent = 10;
+	    descriptionLabel.setLayoutData(descriptionLabelData);
 	    
 	    return area;
 	}
@@ -99,18 +111,50 @@ public class MeasureParametersDialog  extends TitleAreaDialog {
 			if (!txt.isEmpty()) {
 				try {
 					if ("int".equals(getTypeOf(i))) {
-						Integer.parseInt(txt);
+						for (String seg : txt.split(SEPARATOR)) {
+							int idx = seg.indexOf(RANGE_INDICATOR);
+							if (idx < 0) {
+								Integer.parseInt(seg.trim());
+							}
+							else {
+								// check that range does not have repeated separators eg 1-5-10
+								int lastIdx = seg.lastIndexOf(RANGE_INDICATOR);
+								if (lastIdx != idx) {
+									setMessage("Malformed range for parameter " + parameters[i] +".",
+											IMessageProvider.ERROR);
+									withError = true;
+									return;
+								}
+								else {
+									Integer.parseInt(seg.substring(0, idx).trim());
+									Integer.parseInt(seg.substring(idx+RANGE_INDICATOR.length()).trim());
+								}
+							}
+						}
 					}
 					if ("real".equals(getTypeOf(i))) {
+						for (String seg : txt.split(SEPARATOR)) {
+							if (seg.contains(RANGE_INDICATOR)) {
+								setMessage("Ranges cannot be given for real-valued parameters.",
+										IMessageProvider.ERROR);
+								withError = true;
+								return;
+							}
+							else {
+								Double.parseDouble(seg);
+							}
+						}
 						Double.parseDouble(txt);
 					}
 				} catch (NumberFormatException e) {
 					setMessage("Wrong type for parameter "+parameters[i]+"!",IMessageProvider.ERROR);
 					withError = true;
+					return;
 				}
 			}
 		}
 		withError = false;
+		setMessage("");
 	}
 
 	public boolean isValid() {
@@ -125,10 +169,11 @@ public class MeasureParametersDialog  extends TitleAreaDialog {
 		return true;
 	}
 
-	public Map<String,Object> getParameters() {
+	public List<Map<String,Object>> getParameters() {
 		return data;
 	}
-
+	
+	/*
 	private Object getValue(int i) {
 		if ("int".equals(getTypeOf(i))) {
 			return Integer.parseInt(parametersFields[i].getText());
@@ -138,7 +183,44 @@ public class MeasureParametersDialog  extends TitleAreaDialog {
 		}
 		return null;
 	}
+	*/
+	
+	private List<? extends Object> getValues(int i) {
+		if ("int".equals(getTypeOf(i))) {
+			return parseTextForInteger(parametersFields[i].getText());
+		}
+		if ("real".equals(getTypeOf(i))) {
+			return parseTextForDouble(parametersFields[i].getText());
+		}
+		return null;
+	}
 
+	private List<Integer> parseTextForInteger(String txt) {
+		List<Integer> values = new ArrayList<Integer>();
+		for (String seg : txt.split(SEPARATOR)) {
+			int idx = seg.indexOf(RANGE_INDICATOR);
+			if (idx < 0) {
+				values.add(Integer.parseInt(seg.trim()));
+			}
+			else {
+				int low = Integer.parseInt(seg.substring(0, idx).trim());
+				int high =  Integer.parseInt(seg.substring(idx+RANGE_INDICATOR.length()).trim());
+				while (low <= high) {
+					values.add(low++);
+				}
+			}
+		}
+		return values;
+	}
+	
+	private List<Double> parseTextForDouble(String txt) {
+		List<Double> values = new ArrayList<Double>();
+		for (String seg : txt.split(SEPARATOR)) {
+			values.add(Double.parseDouble(seg.trim()));
+		}
+		return values;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.dialogs.Dialog#okPressed()
 	 */
@@ -156,11 +238,35 @@ public class MeasureParametersDialog  extends TitleAreaDialog {
 		}
 	}
 
+	/*
 	private void saveInput() {
-		data = new HashMap<String, Object>();
+		data = new ArrayList<Map<String,Object>>();
+		data.add(new HashMap<String, Object>());
 		for( int i=0 ; i<parameters.length ; i++ ) {
-			data.put(parameters[i], getValue(i));
+			data.get(0).put(parameters[i], getValue(i));
 		}
+	}
+	*/
+	
+	private void saveInput() {
+		data = new ArrayList<Map<String,Object>>(combineEntries());
+	}
+	
+	private List<Map<String,Object>> combineEntries() {
+		List<Map<String,Object>> combs = new ArrayList<Map<String,Object>>();
+		combs.add(new HashMap<String,Object>());
+		for( int i=0 ; i<parameters.length ; i++ ) {
+			List<Map<String,Object>> newCombs = new ArrayList<Map<String,Object>>();
+			for (Map<String,Object> previous : combs) {
+				for (Object val : getValues(i)) {
+					Map<String,Object> updated = new HashMap<String,Object>(previous);
+					updated.put(parameters[i], val);
+					newCombs.add(updated);
+				}
+			}
+			combs = newCombs;
+		}
+		return combs;
 	}
 	
 }
