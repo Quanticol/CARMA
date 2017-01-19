@@ -3,8 +3,11 @@
  */
 package eu.quanticol.carma.simulator2;
 
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
+
+import org.apache.commons.math3.random.RandomGenerator;
 
 /**
  * @author loreti
@@ -16,7 +19,7 @@ public class OutputStepData {
 	
 	private final Object outputValue;
 	
-	private final Function<Store, Store> storeUpdate;
+	private final BiFunction<RandomGenerator,Store, Store> storeUpdate;
 	
 	private final int nextProcessId;
 	
@@ -25,7 +28,7 @@ public class OutputStepData {
 	 * @param outputValue
 	 * @param storeUpdate
 	 */
-	public OutputStepData(Predicate<Store> outputPredicate, Object outputValue, Function<Store, Store> storeUpdate, int nextProcessId) {
+	public OutputStepData(Predicate<Store> outputPredicate, Object outputValue, BiFunction<RandomGenerator, Store, Store> storeUpdate, int nextProcessId) {
 		super();
 		this.outputPredicate = outputPredicate;
 		this.outputValue = outputValue;
@@ -50,7 +53,7 @@ public class OutputStepData {
 	/**
 	 * @return the storeUpdate
 	 */
-	public Function<Store, Store> getStoreUpdate() {
+	public BiFunction<RandomGenerator, Store, Store> getStoreUpdate() {
 		return storeUpdate;
 	}
 
