@@ -6,6 +6,7 @@ package eu.quanticol.carma.core.ui.views;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.IMessageProvider;
@@ -229,10 +230,12 @@ public class NewExperimentDialog extends TitleAreaDialog {
 					);
 					
 					if (mpd.open()==OK) {
-						MeasureData newData = new MeasureData(measure, mpd.getParameters());
 						measureSelection.clearSelection();
-						measureData.add(newData);
-						measureTable.add(newData.toString());
+						for (Map<String,Object> pars : mpd.getParameters()) {
+							MeasureData newData = new MeasureData(measure, pars);
+							measureData.add(newData);
+							measureTable.add(newData.toString());
+						}
 						measureContainer.layout();
 					};
 			} else {
