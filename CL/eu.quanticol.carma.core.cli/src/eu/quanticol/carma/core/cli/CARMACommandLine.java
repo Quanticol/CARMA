@@ -19,10 +19,17 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 
+import org.apache.commons.math3.stat.descriptive.AggregateSummaryStatistics;
+import org.apache.commons.math3.stat.descriptive.StatisticalSummary;
+import org.apache.commons.math3.stat.descriptive.StatisticalSummaryValues;
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.cmg.ml.sam.sim.sampling.SimulationTimeSeries;
 
 import eu.quanticol.carma.core.ModelLoader;
@@ -35,7 +42,10 @@ public class CARMACommandLine {
 	static String outputFolder = null;
 	static boolean fileEnded = false;
 	static boolean verbose = true;
-		
+	static boolean multithreaded = false;
+	static int nThreads = 1;
+	private static long timeElapsed = 0;
+	
 	private static void parseSimulationArguments(String[] args) {
 		boolean unrecognised = false;
 		if (args.length == 0 || "-help".equals(args[0]) || "-h".equals(args[0])) {
@@ -53,6 +63,23 @@ public class CARMACommandLine {
 				}
 				else
 					System.out.println("Output flag was used but no output folder given.");
+				break;
+			case "-m":
+			case "-multi":
+			case "-multithreaded":
+				multithreaded = true;
+				try {
+					nThreads = Integer.parseInt(args[++i]);
+					if (nThreads <= 0) {
+						System.out.println("Number of threads must be at least 1.");
+						nThreads = 1;
+					}
+				}
+				catch (Exception e) {
+					System.out.println("Could not understand number of cores (" + args[i] +
+							"). Running single-threaded instead.");
+					multithreaded = false;
+				}
 				break;
 			case "-quiet":
 			case "-q":
@@ -72,7 +99,15 @@ public class CARMACommandLine {
 		throws IOException {
 		List<CommandLineSimulation> experiments = new ArrayList<CommandLineSimulation>();
 		BufferedReader reader;
-		reader = new BufferedReader(new FileReader(filename));
+		try {
+			reader = new BufferedReader(new FileReader(filename));
+		}
+		catch (Exception e) {
+			System.out.println("Error when reading experiments file (details below). Exiting.");
+			System.out.println("Error encountered:");
+			e.printStackTrace();
+			return experiments;
+		}
 		while (!fileEnded) {
 			CommandLineSimulation sim = readSingleExperiment(reader);
 			if (sim != null)
@@ -167,21 +202,12 @@ public class CARMACommandLine {
 		try {
 			//avoid having null parent if the path is relative and doesn't specify a parent
 			File root = modelPath.toAbsolutePath().getParent().toFile();
-			//URL rootUrl = root.toURI().toURL();
 			URL rootUrl = root.getParentFile().toURI().toURL();
 			
 			//TODO can this be done more elegantly?
 			// (both manipulating the classloader, and assuming that the package name is ms)
-			// currently, we need to change the classloader or it won't recognise the
-			// compiled class to be a subclass of CarmaModel (although this works fine when
-			// not run in a jar, for some reason)
-			//URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { rootUrl });
-//			URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { rootUrl },
-//					Thread.currentThread().getContextClassLoader());
-//			Thread.currentThread().setContextClassLoader(classLoader);
 			URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { rootUrl },
 					CarmaModel.class.getClassLoader());
-			//String className = modelName.replace(".java", "");
 			String className = "ms." + modelName.replace(".java", "");
 			Class<?> cls = Class.forName(className, true, classLoader);
 			
@@ -262,13 +288,95 @@ public class CARMACommandLine {
 		// Run each experiment:
 		for (CommandLineSimulation sim : allSims) {
 			report("\nStarting experiment " + sim.getName() + ".");
+			long startTime = System.currentTimeMillis();
 			// perform simulation...
-			sim.execute(verbose);
+			if (!multithreaded) {
+				sim.execute(verbose);
+			}
+			else {
+				sim = performMultithreadedSimulation(sim);
+			}
+			long stopTime = System.currentTimeMillis();
+			timeElapsed  += stopTime - startTime;
 			// ...and save output
 			writeOutput(sim);
 			report("Finished experiment.");
 		}
 
+	}
+
+	private static CommandLineSimulation performMultithreadedSimulation(CommandLineSimulation sim) {
+		// split simulation and assign to each thread
+		List<CommandLineSimulation> subtasks = new ArrayList<CommandLineSimulation>();
+		int replicationsEach = sim.getReplications() / nThreads;
+		CommandLineSimulation subtask = sim.copy();
+		subtask.setReplications(replicationsEach);
+		for(int i = 0; i < nThreads - 1; i++) {
+			subtasks.add(subtask.copy());
+		}
+//				int replicationsRemaining = replicationsEach + sim.getReplications() % nThreads;
+		subtask.setReplications(replicationsEach + sim.getReplications() % nThreads);
+		subtasks.add(subtask);
+		
+		// create threads / assign to cores
+		//TODO consider workStealingPool instead?
+		ExecutorService executor = Executors.newFixedThreadPool(nThreads);
+		// Perhaps:
+		//calls = subtasks.stream().map(t -> makeCallable(t))
+		//		.collect(Collectors.toList());
+		// or simply:
+		List<? extends Callable<Object>> calls = new ArrayList<Callable<Object>>();
+		calls = subtasks;
+		try {
+			executor.invokeAll(calls);
+		}
+		catch (InterruptedException e) {
+			System.out.println("Error encountered while executing subtasks:");
+			e.printStackTrace();
+			System.out.println("Quitting.");
+			System.exit(-1);
+		}
+		executor.shutdown();
+		
+		// merge results				
+		int nResults = sim.getMeasures().size();
+		List<SimulationTimeSeries> allResults = new ArrayList<SimulationTimeSeries>(nResults);
+
+		for (int i = 0; i < nResults; i++) {
+			//create aggregate
+			int nPoints = sim.getSamplings() + 1;
+			List<List<SummaryStatistics>> allStatistics =
+					new ArrayList<List<SummaryStatistics>>(nPoints);
+			//allStatistics(j,k) will hold results for the k-th thread at the j-th sampling time
+			for (int j = 0; j < nPoints; j++) {
+				allStatistics.add(new ArrayList<SummaryStatistics>());
+			}
+			for (CommandLineSimulation task : subtasks) {
+				StatisticalSummary[] data = task.getResult(0).getCollectedData().get(i).getData();
+				for (int j = 0; j < data.length; j++) {
+					allStatistics.get(j).add((SummaryStatistics) data[j]);
+				}
+			}
+			
+			StatisticalSummaryValues[] aggregate = new StatisticalSummaryValues[nPoints];
+			for (int j = 0; j < aggregate.length; j++) {
+				aggregate[j] = AggregateSummaryStatistics.aggregate(allStatistics.get(j));
+			}
+			
+			String name = subtasks.get(0).getResult(0).getCollectedData().get(i).getName();
+			double dt = sim.getSimulationTime() / sim.getSamplings();
+			allResults.add(new SimulationTimeSeries(name,dt,sim.getReplications(),aggregate));
+		}
+		
+		// and create the final summary simulation
+		CommandLineSimulation finalSim = sim.copy();
+		//TODO change starting, total and average time in constructor of outcome?
+		SimulationOutcome outcome = new SimulationOutcome("",0,0,allResults);
+		List<SimulationOutcome> finalResult = new ArrayList<SimulationOutcome>(1);
+		finalResult.add(outcome);
+		finalSim.setResults(finalResult);
+		report("Aggregated results");
+		return finalSim;
 	}
 	
 	private static void writeOutput(CommandLineSimulation sim) {
@@ -332,10 +440,11 @@ public class CARMACommandLine {
 	
 	private static void printHelp() {
 		String helpMessage = "Usage: java CARMACommandLine <experiments_file> "
-					+ "[-output <output_directory>] [-quiet]\n\n"
+					+ "[-output <output_directory>] [-quiet] [-multithreaded N]\n\n"
 					+ "Optional parameters:\n"
-					+ "-output (-out, -o): specify a location to store experiment results.\n"
-					+ "-quiet (-q)       : only print warning and error messages.\n";
+					+ "-output (-out, -o) : specify a location to store experiment results.\n"
+					+ "-quiet (-q)        : only print warning and error messages.\n"
+					+ "-multithreaded (-m): spread the task into the specified number of threads.\n";
 		
 		System.out.println(helpMessage);
 	}
@@ -349,4 +458,20 @@ public class CARMACommandLine {
 		
 	}
 	
+	public static long getTimeElapsed() {
+		return timeElapsed;
+	}
+	
+	/**
+	 * Resets the fields of the class, so it can be called repeatedly from other code.
+	 */
+	public static void reset() {
+		experimentFile = null;
+		outputFolder = null;
+		fileEnded = false;
+		verbose = true;
+		multithreaded = false;
+		nThreads = 1;
+		timeElapsed = 0;
+	}
 }
