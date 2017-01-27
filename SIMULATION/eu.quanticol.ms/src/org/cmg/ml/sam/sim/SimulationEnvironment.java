@@ -105,6 +105,9 @@ public class SimulationEnvironment<S extends ModelI> {
 			}
 			time += dt;
 			this.model.timeStep(dt);
+			if (monitor != null && !monitor.isCancelled()) {
+				monitor.update(time);
+			}
 			if (sampling_function != null) {
 				sampling_function.sample(time, model);
 			}
