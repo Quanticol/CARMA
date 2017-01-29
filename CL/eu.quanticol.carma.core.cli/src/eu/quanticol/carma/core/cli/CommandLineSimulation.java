@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.cmg.ml.sam.sim.SimulationEnvironment;
 import org.cmg.ml.sam.sim.SimulationMonitor;
@@ -16,7 +17,7 @@ import eu.quanticol.carma.core.ui.data.SimulationOutcome;
 import eu.quanticol.carma.simulator.CarmaModel;
 import eu.quanticol.carma.simulator.CarmaSystem;
 
-public class CommandLineSimulation {
+public class CommandLineSimulation implements Callable<Object>, Runnable {
 	/**
 	 * Experiment name.
 	 */
@@ -47,7 +48,7 @@ public class CommandLineSimulation {
 	 */
 	private List<MeasureData> measures;
 	
-	private LinkedList<SimulationOutcome> results;
+	private List<SimulationOutcome> results;
 
 	private CarmaModel model;
 
@@ -64,6 +65,9 @@ public class CommandLineSimulation {
 		this.results = new LinkedList<>();
 	}
 	
+	public CommandLineSimulation copy() {
+		return new CommandLineSimulation(name,model,system,replications,simulationTime,samplings,measures);
+	}
 	
 	public void addSimulationResult( SimulationOutcome result ) {
 		results.add(result);
@@ -142,9 +146,16 @@ public class CommandLineSimulation {
 		return results;
 	}
 
-
 	public void setCarmaModel(CarmaModel model) {
 		this.model = model;
+	}
+
+	public void setReplications(int replications) {
+		this.replications = replications;
+	}
+	
+	public void setResults(List<SimulationOutcome> results) {
+		this.results = results;
 	}
 	
 	public void execute() {
@@ -192,4 +203,14 @@ public class CommandLineSimulation {
 		addSimulationResult(new SimulationOutcome(tag, totalTime, totalTime/replications,
 				sc.getSimulationTimeSeries(replications)));   
 	}
+	
+	public Void call() {
+		execute();
+		return null;
+	}
+	
+	public void run() {
+		execute();
+	}
+
 }

@@ -132,7 +132,7 @@ public class MeasureParametersDialog  extends TitleAreaDialog {
 							}
 						}
 					}
-					if ("real".equals(getTypeOf(i))) {
+					else if ("real".equals(getTypeOf(i))) {
 						for (String seg : txt.split(SEPARATOR)) {
 							if (seg.contains(RANGE_INDICATOR)) {
 								setMessage("Ranges cannot be given for real-valued parameters.",
@@ -144,7 +144,6 @@ public class MeasureParametersDialog  extends TitleAreaDialog {
 								Double.parseDouble(seg);
 							}
 						}
-						Double.parseDouble(txt);
 					}
 				} catch (NumberFormatException e) {
 					setMessage("Wrong type for parameter "+parameters[i]+"!",IMessageProvider.ERROR);

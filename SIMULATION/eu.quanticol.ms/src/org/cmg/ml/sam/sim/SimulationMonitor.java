@@ -15,4 +15,5 @@ public interface SimulationMonitor {
 
 	boolean isCancelled();
 	
+	default void update(double time) { };
 }

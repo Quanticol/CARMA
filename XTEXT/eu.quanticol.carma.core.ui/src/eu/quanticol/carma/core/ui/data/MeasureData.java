@@ -6,8 +6,10 @@ package eu.quanticol.carma.core.ui.data;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -64,16 +66,18 @@ public class MeasureData {
 	}
 
 	public static void writeTo(PrintWriter writer, MeasureData m) {
-		writer.println(m.getMeasureName());
-		m.parameters.forEach( new BiConsumer<String, Object>() {
-
-			@Override
-			public void accept(String name, Object value) {
-				writer.println(name);
-				writer.println(toValueCode(value));
-			}
-			
-		} );
+		writer.print(m.getMeasureName());
+		if (!m.parameters.isEmpty()) {
+			List<String> param_text = new ArrayList<String>();
+			writer.print(": ");
+			m.parameters.forEach( new BiConsumer<String, Object>() {
+				@Override
+				public void accept(String name, Object value) {
+					param_text.add((name + "=" + value.toString()));
+				}
+			} );
+			writer.print(String.join(", ",param_text));
+		}
 		writer.println();
 	}
 

@@ -9,6 +9,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import org.apache.commons.math3.stat.descriptive.StatisticalSummary;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
 /**
@@ -17,13 +18,13 @@ import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
  */
 public class SimulationTimeSeries {
 
-	private SummaryStatistics[] data;
+	private StatisticalSummary[] data;
 	private double dt;
 	private String name;
 	private int replications;
 	
 	
-	public SimulationTimeSeries( String name , double dt , int replications , SummaryStatistics[] data ) {
+	public SimulationTimeSeries( String name , double dt , int replications , StatisticalSummary[] data ) {
 		this.name = name;
 		this.dt = dt;
 		this.data = data;
@@ -52,6 +53,10 @@ public class SimulationTimeSeries {
 			i = data.length-1;
 		}
 		return getMean( i );
+	}
+	
+	public StatisticalSummary[] getData() {
+		return data;
 	}
 	
 	public void printTimeSeries( PrintStream out ) {
