@@ -17,7 +17,8 @@ class AttributeHandler {
 	}
 	
 	def attributeTemporaryVariableDeclaration( AttributeDeclaration a , ReferenceContext c , String storeName ) {
-		'''«a.typeOf.toJavaType(false)» «a.name.attributeName(c)» = «storeName».get( "«a.name»" , «a.typeOf.toJavaType(false)».class );'''		
+//		'''«a.typeOf.toJavaType(false)» «a.name.attributeName(c)» = «storeName».get( "«a.name»" , «a.typeOf.toJavaType(false)».class );'''		
+		'''«a.typeOf.toJavaType(false)» «a.name.attributeName(c)» = («a.typeOf.toJavaType(false)») «storeName».get( "«a.name»" );'''		
 	}
 	
 	def locTemporaryVariableDeclaration( ReferenceContext c , String storeName ) {

@@ -27,7 +27,6 @@ import org.cmg.ml.sam.sim.util.WeightedStructure;
  */
 public class SimulationEnvironment<S extends ModelI> {
 
-	protected ArrayList<Agent<S>> agents;
 	protected RandomGenerator random;
 	private SimulationFactory<S> factory;
 	private S model;

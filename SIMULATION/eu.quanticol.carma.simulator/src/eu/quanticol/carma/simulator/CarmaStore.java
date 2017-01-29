@@ -29,7 +29,11 @@ public class CarmaStore {
 		}
 		return null;
 	}
-	
+
+	public Object get( String attribute ) {
+		return data.get(attribute);
+	}
+
 	public <T> boolean has( String attribute , Class<T> clazz ) {
 		Object o = data.get(attribute);
 		if ((o != null)&&(clazz.isInstance(o))) {

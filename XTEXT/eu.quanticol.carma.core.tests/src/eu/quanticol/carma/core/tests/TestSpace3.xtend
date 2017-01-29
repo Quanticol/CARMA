@@ -26,22 +26,52 @@ import eu.quanticol.carma.simulator.space.Tuple
 
 @RunWith(typeof(XtextRunner))
 @InjectWith(typeof(CARMAInjectorProviderCustom))
-class TestSpace3 {
+class TestSpace {
 	@Inject extension ParseHelper<Model>
 	@Inject extension ValidationTestHelper	
 	@Inject extension MyCompilationTestHelper
 	@Inject extension ReflectExtensions
 	
 	CharSequence code = 	'''
-space grid( ) {
+space grid( int width , int height ) {
    universe <int x, int y>
    nodes {
-		[0,0];
-		[1,1];
+   	for r from 0 to width {
+   		for c from 0 to height {
+   			[ r , c ];	
+   		}	
+   	}
    }
    connections {
+   	  for r from 0 to width-1 {
+		 for c from 0 to height-1 {
+		 	[r,c] <-> [r+1,c]{ w = 1 };
+		 	[r,c] <-> [r,c+1]{ w = 1 };	
+		 }  	  	
+   	  }
    }
    areas {
+      corner {
+      	 [0,0]; 
+      	 [width-1,0];
+      	 [0,height-1];
+      	 [width-1,height-1];
+      }
+      diagonal {
+      	for i from 0 to min(height, width) {
+      		[i,i];	
+      	}
+      }
+      border {
+	   	  for r from 0 to width {
+		 	[r,0];
+			[r,height-1];
+	   	  }
+	   	  for c from 0 to height {
+	   	  	[0,c];
+	   	  	[width-1,c];
+	   	  }
+      }
 	} 
 }
 
@@ -59,14 +89,19 @@ space grid( ) {
 			var o = getCompiledClass.newInstance 
 			assertNotNull( o )
 			assertTrue( o instanceof CarmaModel )
-			var o2 = o.invoke("get_SPACE_grid")
+			var o2 = o.invoke("get_SPACE_grid",5,5)
 			assertNotNull(o2)
 			assertTrue( o2 instanceof SpaceModel)
 			var sm = o2 as SpaceModel
 			var n = sm.getVertex(new Tuple(0,0))
 			assertNotNull( n )
-			assertEquals(0,n.poset.size())
-			assertFalse(n.poset.contains(sm.getVertex(new Tuple(1,1))))
+			assertEquals(2,n.poset.size())
+			assertTrue(n.poset.contains(sm.getVertex(new Tuple(0,1))))
+			assertTrue(n.poset.contains(sm.getVertex(new Tuple(1,0))))
+			assertTrue(n.preset.contains(sm.getVertex(new Tuple(0,1))))
+			assertTrue(n.preset.contains(sm.getVertex(new Tuple(1,0))))
+			assertTrue(n.getValuesTo(sm.getVertex(new Tuple(0,1)),"w",typeof(Integer)).size()>0)
+			assertTrue(n.isInArea("border"));
 			
 		]
 	}

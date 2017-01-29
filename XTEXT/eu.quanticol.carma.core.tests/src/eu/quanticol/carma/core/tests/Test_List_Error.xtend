@@ -88,8 +88,8 @@ system Test{
 			assertNotNull( o )
 			assertTrue( o instanceof CarmaModel )
 			var m = o as CarmaModel
-			assertEquals( 2 , m.systems.length )
-			assertEquals( 3 , m.measures.length )					
+			assertEquals( 1 , m.systems.length )
+			assertEquals( 1 , m.measures.length )					
 
 	]
 	}
