@@ -26,12 +26,29 @@ class TestExpressions {
 	def void test_Expression_01(){
 		class.classLoader.setJavaCompilerClassPath
 		'''
-		const C = 1;		
+		enum TEST_ENUM = CASE_1, CASE_2, CASE_3;
+		
+		const C1 = CASE_1;		
+		const C2 = CASE_2;		
+		const C3 = CASE_3;		
+		
+		const TEST_1 = C1==CASE_1;
+		const TEST_2 = C2==CASE_2;
+		const TEST_3 = C3==CASE_3;
+		const TEST_4 = C1==CASE_2;
+		const TEST_5 = C1==CASE_3;
+		const TEST_6 = C2==CASE_1;
+		const TEST_7 = C2==CASE_3;
+		const TEST_8 = C3==CASE_1;
+		const TEST_9 = C3==CASE_2;
 		'''.compile[ 
 			var o = getCompiledClass.newInstance 
 			assertNotNull( o )
 			assertTrue( o instanceof CarmaModel )			
-			assertEquals( 1 , o.get("__CONST__C") as Integer )
+			assertEquals( true , o.get("__CONST__TEST_1") as Boolean );
+			assertEquals( true , o.get("__CONST__TEST_2") as Boolean );
+			assertEquals( true , o.get("__CONST__TEST_3") as Boolean );
+			assertEquals( false , o.get("__CONST__TEST_4") as Boolean );
 		]
 	}
 	
