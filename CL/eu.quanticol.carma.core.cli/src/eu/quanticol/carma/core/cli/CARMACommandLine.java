@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -14,6 +15,10 @@ import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -22,6 +27,8 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
@@ -35,7 +42,9 @@ import org.cmg.ml.sam.sim.sampling.SimulationTimeSeries;
 import eu.quanticol.carma.core.ModelLoader;
 import eu.quanticol.carma.core.ui.data.MeasureData;
 import eu.quanticol.carma.core.ui.data.SimulationOutcome;
+import eu.quanticol.carma.simulator.CarmaComponent;
 import eu.quanticol.carma.simulator.CarmaModel;
+import eu.quanticol.carma.simulator.CarmaSystem;
 
 public class CARMACommandLine {
 	static String experimentFile;
@@ -44,16 +53,50 @@ public class CARMACommandLine {
 	static boolean verbose = true;
 	static boolean multithreaded = false;
 	static int nThreads = 1;
-	private static long timeElapsed = 0;
+	static boolean seedSet = false;
+	static long baseSeed;
+	static boolean deadlineSet = false;
+	static double deadline;
+	static boolean replicationsSet = false;
+	static int nReplications;
+	private static long timeElapsed = 0; // time in nanoseconds
 	
-	private static void parseSimulationArguments(String[] args) {
+	private static enum Mode {Simulation, Multivesta, Help, Summary, None};
+	
+	private static Mode getMode(String[] args) {
+		if (args.length == 0) {
+			return Mode.Help;
+		}
+		switch(args[0]) {
+		case "multivesta":
+			return Mode.Multivesta;
+		case "simulate":
+		case "sim":
+			return Mode.Simulation;
+		case "summary":
+			return Mode.Summary;
+		case "help":
+		case "-help":
+		case "--help":
+		case "h":
+		case "-h":
+		case "--h":
+			return Mode.Help;
+		default:
+			return Mode.None;
+			
+		}
+	}
+	
+	private static void parseSimulationArguments(String[] args, boolean skipFirst) {
 		boolean unrecognised = false;
 		if (args.length == 0 || "-help".equals(args[0]) || "-h".equals(args[0])) {
 			printHelp();
 			System.exit(0);
 		}
-		experimentFile = args[0];
-		for (int i = 1; i < args.length; i++) {
+		int i = skipFirst ? 1 : 0;
+		experimentFile = args[i++];
+		for (; i < args.length; i++) {
 			switch(args[i]) {
 			case "-o":
 			case "-out":
@@ -67,19 +110,102 @@ public class CARMACommandLine {
 			case "-m":
 			case "-multi":
 			case "-multithreaded":
-				multithreaded = true;
-				try {
-					nThreads = Integer.parseInt(args[++i]);
-					if (nThreads <= 0) {
-						System.out.println("Number of threads must be at least 1.");
-						nThreads = 1;
+				if (i+1 <= args.length) {
+					try {
+						nThreads = Integer.parseInt(args[++i]);
+						if (nThreads <= 0) {
+							System.out.println("Number of threads must be at least 1. "
+									+ "Running single-threaded instead.");
+							multithreaded = false;
+						} else {
+						multithreaded = true;
+						}
 					}
+					catch (Exception e) {
+						System.out.println("Could not understand number of cores (" + args[i] +
+								"). Running single-threaded instead.");
+//						multithreaded = false;
+					}
+				} else {
+					System.out.println("Multithreaded option was used but no number of threads given.");
 				}
-				catch (Exception e) {
-					System.out.println("Could not understand number of cores (" + args[i] +
-							"). Running single-threaded instead.");
-					multithreaded = false;
+				break;
+			case "-seed":
+				if (i+1 <= args.length) {
+					try {
+						baseSeed = Long.parseLong(args[++i]);
+						seedSet = true;
+					}
+					catch (NumberFormatException e) {
+						System.out.println("Could not understand initial seed (" + args[i] +
+								"). Ignoring.");
+					}
+				} else {
+					System.out.println("Seed option was used but no initial seed given.");
 				}
+				break;
+			case "-t":
+			case "-time":
+			case "-deadline":
+				if (i+1 <= args.length) {
+					try {
+						deadline = Double.parseDouble(args[++i]);
+						deadlineSet = true;
+					}
+					catch (NumberFormatException e) {
+						System.out.println("Could not understand simulation final time (" + args[i] +
+								"). Ignoring.");
+					}
+				} else {
+					System.out.println("Final time option was used but no final time given.");
+				}
+				break;
+			case "-reps":
+			case "-replications":
+				if (i+1 <= args.length) {
+					try {
+						nReplications = Integer.parseInt(args[++i]);
+						replicationsSet = true;
+					}
+					catch (NumberFormatException e) {
+						System.out.println("Could not understand number of replications (" + args[i] +
+								"). Ignoring.");
+					}
+				} else {
+					System.out.println("Replications option was used but no number given.");
+				}
+				break;
+			case "-quiet":
+			case "-q":
+				verbose = false;
+				break;
+			default:
+				System.out.println("Unrecognised option: " + args[i] + " (ignoring).");
+				unrecognised = true;
+			}
+		}
+		if (unrecognised)
+			printHelp();
+		if (seedSet || deadlineSet || replicationsSet) {
+			warn("overridden simulation parameters (seed, stop time, number of replications)"
+					+ " will apply to all experiments in the file!");
+		}
+	}
+	
+	private static MultivestaExperiment parseMultivestaArguments(String[] args) {
+		boolean unrecognised = false;
+		String modelFile = args[1];
+		String queryFile = args[2];
+		for (int i = 3; i < args.length; i++) {
+			switch(args[i]) {
+			case "-o":
+			case "-out":
+			case "-output":
+				if (i+1 <= args.length) {
+					outputFolder = args[++i];
+				}
+				else
+					System.out.println("Output flag was used but no output folder given.");
 				break;
 			case "-quiet":
 			case "-q":
@@ -93,7 +219,10 @@ public class CARMACommandLine {
 		}
 		if (unrecognised)
 			printHelp();
+		return new MultivestaExperiment(modelFile,queryFile,outputFolder);
 	}
+
+	
 	
 	private static List<CommandLineSimulation> readExperimentsFile(String filename)
 		throws IOException {
@@ -134,7 +263,12 @@ public class CARMACommandLine {
 		String modelName = reader.readLine();
 		CarmaModel model = getCARMAModel(modelName);
 		if (model == null) {
-			System.out.println("Could not read model.");
+			System.out.println("Could not read model from " + modelName + ".");
+			// continue reading until you find blank line or EOF (disregard experiment)
+			String line;
+			do {
+				line = reader.readLine();
+			} while (line != null && !line.isEmpty());
 			return null;
 		}
 		String system = reader.readLine();
@@ -144,7 +278,7 @@ public class CARMACommandLine {
 		List<MeasureData> measures = readMeasures(reader,model);
 		
 		CommandLineSimulation sim = new CommandLineSimulation(name, model, system, reps,
-				stopTime, samplings, measures);
+				stopTime, samplings, measures, modelName);
 		return sim;
 	}
 	
@@ -189,6 +323,7 @@ public class CARMACommandLine {
 		
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 		int res = compiler.run(null, null, stream, name, "-source","1.8");
+		//int res = compiler.run(null, null, stream, name);
 		if(res==0) {
 			report("Java file successfully compiled.");
 		}
@@ -288,16 +423,23 @@ public class CARMACommandLine {
 		// Run each experiment:
 		for (CommandLineSimulation sim : allSims) {
 			report("\nStarting experiment " + sim.getName() + ".");
-			long startTime = System.currentTimeMillis();
-			// perform simulation...
+			// apply any additional parameters specified in the arguments...
+			overrideSimulation(sim);
+			long startTime = System.nanoTime();
+			// ...perform simulation...
 			if (!multithreaded) {
+				if (seedSet) {
+					sim.setSeed(baseSeed);
+				}
 				sim.execute(verbose);
 			}
 			else {
 				sim = performMultithreadedSimulation(sim);
 			}
-			long stopTime = System.currentTimeMillis();
-			timeElapsed  += stopTime - startTime;
+			long stopTime = System.nanoTime();
+			timeElapsed  = stopTime - startTime;
+			report(String.format("Time elapsed: %s for %d replications",
+					formatTime(timeElapsed),sim.getReplications()));
 			// ...and save output
 			writeOutput(sim);
 			report("Finished experiment.");
@@ -312,10 +454,19 @@ public class CARMACommandLine {
 		CommandLineSimulation subtask = sim.copy();
 		subtask.setReplications(replicationsEach);
 		for(int i = 0; i < nThreads - 1; i++) {
-			subtasks.add(subtask.copy());
+			CommandLineSimulation newTask = subtask.copy();
+			newTask.setTaskName("Thread " + i);
+			if (seedSet) {
+				newTask.setSeed((i+1) * baseSeed);
+			}
+			subtasks.add(newTask);
 		}
-//				int replicationsRemaining = replicationsEach + sim.getReplications() % nThreads;
+//		int replicationsRemaining = replicationsEach + sim.getReplications() % nThreads;
 		subtask.setReplications(replicationsEach + sim.getReplications() % nThreads);
+		subtask.setTaskName("Thread " + (nThreads-1));
+		if (seedSet) {
+			subtask.setSeed(nThreads * baseSeed);
+		}
 		subtasks.add(subtask);
 		
 		// create threads / assign to cores
@@ -358,6 +509,7 @@ public class CARMACommandLine {
 				}
 			}
 			
+			//TODO This might be better to do in a static method of SimulationTimeSeries?
 			StatisticalSummaryValues[] aggregate = new StatisticalSummaryValues[nPoints];
 			for (int j = 0; j < aggregate.length; j++) {
 				aggregate[j] = AggregateSummaryStatistics.aggregate(allStatistics.get(j));
@@ -379,7 +531,17 @@ public class CARMACommandLine {
 		return finalSim;
 	}
 	
+	private static void overrideSimulation(CommandLineSimulation sim) {
+		if (deadlineSet) {
+			sim.setSimulationTime(deadline);
+		}
+		if (replicationsSet) {
+			sim.setReplications(nReplications);
+		}
+	}
+	
 	private static void writeOutput(CommandLineSimulation sim) {
+		LocalDateTime finishDate = LocalDateTime.now();
 		//TODO Check that this never happens
 		if (sim.getResults().size() > 1) {
 			System.out.println("Too many results: " + sim.getResults().size());
@@ -409,23 +571,118 @@ public class CARMACommandLine {
 			return;
 		}
 
+		// Write simulation results:
 		for (SimulationTimeSeries ts : result.getCollectedData()) {
-			Path measureFile = outputBase.resolve(ts.getName());
+			Path measureFile = outputBase.resolve(ts.getName() + ".csv");
 			if (Files.exists(measureFile)) {
 				warn("will overwrite file " + measureFile + ".");
 			}
-			PrintWriter writer = null;
-			try {
-				writer = new PrintWriter(measureFile.toFile());
+			try (PrintWriter writer = new PrintWriter(measureFile.toFile())) {
 				ts.writeToCSV(writer);
 			} catch (FileNotFoundException e) {
 				System.err.println("Could not create file: " + measureFile + ".");
-			} finally {
-				if (writer != null)
-					writer.close();
 			}
 		}
-		report("Wrote experiment results at " + outputBase.toAbsolutePath() + ".");	
+		
+		// Write time taken:
+		Path timeFile = outputBase.resolve("timeInSeconds");
+		if (Files.exists(timeFile)) {
+			warn("will overwrite file " + timeFile + ".");
+		}
+		try (PrintStream out = new PrintStream(timeFile.toFile())) {
+			double time_s = timeElapsed / 1e9;
+			out.print(String.format("%.5f",time_s));
+		} catch (FileNotFoundException e) {
+			System.err.println("Could not create file: " + timeFile + ".");
+		}
+		
+		// Copy original model:
+		Path originalPath = Paths.get(sim.getModelLocation());
+		Path copyPath = outputBase.resolve(originalPath.getFileName());
+		if (Files.exists(copyPath)) {
+			warn("will overwrite file " + copyPath + ".");
+		}
+		boolean madeCopy = true;
+		try {
+			Files.copy(originalPath, copyPath, StandardCopyOption.REPLACE_EXISTING);
+		} catch (IOException e1) {
+			System.err.println("Error when trying to copy model file.");
+			madeCopy = false;
+		}
+		
+		// Write experiment segment:
+		Path experimentFile = outputBase.resolve("experimentFile");
+		if (Files.exists(experimentFile)) {
+			warn("will overwrite file " + experimentFile + ".");
+		}
+		try (PrintStream out = new PrintStream(experimentFile.toFile())) {
+			out.println(sim.getName());
+			out.println(sim.getModelLocation());
+			out.println(sim.getSystem());
+			out.println(sim.getReplications());
+			out.println(sim.getSimulationTime());
+			out.println(sim.getSamplings());
+			for (MeasureData md : sim.getMeasures()) {
+				out.print(md.getMeasureName());
+				if (md.getParameters().size() > 0) {
+					List<String> pars = new ArrayList<String>(md.getParameters().size());
+					for (Map.Entry<String, Object> e : md.getParameters().entrySet()) {
+						pars.add(e.getKey() + " = " + e.getValue());
+					}
+					out.print(": " + String.join(", ", pars));
+				}
+				out.println();
+			}
+		} catch (FileNotFoundException e) {
+			System.err.println("Could not create file: " + timeFile + ".");
+		}
+		
+		// Write summary:
+		Path summaryFile = outputBase.resolve("info");
+		if (Files.exists(summaryFile)) {
+			warn("will overwrite file " + summaryFile + ".");
+		}
+		try(PrintWriter writer = new PrintWriter(summaryFile.toFile())) {
+			String firstLine = "Summary for experiment " + sim.getName() + ":";
+			writer.println(firstLine);
+			writer.println(new String(new char[firstLine.length()-1]).replace('\0', '-'));
+			writer.print("This experiment used the model " + sim.getModelLocation() + ".");
+			if (madeCopy) {
+					writer.println(" A copy has been saved in this directory.");
+			} else {
+				// just in case, e.g. the original file is deleted during the simulation
+				writer.println("I failed to make a copy of the original model.");
+			}
+			writer.println("The scenario considered was " + sim.getSystem() + ".");
+			writer.print("The experiment tracked the following measures: ");
+			writer.println(sim.getMeasures().stream().map(MeasureData::toString)
+					.collect(Collectors.joining(", ")) + ".");
+			writer.println(String.format("The final time of the simulation was %.3f "
+					+ "and %d samplings were taken (sampling interval: %.5f).",
+					sim.getSimulationTime(),
+					sim.getSamplings(),
+					sim.getSimulationTime()/sim.getSamplings()));
+			writer.println(sim.getReplications() + " replications were performed in "
+					+ formatTime(timeElapsed) + " using the CARMA simulator.");
+			if (multithreaded) {
+				writer.println("The simulations were divided into " + nThreads + " batches.");
+			}
+			if (seedSet) {
+				writer.println("The seed for the simulations was set to " + baseSeed + ".");
+			}
+			writer.println("The data from individual replications were combined and statistics"
+					+ " (mean, variance) were computed using the Apache Commons Mathematics library.");
+			writer.println(String.format("This experiment finished at %s on %s.",
+					finishDate.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM)),
+					finishDate.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG))));
+			if (writer.checkError()) {
+				System.err.println("Error when writing to file " + summaryFile);
+			}
+		} catch (FileNotFoundException e) {
+			System.err.println("Could not create file: " + summaryFile + ".");
+		}
+		
+		report("Wrote experiment results at " + outputBase.toAbsolutePath() + ".");
 	}
 	
 	private static void report(String msg) {
@@ -440,26 +697,128 @@ public class CARMACommandLine {
 	
 	private static void printHelp() {
 		String helpMessage = "Usage: java CARMACommandLine <experiments_file> "
-					+ "[-output <output_directory>] [-quiet] [-multithreaded N]\n\n"
+					+ "[-output <output_directory>] [-quiet] [-multithreaded N] "
+					+ "[-seed N] [-deadline t] [-replications N]\n\n"
 					+ "Optional parameters:\n"
-					+ "-output (-out, -o) : specify a location to store experiment results.\n"
-					+ "-quiet (-q)        : only print warning and error messages.\n"
-					+ "-multithreaded (-m): spread the task into the specified number of threads.\n";
+					+ "-output (-out, -o)   : specify a location to store experiment results.\n"
+					+ "-quiet (-q)          : only print warning and error messages.\n"
+					+ "-multithreaded (-m)  : spread the task into the specified number of threads.\n"
+					+ "-seed                : specify the random seed for the simulations.\n"
+					+ "-deadline (-time, -t): specify the final time for the simulations.\n"
+					+ "-replications (-reps): specify the number of replications.\n";
 		
 		System.out.println(helpMessage);
 	}
 	
 	public static void main(String[] args) {
 		// read arguments
+		Mode mode = getMode(args);
 		// based on the arguments, choose the right option
-		// (currently only simulation is available but in the future other options may be supported)
-		parseSimulationArguments(args);
-		performSimulation();
-		
+		switch(mode) {
+		case Help:
+			printHelp();
+			break;
+		case Simulation:
+			parseSimulationArguments(args,true);
+			performSimulation();
+			break;
+		case Multivesta:
+			/*
+			MultivestaExperiment exp = parseMultivestaArguments(args);
+			try {
+				exp.run();
+			} catch (Exception e) {
+				System.out.println("Could not run MultiVeStA experiment.\nError:");
+				e.printStackTrace();
+			}
+			*/
+			System.out.println("MultiVeStA integration coming soon.");
+			break;
+		case Summary:
+			printSummary(args);
+			break;
+		case None:
+			parseSimulationArguments(args,false);
+			performSimulation();
+		}
+	}
+	
+	private static void printSummary(String[] args) {
+		//parseSummaryArguments(args);
+		if (args.length < 3) {
+			System.out.println("No model given.\n");
+			printHelp();
+			return;
+		}
+		String name = args[2];
+		boolean create_latex = false;
+		boolean unrecognised = false;
+		for(int i = 3; i < args.length; i++) {
+			switch(args[i]) {
+			case "-latex":
+			case "-LaTeX":
+				create_latex = true;
+				break;
+			case "-quiet":
+			case "-q":
+				verbose = false;
+				break;
+			default:
+				System.out.println("Unrecognised option: " + args[i] + " (ignoring).");
+				unrecognised = true;
+			}
+		}
+		if (unrecognised) {
+			printHelp();
+		}
+		CarmaModel model = getCARMAModel(name);
+		if (model == null) {
+			System.out.println("Could not read model from file " + name);
+			return;
+		}
+		if (verbose) {
+			printModelOutline(model);
+		}
+		if (create_latex) {
+			String outputFile = null;
+			printLatex(model,outputFile);
+		}
+	}
+
+	private static void printModelOutline(CarmaModel m) {
+		for(String sys_name : m.getSystems()) {
+			System.out.println("System " + sys_name + ":");
+			CarmaSystem system = m.getFactory(sys_name).getModel();
+			System.out.println("Initial state:");
+			for (CarmaComponent c : system.getCollective()) {
+				System.out.print("Component " + c.getName() + 
+						((c.getLocation() != null) ? ("at " + c.getLocation()) : ""));
+			}
+		}
+	}
+	
+	private static void printLatex(CarmaModel m, String filename) {
+		System.out.println("LaTeX generation not implemented yet.");
 	}
 	
 	public static long getTimeElapsed() {
 		return timeElapsed;
+	}
+	
+	private static String formatTime(long time) {
+		long time_ms = TimeUnit.NANOSECONDS.toMillis(time);
+		if (time_ms < 1000) { // if up to 1 second, print time in milliseconds
+			return time_ms + " ms";
+		} else {
+			double time_s = (double) time_ms / 1000;
+			if (time_s < 300) { // if up to 5 minutes, print seconds
+				return String.format("%.5f s", time_s);
+			} else { // if more than 5 minutes, print minutes and seconds rounded down
+				int minFull = (int) time_s / 60;
+				int secRem = (int) time_s % 60;
+				return String.format("%d m %d s",minFull,secRem);
+			}
+		}
 	}
 	
 	/**
@@ -473,5 +832,8 @@ public class CARMACommandLine {
 		multithreaded = false;
 		nThreads = 1;
 		timeElapsed = 0;
+		seedSet = false;
+		deadlineSet = false;
+		replicationsSet = false;
 	}
 }
