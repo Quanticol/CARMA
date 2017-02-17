@@ -192,6 +192,7 @@ public class CARMACommandLine {
 		}
 	}
 	
+	/*
 	private static MultivestaExperiment parseMultivestaArguments(String[] args) {
 		boolean unrecognised = false;
 		String modelFile = args[1];
@@ -221,6 +222,7 @@ public class CARMACommandLine {
 			printHelp();
 		return new MultivestaExperiment(modelFile,queryFile,outputFolder);
 	}
+	*/
 
 	
 	
