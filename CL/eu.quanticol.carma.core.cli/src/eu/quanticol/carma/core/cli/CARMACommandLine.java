@@ -639,6 +639,35 @@ public class CARMACommandLine {
 			System.err.println("Could not create file: " + timeFile + ".");
 		}
 		
+		// Make gnuplot script:
+		Path plotFile = outputBase.resolve("plot.gp");
+		try (PrintStream out = new PrintStream(plotFile.toFile())) {
+			out.println("set datafile separator \";\"");
+			out.println("set yrange [0:*]");
+			//out.println("set offset graph 0.01,0.01,0,0");
+			out.println("#You can control the position of the legend with the following line:");
+			out.println("#set key outside right center");
+			out.println("set title \"Measures for " + sim.getName() + "\"");
+			out.println("#To save a png figure of the plot, uncomment the next two lines:");
+			out.println("#set terminal png");
+			out.println(String.format("#set output \"%s_plot.png\"",sim.getName()));
+			List<String> measureList = sim.getMeasures().stream()
+					.map(t -> sim.getCarmaModel().getMeasure(t.getMeasureName(),t.getParameters())
+							.getName()).collect(Collectors.toList());
+			out.println("measures = \"" + String.join(" ", measureList) + "\"");
+			out.println("#The below line will print the mean value of each measure in the experiment.");
+			out.println("#The confidence intervals at each point will be shown as error bars.");
+			out.println("plot for [measure in measures] measure.\".csv\" using 1:2:4"
+					+ " title measure with yerrorlines");
+			out.println("#If you want to show standard deviations as error bars, instead use:");
+			out.println("#plot for [measure in measures] measure.\".csv\" using 1:2:3"
+					+ " title measure with yerrorlines");
+			out.println("#[Optional: Comment out the next line if saving to a file]");
+			out.println("pause -1");
+		} catch (FileNotFoundException e) {
+			System.err.println("Could not create file: " + plotFile + ".");
+		}
+		
 		// Write summary:
 		Path summaryFile = outputBase.resolve("info");
 		if (Files.exists(summaryFile)) {
@@ -657,7 +686,11 @@ public class CARMACommandLine {
 			}
 			writer.println("The scenario considered was " + sim.getSystem() + ".");
 			writer.print("The experiment tracked the following measures: ");
-			writer.println(sim.getMeasures().stream().map(MeasureData::toString)
+//			writer.println(sim.getMeasures().stream().map(MeasureData::toString)
+//					.collect(Collectors.joining(", ")) + ".");
+			writer.println(sim.getMeasures().stream()
+					.map(t -> sim.getCarmaModel().getMeasure(t.getMeasureName(),t.getParameters())
+							.getName())
 					.collect(Collectors.joining(", ")) + ".");
 			writer.println(String.format("The final time of the simulation was %.3f "
 					+ "and %d samplings were taken (sampling interval: %.5f).",
