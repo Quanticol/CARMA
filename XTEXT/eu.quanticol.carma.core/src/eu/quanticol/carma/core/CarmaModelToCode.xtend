@@ -158,6 +158,13 @@ import eu.quanticol.carma.core.carma.WeightBlock
 import eu.quanticol.carma.core.carma.RateBlock
 import eu.quanticol.carma.core.carma.UpdateBlock
 import eu.quanticol.carma.core.carma.ActionStub
+import eu.quanticol.carma.core.carma.Range
+import eu.quanticol.carma.core.carma.UniverseElement
+import eu.quanticol.carma.core.carma.NodeBodyCommand
+import eu.quanticol.carma.core.carma.ConnectionBodyCommand
+import eu.quanticol.carma.core.carma.NodeDeclaration
+import eu.quanticol.carma.core.carma.NamedNode
+import eu.quanticol.carma.core.carma.UnNamedNode
 
 class CarmaModelToCode {
 	
@@ -173,7 +180,7 @@ class CarmaModelToCode {
 	
 	def dispatch elementToCode( FunctionDefinition f ) {
 		'''
-		fun «f.type.typeToCode» («FOR p:f.parameters SEPARATOR ', '»«p.variableToCode»«ENDFOR») «f.body.functionCommandToCode»
+		fun «f.type.typeToCode» «f.name» («FOR p:f.parameters SEPARATOR ', '»«p.variableToCode»«ENDFOR») «f.body.functionCommandToCode»
 		'''
 	}
 	
@@ -250,14 +257,14 @@ class CarmaModelToCode {
 			IntegerType: '''int'''
 			LocationType: '''location'''
 			BooleanType: '''bool'''
-			CustomType: '''«type.reference»'''
+			CustomType: '''«type.reference.referenceableTypeToCode»'''
 			ListType: '''list<«type.arg.typeToCode»>'''
 			SetType: '''set<«type.arg.typeToCode»>'''
 			RealType: '''real'''
 		}		
 	}
 
-	def referenceableTypeToCode( ReferenceableType type ) {
+	def CharSequence referenceableTypeToCode( ReferenceableType type ) {
 		switch type {
 			EnumDefinition: type.name
 			RecordDefinition: type.name
@@ -270,7 +277,7 @@ class CarmaModelToCode {
 			«FOR f:r.fields SEPARATOR ','»
 			«f.fieldType.typeToCode» «f.name»
 			«ENDFOR»		
-		]
+		];
 		'''		
 	}
 	
@@ -406,7 +413,7 @@ class CarmaModelToCode {
 	}
 	
 	def dispatch elementToCode( MeasureDefinition f ) {
-		'''measure «f.name»( «FOR v:f.variables SEPARATOR ','»«v.variableToCode»«ENDFOR») = «f.measure.expressionToCode»;'''	
+		'''measure «f.name»«IF !f.variables.empty»( «FOR v:f.variables SEPARATOR ','»«v.variableToCode»«ENDFOR» )«ENDIF» = «f.measure.expressionToCode»;'''	
 	}
 	
 	def dispatch elementToCode( SystemDefinition f ) {
@@ -506,7 +513,7 @@ class CarmaModelToCode {
 	}
 	
 	def dispatch CharSequence collectiveBlockDeclarationToCode( ComponentBlockInstantiation c ) {
-		'''new «c.name.name»( «FOR e:c.arguments SEPARATOR ','»«e.expressionToCode»«ENDFOR»)«IF c.location!=null»@«c.location.expressionToCode»«ENDIF»«IF c.population!=null»< «c.population.expressionToCode» >«ENDIF»'''
+		'''new «c.name.name»( «FOR e:c.arguments SEPARATOR ','»«e.expressionToCode»«ENDFOR» )«IF c.location!=null»@«c.location.expressionToCode»«ENDIF»«IF c.population!=null»< «c.population.expressionToCode» >«ENDIF»;'''
 	}
 	
 	def dispatch CharSequence collectiveBlockDeclarationToCode( ComponentBlockForStatement c ) {
@@ -553,7 +560,26 @@ class CarmaModelToCode {
 	
 	//TODO:	
 	def dispatch elementToCode( SpaceDefinition f ) {
-		
+		'''
+		space «f.name» ( «FOR p:f.parameters SEPARATOR ', '»«p.variableToCode»«ENDFOR» ) {
+			universe <«FOR e:f.universe SEPARATOR ', '»«e.universeElementToCode»«ENDFOR»>
+			nodes {
+				«FOR n : f.nodes»
+				«n.nodeBodyToCode»
+				«ENDFOR»
+			}
+			connections {
+				«FOR c : f.edges» «c.connectionBodyToCode» «ENDFOR»
+			}
+			areas {«««There should only be one label?
+				«FOR l : f.labels»«l.name»«FOR n : l.nodes»«n»«ENDFOR»«ENDFOR»
+			}
+		}
+		'''
+	}
+	
+	def CharSequence universeElementToCode( UniverseElement e) {
+		'''«e.type.valueTypeToCode» «e.name»'''
 	}
 	
 	def dispatch CharSequence expressionToCode( Or e ) {
@@ -633,7 +659,7 @@ class CarmaModelToCode {
 	}
 
 	def dispatch CharSequence expressionToCode( NodeExpressionOrArrayAccess e ) {
-		'''( «e.source.expressionToCode»[«FOR v:e.values SEPARATOR ","» «v.expressionToCode» «ENDFOR»] )'''
+		''' «e.source.expressionToCode»[«FOR v:e.values SEPARATOR ","» «v.expressionToCode» «ENDFOR»] '''
 	}
 
 	def dispatch CharSequence expressionToCode( PreSetExpression e ) {
@@ -685,7 +711,7 @@ class CarmaModelToCode {
 	}
 	
 	def dispatch CharSequence expressionToCode( AtomicRecord e ) {
-		'''[ «FOR f:e.fields SEPARATOR ','»  «ENDFOR»]'''
+		'''[ «FOR f:e.fields SEPARATOR ','» «f.field.name» = «f.value.expressionToCode» «ENDFOR»]'''
 	}
 	
 	def CharSequence fieldAssignmentToCode( FieldAssignment f ) {
@@ -785,7 +811,7 @@ class CarmaModelToCode {
 	} 
 
 	def dispatch CharSequence expressionToCode(MaxMeasure e) {
-		'''max{ «e.value.expressionToCode» | «e.guard.expressionToCode» )'''
+		'''max{ «e.value.expressionToCode»«IF e.guard != null» | «e.guard.expressionToCode»«ENDIF» }'''
 	} 
 
 	def dispatch CharSequence expressionToCode(MinFunction e) {
@@ -793,11 +819,11 @@ class CarmaModelToCode {
 	} 
 
 	def dispatch CharSequence expressionToCode(MinMeasure e) {
-		'''min{ «e.value.expressionToCode» | «e.guard.expressionToCode» )'''
+		'''min{ «e.value.expressionToCode»«IF e.guard != null» | «e.guard.expressionToCode»«ENDIF» }'''
 	} 
 
 	def dispatch CharSequence expressionToCode(AverageMeasure e) {
-		'''avg{ «e.value.expressionToCode» | «e.guard.expressionToCode» )'''
+		'''avg{ «e.value.expressionToCode»«IF e.guard != null» | «e.guard.expressionToCode»«ENDIF» }'''
 	} 
 
 	def dispatch CharSequence expressionToCode(PowFunction e) {
@@ -902,6 +928,30 @@ class CarmaModelToCode {
 
 	def dispatch CharSequence expressionToCode(AtomicRnd e) {
 		'''RND'''
-	} 
+	}
+	
+	def dispatch CharSequence expressionToCode(Range e) {
+		'''«e.min.expressionToCode» : «e.max.expressionToCode»'''
+	}
+	
+	def dispatch CharSequence nodeBodyToCode(NamedNode n) {
+		'''«n.name» [ «FOR v:n.values SEPARATOR ','» «v.expressionToCode» «ENDFOR» ];'''
+	}
+	
+	def dispatch CharSequence nodeBodyToCode(UnNamedNode n) {
+		'''[ «FOR v:n.values SEPARATOR ','» «v.expressionToCode» «ENDFOR» ];'''
+	}
+	
+	//TODO remaining cases
+	def dispatch CharSequence nodeBodyToCode(NodeBodyCommand e) {
+		//'''Node body here.'''
+		''''''
+	}
+	
+	//TODO
+	def CharSequence connectionBodyToCode(ConnectionBodyCommand e) {
+		//'''Connection body here.'''
+		''''''
+	}
 
 }
