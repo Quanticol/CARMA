@@ -165,6 +165,29 @@ import eu.quanticol.carma.core.carma.ConnectionBodyCommand
 import eu.quanticol.carma.core.carma.NodeDeclaration
 import eu.quanticol.carma.core.carma.NamedNode
 import eu.quanticol.carma.core.carma.UnNamedNode
+import eu.quanticol.carma.core.carma.NodeIfThenElseCommand
+import eu.quanticol.carma.core.carma.NodeForCommand
+import eu.quanticol.carma.core.carma.NodeBlockCommand
+import eu.quanticol.carma.core.carma.NodeForEach
+import eu.quanticol.carma.core.carma.LoopingVariable
+import eu.quanticol.carma.core.carma.ConnectionForEach
+import eu.quanticol.carma.core.carma.ConnectionForCommand
+import eu.quanticol.carma.core.carma.ConnectionBlockCommand
+import eu.quanticol.carma.core.carma.ConnectionIfThenElseCommand
+import eu.quanticol.carma.core.carma.ConnectionDeclaration
+import eu.quanticol.carma.core.carma.UnNamedLocationExpression
+import eu.quanticol.carma.core.carma.NamedLocationExpression
+import eu.quanticol.carma.core.carma.Direction
+import eu.quanticol.carma.core.carma.DirectedEdge
+import eu.quanticol.carma.core.carma.UnDirectedEdge
+import eu.quanticol.carma.core.carma.EdgeProperty
+import eu.quanticol.carma.core.carma.AreaElementDeclaration
+import eu.quanticol.carma.core.carma.AreaIfThenElseCommand
+import eu.quanticol.carma.core.carma.AreaBlockCommand
+import eu.quanticol.carma.core.carma.AreaForCommand
+import eu.quanticol.carma.core.carma.AreaForEach
+import java.math.BigDecimal
+import java.text.DecimalFormat
 
 class CarmaModelToCode {
 	
@@ -239,10 +262,12 @@ class CarmaModelToCode {
 		'''«f.variable.name»'''
 	}
 
-
-
 	def CharSequence variableToCode( Variable v ) {
 		'''«v.type.valueTypeToCode» «v.name»'''
+	}
+	
+	def CharSequence loopingVariableToCode( LoopingVariable v) {
+		'''«v.name» in «v.value.expressionToCode»'''
 	}
 	
 	def CharSequence valueTypeToCode( ValueType v ) {
@@ -569,10 +594,14 @@ class CarmaModelToCode {
 				«ENDFOR»
 			}
 			connections {
-				«FOR c : f.edges» «c.connectionBodyToCode» «ENDFOR»
+				«FOR c : f.edges»«c.connectionBodyToCode»«ENDFOR»
 			}
-			areas {«««There should only be one label?
-				«FOR l : f.labels»«l.name»«FOR n : l.nodes»«n»«ENDFOR»«ENDFOR»
+			areas {
+				«FOR l : f.labels»
+				«l.name» {
+					«FOR n : l.nodes»«n.areaBodyToCode»«ENDFOR»
+				}
+				«ENDFOR»
 			}
 		}
 		'''
@@ -707,7 +736,7 @@ class CarmaModelToCode {
 	}
 	
 	def dispatch CharSequence expressionToCode( AtomicReal e ) {
-		'''«e.value»'''
+		'''«e.value.prettyPrint»'''
 	}
 	
 	def dispatch CharSequence expressionToCode( AtomicRecord e ) {
@@ -855,7 +884,7 @@ class CarmaModelToCode {
 			'''U( «FOR v:e.args SEPARATOR ','»«v.expressionToCode»«ENDFOR» )'''
 		} else {
 			if (e.args.length > 0) {
-				'''U«e.args.get(0).expressionToCode»'''
+				'''U( «e.args.get(0).expressionToCode» )'''
 			} else {
 				''''''
 			}
@@ -942,16 +971,161 @@ class CarmaModelToCode {
 		'''[ «FOR v:n.values SEPARATOR ','» «v.expressionToCode» «ENDFOR» ];'''
 	}
 	
-	//TODO remaining cases
-	def dispatch CharSequence nodeBodyToCode(NodeBodyCommand e) {
-		//'''Node body here.'''
-		''''''
+	def dispatch CharSequence nodeBodyToCode(NodeIfThenElseCommand n) {
+		'''
+		if ( «n.condition.expressionToCode» )
+			«n.thenBlock.nodeBodyToCode»
+		«IF n.elseBlock != null»else
+			«n.elseBlock.nodeBodyToCode»
+		«ENDIF»
+		'''
 	}
 	
-	//TODO
-	def CharSequence connectionBodyToCode(ConnectionBodyCommand e) {
-		//'''Connection body here.'''
-		''''''
+	def dispatch CharSequence nodeBodyToCode(NodeBlockCommand n) {
+		'''
+		{
+		«FOR c : n.nodes»
+		«c.nodeBodyToCode»
+		«ENDFOR»
+		}
+		'''
+	}
+	
+	def dispatch CharSequence nodeBodyToCode(NodeForCommand n) {
+		'''
+		for «n.variable.name» from «n.start.expressionToCode»«IF n.step != null» by «n.step.expressionToCode»«ENDIF» to «n.end.expressionToCode»
+		 	«n.body.nodeBodyToCode»
+		'''
+	}
+	
+	def dispatch CharSequence nodeBodyToCode(NodeForEach n) {
+		'''
+		for «n.iteration»
+			«n.body.nodeBodyToCode»
+		'''
+	}
+	
+	def dispatch CharSequence connectionBodyToCode(ConnectionDeclaration c) {
+		val hasProperties = (c.edgeProperties != null) && !c.edgeProperties.empty
+		'''
+		«c.source.locationExpressionToCode» «c.direction.directionToCode» «c.target.locationExpressionToCode»«IF hasProperties» { «FOR p : c.edgeProperties SEPARATOR ', '»«p.edgePropertyToCode»«ENDFOR» }«ENDIF»;
+		'''
+	}
+	
+	def dispatch CharSequence connectionBodyToCode(ConnectionIfThenElseCommand c) {
+		'''
+		if ( «c.condition.expressionToCode» )
+			«c.thenBlock.connectionBodyToCode»
+		«IF c.elseBlock != null»else
+			«c.elseBlock.connectionBodyToCode»
+		«ENDIF»
+		'''
+	}
+	
+	def dispatch CharSequence connectionBodyToCode(ConnectionBlockCommand c) {
+		'''
+		{
+		«FOR e : c.edges»
+		«e.connectionBodyToCode»
+		«ENDFOR»
+		}
+		'''
+	}
+	
+	def dispatch CharSequence connectionBodyToCode(ConnectionForCommand c) {
+		'''
+		for «c.variable.name» from «c.start.expressionToCode»«IF c.step != null» by «c.step.expressionToCode»«ENDIF» to «c.end.expressionToCode»
+		 	«c.body.connectionBodyToCode»
+		'''
+	}
+	
+	def dispatch CharSequence connectionBodyToCode(ConnectionForEach c) {
+		'''
+		for «c.iteration»
+			«c.body.connectionBodyToCode»
+		'''
+	}
+	
+	def dispatch CharSequence locationExpressionToCode(NamedLocationExpression e) {
+		'''«e.ref»[ «FOR v : e.values SEPARATOR ', '»«v.expressionToCode»«ENDFOR» ]'''
+	}
+	
+	def dispatch CharSequence locationExpressionToCode(UnNamedLocationExpression e) {
+		'''[ «FOR v : e.values SEPARATOR ', '»«v.expressionToCode»«ENDFOR» ]'''
+	}
+	
+	def CharSequence directionToCode(Direction d) {
+		switch d {
+			DirectedEdge: '->'
+			UnDirectedEdge:'<->'
+		}
+	}
+	
+	def CharSequence edgePropertyToCode(EdgeProperty p) {
+		'''«p.name» = «p.value.expressionToCode»'''
+	}
+	
+	def dispatch CharSequence areaBodyToCode(AreaElementDeclaration a) {
+		'''
+		«a.node.locationExpressionToCode» ;
+		'''
+	}
+	
+	def dispatch CharSequence areaBodyToCode(AreaIfThenElseCommand a) {
+		'''
+		if ( «a.condition.expressionToCode» )
+			«a.thenBlock.areaBodyToCode»
+		«IF a.elseBlock != null»else
+			«a.elseBlock.areaBodyToCode»
+		«ENDIF»
+		'''
+	}
+	
+	def dispatch CharSequence areaBodyToCode(AreaBlockCommand a) {
+		'''
+		{
+		«FOR n : a.nodes»
+		«n.areaBodyToCode»
+		«ENDFOR»
+		}
+		'''
+	}
+	
+	def dispatch CharSequence areaBodyToCode(AreaForCommand a) {
+		'''
+		for «a.variable.name» from «a.start.expressionToCode»«IF a.step != null» by «a.step.expressionToCode»«ENDIF» to «a.end.expressionToCode»
+		 	«a.body.areaBodyToCode»
+		'''
+	}
+	
+	def dispatch CharSequence areaBodyToCode(AreaForEach a) {
+		'''
+		for «a.iteration»
+			«a.body.areaBodyToCode»
+		'''
+	}
+	
+	
+	
+	//TODO Are the limits available somewhere as constants? (instead of taken
+	// from the docs, as here)
+	//TODO This looks ugly, especially the special handling of 0. Can it be
+	// improved? (flag # looks like it should force decimal separator but it
+	// doesn't seem to work). DecimalFormat can set a minimum number of fractional
+	// digits but it seems like overkill for the common case. 
+
+	def CharSequence prettyPrint(double d) {
+		// Remember that these values will only be positive, as negative literals
+		// are handled via UnaryMinus
+		if (d == 0) {
+			"0.0"
+		}
+		else if (d >= 1e-3 && d < 1e7) {
+//			String.format("%#f",d)
+			String.valueOf(d)
+		} else {
+			new BigDecimal(d).toPlainString
+		}
 	}
 
 }
