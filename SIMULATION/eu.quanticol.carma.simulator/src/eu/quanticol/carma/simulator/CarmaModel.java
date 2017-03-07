@@ -217,6 +217,17 @@ public abstract class CarmaModel {
 	public <T> int computeSize(Collection<T> l) {
 		return l.size();
 	}
+	
+	public <T> LinkedList<T> tail( LinkedList<T> l ) {
+		if (l.isEmpty()) {
+			return new LinkedList<>();
+		} else {
+			LinkedList<T> newList = new LinkedList<>();
+			newList.addAll(l);
+			newList.remove();
+			return newList;
+		}
+	}
 
 	public LinkedList<Integer> generateIntervalList(int min, int max) {
 		LinkedList<Integer> toReturn = new LinkedList<>();

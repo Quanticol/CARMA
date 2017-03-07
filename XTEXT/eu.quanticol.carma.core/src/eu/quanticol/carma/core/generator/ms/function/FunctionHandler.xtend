@@ -18,6 +18,8 @@ import eu.quanticol.carma.core.carma.TargetAssignmentField
 import eu.quanticol.carma.core.carma.ForEach
 import eu.quanticol.carma.core.typing.TypeSystem
 import eu.quanticol.carma.core.typing.CarmaType
+import eu.quanticol.carma.core.carma.TargetAssignmentList
+import eu.quanticol.carma.core.carma.Expression
 
 class FunctionHandler {
 	
@@ -60,13 +62,23 @@ class FunctionHandler {
 	}
 
 	def dispatch CharSequence functionBodyToJava( AssignmentCommand c ) {
-		'''«c.target.assignmentTargetToJava» =«c.value.expressionToJava»;'''
+//		'''«c.target.assignmentTargetToJava» = «c.value.expressionToJava»;'''
+		c.target.assignCommand(c.value)
+	}
+	
+	def CharSequence assignCommand( AssignmentTarget t , Expression e ) {
+		switch t {
+			TargetAssignmentVariable: '''«t.variable.name.variableName» = «e.expressionToJava»;'''
+			TargetAssignmentField: '''«t.target.assignmentTargetToJava».«t.field.name.fieldName» = «e.expressionToJava»;'''
+			TargetAssignmentList: '''«t.target.assignmentTargetToJava».set( «t.index.expressionToJava» , «e.expressionToJava»);'''
+		}
 	}
 	
 	def CharSequence assignmentTargetToJava( AssignmentTarget t ) {
 		switch t {
 			TargetAssignmentVariable: t.variable.name.variableName
 			TargetAssignmentField: '''«t.target.assignmentTargetToJava».«t.field.name.fieldName»'''
+			TargetAssignmentList: '''«t.target.assignmentTargetToJava».get( «t.index.expressionToJava» )'''
 		}
 	}
 

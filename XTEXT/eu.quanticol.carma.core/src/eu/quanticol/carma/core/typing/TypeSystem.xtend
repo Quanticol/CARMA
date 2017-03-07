@@ -132,6 +132,11 @@ import eu.quanticol.carma.core.carma.SelectFunction
 import eu.quanticol.carma.core.carma.LambdaParameter
 import eu.quanticol.carma.core.carma.LambdaContext
 import eu.quanticol.carma.core.carma.NormalSampling
+import eu.quanticol.carma.core.carma.TargetAssignmentList
+import eu.quanticol.carma.core.carma.MinInt
+import eu.quanticol.carma.core.carma.MaxInt
+import eu.quanticol.carma.core.carma.MaxReal
+import eu.quanticol.carma.core.carma.MinReal
 
 class TypeSystem {
 
@@ -340,6 +345,19 @@ class TypeSystem {
 		}
 	}
 	
+	def dispatch CarmaType typeOf( TargetAssignmentList f ) {
+		if (f.target == null) {
+			CarmaType::NONE_TYPE		
+		} else {
+			var t = f.target.typeOf
+			if (t.isList) {
+				t.asList.elementsType
+			} else {
+				CarmaType::ERROR_TYPE
+			}
+		}
+	}
+	
 	def dispatch CarmaType typeOf( SetExpression e ) {
 		if (e.values.isEmpty) {
 			CarmaType::createSetType(null)
@@ -540,6 +558,22 @@ class TypeSystem {
 	
 	def  dispatch CarmaType typeOf( AtomicTrue e ) {
 		CarmaType::BOOLEAN_TYPE
+	}
+
+	def  dispatch CarmaType typeOf( MinInt e ) {
+		CarmaType::INTEGER_TYPE
+	}
+
+	def  dispatch CarmaType typeOf( MaxInt e ) {
+		CarmaType::INTEGER_TYPE
+	}
+
+	def  dispatch CarmaType typeOf( MaxReal e ) {
+		CarmaType::REAL_TYPE
+	}
+
+	def  dispatch CarmaType typeOf( MinReal e ) {
+		CarmaType::REAL_TYPE
 	}
 
 	def  dispatch CarmaType typeOf( AtomicFalse e ) {

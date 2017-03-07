@@ -327,7 +327,8 @@ AssignmentCommand:
 ;
 
 AssignmentTarget:
-	TargetAssignmentVariable ({TargetAssignmentField.target=current} '.' field = [FieldDefinition])*
+	TargetAssignmentVariable ({TargetAssignmentField.target=current} '.' field = [FieldDefinition]
+		| {TargetAssignmentList.target=current} '[' index=Expression ']' )*
 ;
 
 TargetAssignmentVariable returns AssignmentTarget: {TargetAssignmentVariable}
@@ -379,6 +380,7 @@ UpdateCommand hidden(ML_COMMENT,SL_COMMENT,WS):
 		{UpdateAssignment.target=current} (":="|"="|'<-') expression=Expression ";" 
 		| {UpdateCollectionAdd.target=current} "." "add" "(" expression=Expression ")" ";"
 		| {UpdateCollectionRemove.target=current} "." "remove" "(" expression=Expression ")" ";"
+		| {UpdateArrayElement.target=current} ('[' indexes+=Expression ']')+ (":="|"="|'<-') expression=Expression ";"
 	)
 ;
 
@@ -731,7 +733,11 @@ Primary returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 Atomic returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	Reference 
 	| CollectionAtomicExpression
-	| {LambdaParameter} "*"
+	| {MaxInt} "MAXINT"
+	| {MinInt} "MININT"
+	| {MaxReal} "MAXREAL"
+	| {MinReal} "MINREAL"
+	| {LambdaParameter} "@"
 	| {Locations} "locations"
 	| {MyLocation} "loc"
 	| {AtomicTrue} "true"
@@ -824,6 +830,8 @@ BuiltInFunctions returns Expression :
 	| {NewListFunction} "newList" "(" arg1=BasicType ")"
 	| {NewSetFunction} "newSet" "(" arg2=BasicType ")"
 	| {SizeFunction} "size" "(" arg1 = Expression ")"
+	| {HeadFunction} "head" "(" arg1 = Expression ")"
+	| {TailFunction} "tail" "(" arg1 = Expression ")"
 	| LambdaContext
 ;
 

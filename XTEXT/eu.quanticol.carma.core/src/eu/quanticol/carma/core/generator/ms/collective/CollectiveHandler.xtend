@@ -41,6 +41,7 @@ import eu.quanticol.carma.core.carma.AttributeReference
 import eu.quanticol.carma.core.carma.GlobalContext
 import eu.quanticol.carma.core.carma.MyContext
 import eu.quanticol.carma.core.carma.UpdateCollectionRemove
+import eu.quanticol.carma.core.carma.UpdateArrayElement
 
 class CollectiveHandler {
 
@@ -328,9 +329,15 @@ class CollectiveHandler {
 				'''
 				store.set( "«u.target.targetAttributeName»", «u.expression.expressionToJava» );
 				'''
-			UpdateCollectionAdd: '''«u.target.targetAttributeVariable».add(«u.expression.expressionToJava»)'''
-			UpdateCollectionRemove: '''«u.target.targetAttributeVariable».remove(«u.expression.expressionToJava»)'''
+			UpdateCollectionAdd: '''«u.target.targetAttributeVariable».add(«u.expression.expressionToJava»);'''
+			UpdateCollectionRemove: '''«u.target.targetAttributeVariable».remove(«u.expression.expressionToJava»);'''
+			UpdateArrayElement: '''«u.target.targetAttributeVariable»«u.indexes.accessSequence».set(«u.indexes.last.expressionToJava» , «u.expression.expressionToJava»);'''
 		}
+	}
+	
+	def CharSequence getAccessSequence( EList<Expression> indexes ) {
+		var result = indexes.subList(0,indexes.length-1)
+		'''«FOR v:result».get( «v.expressionToJava» )«ENDFOR»'''		
 	}
 	
 	def CharSequence targetAttributeVariable( AttributeTarget target ) {

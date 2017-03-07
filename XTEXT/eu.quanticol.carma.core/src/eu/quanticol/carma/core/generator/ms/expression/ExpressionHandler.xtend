@@ -108,6 +108,12 @@ import eu.quanticol.carma.core.carma.ExistsFunction
 import eu.quanticol.carma.core.carma.ForAllFunction
 import eu.quanticol.carma.core.carma.SelectFunction
 import eu.quanticol.carma.core.carma.LambdaParameter
+import eu.quanticol.carma.core.carma.HeadFunction
+import eu.quanticol.carma.core.carma.TailFunction
+import eu.quanticol.carma.core.carma.MinInt
+import eu.quanticol.carma.core.carma.MaxInt
+import eu.quanticol.carma.core.carma.MinReal
+import eu.quanticol.carma.core.carma.MaxReal
 
 class ExpressionHandler {
 	
@@ -313,6 +319,22 @@ class ExpressionHandler {
 		'''true'''		
 	}
 	
+	def dispatch CharSequence expressionToJava( MinInt e ) {
+		'''Integer.MIN_VALUE'''		
+	}
+	
+	def dispatch CharSequence expressionToJava( MaxInt e ) {
+		'''Integer.MAX_VALUE'''		
+	}
+	
+	def dispatch CharSequence expressionToJava( MinReal e ) {
+		'''Double.MIN_VALUE'''		
+	}
+	
+	def dispatch CharSequence expressionToJava( MaxReal e ) {
+		'''Double.MAX_VALUE'''		
+	}
+	
 	def dispatch CharSequence expressionToJava( AtomicFalse e ) {
 		'''false'''		
 	}
@@ -374,7 +396,7 @@ class ExpressionHandler {
 
 	def dispatch CharSequence expressionToJava( ExistsFunction e ) {
 		'''
-		exists( «e.arg1.expressionToJava» , __LAMBDA__var -> «e.arg2.expressionToJava»)
+		exist( «e.arg1.expressionToJava» , __LAMBDA__var -> «e.arg2.expressionToJava»)
 		'''
 	}
 
@@ -813,6 +835,15 @@ class ExpressionHandler {
 	def dispatch CharSequence expressionToJava( SizeFunction e ) {
 		'''computeSize( «e.arg1.expressionToJava» )'''
 	}
+	
+	def dispatch CharSequence expressionToJava( HeadFunction e ) {
+		'''head( «e.arg1.expressionToJava» )'''
+	}
+	
+	def dispatch CharSequence expressionToJava( TailFunction e ) {
+		'''tail( «e.arg1.expressionToJava» )'''
+	}
+	
 	
 	def invocationParameters( List<CharSequence> args , List<ValueType> parms ) {
 		var indexedArgs = args.indexed
