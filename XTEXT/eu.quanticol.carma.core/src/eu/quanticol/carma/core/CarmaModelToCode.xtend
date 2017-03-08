@@ -736,7 +736,8 @@ class CarmaModelToCode {
 	}
 	
 	def dispatch CharSequence expressionToCode( AtomicReal e ) {
-		'''«e.value.prettyPrint»'''
+		//'''«e.value.prettyPrint»'''
+		String.format("%g",e.value)
 	}
 	
 	def dispatch CharSequence expressionToCode( AtomicRecord e ) {
@@ -1113,19 +1114,19 @@ class CarmaModelToCode {
 	// improved? (flag # looks like it should force decimal separator but it
 	// doesn't seem to work). DecimalFormat can set a minimum number of fractional
 	// digits but it seems like overkill for the common case. 
-
-	def CharSequence prettyPrint(double d) {
-		// Remember that these values will only be positive, as negative literals
-		// are handled via UnaryMinus
-		if (d == 0) {
-			"0.0"
-		}
-		else if (d >= 1e-3 && d < 1e7) {
-//			String.format("%#f",d)
-			String.valueOf(d)
-		} else {
-			new BigDecimal(d).toPlainString
-		}
-	}
+//	def CharSequence prettyPrint(double d) {
+//		// Remember that these values will only be positive, as negative literals
+//		// are handled via UnaryMinus
+////		if (d == 0) {
+////			"0.0"
+////		}
+////		else if (d >= 1e-3 && d < 1e7) {
+//////			String.format("%#f",d)
+////			String.valueOf(d)
+////		} else {
+////			new BigDecimal(d).toPlainString
+////		}
+//		String.format("%g",d)
+//	}
 
 }
