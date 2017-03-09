@@ -101,6 +101,8 @@ import eu.quanticol.carma.core.carma.Activity
 import eu.quanticol.carma.core.carma.ProcessExpressionChoice
 import eu.quanticol.carma.core.carma.ProcessExpressionGuard
 import eu.quanticol.carma.core.carma.ProcessExpressionAction
+import eu.quanticol.carma.core.carma.UpdateArrayElement
+import eu.quanticol.carma.core.carma.TargetAssignmentList
 
 class CARMAValidator extends AbstractCARMAValidator {
 	
@@ -411,6 +413,123 @@ class CARMAValidator extends AbstractCARMAValidator {
 		}
 
 	}
+	
+	public static val ERROR_UpdateArrayElement_error 	= "ERROR_UpdateArrayElement_error"
+	
+	@Check
+	def check_ERROR_AttributeArrayElement_type_error( UpdateArrayElement assignment ) {
+		var targetType = assignment ?. target ?. typeOf
+		if ((targetType != null) && !targetType.error && !targetType.none && !targetType.list) {
+			error("Type Error: Indexed element should be a list, instead is "+ targetType, CarmaPackage::eINSTANCE.updateArrayElement_Target,ERROR_UpdateArrayElement_error);
+		}
+		var indexTypes = (assignment ?. indexes).map[typeOf]
+		if (indexTypes.exists[! it?.integer]) {
+			error("Type Error: Index expression should be INT", CarmaPackage::eINSTANCE.updateArrayElement_Indexes,ERROR_UpdateArrayElement_error);
+		}
+		var targetDepth = targetType ?. depth
+		var actualDepth = assignment.indexes.size
+		if (actualDepth > targetDepth) {
+			error("Type Error: Assignment target can be indexed up to "  + targetDepth
+				 + " times but here used with " + actualDepth + " levels.",
+				 CarmaPackage::eINSTANCE.updateArrayElement_Indexes,ERROR_UpdateArrayElement_error);
+		}
+		var expectedType = targetType ?. typeAtDepth(actualDepth)
+		var actualType = assignment ?. expression ?. typeOf
+		if ((expectedType != null)&&(actualType !=null)&&(!actualType.error)&&(!actualType.none)&&(!expectedType.mostGeneral(actualType).equals(expectedType))) {
+			error("Type Error: Expected "+expectedType+" is "+actualType,CarmaPackage::eINSTANCE.updateArrayElement_Expression,ERROR_UpdateArrayElement_error);			
+		}
+	}
+	
+	def CarmaType finalType(CarmaType t) {
+		switch(t) {
+			case t.list : finalType(t.asList.elementsType)
+			default : t
+		}
+	}
+		
+	def int depth(CarmaType t) {
+		switch(t) {
+			case t.list : depth(t.asList.elementsType) + 1
+			default : 0
+		}
+	}
+	
+	def typeAtDepth(CarmaType type, int depth) {
+		var i = 0
+		var t = type
+		try {
+			while (i < depth) {
+				t = t.asList.elementsType
+				i += 1
+			}
+		} catch (ClassCastException e) {
+			return null
+		}
+		return t
+	}
+	
+	public static val ERROR_UpdateCollectionAdd_error 	= "ERROR_UpdateCollectionAdd_error"
+	@Check
+	def check_ERROR_UpdateCollectionAdd_type_error( UpdateCollectionAdd assignment ) {
+		var targetType = assignment ?. target ?. typeOf
+		if ((targetType != null) && !targetType.list && !targetType.set) {
+			error("Type Error: Elements can only be added to lists or sets, not "+ targetType,
+				  CarmaPackage::eINSTANCE.updateCollectionAdd_Target,ERROR_UpdateCollectionAdd_error);
+		}
+		var expectedType = 
+			switch(targetType) {
+				case targetType.list : targetType.asList.elementsType
+				case targetType.set : targetType.asSet.elementsType
+				default : null
+			}
+		var actualType = assignment ?. expression ?. typeOf
+		if ((expectedType != null ) && (actualType != null)
+			&& !actualType.error && (!expectedType.mostGeneral(actualType).equals(expectedType))) {
+				error("Type Error: Expected "+expectedType+" is "+actualType,
+				  CarmaPackage::eINSTANCE.updateCollectionAdd_Expression,ERROR_UpdateCollectionAdd_error);
+			}
+	}
+	
+	public static val ERROR_UpdateCollectionRemove_error 	= "ERROR_UpdateCollectionRemove_error"
+	@Check
+	def check_ERROR_UpdateCollectionRemove_type_error( UpdateCollectionRemove assignment ) {
+		var targetType = assignment ?. target ?. typeOf
+		if ((targetType != null) && !targetType.list && !targetType.set) {
+			error("Type Error: Elements can only be removed from lists or sets, not "+ targetType,
+				  CarmaPackage::eINSTANCE.updateCollectionRemove_Target,
+				  ERROR_UpdateCollectionRemove_error);
+		}
+		var expectedType = 
+			switch(targetType) {
+				case targetType.list : targetType.asList.elementsType
+				case targetType.set : targetType.asSet.elementsType
+				default : null
+			}
+		var actualType = assignment ?. expression ?. typeOf
+		if ((expectedType != null ) && (actualType != null)
+			&& !actualType.error && (!expectedType.mostGeneral(actualType).equals(expectedType))) {
+				error("Type Error: Expected "+expectedType+" is "+actualType,
+				  CarmaPackage::eINSTANCE.updateCollectionRemove_Expression,
+				  ERROR_UpdateCollectionRemove_error);
+			}
+	}
+	
+	
+	public static val ERROR_TargetAssignmentList_type_error 	= "ERROR_TargetAssignmentList_type_error"
+	
+	@Check
+	def check_ERROR_TargetAssignmentList_type_error( TargetAssignmentList assignment ) {
+		var targetType = assignment ?. target ?. typeOf
+		if ((targetType != null) && !targetType.error && !targetType.none && !targetType.list) {
+			error("Type Error: Indexed element should be a list, instead is "+ targetType, CarmaPackage::eINSTANCE.targetAssignmentList_Target,ERROR_TargetAssignmentList_type_error);
+		}
+		var indexType = assignment ?. index ?. typeOf
+		if ((indexType != null) && !indexType.integer) {
+			error("Type Error: Index expression should be INT", CarmaPackage::eINSTANCE.targetAssignmentList_Index,ERROR_TargetAssignmentList_type_error);
+		}
+		// match between assigned type and expected type is checked for AssignmentCommand
+	}
+	
 	
 	public static val ERROR_Unbound_UntypedVariable_error 	= "ERROR_Unbound_UntypedVariable"
 	
@@ -1014,8 +1133,8 @@ class CARMAValidator extends AbstractCARMAValidator {
 	def check_ERROR_FieldAssignment_type_error( FieldAssignment f ) {
 		if ((f.field != null)&&(f.value != null)) {
 			var tf = f.field.fieldType.toCarmaType
-			var tv = f.value.typeOf
-			if (!tf.equals(tv)) {
+			var tv = f.value?.typeOf
+			if ((tv != null) && !tf.equals(tv)) {
 				error("Type Error: Expected "+tf+" is "+tv,CarmaPackage::eINSTANCE.fieldAssignment_Value,ERROR_FieldAssignment_type_error);
 			}		
 		}
