@@ -90,7 +90,7 @@ component Arrival( int _loc ) {
 
 fun real ReceivingProb( int _size ) {
 	if (_size != 0) {
-		return 1/real(_size);
+		return 1.0/real(_size);
 	} else {
 		return 0.0;
 	}

@@ -196,14 +196,12 @@ public abstract class CarmaType {
 	public boolean isCompatibleWith( CarmaType t ) {
 		if (t == null) {
 			return false;
-		} else {
-			return this.equals(t);
+		} 
+		if (this.equals(t)) {
+			return true;
 		}
-//		if (this.equals(t)) {
-//			return true;
-//		}
-//		return (((this.code == TypeCode.INTEGER)&&(t.code==TypeCode.REAL))
-//				||((this.code == TypeCode.REAL)&&(t.code == TypeCode.INTEGER)));
+		return (((this.code == TypeCode.INTEGER)&&(t.code==TypeCode.REAL))
+				||((this.code == TypeCode.REAL)&&(t.code == TypeCode.INTEGER)));
 	}
 	
 

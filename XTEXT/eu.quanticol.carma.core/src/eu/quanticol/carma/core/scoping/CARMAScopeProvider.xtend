@@ -66,6 +66,17 @@ import eu.quanticol.carma.core.carma.NodeBodyCommand
 import eu.quanticol.carma.core.carma.NamedNode
 import eu.quanticol.carma.core.carma.ProbabilityBlock
 import eu.quanticol.carma.core.carma.WeightBlock
+import eu.quanticol.carma.core.carma.ConnectionDeclaration
+import eu.quanticol.carma.core.carma.ConnectionBodyCommand
+import eu.quanticol.carma.core.carma.ConnectionIfThenElseCommand
+import eu.quanticol.carma.core.carma.ConnectionBlockCommand
+import eu.quanticol.carma.core.carma.ConnectionForCommand
+import eu.quanticol.carma.core.carma.ConnectionForEach
+import eu.quanticol.carma.core.carma.AreaElementDeclaration
+import eu.quanticol.carma.core.carma.AreaIfThenElseCommand
+import eu.quanticol.carma.core.carma.AreaBlockCommand
+import eu.quanticol.carma.core.carma.AreaForCommand
+import eu.quanticol.carma.core.carma.AreaForEach
 
 /**
  * This class contains custom scoping description.
@@ -615,6 +626,96 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 		}
 	}
 
+	def scope_Reference_reference( NodeBodyCommand node , EReference r ) {
+		node.scopeForSpaceElements
+	}
+
+	def scope_Reference_reference( ConnectionBodyCommand node , EReference r ) {
+		node.scopeForSpaceElements
+	}
+
+
+	def dispatch IScope scopeForSpaceElements( EObject obj ) {
+		IScope::NULLSCOPE
+	}
+	
+	def dispatch IScope scopeForSpaceElements( NodeDeclaration node ) {
+		node.eContainer.scopeForSpaceElements			
+	}
+
+	def dispatch IScope scopeForSpaceElements( NodeIfThenElseCommand node ) {
+		node.eContainer.scopeForSpaceElements			
+	}
+	
+	def dispatch IScope scopeForSpaceElements( NodeBlockCommand node ) {
+		node.eContainer.scopeForSpaceElements			
+	}
+	
+	def dispatch IScope scopeForSpaceElements( NodeForCommand node ) {
+		Scopes::scopeFor( newLinkedList( node.variable ) , node.eContainer.scopeForSpaceElements )
+	}
+
+	def dispatch IScope scopeForSpaceElements( NodeForEach node ) {
+		Scopes::scopeFor( newLinkedList( node.iteration ) , node.eContainer.scopeForSpaceElements )
+	}
+
+
+	def dispatch IScope scopeForSpaceElements( NodeBodyCommand node ) {
+		node.eContainer.scopeForSpaceElements			
+	}
+
+	def dispatch IScope scopeForSpaceElements( ConnectionDeclaration node ) {
+		node.eContainer.scopeForSpaceElements			
+	}
+
+	def dispatch IScope scopeForSpaceElements( ConnectionIfThenElseCommand node ) {
+		node.eContainer.scopeForSpaceElements			
+	}
+
+	def dispatch IScope scopeForSpaceElements( ConnectionBlockCommand node ) {
+		node.eContainer.scopeForSpaceElements			
+	}
+
+	def dispatch IScope scopeForSpaceElements( ConnectionForCommand node ) {
+		Scopes::scopeFor( newLinkedList( node.variable ) , node.eContainer.scopeForSpaceElements )
+	}
+
+	def dispatch IScope scopeForSpaceElements( ConnectionForEach node ) {
+		Scopes::scopeFor( newLinkedList( node.iteration ) , node.eContainer.scopeForSpaceElements )
+	}
+
+	def dispatch IScope scopeForSpaceElements( AreaElementDeclaration node ) {
+		node.eContainer.scopeForSpaceElements			
+	}
+
+	def dispatch IScope scopeForSpaceElements( AreaIfThenElseCommand node ) {
+		node.eContainer.scopeForSpaceElements			
+	}
+
+	def dispatch IScope scopeForSpaceElements( AreaBlockCommand node ) {
+		node.eContainer.scopeForSpaceElements			
+	}
+
+	def dispatch IScope scopeForSpaceElements( AreaForCommand node ) {
+		Scopes::scopeFor( newLinkedList( node.variable ) , node.eContainer.scopeForSpaceElements )
+	}
+
+	def dispatch IScope scopeForSpaceElements( AreaForEach node ) {
+		Scopes::scopeFor( newLinkedList( node.iteration ) , node.eContainer.scopeForSpaceElements )
+	}
+
+	def dispatch IScope scopeForSpaceElements( SpaceDefinition sd ) {
+		var scope = Scopes::scopeFor( 
+				sd.parameters ,
+				Scopes::scopeFor( sd.globalReferenceableElements.filter[ it.validInExpressions ] )				
+			)					
+		if (sd.universe != null) {
+			scope = Scopes::scopeFor( sd.universe , scope )
+		} 
+		scope
+	}
+
+	
 	
 	def scope_Reference_reference( ComponentBlockForStatement forBlock , EReference r ) {
 		var parentScope = forBlock.containerScope

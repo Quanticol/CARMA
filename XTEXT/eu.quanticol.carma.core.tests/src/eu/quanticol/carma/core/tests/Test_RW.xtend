@@ -53,8 +53,8 @@ space Grid (int width, int height) {
         connections {
             for i from 0 to width{
                 for j from 0 to height{
-                       [i, j] <-> [i+1,j] { w=1 };
-                       [i, j] <-> [i,j+1] { w=1 }; 
+                       [i, j] <-> [i+1,j] { w=1.0 };
+                       [i, j] <-> [i,j+1] { w=1.0 }; 
                 }
             } 
         }

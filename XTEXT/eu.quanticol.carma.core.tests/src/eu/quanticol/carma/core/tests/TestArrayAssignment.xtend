@@ -134,7 +134,7 @@ component TestComponent() {
 	}
 
 	behaviour {
-		A = tick*{ test.remove(); }.nil;
+		A = tick*{ test.remove( 0 ); }.nil;
 	}
 
 	init {
@@ -159,7 +159,7 @@ component TestComponent() {
 	}
 
 	behaviour {
-		A = tick*{ test.remove(); }.nil;
+		A = tick*{ test.remove(0); }.nil;
 	}
 
 	init {

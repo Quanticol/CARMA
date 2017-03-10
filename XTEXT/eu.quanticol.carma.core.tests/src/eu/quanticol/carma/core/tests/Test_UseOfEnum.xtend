@@ -63,7 +63,7 @@ system Actual{
         rate{
         	engage* {
         		if (sender.role==PROVIDER) {
-        			return 2*R;
+        			return 2.0*R;
         		}
         		if (sender.role==DELEGATE) {
         			return R;

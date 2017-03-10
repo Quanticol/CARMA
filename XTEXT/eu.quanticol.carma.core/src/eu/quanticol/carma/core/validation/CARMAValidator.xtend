@@ -637,7 +637,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 		if ((e.left != null)&&(e.right != null)) {
 			var type1 = e.left.typeOf
 			var type2 = e.right.typeOf
-			if ((type1!=null)&&(type2!=null)&&(!type1.none)&&(!type1.error)&&(!type1.none)&&(!type2.error)&&(!type1.equals(type2))) {
+			if ((type1!=null)&&(type2!=null)&&(!type1.none)&&(!type1.error)&&(!type2.none)&&(!type2.error)&&(!type1.equals(type2))) {
 				error("Type Error: Expected "+type1+" is "+type2,CarmaPackage::eINSTANCE.equality_Right,ERROR_Expression_type_error);			
 			}
 		}
@@ -652,7 +652,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 		if ((e.left != null)&&(e.right != null)) {
 			var type1 = e.left.typeOf
 			var type2 = e.right.typeOf
-			if ((type1!=null)&&(type2!=null)&&(!type1.none)&&(!type1.error)&&(!type1.none)&&(!type2.error)&&(!type1.equals(type2))) {
+			if ((type1!=null)&&(type2!=null)&&(!type1.none)&&(!type1.error)&&(!type2.none)&&(!type2.error)&&(!type1.equals(type2))) {
 				error("Type Error: Expected "+type1+" is "+type2,CarmaPackage::eINSTANCE.disEquality_Right,ERROR_Expression_type_error);			
 			}
 		}
@@ -779,12 +779,58 @@ class CARMAValidator extends AbstractCARMAValidator {
 		}
 	}
 	
+	
+	
 	@Check
 	def check_ERROR_Expression_type_error_Arithmetic_right( Addition e ) {
 		if (e.right != null) {
 			var type = e.left.typeOf
 			if ((type!=null)&&(!type.error)&&(!type.number)&&(!type.list)) {
 				error("Type Error: unexpected type "+type,CarmaPackage::eINSTANCE.addition_Left,ERROR_Expression_type_error);			
+			}
+		}
+	}
+	
+	@Check
+	def check_ERROR_Expression_type_error_compatible( Addition e ) {
+		if ((e.left !=null)&&(e.right != null)) {
+			var tleft = e.left.typeOf
+			var tright = e.right.typeOf
+			if (!tleft.error&&!tleft.none&&!tright.error&&!tright.none&&!tleft.isCompatibleWith(tright)) {
+				error("Type Error: both argument should have the same type! ("+tleft+","+tright+")",CarmaPackage::eINSTANCE.addition_Right,ERROR_Expression_type_error);			
+			}
+		}
+	}
+
+	@Check
+	def check_ERROR_Expression_type_error_compatible( Subtraction e ) {
+		if ((e.left !=null)&&(e.right != null)) {
+			var tleft = e.left.typeOf
+			var tright = e.right.typeOf
+			if (!tleft.error&&!tleft.none&&!tright.error&&!tright.none&&!tleft.isCompatibleWith(tright)) {
+				error("Type Error: both argument should have the same type! ("+tleft+","+tright+")",CarmaPackage::eINSTANCE.subtraction_Right,ERROR_Expression_type_error);			
+			}
+		}
+	}
+	
+	@Check
+	def check_ERROR_Expression_type_error_compatible( Division e ) {
+		if ((e.left !=null)&&(e.right != null)) {
+			var tleft = e.left.typeOf
+			var tright = e.right.typeOf
+			if (!tleft.error&&!tleft.none&&!tright.error&&!tright.none&&!tleft.isCompatibleWith(tright)) {
+				error("Type Error: both argument should have the same type! ("+tleft+","+tright+")",CarmaPackage::eINSTANCE.division_Right,ERROR_Expression_type_error);			
+			}
+		}
+	}
+	
+	@Check
+	def check_ERROR_Expression_type_error_compatible( Multiplication e ) {
+		if ((e.left !=null)&&(e.right != null)) {
+			var tleft = e.left.typeOf
+			var tright = e.right.typeOf
+			if (!tleft.error&&!tleft.none&&!tright.error&&!tright.none&&!tleft.isCompatibleWith(tright)) {
+				error("Type Error: both argument should have the same type! ("+tleft+","+tright+")",CarmaPackage::eINSTANCE.multiplication_Right,ERROR_Expression_type_error);			
 			}
 		}
 	}
@@ -798,6 +844,10 @@ class CARMAValidator extends AbstractCARMAValidator {
 			}
 		}
 	}
+
+	
+	
+	
 	
 	@Check
 	def check_ERROR_Expression_type_error_Arithmetic_right( Subtraction e ) {
@@ -848,8 +898,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 			}
 		}
 	}
-
-
+	
 	@Check
 	def check_ERROR_Expression_type_error_Arithmetic_left( Modulo e ) {
 		if (e.left != null) {
