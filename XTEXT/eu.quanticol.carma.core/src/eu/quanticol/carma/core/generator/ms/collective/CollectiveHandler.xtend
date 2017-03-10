@@ -268,6 +268,7 @@ class CollectiveHandler {
 							«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
 							«ENDFOR»
 							«CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::MY)» = store.get( "loc" , Node.class );					
+							«CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::NONE)» = store.get( "loc" , Node.class );					
 							«FOR a:act.update.myAttributes»
 							«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"store")»
 							«ENDFOR»
@@ -302,6 +303,7 @@ class CollectiveHandler {
 						//@Override
 						public boolean satisfy(double now,CarmaStore store) {
 							try {
+								«CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::NONE)» = store.get( "loc" , Node.class );					
 								«FOR a:act.activity.predicate.guard.referencedAttibutes»
 								«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
 								«ENDFOR»
@@ -370,6 +372,7 @@ class CollectiveHandler {
 				«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
 				«ENDFOR»
 				final «CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::MY)» = store.get( "loc" , Node.class );					
+				final «CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::NONE)» = store.get( "loc" , Node.class );					
 				«FOR a:act.outputArguments.myAttributes»
 				«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"store")»
 				«ENDFOR»
@@ -387,6 +390,7 @@ class CollectiveHandler {
 					//@Override
 					public void update(RandomGenerator r, CarmaStore store) {
 						final «CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::MY)» = store.get( "loc" , Node.class );					
+						final «CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::NONE)» = store.get( "loc" , Node.class );					
 						«FOR a:act.update.referencedAttributes»
 						«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
 						«ENDFOR»
@@ -422,6 +426,7 @@ class CollectiveHandler {
 					//@Override
 					public boolean satisfy(double now,CarmaStore store) {
 						try {
+							«CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::NONE)» = store.get( "loc" , Node.class );					
 							«FOR a:act.activity.predicate.guard.referencedAttibutes»
 							«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
 							«ENDFOR»

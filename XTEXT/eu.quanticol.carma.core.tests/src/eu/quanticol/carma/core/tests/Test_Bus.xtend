@@ -118,7 +118,7 @@ component Stop( ){
 	
 	behaviour{
 		S = leave*[loc == my.loc](x){buses := buses - 1;}.S
-		+ move[loc == y](x,y){buses := buses + 1;}.A;
+		+ move[my.loc == y](x,y){buses := buses + 1;}.A;
 //		+ [ !congestion ]congestion*{ congestion = true; }.S
 //		+ [ congestion ]resolved*{ congestion = false; }.S;
 		A = queueorder*[loc == my.loc]<buses>.S;

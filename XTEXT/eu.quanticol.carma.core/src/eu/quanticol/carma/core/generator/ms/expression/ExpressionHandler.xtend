@@ -221,7 +221,7 @@ class ExpressionHandler {
 	}
 	
 	def dispatch CharSequence expressionToJava( MyLocation l ) {
-		"loc".attributeName(ReferenceContext::MY)
+		"loc".attributeName(ReferenceContext::NONE)
 	}
 	
 	
