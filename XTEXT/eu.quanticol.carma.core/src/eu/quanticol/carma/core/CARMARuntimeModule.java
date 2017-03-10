@@ -20,4 +20,13 @@ public class CARMARuntimeModule extends eu.quanticol.carma.core.AbstractCARMARun
 
 	    binder.bind(IOutputConfigurationProvider.class).to(MyOutputConfigurationProvider.class).in(Singleton.class);
 	}
+
+	// This is not required for interpretation of double values, but any other
+	// value converters added in the future should be integrated this way
+	// (where CARMATerminalConverters extends DefaultTerminalConverters with
+	// appropriate methods for each new rule that returns a non-String value.
+//	@Override
+//	public Class<? extends IValueConverterService> bindIValueConverterService() {
+//		return CARMATerminalConverters.class;
+//	}
 }

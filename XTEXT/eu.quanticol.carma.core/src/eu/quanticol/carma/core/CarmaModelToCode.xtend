@@ -188,6 +188,8 @@ import eu.quanticol.carma.core.carma.AreaForCommand
 import eu.quanticol.carma.core.carma.AreaForEach
 import java.math.BigDecimal
 import java.text.DecimalFormat
+import eu.quanticol.carma.core.carma.UpdateArrayElement
+import eu.quanticol.carma.core.carma.TargetAssignmentList
 
 class CarmaModelToCode {
 	
@@ -260,6 +262,10 @@ class CarmaModelToCode {
 
 	def dispatch CharSequence assignmentTargetToCode( TargetAssignmentVariable f ) {
 		'''«f.variable.name»'''
+	}
+
+	def dispatch CharSequence assignmentTargetToCode( TargetAssignmentList f ) {
+		'''«f.target.assignmentTargetToCode»[ «f.index.expressionToCode» ]'''
 	}
 
 	def CharSequence variableToCode( Variable v ) {
@@ -378,6 +384,10 @@ class CarmaModelToCode {
 	
 	def dispatch CharSequence updateCommandToCode( UpdateCollectionRemove c ) {
 		'''«c.target.attributeTargetToCode».remove(«c.expression.expressionToCode»);'''
+	}
+	
+	def dispatch CharSequence updateCommandToCode(UpdateArrayElement c ) {
+		'''«c.target.attributeTargetToCode»«FOR i : c.indexes»[ «i.expressionToCode» ]«ENDFOR» = «c.expression.expressionToCode»;'''
 	}
 	
 	
@@ -736,7 +746,8 @@ class CarmaModelToCode {
 	}
 	
 	def dispatch CharSequence expressionToCode( AtomicReal e ) {
-		'''«e.value.prettyPrint»'''
+		//'''«e.value.prettyPrint»'''
+		String.format("%g",e.value)
 	}
 	
 	def dispatch CharSequence expressionToCode( AtomicRecord e ) {
@@ -900,11 +911,11 @@ class CarmaModelToCode {
 	} 
 	
 	def dispatch CharSequence expressionToCode(NewSetFunction e) {
-		'''newList( «e.arg2.typeToCode» )'''
+		'''newSet( «e.arg2.typeToCode» )'''
 	} 
 	
 	def dispatch CharSequence expressionToCode(SizeFunction e) {
-		'''newList( «e.arg1.expressionToCode» )'''
+		'''size( «e.arg1.expressionToCode» )'''
 	} 
 		
 	def dispatch CharSequence expressionToCode(MapFunction e) {
@@ -1113,19 +1124,19 @@ class CarmaModelToCode {
 	// improved? (flag # looks like it should force decimal separator but it
 	// doesn't seem to work). DecimalFormat can set a minimum number of fractional
 	// digits but it seems like overkill for the common case. 
-
-	def CharSequence prettyPrint(double d) {
-		// Remember that these values will only be positive, as negative literals
-		// are handled via UnaryMinus
-		if (d == 0) {
-			"0.0"
-		}
-		else if (d >= 1e-3 && d < 1e7) {
-//			String.format("%#f",d)
-			String.valueOf(d)
-		} else {
-			new BigDecimal(d).toPlainString
-		}
-	}
+//	def CharSequence prettyPrint(double d) {
+//		// Remember that these values will only be positive, as negative literals
+//		// are handled via UnaryMinus
+////		if (d == 0) {
+////			"0.0"
+////		}
+////		else if (d >= 1e-3 && d < 1e7) {
+//////			String.format("%#f",d)
+////			String.valueOf(d)
+////		} else {
+////			new BigDecimal(d).toPlainString
+////		}
+//		String.format("%g",d)
+//	}
 
 }
