@@ -302,7 +302,8 @@ ReferenceableElement:
 	FieldDefinition|
 	LabelDefinition|	
 	UniverseElement|
-	MeasureDefinition
+	MeasureDefinition|
+	EdgeProperty
 ;
 
 ////////////////////////////////////////////////////FUNCTIONS
@@ -727,6 +728,24 @@ Primary returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 		{PreSetExpression.source=current} "." "pre"
 		| 
 		{PoSetExpression.source=current} "." "post"
+		| 
+		{InEdgesExpression.source=current} "." "incoming" "(" (arg = Expression)? ")"
+		| 
+		{OutEdgesExpression.source=current} "." "outgoing" "(" (arg = Expression)? ")"
+		| 
+		{EdgeSourceExpression.source=current} "." "source"
+		| 
+		{EdgeTargetExpression.source=current} "." "target"
+		|
+		{MapFunction.arg1=current} "." "map" "(" arg2 = Expression ")"
+		|
+		{FilterFunction.arg1=current} "." "filter" "(" arg2 = Expression ")"
+		|
+		{ExistsFunction.arg1=current} "." "exist" "(" arg2 = Expression ")"
+		|
+		{ForAllFunction.arg1=current} "." "forall" "(" arg2 = Expression ")"
+		|
+		{SelectFunction.arg1=current} "." "select" "(" arg2 = Expression ")"
 	)*
 ;
 

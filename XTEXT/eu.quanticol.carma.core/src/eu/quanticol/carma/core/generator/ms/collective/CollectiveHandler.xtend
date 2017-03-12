@@ -186,6 +186,7 @@ class CollectiveHandler {
 				//@Override
 				public boolean satisfy(double now,CarmaStore store) {
 					final «CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::MY)» = store.get( "loc" , Node.class );					
+					final «CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::NONE)» = store.get( "loc" , Node.class );					
 					«FOR a:p.guard.booleanExpression.referencedAttibutes»
 					«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
 					«ENDFOR»

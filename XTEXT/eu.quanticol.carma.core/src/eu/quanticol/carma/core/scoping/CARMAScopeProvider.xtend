@@ -451,7 +451,12 @@ class CARMAScopeProvider extends org.eclipse.xtext.scoping.impl.AbstractDeclarat
 					var m = record.getContainerOfType(typeof(Model))
 					Scopes::scopeFor( m ?. getLabelsAndFeatures	?: newLinkedList() )			
 				} else {
-					IScope::NULLSCOPE
+					if (type.isEdge) {
+						var m = record.getContainerOfType(typeof(Model))
+						Scopes::scopeFor( m ?. elements ?. filter(typeof(SpaceDefinition)) ?.map[it.edgeAttributes] ?. flatten ?: newLinkedList() )						
+					} else {
+						IScope::NULLSCOPE
+					}
 				}
 			}
 		}

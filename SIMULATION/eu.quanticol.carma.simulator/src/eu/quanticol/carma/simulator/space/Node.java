@@ -21,9 +21,11 @@ public class Node {
 	private final int idx;
 	
 	private HashSet<Node> preset = new HashSet<>();
-	private HashMap<Node,LinkedList<HashMap<String,Object>>> incomingData = new HashMap<>();
+	private HashMap<Node,HashSet<Edge>> incomingData = new HashMap<>();
 	private HashSet<Node> poset = new HashSet<>();
-	private HashMap<Node,LinkedList<HashMap<String,Object>>> outgoingData = new HashMap<>();
+	private HashMap<Node,HashSet<Edge>> outgoingData = new HashMap<>();
+	private HashSet<Edge> incomingEdges = new HashSet<>();
+	private HashSet<Edge> outgoingEdges = new HashSet<>();
 	
 	Node( SpaceModel spaceModel, String name , Tuple data ) {
 		this.spaceModel = spaceModel;
@@ -34,22 +36,26 @@ public class Node {
 
 	public void addToPoset(Node l, HashMap<String,Object> data) {
 		this.poset.add(l);
-		LinkedList<HashMap<String,Object>> old = this.outgoingData.get(l);
+		HashSet<Edge> old = this.outgoingData.get(l);
 		if (old == null) {
-			old = new LinkedList<>();
+			old = new HashSet<>();
 			this.outgoingData.put(l, old);
 		}
-		old.add(data);
+		Edge e = new Edge(this, data, l); 
+		old.add(e);
+		outgoingEdges.add(e);
 	}
 
 	public void addToPreset(Node l, HashMap<String,Object> data) {
 		this.preset.add(l);
-		LinkedList<HashMap<String,Object>> old = this.outgoingData.get(l);
+		HashSet<Edge> old = this.incomingData.get(l);
 		if (old == null) {
-			old = new LinkedList<>();
+			old = new HashSet<>();
 			this.incomingData.put(l, old);
 		}
-		old.add(data);
+		Edge e = new Edge(l,data,this);
+		old.add(e);
+		incomingEdges.add(e);
 	}
 
 	@Override
@@ -78,11 +84,14 @@ public class Node {
 		return computeData(this.incomingData.get(l));
 	}
 	
-	private LinkedList<HashMap<String,Object>> computeData( LinkedList<HashMap<String,Object>> data ) {
-		if (data == null) {
-			return new LinkedList<>();
+	private LinkedList<HashMap<String,Object>> computeData( HashSet<Edge> hashSet ) {
+		LinkedList<HashMap<String,Object>> toReturn = new LinkedList<>();
+		if (hashSet != null) {
+			for (Edge edge : hashSet) {
+				toReturn.add(edge.getData());
+			}
 		}
-		return data;
+		return toReturn;
 		
 	}
 	
@@ -94,12 +103,28 @@ public class Node {
 		return poset;
 	}
 	
+	public HashSet<Edge> getInEdges() {
+		return incomingEdges;
+	}
+	
+	public HashSet<Edge> getOutEdges() {
+		return outgoingEdges;
+	}
+	
+	public HashSet<Edge> getInEdges( Node from ) {
+		return incomingEdges;
+	}
+	
+	public HashSet<Edge> getOutEdges( Node to ) {
+		return outgoingEdges;
+	}
+	
 	public <T> HashSet<T> getValuesTo( Node to , String label , Class<T> clazz ) {
 		HashSet<T> result = new HashSet<T>();
-		LinkedList<HashMap<String,Object>> edgesTo = outgoingData.get(to);
+		HashSet<Edge> edgesTo = outgoingData.get(to);
 		if (edgesTo != null) {
-			for (HashMap<String, Object> edge : edgesTo) {
-				Object o = edge.get(label);
+			for (Edge edge : edgesTo) {
+				Object o = edge.getValue(label);
 				if ((o != null)&&(clazz.isInstance(o))) {
 					result.add(clazz.cast(o));
 				}
@@ -126,16 +151,6 @@ public class Node {
 	
 	public <T> T get( int i , Class<T> clazz) {
 		return data.get(i, clazz);
-	}
-	
-	public Double getMinDistance( Node n , Set<String> labels ) {
-		double result = Double.MAX_VALUE;
-		
-		for (HashMap<String, Object> edges : this.outgoingData.get(n)) {
-			
-		}
-		
-		return result;
 	}
 	
 }

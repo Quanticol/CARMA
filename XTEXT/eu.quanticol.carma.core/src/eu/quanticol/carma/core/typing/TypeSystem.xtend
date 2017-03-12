@@ -137,6 +137,10 @@ import eu.quanticol.carma.core.carma.MinInt
 import eu.quanticol.carma.core.carma.MaxInt
 import eu.quanticol.carma.core.carma.MaxReal
 import eu.quanticol.carma.core.carma.MinReal
+import eu.quanticol.carma.core.carma.InEdgesExpression
+import eu.quanticol.carma.core.carma.OutEdgesExpression
+import eu.quanticol.carma.core.carma.EdgeSourceExpression
+import eu.quanticol.carma.core.carma.EdgeTargetExpression
 
 class TypeSystem {
 
@@ -785,6 +789,22 @@ class TypeSystem {
 		CarmaType::createSetType( CarmaType::LOCATION_TYPE )
 	}
 
+	def dispatch CarmaType typeOf( InEdgesExpression e ) {
+		CarmaType::createSetType( CarmaType::EDGE_TYPE )
+	}
+
+	def dispatch CarmaType typeOf( OutEdgesExpression e ) {
+		CarmaType::createSetType( CarmaType::EDGE_TYPE )
+	}
+
+	def dispatch CarmaType typeOf( EdgeSourceExpression e ) {
+		CarmaType::LOCATION_TYPE
+	}
+
+	def dispatch CarmaType typeOf( EdgeTargetExpression e ) {
+		CarmaType::LOCATION_TYPE
+	}
+
 
 	def dispatch CarmaType typeOf( AccessToEdgeValue e ) {
 		var labelType = e.label ?. value ?. typeOf	?: CarmaType::NONE_TYPE
@@ -1009,6 +1029,8 @@ class TypeSystem {
 	}
 	
 	def areEqual( UniverseElement e1 , UniverseElement e2 ) {
-		(e1.name==e2.name)&&(e1.type==e2.type)
+		var v = (e1.name==e2.name)
+		v = v &&(e1.type.toCarmaType==e2.type.toCarmaType)
+		v
 	}	
 }

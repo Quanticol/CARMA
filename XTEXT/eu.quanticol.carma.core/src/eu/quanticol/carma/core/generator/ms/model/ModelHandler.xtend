@@ -60,6 +60,7 @@ class ModelHandler {
 		import eu.quanticol.carma.simulator.space.Node;
 		import eu.quanticol.carma.simulator.space.SpaceModel;
 		import eu.quanticol.carma.simulator.space.Tuple;
+		import eu.quanticol.carma.simulator.space.Edge;
 		import java.util.LinkedList;
 		import java.util.HashSet;
 		import java.util.HashMap;

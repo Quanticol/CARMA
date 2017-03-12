@@ -44,7 +44,7 @@ space Lesotho () {
            Berea <-> Maseru {w=1.0};
        }
        areas {
-           source {Maseru;}
+           starting {Maseru;}
            goal {Berea;}
        }
 }

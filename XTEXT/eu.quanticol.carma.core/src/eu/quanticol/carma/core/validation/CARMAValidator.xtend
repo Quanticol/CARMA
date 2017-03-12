@@ -103,6 +103,14 @@ import eu.quanticol.carma.core.carma.ProcessExpressionGuard
 import eu.quanticol.carma.core.carma.ProcessExpressionAction
 import eu.quanticol.carma.core.carma.UpdateArrayElement
 import eu.quanticol.carma.core.carma.TargetAssignmentList
+import eu.quanticol.carma.core.carma.PostFunction
+import eu.quanticol.carma.core.carma.PreFunction
+import eu.quanticol.carma.core.carma.PoSetExpression
+import eu.quanticol.carma.core.carma.PreSetExpression
+import eu.quanticol.carma.core.carma.InEdgesExpression
+import eu.quanticol.carma.core.carma.OutEdgesExpression
+import eu.quanticol.carma.core.carma.EdgeSourceExpression
+import eu.quanticol.carma.core.carma.EdgeTargetExpression
 
 class CARMAValidator extends AbstractCARMAValidator {
 	
@@ -931,6 +939,97 @@ class CARMAValidator extends AbstractCARMAValidator {
 			}
 		}
 	}
+
+	@Check
+	def check_ERROR_Expression_type_error_compatible( PostFunction e ) {
+		if (e.arg !=null) {
+			var targ = e.arg.typeOf
+			if (!targ.error&&!targ.none&&!targ.isLocation) {
+				error("Type Error: a location expression is expected while it is "+targ+"!",CarmaPackage::eINSTANCE.postFunction_Arg,ERROR_Expression_type_error);			
+			}
+		}
+	}
+
+	@Check
+	def check_ERROR_Expression_type_error_compatible( PreFunction e ) {
+		if (e.arg !=null) {
+			var targ = e.arg.typeOf
+			if (!targ.error&&!targ.none&&!targ.isLocation) {
+				error("Type Error: a location expression is expected while it is "+targ+"!",CarmaPackage::eINSTANCE.postFunction_Arg,ERROR_Expression_type_error);			
+			}
+		}
+	}
+
+	@Check
+	def check_ERROR_Expression_type_error_compatible( PoSetExpression e ) {
+		if (e.source !=null) {
+			var targ = e.source.typeOf
+			if (!targ.error&&!targ.none&&!targ.isLocation) {
+				error("Type Error: a location expression is expected while it is "+targ+"!",CarmaPackage::eINSTANCE.poSetExpression_Source,ERROR_Expression_type_error);			
+			}
+		}
+	}
+	
+	@Check
+	def check_ERROR_Expression_type_error_compatible( PreSetExpression e ) {
+		if (e.source !=null) {
+			var targ = e.source.typeOf
+			if (!targ.error&&!targ.none&&!targ.isLocation) {
+				error("Type Error: a location expression is expected while it is "+targ+"!",CarmaPackage::eINSTANCE.preSetExpression_Source,ERROR_Expression_type_error);			
+			}
+		}
+	}
+
+	@Check
+	def check_ERROR_Expression_type_error_compatible( EdgeSourceExpression e ) {
+		if (e.source !=null) {
+			var targ = e.source.typeOf
+			if (!targ.error&&!targ.none&&!targ.isEdge) {
+				error("Type Error: an edge expression is expected while it is "+targ+"!",CarmaPackage::eINSTANCE.poSetExpression_Source,ERROR_Expression_type_error);			
+			}
+		}
+	}
+	
+	@Check
+	def check_ERROR_Expression_type_error_compatible( EdgeTargetExpression e ) {
+		if (e.source !=null) {
+			var targ = e.source.typeOf
+			if (!targ.error&&!targ.none&&!targ.isEdge) {
+				error("Type Error: an edge expression is expected while it is "+targ+"!",CarmaPackage::eINSTANCE.preSetExpression_Source,ERROR_Expression_type_error);			
+			}
+		}
+	}
+	@Check
+	def check_ERROR_Expression_type_error_compatible( InEdgesExpression e ) {
+		if (e.source !=null) {
+			var targ = e.source.typeOf
+			if (!targ.error&&!targ.none&&!targ.isLocation) {
+				error("Type Error: a location expression is expected while it is "+targ+"!",CarmaPackage::eINSTANCE.inEdgesExpression_Source,ERROR_Expression_type_error);			
+			}
+		}
+		if (e.arg !=null) {
+			var targ = e.source.typeOf
+			if (!targ.error&&!targ.none&&!targ.isLocation) {
+				error("Type Error: a location expression is expected while it is "+targ+"!",CarmaPackage::eINSTANCE.inEdgesExpression_Arg,ERROR_Expression_type_error);			
+			}
+		}
+	}
+	
+	@Check
+	def check_ERROR_Expression_type_error_compatible( OutEdgesExpression e ) {
+		if (e.source !=null) {
+			var targ = e.source.typeOf
+			if (!targ.error&&!targ.none&&!targ.isLocation) {
+				error("Type Error: a location expression is expected while it is "+targ+"!",CarmaPackage::eINSTANCE.inEdgesExpression_Source,ERROR_Expression_type_error);			
+			}
+		}
+		if (e.arg !=null) {
+			var targ = e.source.typeOf
+			if (!targ.error&&!targ.none&&!targ.isLocation) {
+				error("Type Error: a location expression is expected while it is "+targ+"!",CarmaPackage::eINSTANCE.inEdgesExpression_Arg,ERROR_Expression_type_error);			
+			}
+		}
+	}	
 	
 	@Check
 	def check_ERROR_Expression_type_error_compatible( Division e ) {
@@ -1491,8 +1590,8 @@ class CARMAValidator extends AbstractCARMAValidator {
 	def check_ERROR_Filter_Type_Arg2( SelectFunction s ) {
 		if (s.arg2 != null) {
 			var eType = s.arg2.typeOf
-			if ((!eType.integer)&&(!eType.real)) {
-				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+eType,CarmaPackage::eINSTANCE.lambdaContext_Arg2,ERROR_Expression_type_error);
+			if (!eType.real) {
+				error("Type Error: Expected "+CarmaType::REAL_TYPE+" is "+eType,CarmaPackage::eINSTANCE.lambdaContext_Arg2,ERROR_Expression_type_error);
 			}
 		}	
 	}
