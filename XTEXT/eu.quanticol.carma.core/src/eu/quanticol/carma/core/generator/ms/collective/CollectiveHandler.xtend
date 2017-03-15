@@ -42,6 +42,8 @@ import eu.quanticol.carma.core.carma.GlobalContext
 import eu.quanticol.carma.core.carma.MyContext
 import eu.quanticol.carma.core.carma.UpdateCollectionRemove
 import eu.quanticol.carma.core.carma.UpdateArrayElement
+import java.util.List
+import eu.quanticol.carma.core.carma.AttributeDeclaration
 
 class CollectiveHandler {
 
@@ -185,8 +187,8 @@ class CollectiveHandler {
 
 				//@Override
 				public boolean satisfy(double now,CarmaStore store) {
-					final «CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::MY)» = store.get( "loc" , Node.class );					
-					final «CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::NONE)» = store.get( "loc" , Node.class );					
+					final «ReferenceContext::MY.locTemporaryVariableDeclaration("store")»
+					final «ReferenceContext::NONE.locTemporaryVariableDeclaration("store")»
 					«FOR a:p.guard.booleanExpression.referencedAttibutes»
 					«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
 					«ENDFOR»
@@ -268,13 +270,13 @@ class CollectiveHandler {
 							«FOR a:act.update.referencedAttributes»
 							«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
 							«ENDFOR»
-							«CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::MY)» = store.get( "loc" , Node.class );					
-							«CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::NONE)» = store.get( "loc" , Node.class );					
+							«ReferenceContext::MY.locTemporaryVariableDeclaration("store")»
+							«ReferenceContext::NONE.locTemporaryVariableDeclaration("store")»
 							«FOR a:act.update.myAttributes»
 							«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"store")»
 							«ENDFOR»
 							«FOR u:act.update.updateAssignment»
-							«u.updateCommandCode»
+							«u.updateCommandCode(act.update.referencedAttributes, act.update.myAttributes)»
 							«ENDFOR»
 						}
 					};
@@ -295,7 +297,7 @@ class CollectiveHandler {
 					«FOR idv:idxVar»
 					final «t.get(idv.key).toJavaType(true)» «idv.value.name.variableName» = («t.get(idv.key).toJavaType(false)») message.get(«idv.key»);
 					«ENDFOR»
-					final «CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::MY)» = myStore.get( "loc" , Node.class );					
+					final «ReferenceContext::MY.locTemporaryVariableDeclaration("myStore")»
 					«FOR a:act.activity.predicate.guard.myAttributes»
 					«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"myStore")»
 					«ENDFOR»
@@ -304,7 +306,7 @@ class CollectiveHandler {
 						//@Override
 						public boolean satisfy(double now,CarmaStore store) {
 							try {
-								«CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::NONE)» = store.get( "loc" , Node.class );					
+								«ReferenceContext::NONE.locTemporaryVariableDeclaration("store")»
 								«FOR a:act.activity.predicate.guard.referencedAttibutes»
 								«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
 								«ENDFOR»
@@ -326,15 +328,24 @@ class CollectiveHandler {
 		}
 	}
 	
-	def CharSequence updateCommandCode( UpdateCommand u ) {
+	def CharSequence updateCommandCode( UpdateCommand u, List<AttributeDeclaration> refAttrs,
+										List<AttributeDeclaration> myAttrs ) {
 		switch u {
-			UpdateAssignment: 
+			UpdateAssignment:
 				'''
 				store.set( "«u.target.targetAttributeName»", «u.expression.expressionToJava» );
+				«IF refAttrs.map[it.name].exists[it.equals(u.target.targetAttributeName)]»
+				«u.target.targetAttributeName.attributeName(ReferenceContext::NONE)» = «u.expression.expressionToJava»;
+				«ELSEIF myAttrs.map[it.name].exists[it.equals(u.target.targetAttributeName)]»
+				«u.target.targetAttributeName.attributeName(ReferenceContext::MY)» = «u.expression.expressionToJava»;
+				«ENDIF»
 				'''
-			UpdateCollectionAdd: '''«u.target.targetAttributeVariable».add(«u.expression.expressionToJava»);'''
-			UpdateCollectionRemove: '''«u.target.targetAttributeVariable».remove(«u.expression.expressionToJava»);'''
-			UpdateArrayElement: '''«u.target.targetAttributeVariable»«u.indexes.accessSequence».set(«u.indexes.last.expressionToJava» , «u.expression.expressionToJava»);'''
+			UpdateCollectionAdd:
+				'''«u.target.targetAttributeVariable».add(«u.expression.expressionToJava»);'''
+			UpdateCollectionRemove:
+				'''«u.target.targetAttributeVariable».remove(«u.expression.expressionToJava»);'''
+			UpdateArrayElement:
+				'''«u.target.targetAttributeVariable»«u.indexes.accessSequence».set(«u.indexes.last.expressionToJava» , «u.expression.expressionToJava»);'''
 		}
 	}
 	
@@ -372,8 +383,8 @@ class CollectiveHandler {
 				«FOR a:act.outputArguments.referencedAttibutes»
 				«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
 				«ENDFOR»
-				final «CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::MY)» = store.get( "loc" , Node.class );					
-				final «CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::NONE)» = store.get( "loc" , Node.class );					
+				final «ReferenceContext::MY.locTemporaryVariableDeclaration("store")»
+				final «ReferenceContext::NONE.locTemporaryVariableDeclaration("store")»
 				«FOR a:act.outputArguments.myAttributes»
 				«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"store")»
 				«ENDFOR»
@@ -390,8 +401,8 @@ class CollectiveHandler {
 					
 					//@Override
 					public void update(RandomGenerator r, CarmaStore store) {
-						final «CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::MY)» = store.get( "loc" , Node.class );					
-						final «CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::NONE)» = store.get( "loc" , Node.class );					
+						final «ReferenceContext::MY.locTemporaryVariableDeclaration("store")»
+						final «ReferenceContext::NONE.locTemporaryVariableDeclaration("store")»
 						«FOR a:act.update.referencedAttributes»
 						«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
 						«ENDFOR»
@@ -399,7 +410,7 @@ class CollectiveHandler {
 						«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"store")»
 						«ENDFOR»
 						«FOR u:act.update.updateAssignment»
-						«u.updateCommandCode»
+						«u.updateCommandCode(act.update.referencedAttributes, act.update.myAttributes)»
 						«ENDFOR»
 					}
 				};
@@ -418,7 +429,7 @@ class CollectiveHandler {
 				return CarmaPredicate.FALSE;
 				«ELSE»
 				«IF act.activity.predicate != null»				
-				final «CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::MY)» = myStore.get( "loc" , Node.class );					
+				final «ReferenceContext::MY.locTemporaryVariableDeclaration("myStore")»
 				«FOR a:act.activity.predicate.guard.myAttributes»
 				«a.attributeTemporaryVariableDeclaration(ReferenceContext::MY,"myStore")»
 				«ENDFOR»
@@ -427,7 +438,7 @@ class CollectiveHandler {
 					//@Override
 					public boolean satisfy(double now,CarmaStore store) {
 						try {
-							«CarmaType::LOCATION_TYPE.toJavaType(false)» «"loc".attributeName(ReferenceContext::NONE)» = store.get( "loc" , Node.class );					
+							«ReferenceContext::NONE.locTemporaryVariableDeclaration("store")»
 							«FOR a:act.activity.predicate.guard.referencedAttibutes»
 							«a.attributeTemporaryVariableDeclaration(ReferenceContext::NONE,"store")»
 							«ENDFOR»
@@ -492,7 +503,7 @@ class CollectiveHandler {
 	}
 
 	def dispatch CharSequence instantiationCode( UpdateCommand command ) {
-		command.updateCommandCode
+		command.updateCommandCode(#[],#[])
 	}
 
 }

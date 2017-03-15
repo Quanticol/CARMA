@@ -1281,7 +1281,7 @@ class CARMAValidator extends AbstractCARMAValidator {
 	def check_ERROR_FieldAssignment_type_error( FieldAssignment f ) {
 		if ((f.field != null)&&(f.value != null)) {
 			var tf = f.field.fieldType.toCarmaType
-			var tv = f.value?.typeOf
+			var tv = f.value.typeOf
 			if ((tv != null) && !tf.equals(tv)) {
 				error("Type Error: Expected "+tf+" is "+tv,CarmaPackage::eINSTANCE.fieldAssignment_Value,ERROR_FieldAssignment_type_error);
 			}		
@@ -1306,8 +1306,8 @@ class CARMAValidator extends AbstractCARMAValidator {
 	@Check
 	def check_ERROR_VariableAssignment_type_error( VariableDeclarationCommand f ) {
 		var tf = f.variable.type.toCarmaType
-		var tv = f.value.typeOf
-		if (!tf.equals(tv)) {
+		var tv = f.value?.typeOf
+		if ((tv != null) && !tf.equals(tv)) {
 			error("Type Error: Expected "+tf+" is "+tv,CarmaPackage::eINSTANCE.variableDeclarationCommand_Value,ERROR_VariableDeclarationCommand_type_error);
 		}
 	}

@@ -446,13 +446,13 @@ class ExpressionHandler {
 	
 	def dispatch CharSequence expressionToJava( NewListFunction e ) {
 		'''
-		new LinkedList<«e.arg1.toJavaType»>();
+		new LinkedList<«e.arg1.toJavaType»>()
 		'''		
 	}
 
 	def dispatch CharSequence expressionToJava( NewSetFunction e ) {
 		'''
-		new HashSet<«e.arg2.toJavaType»>();
+		new HashSet<«e.arg2.toJavaType»>()
 		'''		
 	}
 	

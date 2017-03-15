@@ -307,7 +307,7 @@ class Util {
 		}
 	}
 
-	def  attributeName( String name , ReferenceContext context ) {
+	def  attributeName( CharSequence name , ReferenceContext context ) {
 		switch context {
 			case NONE: '''«ATTR_PREFIX»«name»'''
 			case MY: '''«MY_PREFIX»«name»'''
@@ -376,6 +376,7 @@ class Util {
 		switch c {
 			UpdateAssignment: c.expression
 			UpdateCollectionAdd: c.expression
+			UpdateArrayElement: c.expression
 		}
 	}
 	
