@@ -770,7 +770,11 @@ class Util {
 	}
 
 	def dispatch Iterable<NamedNode>  declaredNamedNodes( NodeIfThenElseCommand n ) {
-		n.thenBlock.declaredNamedNodes+n.elseBlock.declaredNamedNodes
+		if (n.elseBlock != null) {
+			n.thenBlock.declaredNamedNodes+n.elseBlock.declaredNamedNodes
+		} else {
+			n.thenBlock.declaredNamedNodes
+		}
 	}
 
 	def dispatch Iterable<NamedNode>  declaredNamedNodes( NodeForLoop n ) {

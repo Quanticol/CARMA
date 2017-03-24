@@ -111,6 +111,8 @@ import eu.quanticol.carma.core.carma.InEdgesExpression
 import eu.quanticol.carma.core.carma.OutEdgesExpression
 import eu.quanticol.carma.core.carma.EdgeSourceExpression
 import eu.quanticol.carma.core.carma.EdgeTargetExpression
+import eu.quanticol.carma.core.carma.NodeForEach
+import eu.quanticol.carma.core.carma.ConnectionForEach
 
 class CARMAValidator extends AbstractCARMAValidator {
 	
@@ -1501,6 +1503,28 @@ class CARMAValidator extends AbstractCARMAValidator {
 					}
 				}
 			]
+		}
+	}
+	
+	public static val ERROR_NodeFor_Type = "ERROR_NodeFor_Type";
+	
+	@Check
+	def check_ERROR_NodeFor_Type( NodeForEach e ) {
+		val eType = e.iteration.value.typeOf
+		if ((eType != null) && !eType.list && !eType.set) {
+			error("The values over which to loop must be a list or set!",
+				CarmaPackage::eINSTANCE.nodeForEach_Iteration,ERROR_NodeFor_Type)
+		}
+	}
+	
+	public static val ERROR_ConnectionFor_Type = "ERROR_ConnectionFor_Type";
+	
+	@Check
+	def check_ERROR_ConnectionFor_Type( ConnectionForEach e ) {
+		val eType = e.iteration.value.typeOf
+		if ((eType != null) && (!eType.list) && (!eType.set)) {
+			error("The values over which to loop must be a list or set!",
+				CarmaPackage::eINSTANCE.connectionForEach_Iteration,ERROR_ConnectionFor_Type)
 		}
 	}
 
