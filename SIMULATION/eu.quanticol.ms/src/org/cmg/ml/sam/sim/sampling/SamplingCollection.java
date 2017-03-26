@@ -12,6 +12,7 @@
  *******************************************************************************/
 package org.cmg.ml.sam.sim.sampling;
 
+import java.util.Collection;
 import java.util.LinkedList;
 
 /**
@@ -28,12 +29,18 @@ public class SamplingCollection<S> implements SamplingFunction<S> {
 
 	@SafeVarargs
 	public SamplingCollection(SamplingFunction<S>... functions) {
-		this.functions = new LinkedList<SamplingFunction<S>>();
+		this();
 		for (SamplingFunction<S> f : functions) {
 			this.functions.add(f);
 		}
 	}
 
+	public SamplingCollection(Collection<SamplingFunction<S>> functions) {
+		this();
+		this.functions = new LinkedList<>();
+		this.functions.addAll(functions);
+	}
+	
 	public void addSamplingFunction(SamplingFunction<S> function) {
 		functions.add(function);
 	}

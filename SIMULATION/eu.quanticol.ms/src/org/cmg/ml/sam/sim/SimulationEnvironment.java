@@ -34,13 +34,22 @@ public class SimulationEnvironment<S extends ModelI> {
 	private int iterations = 0;
 
 	public SimulationEnvironment(SimulationFactory<S> factory) {
-		if (factory == null) {
-			throw new NullPointerException();
-		}
+//		if (factory == null) {
+//			throw new NullPointerException();
+//		}
 		this.factory = factory;
 		this.random = new DefaultRandomGenerator();
 	}
 
+	public SimulationEnvironment() {
+		this(null);
+	}
+	
+
+	public void setFactory(SimulationFactory<S> factory) {
+		this.factory = factory;
+	}
+	
 	public void seed(long seed) {
 		random.setSeed(seed);
 	}
@@ -61,7 +70,7 @@ public class SimulationEnvironment<S extends ModelI> {
 				System.out.print(i + 1);
 			}
 			System.out.flush();
-			doSimulate(monitor,deadline);
+			doSimulate(factory.getModel(),monitor,deadline);
 			if (monitor != null) {
 				monitor.endSimulation( i );
 			}
@@ -79,6 +88,11 @@ public class SimulationEnvironment<S extends ModelI> {
 		simulate( null , iterations , deadline );
 	}
 
+	public void simulate( S model , SamplingFunction<S> measure , double deadline) {
+		this.sampling_function = measure;
+		doSimulate(model,null,deadline);
+	}
+	
 	public synchronized double simulate(double deadline) {
 		RandomGeneratorRegistry rgi = RandomGeneratorRegistry.getInstance();
 		rgi.register(random);
@@ -87,8 +101,8 @@ public class SimulationEnvironment<S extends ModelI> {
 		return result;
 	}
 
-	private double doSimulate(SimulationMonitor monitor , double deadline) {
-		this.model = this.factory.getModel();
+	private double doSimulate(S model, SimulationMonitor monitor , double deadline) {
+		this.model = model;
 		double time = 0.0;
 		if (sampling_function != null) {
 			sampling_function.start();
@@ -118,7 +132,7 @@ public class SimulationEnvironment<S extends ModelI> {
 		return time;	
 	}
 	private double doSimulate(double deadline) {
-		return doSimulate(null,deadline);
+		return doSimulate(factory.getModel(),null,deadline);
 	}
 
 	private double doAStep() {

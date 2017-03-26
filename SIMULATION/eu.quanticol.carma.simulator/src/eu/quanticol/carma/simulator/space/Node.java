@@ -152,5 +152,9 @@ public class Node {
 	public <T> T get( int i , Class<T> clazz) {
 		return data.get(i, clazz);
 	}
+
+	public int getIndex() {
+		return idx;
+	}
 	
 }
