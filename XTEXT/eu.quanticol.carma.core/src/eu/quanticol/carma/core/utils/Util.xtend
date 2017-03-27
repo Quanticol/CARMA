@@ -307,7 +307,7 @@ class Util {
 		}
 	}
 
-	def  attributeName( String name , ReferenceContext context ) {
+	def  attributeName( CharSequence name , ReferenceContext context ) {
 		switch context {
 			case NONE: '''«ATTR_PREFIX»«name»'''
 			case MY: '''«MY_PREFIX»«name»'''
@@ -339,7 +339,7 @@ class Util {
 			LocationVariable: element.name.variableName
 			LoopingVariable: element.name.variableName
 			MeasureDefinition: element.name.measureName
-
+			NamedNode: '''CarmaSystem.getCurrentSpaceModel().getVertex( "«element.name»" )'''
 		}
 	}
 	
@@ -376,6 +376,7 @@ class Util {
 		switch c {
 			UpdateAssignment: c.expression
 			UpdateCollectionAdd: c.expression
+			UpdateArrayElement: c.expression
 		}
 	}
 	
@@ -769,7 +770,11 @@ class Util {
 	}
 
 	def dispatch Iterable<NamedNode>  declaredNamedNodes( NodeIfThenElseCommand n ) {
-		n.thenBlock.declaredNamedNodes+n.elseBlock.declaredNamedNodes
+		if (n.elseBlock != null) {
+			n.thenBlock.declaredNamedNodes+n.elseBlock.declaredNamedNodes
+		} else {
+			n.thenBlock.declaredNamedNodes
+		}
 	}
 
 	def dispatch Iterable<NamedNode>  declaredNamedNodes( NodeForLoop n ) {

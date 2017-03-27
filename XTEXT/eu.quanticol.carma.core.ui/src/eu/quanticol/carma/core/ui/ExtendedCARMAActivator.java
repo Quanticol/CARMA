@@ -69,6 +69,9 @@ public class ExtendedCARMAActivator extends CARMAActivator {
 	public static final String IMG_SHOW_EXPERIMENT_DATA_ID = "eu.quanticol.carma.ui.images.show_experiment_data"; //$NON-NLS-1$
 	public static final String IMG_SHOW_EXPERIMENT_DATA_PATH  = "icons/watchlist_view.gif"; //$NON-NLS-1$
 
+	public static final String IMG_REFRESH_ID = "eu.quanticol.carma.ui.images.refresh"; //$NON-NLS-1$
+	public static final String IMG_REFRESH_PATH  = "icons/refresh.gif"; //$NON-NLS-1$
+	
 	private String[] IMAGE_IDS = new String[] {
 		IMG_ADD_EXERIMENT_ID ,
 		IMG_COPY_EXERIMENT_ID ,
@@ -82,7 +85,8 @@ public class ExtendedCARMAActivator extends CARMAActivator {
 		IMG_PRJ_SUITE_ID ,
 		IMG_EXPERIMENT_ELEMENT_ID ,
 		IMG_EXPERIMENT_ELEMENT_FAIL_ID ,
-		IMG_SHOW_EXPERIMENT_DATA_ID
+		IMG_SHOW_EXPERIMENT_DATA_ID,
+		IMG_REFRESH_ID
 	};
 	
 	private String[] IMAGE_PATHS = new String[] {
@@ -98,7 +102,8 @@ public class ExtendedCARMAActivator extends CARMAActivator {
 		IMG_PRJ_SUITE_PATH ,
 		IMG_EXPERIMENT_ELEMENT_PATH ,
 		IMG_EXPERIMENT_ELEMENT_FAIL_PATH ,
-		IMG_SHOW_EXPERIMENT_DATA_PATH
+		IMG_SHOW_EXPERIMENT_DATA_PATH,
+		IMG_REFRESH_PATH
 	};
 
 	@Override

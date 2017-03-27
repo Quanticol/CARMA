@@ -795,7 +795,7 @@ class CarmaModelToCode {
 	} 
 	
 	def dispatch CharSequence expressionToCode( NormalSampling e ) {
-		'''N( «e.mean.expressionToCode» , «e.sd.expressionToCode» )'''
+		'''NORMAL( «e.mean.expressionToCode» , «e.sd.expressionToCode» )'''
 	} 
 
 	def dispatch CharSequence expressionToCode(AbsFunction e) {
