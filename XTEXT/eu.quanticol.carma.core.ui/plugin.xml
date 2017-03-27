@@ -498,5 +498,12 @@
             id="eu.quanticol.carma.core.ui.views.ExperimentResultsView"
             name="Experiment Results View">
       </view>
+      <view
+            category="eu.quanticol.carma.core.ui"
+            class="eu.quanticol.carma.core.ui.CARMAExecutableExtensionFactory:eu.quanticol.carma.core.ui.views.StepView"
+            icon="icons/lrun_obj.gif"
+            id="eu.quanticol.carma.core.ui.views.StepView"
+            name="Step View">
+      </view>
    </extension>
 </plugin>
