@@ -339,7 +339,7 @@ class Util {
 			LocationVariable: element.name.variableName
 			LoopingVariable: element.name.variableName
 			MeasureDefinition: element.name.measureName
-
+			NamedNode: '''CarmaSystem.getCurrentSpaceModel().getVertex( "«element.name»" )'''
 		}
 	}
 	

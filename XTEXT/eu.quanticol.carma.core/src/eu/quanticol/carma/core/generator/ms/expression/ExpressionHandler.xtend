@@ -119,6 +119,7 @@ import eu.quanticol.carma.core.carma.OutEdgesExpression
 import eu.quanticol.carma.core.carma.EdgeSourceExpression
 import eu.quanticol.carma.core.carma.EdgeTargetExpression
 import eu.quanticol.carma.core.carma.EdgeProperty
+import eu.quanticol.carma.core.carma.NormalSampling
 
 class ExpressionHandler {
 	
@@ -878,6 +879,10 @@ class ExpressionHandler {
 		} else {
 			'''RandomGeneratorRegistry.uniform(«FOR v:e.args SEPARATOR ','»«v.expressionToJava»«ENDFOR»)'''
 		}
+	}
+	
+	def dispatch CharSequence expressionToJava( NormalSampling e ) {
+		'''RandomGeneratorRegistry.normal( «e.mean.expressionToJava», «e.sd.expressionToJava» )'''
 	}
 	
 	def dispatch CharSequence expressionToJava( SizeFunction e ) {
