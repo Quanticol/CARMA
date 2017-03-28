@@ -1058,7 +1058,7 @@ class CarmaModelToCode {
 	}
 	
 	def dispatch CharSequence locationExpressionToCode(NamedLocationExpression e) {
-		'''«e.ref»[ «FOR v : e.values SEPARATOR ', '»«v.expressionToCode»«ENDFOR» ]'''
+		'''«e.ref.name»[ «FOR v : e.values SEPARATOR ', '»«v.expressionToCode»«ENDFOR» ]'''
 	}
 	
 	def dispatch CharSequence locationExpressionToCode(UnNamedLocationExpression e) {
