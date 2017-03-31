@@ -7,10 +7,10 @@
 
 # Site Settings
 locale                   : "en"
-title                    : "Site Title"
+title                    : "CARMA Eclipse plugin"
 title_separator          : "-"
-name                     : "Your Name"
-description              : "An amazing website."
+name                     : "QUANTICOL"
+description              : "The main objective of the QUANTICOL project is the development of an innovative formal design framework that provides a specification language for collective adaptive systems (CAS) and a large variety of tool-supported, scalable analysis and verification techniques. "
 url                      : # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
 baseurl                  : # the subpath of your site, e.g. "/blog"
 repository               : # GitHub username/repo-name e.g. "mmistakes/minimal-mistakes"
