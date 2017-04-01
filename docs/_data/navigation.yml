@@ -1,18 +1,14 @@
 # main links
 main:
   - title: "Quick-Start Guide"
-    url: /docs/quick-start-guide/
-  - title: "Posts"
-    url: /year-archive/
-  - title: "Categories"
-    url: /categories/
-  - title: "Tags"
-    url: /tags/
-  - title: "Pages"
-    url: /page-archive/
-  - title: "Collections"
-    url: /collection-archive/
-  - title: "External Link"
-    url: https://google.com
+    url: /startingguide.html
+  - title: "How to install"
+    url: /install.html
+  - title: "CLI"
+    url: /cli.html
+  #- title: "Examples"
+  #  url: /examples.html
+  - title: "QUANTICOL"
+    url: http://www.quanticol.eu
   # - title: "Sitemap"
   #   url: /sitemap/
