@@ -4,6 +4,7 @@
 package org.cmg.ml.sam.sim;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.function.Function;
@@ -104,6 +105,19 @@ public class RandomGeneratorRegistry {
 
 		}		
 		return select( elements , weightArray , total );
+	}
+	
+	public static <T> T weightedSelect(T[] data, double[] weights) {
+		//double total = DoubleStream.of(weights).sum();
+		//Arrays.parallelPrefix(weights, Double::sum);
+		//return select(new ArrayList<T>(Arrays.asList(data)), weights, total);
+		double total = 0;
+		double[] weightsArray = new double[weights.length];
+		for (int i = 0; i < weights.length; i++) {
+			total += weights[i];
+			weightsArray[i] = total;
+		}
+		return select(new ArrayList<T>(Arrays.asList(data)), weightsArray, total);
 	}
 
 	private static <T> T select(ArrayList<T> elements, double[] weightArray, double total) {

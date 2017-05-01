@@ -190,6 +190,7 @@ import java.math.BigDecimal
 import java.text.DecimalFormat
 import eu.quanticol.carma.core.carma.UpdateArrayElement
 import eu.quanticol.carma.core.carma.TargetAssignmentList
+import eu.quanticol.carma.core.carma.WeightedChoice
 
 class CarmaModelToCode {
 	
@@ -797,6 +798,10 @@ class CarmaModelToCode {
 	def dispatch CharSequence expressionToCode( NormalSampling e ) {
 		'''NORMAL( «e.mean.expressionToCode» , «e.sd.expressionToCode» )'''
 	} 
+	
+	def dispatch CharSequence expressionToCode( WeightedChoice e ) {
+		'''selectFrom( «FOR p : e.values.indexed SEPARATOR ", "»«p.value.expressionToCode» : «e.weights.get(p.key).expressionToCode»«ENDFOR» )'''
+	}
 
 	def dispatch CharSequence expressionToCode(AbsFunction e) {
 		'''abs( «e.arg.expressionToCode» )'''

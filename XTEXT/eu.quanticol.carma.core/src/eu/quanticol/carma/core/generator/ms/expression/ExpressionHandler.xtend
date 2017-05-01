@@ -120,6 +120,7 @@ import eu.quanticol.carma.core.carma.EdgeSourceExpression
 import eu.quanticol.carma.core.carma.EdgeTargetExpression
 import eu.quanticol.carma.core.carma.EdgeProperty
 import eu.quanticol.carma.core.carma.NormalSampling
+import eu.quanticol.carma.core.carma.WeightedChoice
 
 class ExpressionHandler {
 	
@@ -883,6 +884,12 @@ class ExpressionHandler {
 	
 	def dispatch CharSequence expressionToJava( NormalSampling e ) {
 		'''RandomGeneratorRegistry.normal( «e.mean.expressionToJava», «e.sd.expressionToJava» )'''
+	}
+	
+	def dispatch CharSequence expressionToJava( WeightedChoice e ) {
+		'''RandomGeneratorRegistry.weightedSelect(
+			new «e.typeOf.toJavaType(false)»[] { «FOR v : e.values SEPARATOR ", "»«v.expressionToJava»«ENDFOR» },
+			new double[] { «FOR w : e.weights SEPARATOR ", "»«w.expressionToJava»«ENDFOR» })'''
 	}
 	
 	def dispatch CharSequence expressionToJava( SizeFunction e ) {

@@ -141,6 +141,7 @@ import eu.quanticol.carma.core.carma.InEdgesExpression
 import eu.quanticol.carma.core.carma.OutEdgesExpression
 import eu.quanticol.carma.core.carma.EdgeSourceExpression
 import eu.quanticol.carma.core.carma.EdgeTargetExpression
+import eu.quanticol.carma.core.carma.WeightedChoice
 
 class TypeSystem {
 
@@ -610,6 +611,10 @@ class TypeSystem {
 	
 	def  dispatch CarmaType typeOf( NormalSampling e ) {
 		CarmaType::REAL_TYPE
+	}
+	
+	def dispatch CarmaType typeOf( WeightedChoice e) {
+		e.values.get(0).typeOf
 	}
 	
 	def  dispatch CarmaType typeOf( AtomicPi e ) {

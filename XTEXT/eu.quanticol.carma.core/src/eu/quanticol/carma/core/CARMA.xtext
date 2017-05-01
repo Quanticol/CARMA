@@ -771,6 +771,7 @@ Atomic returns Expression hidden(ML_COMMENT,SL_COMMENT,WS):
 	| {AtomicPi} "PI"
 	| {AtomicExp} "E"
 	| NormalSampling
+	| WeightedChoice
 	| BuiltInFunctions
 	| MyContext
 	| {ReceiverContext} "receiver" "." attribute=AttributeReference
@@ -855,7 +856,7 @@ BuiltInFunctions returns Expression :
 ;
 
 RandomExpression:
-	UniformFunction|NormalSampling|SelectFunction|AtomicRnd
+	UniformFunction|NormalSampling|SelectFunction|AtomicRnd|WeightedChoice
 ;
 
 LambdaContext:
@@ -865,6 +866,10 @@ LambdaContext:
 	| {ForAllFunction} "forall" "(" arg1=Expression "," arg2=Expression ")"
 	| SelectFunction
 //	| {ReduceFunction} "reduce" "(" arg1 = Expression "," arg2=Expression "," arg3=Expression ")"
+;
+
+WeightedChoice:
+	"selectFrom" "(" values+=Expression ":" weights+=Expression (',' values+=Expression ":" weights+=Expression)* ")"
 ;
 
 SelectFunction:

@@ -113,6 +113,7 @@ import eu.quanticol.carma.core.carma.EdgeSourceExpression
 import eu.quanticol.carma.core.carma.EdgeTargetExpression
 import eu.quanticol.carma.core.carma.NodeForEach
 import eu.quanticol.carma.core.carma.ConnectionForEach
+import eu.quanticol.carma.core.carma.WeightedChoice
 
 class CARMAValidator extends AbstractCARMAValidator {
 	
@@ -1638,6 +1639,26 @@ class CARMAValidator extends AbstractCARMAValidator {
 				error("Type Error: Expected "+CarmaType::INTEGER_TYPE+" or "+CarmaType::REAL_TYPE+" is "+eType,CarmaPackage::eINSTANCE.normalSampling_Sd,ERROR_Expression_type_error);
 			}
 		}	
+	}
+	
+	@Check
+	def check_ERROR_WeightedChoice( WeightedChoice wc ) {
+		if (wc.values != null && wc.weights != null) {
+			val notRealWeight = wc.weights.findFirst[!it.typeOf?.real]
+			if (notRealWeight != null) {
+				error("Type Error: All weights must be real-valued, not " + notRealWeight.typeOf,
+					CarmaPackage::eINSTANCE.weightedChoice_Weights,ERROR_Expression_type_error);
+			}
+//			if (wc.weights.exists[!it.typeOf.real]) {
+//				error("Type Error: All weights must be real-valued",
+//					CarmaPackage::eINSTANCE.weightedChoice_Weights,ERROR_Expression_type_error);
+//			}
+			val returnTypes = wc.values.map[it.typeOf]
+			if (returnTypes.exists[it != returnTypes.get(0)]) {
+				error("Type Error: All options must have the same type",
+					CarmaPackage::eINSTANCE.weightedChoice_Values,ERROR_Expression_type_error);
+			}
+		}
 	}
 	
 	public static final String ERROR_Bad_use_of_now = "ERROR_Bad_use_of_now";
