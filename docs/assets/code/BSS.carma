@@ -1,0 +1,317 @@
+const ZONES = 5; 
+const PARKINGS = 10;
+const INITIAL_AVAILABILITY = 10;
+const TOTAL_USERS = 600;
+const CAPACITY = 10;
+
+const get_rate = 5; //Each parking station can release 5 bikes per time units;
+const ret_rate = 5; //Each parking station can receive 5 bikes per time units;
+const move_rate = 0.02; //The average travel time is 20 time units;
+const arrival_rate = 0.5; //Every 2 time units a new user enter in the system;  
+const spread_rate = 2;
+component Station( int zone , int capacity , int available ) {
+	store {
+		attrib zone := zone;
+		attrib available := available;
+		attrib capacity := capacity;
+	}
+	
+	behaviour {
+		G = [my.available>0]get<>{ my.available := my.available-1; }.G;
+		R = [my.available<my.capacity]ret<>{ my.available := my.available+1; }.R;
+	}
+	
+	init {
+		G|R
+	}
+	
+}
+
+component User( int zone , int dest ) {
+	
+	store {
+		attrib zone := zone;
+		attrib dest := dest;
+	}
+	
+	behaviour {
+		P = get[ my.zone == zone ]().B;
+		B = move*[ false ]<>{ my.zone := my.dest; }.W;
+		W = ret[ my.zone == zone ]().kill;				
+	}
+	
+	init {
+		P
+	}
+}
+
+component Arrival( int zone ) {
+	
+	store {
+		zone = zone;		
+	}
+	
+	behaviour {
+		A = arrival*[false]<>.A;
+	}
+	
+	init {
+		A
+	}
+	
+}
+
+fun real ReceivingProb( int _size ) {
+	if (_size != 0) {
+		return 1/real(_size);
+	} else {
+		return 0.0;
+	}
+}
+
+component CollaborativeStation( int zone , int capacity , int available ) {
+  store {
+    zone = zone;
+    available = available;
+    capacity = capacity;
+    get_enabled = true;
+    ret_enabled = true;
+  }
+
+  behaviour {
+    G = [my.available>0 && my.get_enabled]
+        get<>{ my.available = my.available-1; }.G;
+    R = [my.available<my.capacity && my.ret_enabled]
+        ret<>{ my.available = my.available+1; }.R;
+        C = 
+      [my.get_enabled || my.ret_enabled] spread*< my.available >.C
+      +
+      spread*[ my.zone == zone ]( x )
+          { my.get_enabled = my.available >= x ; my.ret_enabled = my.available <= x; }.C;
+  }
+ 
+  init {
+    G|R|C
+  }
+  
+}  
+
+system Scenario1 {
+	
+	collective {
+		for ( i ; i<ZONES ; 1 ) {
+			for ( j ; j<PARKINGS ; 1 ) {
+				new Station( i , CAPACITY, INITIAL_AVAILABILITY );
+			}
+			new Arrival(i);
+		}
+	}
+	
+	environment {
+		store {
+			attrib users := 0;
+		}
+		weight {
+			get {
+				return ReceivingProb( #{ User[P] | my.zone == sender.zone }  );
+			}
+			ret { 
+				return ReceivingProb( #{ User[W] | my.zone == sender.zone }  );
+			}
+			default {
+				return 1;
+			}
+		}
+		rate {
+			get { return get_rate; }
+			ret { return ret_rate; }
+			move* { return move_rate; }
+			arrival* { return (global.users<TOTAL_USERS?arrival_rate:0.0); }
+			default { return 1; }
+		}
+		update {
+			arrival* { 
+				users := global.users+1;
+				new User( sender.zone , U(0,1,2,3,4) );
+			}
+			ret {
+				users := global.users-1;
+			}
+		}
+		
+	}
+	
+}
+
+system Scenario2 {
+	
+	collective {
+		for ( i ; i<ZONES ; 1 ) {
+			for ( j ; j<PARKINGS ; 1 ) {
+				new CollaborativeStation( i , CAPACITY, INITIAL_AVAILABILITY );
+			}
+			new Arrival(i);
+		}
+	}
+	
+	environment {
+		store {
+			attrib users := 0;
+		}
+		prob {
+			spread* { return 1; }
+		}
+		weight {
+			get {
+				return ReceivingProb( #{ User[P] | my.zone == sender.zone }  );
+			}
+			ret { 
+				return ReceivingProb( #{ User[W] | my.zone == sender.zone }  );
+			}
+			default {
+				return 1;
+			}
+		}
+		rate {
+			get { return get_rate; }
+			ret { return ret_rate; }
+			move* { return move_rate; }
+			arrival* { return (global.users<TOTAL_USERS?arrival_rate:0.0); }
+			spread* { return spread_rate; }
+			default { return 1; }
+		}
+		update {
+			arrival* { 
+				users := global.users+1;
+				new User( sender.zone , U(0,1,2,3,4) );
+			}
+			ret {
+				users := global.users-1;
+			}
+		}
+		
+	}
+	
+}
+
+system Scenario3 {
+	
+	collective {
+		for ( i ; i<ZONES ; 1 ) {
+			for ( j ; j<PARKINGS ; 1 ) {
+				new Station( i , CAPACITY, INITIAL_AVAILABILITY );
+			}
+			new Arrival(i);
+		}
+	}
+	
+	environment {
+		store {
+			attrib users := 0;
+		}
+		weight {
+			get {
+				return ReceivingProb( #{ User[P] | my.zone == sender.zone }  );
+			}
+			ret { 
+				return ReceivingProb( #{ User[W] | my.zone == sender.zone }  );
+			}
+			default {
+				return 1;
+			}
+		}
+		rate {
+			get { return get_rate; }
+			ret { return ret_rate; }
+			move* { return move_rate; }
+			arrival* { if (now<200) {
+					return (global.users<TOTAL_USERS?4*arrival_rate:0.0);
+				} else {
+					return (global.users<TOTAL_USERS?arrival_rate/2:0.0);
+				}
+			}
+			default { return 1; }
+		}
+		update {
+			arrival* { 
+				users := global.users+1;
+				new User( sender.zone , U(0,1,2,3,4) );
+			}
+			ret {
+				users := global.users-1;
+			}
+		}
+		
+	}
+	
+}
+
+system Scenario4 {
+	
+	collective {
+		for ( i ; i<ZONES ; 1 ) {
+			for ( j ; j<PARKINGS ; 1 ) {
+				new CollaborativeStation( i , CAPACITY, INITIAL_AVAILABILITY );
+			}
+			new Arrival(i);
+		}
+	}
+	
+	environment {
+		store {
+			attrib users := 0;
+		}
+		prob {
+			spread* { return 1; }
+		}
+		weight {
+			get {
+				return MaxBikes( sender.zone );
+			}
+			ret { 
+				return ReceivingProb( int( Waiting( sender.zone ) ) );
+			}
+			default {
+				return 1;
+			}
+		}
+		rate {
+			get { return get_rate; }
+			ret { return ret_rate; }
+			move* { return move_rate; }
+			arrival* { if (now<200) {
+					return (global.users<TOTAL_USERS?4*arrival_rate:0.0);
+				} else {
+					return (global.users<TOTAL_USERS?arrival_rate/2:0.0);
+				}
+			}
+			spread* { return spread_rate; }
+			default { return 1; }
+		}
+		update {
+			arrival* { 
+				users := global.users+1;
+				new User( sender.zone , U(0,1,2,3,4) );
+			}
+			ret {
+				users := global.users-1;
+			}
+		}
+		
+	}
+	
+}
+
+measure TotalUser = global.users;
+//measure Pedestrians = #{ User[P] | true };
+//measure Bikers = #{ User[B] | true };
+//measure Waiting = #{ User[W] | true };
+	
+measure Pedestrians( int l ) = #{ User[P] | my.zone == l };
+measure Bikers( int l ) = #{ User[B] | my.zone == l };
+measure Waiting( int l ) = #{ User[W] | my.zone == l };
+measure MinBikes( int l ) = min{ my.available | my.zone == l };
+measure MaxBikes( int l ) = max{ my.available | my.zone == l };
+measure AverageBikes( int l ) = avg{ my.available | my.zone == l };
+measure WaitingABike( int l ) = #{ User[P] | my.zone == l };
+measure WaitingASlot( int l ) = #{ User[W] | my.zone == l };

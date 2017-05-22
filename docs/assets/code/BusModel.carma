@@ -1,0 +1,344 @@
+const ARRIVAL_RATE_1 = 1.0/5.0;
+const ARRIVAL_RATE_2 = 1.0/5.0;
+
+const STANDAR_RATE_ROUTE_1 = 1.0/5.0;
+const CONGESTION_RATE_ROUTE_1 = 1.0/20.0;
+
+const STANDAR_RATE_ROUTE_2 = 1.0/5.0;
+const CONGESTION_RATE_ROUTE_2 = 1.0/15.0;
+
+const TO_GARAGE_RATE = 1/360;
+const maintenance_RATE = 1.0/5.0;
+
+const CONGESTION_RATE = 1/120;
+const DECONGESTION_RATE = 1/30;
+
+const LEAVE_RATE = 1.0/2.0;
+const QUEUE_RATE = 1000.0;
+const ENTER_RATE = 1000.0;
+
+const SIZE = 8;
+const SIZE_ROUTE_1 = 15;
+const SIZE_ROUTE_2 = 15;
+const START_ROUTE_1 = 0;
+const START_ROUTE_2 = 4;
+
+space SimpleBusRoute(int stops) {
+	universe <int zone>
+	nodes {
+		[ -1 ]; //Initial bus location
+		for i from 0 to stops {
+			[ i ];
+		}
+	}
+	connections {
+		//route 1
+		for i from 0 to 8 {
+			[i] -> [(i+1)%8] {route=1,r=STANDAR_RATE_ROUTE_1};
+		}
+
+		//route 2
+		for i from 0 to (stops/2) {
+			[2*i] -> [(2*(i+1))%8] {route=2,r=STANDAR_RATE_ROUTE_2};
+		}
+	}
+}
+
+space ComplexBusRoute() {
+	universe <int zone>
+
+	nodes {
+		[ -1 ];
+		for i from 0 to 34 {
+			[i];
+		}
+	}
+	connections {
+		//route 1
+		[1] -> [16] {route=1, mr=1.0/29.89};
+		[16] -> [2] {route=1, mr=1.0/29.89};
+		[2] -> [3] {route=1, mr=1.0/29.89};
+		[3] -> [4] {route=1, mr=1.0/29.89};
+		[4] -> [5] {route=1, mr=1.0/29.89};
+		[5] -> [6] {route=1, mr=1.0/29.89};
+		[6] -> [20] {route=1, mr=1.0/29.89};
+		[20] -> [7] {route=1, mr=1.0/29.89};
+		[7] -> [8] {route=1, mr=1.0/29.89};
+		[8] -> [9] {route=1, mr=1.0/29.89};
+		[9] -> [10] {route=1, mr=1.0/29.89};
+		[10] -> [25] {route=1, mr=1.0/29.89};
+		[25] -> [11] {route=1, mr=1.0/29.89};
+		[11] -> [12] {route=1, mr=1.0/29.89};
+		[12] -> [13] {route=1, mr=1.0/29.89};
+		[13] -> [27] {route=1, mr=1.0/29.89};
+		[27] -> [14] {route=1, mr=1.0/29.89};
+		[14] -> [15] {route=1, mr=1.0/29.89};
+
+
+		[1] -> [16]	{route=34, mr=1.0/29.89};
+		[16] -> [2];
+		[2] -> [3];
+		[3] -> [4];
+		[4] -> [5];
+		[5] -> [6];
+		[6] -> [20];
+		[20] -> [7];
+		[7] -> [8];
+		[8] -> [9];
+		[9] -> [10];
+		[10] -> [25];
+		[25] -> [11];
+		[11] -> [12];
+		[12] -> [13];
+		[13] -> [27];
+		[27] -> [14];
+		[14] -> [15];
+	}
+
+}
+
+fun location nextDestination( int route , location current ) {
+	return current.outgoing().filter(
+				@.route == route
+			).map(
+				@.target
+			).select( 1.0 );
+}
+
+fun real moveRate( int route, location current , location next ) {
+	set<real> rates =
+		current.outgoing(next)
+			.filter( @.route == route )
+			.map( @.r );
+	if (size( rates )==0) {
+		return 0.0;
+	} else {
+		return rates.select(1.0);
+	}
+}
+
+//fun location nextDestination( int route , location current ) {
+//	if (route == 1) {
+//		return [ ((current.zone+1)%8) ];
+//	} else {
+//		return [ ((current.zone+2)%8) ];
+//	}
+//}
+
+
+component Bus(int number){
+	store{
+		attrib route := number;
+		attrib location next := none;
+		attrib queuepos := 0;
+		attrib end = -1;
+	}
+
+	behaviour{
+		G = arrive[true](x,y) {
+			loc = x;
+			end = y;
+		}.S;
+		W = [queuepos==1]leave*[loc == my.loc](x){
+			next = nextDestination(my.route,loc);
+		}.T
+		+ [queuepos>1]leave*[loc == my.loc](x){
+			queuepos = queuepos-1;
+		}.W;
+		T = [loc.zone != end ]move*[true]<loc,next>{
+			loc = next;
+			next = none;
+		}.S
+		+ [loc.zone == end]maintenance*{
+			loc = [ -1 ];
+			next = none;
+		}.G;
+		S = enter<>.Q;
+ 		Q = queueorder*[loc==my.loc](x){
+ 			queuepos = x;
+ 		}.W;
+	}
+
+	init{
+		G
+	}
+}
+
+component Stop( ){
+	store{
+		attrib buses := 0;
+	}
+
+	behaviour{
+		S = [buses>0]leave*[loc == my.loc]<loc>{buses := buses - 1;}.S
+		+ enter[my.loc == loc](){buses := buses + 1;}.A;
+		A = queueorder*[loc == my.loc]<buses>.S;
+	}
+
+	init{
+		S
+	}
+}
+
+component Arrival(int route, int end, real r) {
+
+	store {
+		attrib r = r;
+		attrib route = route;
+		attrib end = end;
+	}
+
+	behaviour {
+		A = arrive[my.route==route]<loc,end>.A;
+	}
+
+	init {
+		A
+	}
+
+}
+
+measure AllBusses = #{ Bus[*] | true };
+measure AllW = #{ Bus[W] | true };
+measure AllT = #{ Bus[T] | true };
+measure AllQ = #{ Bus[Q] | true };
+measure AllG = #{ Bus[G] | true };
+
+measure TravelingAt( int i ) = #{Bus[T] | my.next == [ i ]};
+measure QueuingWaitingAt( int i ) = #{Bus[Q] | my.loc == [ i ] };
+measure ReadyAt( int i ) = #{Bus[W] | my.loc == [ i ]};
+measure BusAtGarage = #{ Bus[G] | true };
+measure LostBusses = #{ Bus[*] | my.loc == none };
+measure LocatedAt( int i ) = #{Bus[S] | my.loc == [ i ] }
+	+#{Bus[Q] | my.loc == [ i ] }
+	+#{Bus[W] | my.loc == [ i ] };
+
+measure OneInGarage = #{ Bus[*] | my.loc == [ -1 ] && my.route == 1};
+measure BusAtOne( int i ) = #{ Bus[*] | my.loc == [ i ] && my.route == 1};
+measure TravelingAtOne( int i ) = #{ Bus[T] | my.loc == [ i ] && my.route == 1};
+measure RouteOneReady( int i ) = #{Bus[W] | my.loc == [ i ] && my.route == 1};
+measure RouteTwoReady( int i ) = #{Bus[W] | my.loc == [ i ] && my.route == 2};
+
+system ScenarioTest1{
+	space SimpleBusRoute(SIZE)
+	collective{
+		for l in locations {
+			new Stop()@l;
+		}
+		new Arrival( 1 , 7, 1.0/5.0 )@[ 0 ];
+		new Arrival( 2 , 2, 1.0/5.0 )@[ 4 ];
+		new Bus(1)@[-1]<SIZE_ROUTE_1>;
+		new Bus(2)@[-1]<SIZE_ROUTE_2>;
+	}
+
+	environment{
+		store{
+			attrib congestioned = 0;
+		}
+
+		prob{
+			default{ return 1.0; }
+		}
+
+		weight {
+			default {
+				return 1.0;
+			}
+		}
+
+		rate{
+			arrive{
+				if (sender.route==1) {
+					return ARRIVAL_RATE_1;
+				} else {
+					return ARRIVAL_RATE_2;
+				}
+			}
+			leave* {
+				return LEAVE_RATE;
+			}
+//			togarage* {
+//				return TO_GARAGE_RATE;
+//			}
+			maintenance* {
+				return LEAVE_RATE;
+			}
+			move* {
+				return moveRate( sender.route , sender.loc , [ sender.next ] );
+			}
+			enter {
+				return ENTER_RATE;
+			}
+			queueorder* {
+				return QUEUE_RATE;
+			}
+			default{return 1000.0;}
+		}
+
+		update{
+		}
+	}
+}
+
+
+system ScenarioTest2 {
+	space SimpleBusRoute(SIZE)
+	collective{
+		for l in locations {
+			new Stop()@l;
+		}
+		new Arrival( 1 , 7, 1.0/5.0 )@[ 0 ];
+		new Arrival( 1 , 3, 1.0/5.0 )@[ 4 ];
+		new Arrival( 2 , 2, 1.0/5.0 )@[ 4 ];
+		new Bus(1)@[-1]<SIZE_ROUTE_1>;
+		new Bus(2)@[-1]<SIZE_ROUTE_2>;
+	}
+
+	environment{
+		store{
+			attrib congestioned = 0;
+		}
+
+		prob{
+			default{ return 1.0; }
+		}
+
+		weight {
+			default {
+				return 1.0;
+			}
+		}
+
+		rate{
+			arrive{
+				if (sender.route==1) {
+					return ARRIVAL_RATE_1/2.0;
+				} else {
+					return ARRIVAL_RATE_2;
+				}
+			}
+			leave* {
+				return LEAVE_RATE;
+			}
+//			togarage* {
+//				return TO_GARAGE_RATE;
+//			}
+			maintenance* {
+				return maintenance_RATE;
+			}
+			move* {
+				return moveRate( sender.route , sender.loc , [ sender.next ] );
+			}
+			enter {
+				return 10.0;
+			}
+			queueorder* {
+				return QUEUE_RATE;
+			}
+			default{return 1000.0;}
+		}
+
+		update{
+		}
+	}
+}

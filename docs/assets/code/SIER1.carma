@@ -1,0 +1,66 @@
+fun int Mover(int zone) {
+	if (zone == 4 || zone == 1) {
+		return U(2,zone,3); 
+	} else {
+		return U(1,zone,4);
+	}
+}
+
+
+component Agent(int a, process Z){
+
+    store{
+        attrib zone := a;
+    }
+
+    behaviour{
+        S = contact*[z == my.zone](z).I +
+			move*{zone := Mover(zone);}.S;
+			
+		I = contact*<zone>.I +
+			move*{zone := Mover(zone);}.I +
+			recovery*.R;
+		
+		R = susceptible*.S +
+			move*{zone := Mover(zone);}.R;
+    }
+
+    init{
+        Z
+    }
+}
+
+measure Susceptibles = #{Agent[S]| true };
+measure Infected = #{Agent[I]| true };
+measure Recovered = #{Agent[R]| true };
+
+
+system Simple{
+
+    collective{
+    	new Agent(1:4,S);
+    	new Agent(1:4,I);
+    	new Agent(1:4,R);
+    }
+
+    environment{
+
+        store{
+        }
+
+        prob{
+			default { return 1.0; }
+        }
+
+        rate{
+        	move* 		{ return 1.0; }
+			contact* 	{ return 0.03; }
+			recovery*	{ return 0.2; }
+			susceptible* { return 0.2; }
+			default { return 1.0; }
+        }
+
+        update{
+        }
+    }
+}

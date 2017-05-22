@@ -1,0 +1,57 @@
+const N = 1000;
+const K = 30;
+const s = 5;
+const lambda = 1.0;
+const mu = 1.0;
+
+fun int cap(int station_id){return K;}
+
+fun int parked(int station_id){return s;}
+
+fun int totparked(int n){
+	int acm = 0;
+	for i from 1 to n+1 {
+		acm := acm + parked(i);
+	}
+	return acm;
+}
+
+component HBSStation(int capacity , int npbikes) {
+	store {
+		attrib npb:= npbikes;
+		attrib cp := capacity;
+	}
+
+	behaviour {
+		Y = [my.npb > 0] get*[false] <> {my.npb := my.npb - 1;}.Y
+  		+ [my.npb < my.cp] ret*[false]<>{my.npb := my.npb + 1;}.Y;
+	}
+	init {Y}
+}
+
+measure Empty = #{HBSStation[Y] | my.npb==0};
+measure Half = #{HBSStation[Y] | my.npb==s};
+measure Full = #{HBSStation[Y] | my.npb>=K};
+measure BikesCircling = global.incirculation;
+
+system HBS {
+	collective {
+		for (i ; i < N ; 1) {
+			new HBSStation(cap(i), parked(i));
+		}
+	}
+
+	environment {
+		store {attrib incirculation := N*s - totparked(N);}
+		prob {}
+		weight {}
+		rate {
+			get* {return lambda;}
+			ret* {return mu * real(global.incirculation) / real(N);}
+		}
+		update {
+			get* {incirculation := global.incirculation + 1;}
+			ret* {incirculation := global.incirculation - 1;}
+		}
+	}
+}
