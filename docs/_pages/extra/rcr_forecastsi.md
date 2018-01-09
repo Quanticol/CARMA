@@ -6,7 +6,7 @@ layout: single
 permalink: /extra/rcr_forecastsi.html
 ---
 
-## Companion of RCR Report for "Mesoscopic modelling of pedestrian movement using \textsc{Carma} and its tools"
+## Companion of RCR Report for "Mesoscopic modelling of pedestrian movement using Carma and its tools"
 
 "Mesoscopic modeling of pedestrian movement using {Carma} and its tools" uses Carma (Collective Adaptive Resource-sharing Markovian Agents), a specification language recently introduced for modeling CAS, to model spatially-distributed systems where the desired model lies between an individual-based (microscopic) and a population-based (macroscopic) spatial model. 
 The impact on the system dynamics of changes to the topology of paths is studied via simulation. 
