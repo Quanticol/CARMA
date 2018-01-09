@@ -1,6 +1,6 @@
 ---
-title: "Companion of RCR Report for \"Mesoscopic modelling of pedestrian movement using Carma and its tools\""
-excerpt: "Companion of RCR Report for \"Mesoscopic modelling of pedestrian movement using Carma and its tools\""
+title: "Companion page of RCR Report for \"Mesoscopic modelling of pedestrian movement using Carma and its tools\""
+excerpt: "Companion page of RCR Report for \"Mesoscopic modelling of pedestrian movement using Carma and its tools\""
 sitemap: true
 layout: single
 permalink: /extra/rcr_forecastsi.html
