@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.cmg.ml.sam.sim.pm;
 
 import java.util.LinkedList;
@@ -16,38 +13,63 @@ import org.cmg.ml.sam.sim.util.WeightedStructure;
 
 /**
  * 
- * This class implements a population model. This class is parametrised with respect 
- * to types <code>S</code> and and <code>T</code>. The former is the data type used to identify 
- * population species in the population vector. Parameter <code>T</code> identifies environment 
+ * This class implements a population model. This class is parametrised with
+ * respect to types <code>S</code> and and <code>T</code>. The former is the
+ * data type used to identify population species in the population vector.
+ * Parameter <code>T</code> identifies environment
  * 
  * @author loreti
  *
  */
-public abstract class PopulationModel<S,T extends PopulationState<S>> implements ModelI {
+public class PopulationModel implements ModelI {
 
-	private LinkedList<PopulationRule<S,T>> rules;
-	
+	private LinkedList<PopulationRule> rules;
+
 	private double time;
 	
-	protected abstract T getCurrentState();
+	private PopulationState currentState;
+
 	
-	protected abstract T copyState();
+	public PopulationModel( LinkedList<PopulationRule> rules, PopulationState currentState) {
+		this.rules = rules;
+		this.currentState = currentState;
+	}
 	
-	protected abstract void setState(T newState);
-	
+	public PopulationState getCurrentState() {
+		return currentState;
+	}
+
+	protected void setState(PopulationState newState) {
+		this.currentState = newState;
+	}
+
 	@Override
-	public WeightedStructure<Activity> getActivities( RandomGenerator r ) {
+	public WeightedStructure<Activity> getActivities(RandomGenerator r) {
 		WeightedLinkedList<Activity> activities = new WeightedLinkedList<>();
-		T currentState = getCurrentState();
-		for (PopulationRule<S,T> rule : rules) {
-			LinkedList<PopulationTransition<S,T>> enabled = rule.apply(r, currentState);
-			for (PopulationTransition<S,T> tra : enabled) {
-				activities.add( 
-						new WeightedElement<Activity>(
-							tra.getRate(), 
-							tra
-						) 
-					);
+		PopulationState currentState = getCurrentState();
+		for (PopulationRule rule : rules) {
+			PopulationTransition tra = rule.apply(r, currentState);
+			if (tra != null) {
+				activities.add(
+					new WeightedElement<Activity>(
+						tra.getRate(), 
+						new Activity() {
+
+							@Override
+							public String getName() {
+								return tra.getName();
+							}
+
+							@Override
+							public boolean execute(RandomGenerator r) {
+								PopulationModel.this.currentState = 
+										PopulationModel.this.currentState.apply(tra.apply(r));
+								return false;
+							}
+							
+						}
+					)						
+				);
 			}
 		}
 		return activities;
@@ -58,11 +80,19 @@ public abstract class PopulationModel<S,T extends PopulationState<S>> implements
 		this.time += dt;
 	}
 
-	protected void apply(PopulationDrift<S> drift, Consumer<T> postTransitionAction) {
-		T newState = copyState();
-		drift.apply(newState);
-		postTransitionAction.accept(newState);
-		setState(newState);
+	protected void apply(Update drift) {
+		setState(getCurrentState().apply(drift));
 	}
-	
+
+	public double getTime() {
+		return time;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return currentState.toString();
+	}
 }

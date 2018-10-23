@@ -3,23 +3,22 @@
  */
 package org.cmg.ml.sam.sim.pm;
 
-import java.util.LinkedList;
-
 import org.apache.commons.math3.random.RandomGenerator;
+import org.cmg.ml.sam.sim.util.WeightedStructure;
 
 /**
  * @author loreti
  *
  */
-public interface PopulationRule<S,T extends PopulationState<S>> {
+public interface PopulationRule {
 	
 	/**
 	 * 
 	 * 
 	 * @param r
 	 * @param state
-	 * @return
+	 * @return null if the rule cannot be applied.
 	 */
-	public LinkedList<PopulationTransition<S,T>> apply( RandomGenerator r , T state );
+	public PopulationTransition apply( RandomGenerator r , PopulationState state );
 	
 }

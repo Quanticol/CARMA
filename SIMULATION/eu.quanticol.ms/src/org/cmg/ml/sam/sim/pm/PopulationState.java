@@ -3,16 +3,11 @@
  */
 package org.cmg.ml.sam.sim.pm;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.Arrays;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 /**
  * The instances of this class represent a generic population state having species of type <code>S</code>. 
@@ -21,101 +16,113 @@ import java.util.stream.StreamSupport;
  * @author loreti
  *
  */
-public class PopulationState<S> {
+public class PopulationState {
 
 	/**
-	 * Internally the state is represented via a mapping from <code>S</code> to <code>Integer</code>.
+	 * Internal representation of the state as continuing vector.
 	 */
-	private final HashMap<S,Integer> population;
+	private final int[] populationVector;
+	
+	public PopulationState( int size ) {
+		this(new int[size]);
+	}
+	
+	public PopulationState(int[] state) {
+		this.populationVector = state;
+	}
 
-	/**
-	 * Creates a new population state with a given population. 
-	 * 
-	 * @param population
-	 */
-	public PopulationState( HashMap<S,Integer> population ) {
-		this.population = population;
+	public double getOccupancy( int i ) {
+		try {
+			return populationVector[i];
+		} catch (ArrayIndexOutOfBoundsException e) {
+			return 0;
+		}
 	}
 	
-	/**
-	 * Creates an empty population state.
-	 */
-	public PopulationState() {
-		this( new HashMap<>() );
-	}
-	
-	protected Set<Map.Entry<S, Integer>> getEntries() {
-		return population.entrySet();
-	}
-	
-	public int getOccupancy( S s ) {
-		return population.getOrDefault(s, 0);
-	}
-	
-	public void set( S s , Integer value ) {
-		population.put(s, value);		
-	}
-	
-	public void apply( S s , Drift d ) {
-		int value = population.getOrDefault(s, 0);
-		population.put(s, value-d.getPreset()+d.getPoset());
-	}
-	
-	@SuppressWarnings("unchecked")
-	public PopulationState<S> copy() {
-		return new PopulationState<>( (HashMap<S, Integer>) population.clone() );
-	}
-	
-
-	public double min( Function<S, Double> f ) {
-		return min( s -> true , f );
-	}
-	
-	public double min( Predicate<S> p , Function<S, Double> f) {
-		double min = Double.MAX_VALUE;
-		for (Entry<S, Integer> entry : getEntries()) {
-			S s = entry.getKey();
-			if (p.test(s)&&entry.getValue()>0) {
-				min = Math.min(min, f.apply(s));
+	public PopulationState apply( Update update ) {
+		int[] newState = Arrays.copyOf(populationVector, populationVector.length);
+		for (Entry<Integer, Integer> u : update.getUpdate()) {
+			int idx = u.getKey();
+			int newValue = newState[idx]+u.getValue(); 
+			if (newValue>=0) {
+				newState[idx] = newValue;
+			} else {
+				throw new IllegalArgumentException("Population Vector: "+this+" newState: "+Arrays.toString(newState)+" Update: "+update+" idx: "+idx+" newValue: "+newValue+" u: "+u);
 			}
 		}		
+		return new PopulationState(newState);
+	}
+	
+	public double min( Function<Integer, Double> f ) {
+		return min( i -> true , f );
+	}
+	
+	public double min( Predicate<Integer> p , Function<Integer, Double> f) {
+		double min = Double.MAX_VALUE;
+		for( int i=0 ; i<populationVector.length ; i++ ) {
+			if ((p.test(i))&&(this.populationVector[i]>0)) {
+				min = Math.min(min,f.apply(i));
+			}
+		}
 		return min;
 	}
 	
-	public double max( Function<S, Double> f ) {
-		return max( s -> true , f );
+	public double max( Function<Integer, Double> f ) {
+		return max( i -> true , f );
 	}
 	
-	public double max( Predicate<S> p , Function<S, Double> f) {
+	public double max( Predicate<Integer> p , Function<Integer, Double> f) {
 		double max = Double.MIN_VALUE;
-		for (Entry<S, Integer> entry : getEntries()) {
-			S s = entry.getKey();
-			if (p.test(s)&&entry.getValue()>0) {
-				max = Math.max(max, f.apply(s));
+		for( int i=0 ; i<populationVector.length ; i++ ) {
+			if ((p.test(i))&&(this.populationVector[i]>0)) {
+				max = Math.max(max,f.apply(i));
 			}
-		}		
+		}
 		return max;
 	}
 	
-	public double average( Predicate<S> p , Function<S, Double> f ) {
+	public double average( Predicate<Integer> p , Function<Integer, Double> f ) {
 		double total = 0.0;
 		int counter = 0;
-		for (Entry<S, Integer> entry : getEntries()) {
-			S s = entry.getKey();
-			int value = entry.getValue();
-			if (p.test(s)&&value>0) {
-				total += entry.getValue()*f.apply(s);
-				counter += value;
+		for( int i=0 ; i<populationVector.length ; i++ ) {
+			if (p.test(i)&&(populationVector[i]>0)) {
+				counter += populationVector[i];
+				total += populationVector[i]*f.apply(i);
 			}
-		}		
+		}
 		return total/counter;
 	}
 	
-	public double average( Function<S, Double> f ) {
+	public double average( Function<Integer, Double> f ) {
 		return average( s -> true , f );
 	}
 	
-	public Stream<Entry<S, Integer>> select( Predicate<S> p ) {
-		return getEntries().stream().filter(e -> (e.getValue()>0)&&(p.test(e.getKey())));
+	public int count( Set<Integer> species ) {
+		int result = 0;
+		for (Integer i : species) {
+			result += this.populationVector[i];
+		}
+		return result;
 	}
+	
+	public int count( Predicate<Integer> p ) {
+		int result = 0;
+		for( int i=0 ; i< this.populationVector.length ; i++ ) {
+			result += this.populationVector[i];
+		}
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return Arrays.toString(populationVector);
+	}
+
+	public int size() {
+		return populationVector.length;
+	}
+
 }

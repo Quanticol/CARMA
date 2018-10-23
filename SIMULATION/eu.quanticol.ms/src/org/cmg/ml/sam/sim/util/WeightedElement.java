@@ -59,10 +59,10 @@ public class WeightedElement<S> implements WeightedStructure<S> {
 
 	@Override
 	public WeightedStructure<S> add(double w, S s) {
-		WeightedLinkedList<S> list = new WeightedLinkedList<S>();
-		list.add(this);
-		list.add(w, s);
-		return null;
+		if (w == 0.0) {
+			return this;
+		} 
+		return new ComposedWeightedStructure<>(this,new WeightedElement<S>(w, s));
 	}
 
 	@Override

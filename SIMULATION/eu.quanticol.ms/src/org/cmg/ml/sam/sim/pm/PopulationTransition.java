@@ -3,7 +3,7 @@
  */
 package org.cmg.ml.sam.sim.pm;
 
-import java.util.function.Consumer;
+import java.util.List;
 import java.util.function.Function;
 
 import org.apache.commons.math3.random.RandomGenerator;
@@ -13,23 +13,19 @@ import org.cmg.ml.sam.sim.Activity;
  * @author loreti
  *
  */
-public abstract class PopulationTransition<S,T extends PopulationState<S>> implements Activity {
+public class PopulationTransition {
 
-	private Function<RandomGenerator,PopulationDrift<S>> transitionDriftFunction;
-	private Consumer<T> postTransitionAction;
-	private double rate;
-	private PopulationModel<S, T> model;
+	private final Function<RandomGenerator,Update> transitionDriftFunction;
+	private final double rate;
+	private final String name;
 
 	public PopulationTransition(
-			PopulationModel<S, T> model,
+			String name,
 			double rate,
-			Function<RandomGenerator,PopulationDrift<S>> transitionDriftFunction, 
-			Consumer<T> postTransitionAction
+			Function<RandomGenerator,Update> transitionDriftFunction
 			) {
-		this.model = model;
-		this.rate = rate;
+		this.name = name;
 		this.transitionDriftFunction = transitionDriftFunction;
-		this.postTransitionAction = postTransitionAction;
 		this.rate = rate;
 	}
 
@@ -37,20 +33,12 @@ public abstract class PopulationTransition<S,T extends PopulationState<S>> imple
 		return rate;
 	}
 
-	@Override
+	public Update apply( RandomGenerator r ) {
+		return transitionDriftFunction.apply(r);
+	}
+
 	public String getName() {
-		return getInfo();
+		return name;
 	}
-
-	public abstract String getInfo();
-
-	@Override
-	public boolean execute(RandomGenerator r) {
-		PopulationDrift<S> drift = transitionDriftFunction.apply(r);
-		model.apply(drift,postTransitionAction);
-		return false;
-	}
-	
-	
 
 }
