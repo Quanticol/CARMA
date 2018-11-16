@@ -8,7 +8,7 @@ permalink: /cli.html
 
 In addition to the Eclipse plug-in, we have developed a tool that can be executed from the command line. Its goal is to allow users to perform some common tasks related to CARMA models through a simple, lightweight interface that is also amenable to scripting, thus providing programmatic access to some of the CARMA tools.
 
-The *command line tool* is available as a [self-executing Java package](https://github.com/Quanticol/CARMA/releases) and does not require an installation of the Eclipse environment or any additional libraries. It can therefore be used on any machine where Java 1.8 is installed and on any major operating system.
+The *command line tool* is available as a [self-executing Java package](https://github.com/Quanticol/CARMA/releases/download/v0.1/CARMA-CL.jar) and does not require an installation of the Eclipse environment or any additional libraries. It can therefore be used on any machine where Java 1.8 is installed and on any major operating system.
 
 The main task of the command line tool is to serve as an interface to the CARMA simulation engine. This is useful for running jobs over server machines or for scheduling consecutive simulations, avoiding the need to initiate and oversee each individual task through the graphical interface.
 
